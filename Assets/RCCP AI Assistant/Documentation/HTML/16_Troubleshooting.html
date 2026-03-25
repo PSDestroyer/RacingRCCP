@@ -1,0 +1,663 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>16_Troubleshooting</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Troubleshooting</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Troubleshooting</a></li>
+<li style='margin-left:20px'><a href='#section-1'>Connection Issues</a></li>
+<li style='margin-left:40px'><a href='#section-2'>&quot;No response from server&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-3'>&quot;Device not registered&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-4'>&quot;SSL/TLS Error&quot;</a></li>
+<li style='margin-left:20px'><a href='#section-5'>Rate Limit Issues</a></li>
+<li style='margin-left:40px'><a href='#section-6'>&quot;Rate limit exceeded&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Usage not updating</a></li>
+<li style='margin-left:20px'><a href='#section-8'>Vehicle Creation Issues</a></li>
+<li style='margin-left:40px'><a href='#section-9'>&quot;Model not eligible&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Wheels detected incorrectly</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Vehicle falls through ground</a></li>
+<li style='margin-left:20px'><a href='#section-12'>API Key Issues</a></li>
+<li style='margin-left:40px'><a href='#section-13'>&quot;Invalid API key&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Key validation hangs</a></li>
+<li style='margin-left:20px'><a href='#section-15'>Window Issues</a></li>
+<li style='margin-left:40px'><a href='#section-16'>Window won't open</a></li>
+<li style='margin-left:40px'><a href='#section-17'>UI looks wrong</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Animations not working</a></li>
+<li style='margin-left:20px'><a href='#section-19'>Response Issues</a></li>
+<li style='margin-left:40px'><a href='#section-20'>AI misunderstands prompt</a></li>
+<li style='margin-left:40px'><a href='#section-21'>&quot;Unable to parse response&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Response takes too long</a></li>
+<li style='margin-left:20px'><a href='#section-23'>Apply Issues</a></li>
+<li style='margin-left:40px'><a href='#section-24'>Changes not taking effect</a></li>
+<li style='margin-left:40px'><a href='#section-25'>Undo doesn't work</a></li>
+<li style='margin-left:20px'><a href='#section-26'>Performance Issues</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Editor slowdown</a></li>
+<li style='margin-left:40px'><a href='#section-28'>Large response lag</a></li>
+<li style='margin-left:20px'><a href='#section-29'>Getting Help</a></li>
+</ul></div>
+<p>This guide covers common issues with RCCP AI Assistant and how to resolve them. Issues are organized by category for easy reference.</p>
+<h2 id='section-1'>Connection Issues</h2>
+<h3 id='section-2'>&quot;No response from server&quot;</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Request times out</li>
+<li>No response after extended wait</li>
+<li>Spinner continues indefinitely</li>
+</ul>
+<p><strong>Causes and Solutions:</strong></p>
+<ol>
+<li><strong>Internet connectivity</strong></li>
+</ol>
+<ul>
+<li>Check your internet connection</li>
+<li>Try loading a website to verify</li>
+<li>Restart your router if needed</li>
+</ul>
+<ol>
+<li><strong>Server downtime</strong></li>
+</ol>
+<ul>
+<li>The BoneCracker Games server may be temporarily down</li>
+<li>Wait a few minutes and try again</li>
+<li>Check for announcements about maintenance</li>
+</ul>
+<ol>
+<li><strong>Firewall blocking</strong></li>
+</ol>
+<ul>
+<li>Unity or the assistant may be blocked by firewall</li>
+<li>Add Unity to firewall exceptions</li>
+<li>Check corporate network policies</li>
+</ul>
+<ol>
+<li><strong>Timeout too short</strong></li>
+</ol>
+<ul>
+<li>Increase server timeout in Settings</li>
+<li>Complex requests need more time</li>
+<li>Default is 120 seconds</li>
+</ul>
+<h3 id='section-3'>&quot;Device not registered&quot;</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Error message about registration</li>
+<li>Cannot make any requests</li>
+<li>Settings show no device token</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Automatic registration failed</strong></li>
+</ol>
+<ul>
+<li>Check internet connection</li>
+<li>Try clicking &quot;Test Server Connection&quot;</li>
+<li>Wait a moment and try again</li>
+</ul>
+<ol>
+<li><strong>Registration stuck</strong></li>
+</ol>
+<ul>
+<li>Clear registration in Settings</li>
+<li>Restart Unity</li>
+<li>Re-attempt request (triggers new registration)</li>
+</ul>
+<h3 id='section-4'>&quot;SSL/TLS Error&quot;</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Certificate validation failed</li>
+<li>HTTPS connection error</li>
+<li>Security-related error messages</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>System clock</strong></li>
+</ol>
+<ul>
+<li>Verify system date and time are correct</li>
+<li>SSL certificates validate against time</li>
+</ul>
+<ol>
+<li><strong>Unity version</strong></li>
+</ol>
+<ul>
+<li>Ensure Unity 6000.0.49f1 or later</li>
+<li>Older versions may have SSL issues</li>
+</ul>
+<ol>
+<li><strong>Network proxy</strong></li>
+</ol>
+<ul>
+<li>Corporate proxies can interfere</li>
+<li>Try from a different network</li>
+</ul>
+<h2 id='section-5'>Rate Limit Issues</h2>
+<h3 id='section-6'>&quot;Rate limit exceeded&quot;</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Error message about limits</li>
+<li>Cannot make new requests</li>
+<li>Usage shows 0 remaining</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Daily limit reached</strong></li>
+</ol>
+<ul>
+<li>Wait until midnight for reset</li>
+<li>Or switch to your own API key</li>
+</ul>
+<ol>
+<li><strong>Hourly burst reached</strong></li>
+</ol>
+<ul>
+<li>Wait 60 minutes for hourly reset</li>
+<li>Pace your requests</li>
+</ul>
+<ol>
+<li><strong>Setup pool exhausted</strong></li>
+</ol>
+<ul>
+<li>You've transitioned to free phase</li>
+<li>Daily limits now apply</li>
+</ul>
+<h3 id='section-7'>Usage not updating</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Usage display seems wrong</li>
+<li>Counter doesn't change after requests</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Cached data</strong></li>
+</ol>
+<ul>
+<li>Refresh usage from Settings</li>
+<li>Make a request to sync with server</li>
+</ul>
+<ol>
+<li><strong>Display lag</strong></li>
+</ol>
+<ul>
+<li>UI may take a moment to update</li>
+<li>Wait for next repaint</li>
+</ul>
+<h2 id='section-8'>Vehicle Creation Issues</h2>
+<h3 id='section-9'>&quot;Model not eligible&quot;</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Eligibility checks fail</li>
+<li>Cannot proceed to generation</li>
+<li>Red error icons</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Scale issues</strong></li>
+</ol>
+<ul>
+<li>Check model import settings</li>
+<li>Scale Factor should produce real-world dimensions</li>
+<li>A car should be ~4m long, not 4cm or 400m</li>
+</ul>
+<ol>
+<li><strong>No separate wheels</strong></li>
+</ol>
+<ul>
+<li>Wheels must be separate GameObjects</li>
+<li>Not baked into body mesh</li>
+<li>Re-export model with separated wheels</li>
+</ul>
+<ol>
+<li><strong>Wrong orientation</strong></li>
+</ol>
+<ul>
+<li>Z should point forward</li>
+<li>Y should point up</li>
+<li>Rotate model or use parent to correct</li>
+</ul>
+<h3 id='section-10'>Wheels detected incorrectly</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Wrong wheels assigned to positions</li>
+<li>Wheel detection shows wrong count</li>
+<li>Assignment preview looks wrong</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Naming convention</strong></li>
+</ol>
+<ul>
+<li>Include &quot;wheel&quot; in wheel GameObject names</li>
+<li>Helps detection accuracy</li>
+</ul>
+<ol>
+<li><strong>Manual assignment</strong></li>
+</ol>
+<ul>
+<li>Use manual wheel assignment in post-creation</li>
+<li>Click each position and select correct wheel</li>
+</ul>
+<ol>
+<li><strong>Model structure</strong></li>
+</ol>
+<ul>
+<li>Ensure wheels are direct or near-direct children</li>
+<li>Deep nesting can confuse detection</li>
+</ul>
+<h3 id='section-11'>Vehicle falls through ground</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Vehicle drops through terrain</li>
+<li>No collision with ground</li>
+<li>Physics seem broken</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Missing colliders</strong></li>
+</ol>
+<ul>
+<li>Run the Body Colliders wizard</li>
+<li>Add at least basic colliders</li>
+</ul>
+<ol>
+<li><strong>WheelCollider issues</strong></li>
+</ol>
+<ul>
+<li>Re-run wheel assignment</li>
+<li>Check WheelCollider radius isn't zero</li>
+</ul>
+<ol>
+<li><strong>Ground layer</strong></li>
+</ol>
+<ul>
+<li>Ensure ground is on a layer that collides with vehicle</li>
+</ul>
+<h2 id='section-12'>API Key Issues</h2>
+<h3 id='section-13'>&quot;Invalid API key&quot;</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Key validation fails</li>
+<li>Error message about authentication</li>
+<li>Requests fail with 401 error</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Key format</strong></li>
+</ol>
+<ul>
+<li>Must start with <code>sk-ant-</code></li>
+<li>Check for extra spaces or characters</li>
+<li>Ensure complete key was copied</li>
+</ul>
+<ol>
+<li><strong>Key revoked</strong></li>
+</ol>
+<ul>
+<li>Key may have been deleted in Anthropic console</li>
+<li>Generate a new key</li>
+</ul>
+<ol>
+<li><strong>Billing issues</strong></li>
+</ol>
+<ul>
+<li>Anthropic account needs active billing</li>
+<li>Check console.anthropic.com for account status</li>
+</ul>
+<h3 id='section-14'>Key validation hangs</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Validation spinner never completes</li>
+<li>No success or error message</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Connection issue</strong></li>
+</ol>
+<ul>
+<li>Check internet connectivity</li>
+<li>API endpoint may be unreachable</li>
+</ul>
+<ol>
+<li><strong>Timeout</strong></li>
+</ol>
+<ul>
+<li>Wait longer (up to 30 seconds)</li>
+<li>Check console for errors</li>
+</ul>
+<h2 id='section-15'>Window Issues</h2>
+<h3 id='section-16'>Window won't open</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Menu item does nothing</li>
+<li>Window doesn't appear</li>
+<li>Error in console</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Compilation errors</strong></li>
+</ol>
+<ul>
+<li>Check Console for errors</li>
+<li>Fix any script compilation issues</li>
+<li>RCCP AI Assistant won't load with errors</li>
+</ul>
+<ol>
+<li><strong>Missing dependencies</strong></li>
+</ol>
+<ul>
+<li>Install Editor Coroutines package</li>
+<li>Verify RCCP is installed</li>
+</ul>
+<ol>
+<li><strong>Corrupted state</strong></li>
+</ol>
+<ul>
+<li>Delete <code>RCCP_AISettings.asset</code> from Resources</li>
+<li>Reopen window to regenerate</li>
+</ul>
+<h3 id='section-17'>UI looks wrong</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Missing elements</li>
+<li>Strange layout</li>
+<li>Garbled text</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Style initialization</strong></li>
+</ol>
+<ul>
+<li>Close and reopen window</li>
+<li>Styles may not have initialized</li>
+</ul>
+<ol>
+<li><strong>Window mode mismatch</strong></li>
+</ol>
+<ul>
+<li>Try switching window modes in Settings</li>
+<li>Restart window after changing</li>
+</ul>
+<ol>
+<li><strong>Unity version</strong></li>
+</ol>
+<ul>
+<li>Verify Unity 6000.0.49f1 or later</li>
+<li>UI may not render correctly in older versions</li>
+</ul>
+<h3 id='section-18'>Animations not working</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>No smooth transitions</li>
+<li>Instant changes</li>
+<li>No visual feedback</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Animations disabled</strong></li>
+</ol>
+<ul>
+<li>Check Settings &gt; Enable Animations</li>
+<li>Toggle on if off</li>
+</ul>
+<ol>
+<li><strong>Force Repaint off</strong></li>
+</ol>
+<ul>
+<li>Some animations need repaint</li>
+<li>Try enabling Force Repaint temporarily</li>
+</ul>
+<h2 id='section-19'>Response Issues</h2>
+<h3 id='section-20'>AI misunderstands prompt</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Response doesn't match request</li>
+<li>Wrong components modified</li>
+<li>Unexpected values</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Be more specific</strong></li>
+</ol>
+<ul>
+<li>Add detail to your prompt</li>
+<li>Mention specific components</li>
+<li>Use exact terminology</li>
+</ul>
+<ol>
+<li><strong>Use appropriate panel</strong></li>
+</ol>
+<ul>
+<li>Each panel has specialized context</li>
+<li>Wrong panel may confuse the AI</li>
+</ul>
+<ol>
+<li><strong>Simplify request</strong></li>
+</ol>
+<ul>
+<li>Break complex requests into steps</li>
+<li>One change at a time</li>
+</ul>
+<h3 id='section-21'>&quot;Unable to parse response&quot;</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Error about JSON parsing</li>
+<li>Response can't be applied</li>
+<li>Partial or garbled response</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Retry request</strong></li>
+</ol>
+<ul>
+<li>Sometimes AI produces invalid JSON</li>
+<li>Try again with same prompt</li>
+</ul>
+<ol>
+<li><strong>Simplify prompt</strong></li>
+</ol>
+<ul>
+<li>Complex prompts may produce problematic responses</li>
+<li>Break into smaller requests</li>
+</ul>
+<ol>
+<li><strong>Check raw response</strong></li>
+</ol>
+<ul>
+<li>Enable Show Raw AI Responses in Settings</li>
+<li>Look for obvious issues</li>
+</ul>
+<h3 id='section-22'>Response takes too long</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Very slow response time</li>
+<li>Timeout errors</li>
+<li>Frustrating delays</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Choose faster model</strong></li>
+</ol>
+<ul>
+<li>Use Haiku instead of Opus</li>
+<li>Significant speed improvement</li>
+</ul>
+<ol>
+<li><strong>Simplify prompt</strong></li>
+</ol>
+<ul>
+<li>Shorter prompts process faster</li>
+<li>Less context means faster response</li>
+</ul>
+<ol>
+<li><strong>Server load</strong></li>
+</ol>
+<ul>
+<li>Peak times may be slower</li>
+<li>Try at different times</li>
+</ul>
+<ol>
+<li><strong>Use own API key</strong></li>
+</ol>
+<ul>
+<li>Direct connection may be faster</li>
+<li>No proxy server hop</li>
+</ul>
+<h2 id='section-23'>Apply Issues</h2>
+<h3 id='section-24'>Changes not taking effect</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Click Apply but nothing changes</li>
+<li>Vehicle looks the same</li>
+<li>No visible difference</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Subtle changes</strong></li>
+</ol>
+<ul>
+<li>Some changes are not visible (internal values)</li>
+<li>Test by driving, not just looking</li>
+</ul>
+<ol>
+<li><strong>Already at target value</strong></li>
+</ol>
+<ul>
+<li>The vehicle may already have those values</li>
+<li>Check before/after comparison</li>
+</ul>
+<ol>
+<li><strong>Selective apply</strong></li>
+</ol>
+<ul>
+<li>Check if component groups are toggled on</li>
+<li>Some groups may be disabled</li>
+</ul>
+<h3 id='section-25'>Undo doesn't work</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Can't undo changes</li>
+<li>Ctrl+Z does nothing</li>
+<li>Vehicle stuck in new state</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Undo stack full</strong></li>
+</ol>
+<ul>
+<li>Unity has limited undo history</li>
+<li>May have been pushed out</li>
+</ul>
+<ol>
+<li><strong>Scene not saved</strong></li>
+</ol>
+<ul>
+<li>Save scene before major changes</li>
+<li>Reload scene to revert</li>
+</ul>
+<ol>
+<li><strong>Use Vehicle History</strong></li>
+</ol>
+<ul>
+<li>Restore from history instead</li>
+<li>More reliable than Undo for complex changes</li>
+</ul>
+<h2 id='section-26'>Performance Issues</h2>
+<h3 id='section-27'>Editor slowdown</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Unity becomes sluggish</li>
+<li>High CPU usage</li>
+<li>Slow response to inputs</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Disable Force Repaint</strong></li>
+</ol>
+<ul>
+<li>Turn off in Developer Options</li>
+<li>Reduces unnecessary repaints</li>
+</ul>
+<ol>
+<li><strong>Disable animations</strong></li>
+</ol>
+<ul>
+<li>Turn off in Settings</li>
+<li>Reduces visual calculations</li>
+</ul>
+<ol>
+<li><strong>Close other windows</strong></li>
+</ol>
+<ul>
+<li>AI Assistant can be intensive</li>
+<li>Reduce editor overhead</li>
+</ul>
+<h3 id='section-28'>Large response lag</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Delay when receiving large responses</li>
+<li>UI freezes briefly</li>
+<li>Slow to render response</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>Normal behavior</strong></li>
+</ol>
+<ul>
+<li>Large JSON takes time to parse and render</li>
+<li>Be patient</li>
+</ul>
+<ol>
+<li><strong>Collapse sections</strong></li>
+</ol>
+<ul>
+<li>Collapsed JSON renders faster</li>
+<li>Expand only what you need</li>
+</ul>
+<h2 id='section-29'>Getting Help</h2>
+<p>If you can't resolve an issue:</p>
+<ol>
+<li><strong>Check Console</strong></li>
+</ol>
+<ul>
+<li>Look for error messages</li>
+<li>Note exact error text</li>
+</ul>
+<ol>
+<li><strong>Enable Verbose Logging</strong></li>
+</ol>
+<ul>
+<li>Get detailed debug information</li>
+<li>Helps identify the problem</li>
+</ul>
+<ol>
+<li><strong>Document the Issue</strong></li>
+</ol>
+<ul>
+<li>What you were doing</li>
+<li>What you expected</li>
+<li>What happened instead</li>
+<li>Any error messages</li>
+</ul>
+<ol>
+<li><strong>Contact Support</strong></li>
+</ol>
+<ul>
+<li>Visit bonecrackergames.com</li>
+<li>Provide documentation</li>
+<li>Include Unity version and RCCP version</li>
+</ul>
+</div></body></html>

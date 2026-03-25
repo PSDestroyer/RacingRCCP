@@ -1,0 +1,317 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>11_ReviewPanel</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Review Panel</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Review Panel</a></li>
+<li style='margin-left:20px'><a href='#section-1'>Purpose</a></li>
+<li style='margin-left:20px'><a href='#section-2'>Structured Change Preview</a></li>
+<li style='margin-left:40px'><a href='#section-3'>How Changes Are Displayed</a></li>
+<li style='margin-left:40px'><a href='#section-4'>Component Sections</a></li>
+<li style='margin-left:40px'><a href='#section-5'>Collapsible Groups</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Before/After Comparison</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Complex Value Display</a></li>
+<li style='margin-left:20px'><a href='#section-8'>Selective Apply</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Toggle Controls</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Selective Workflow</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Use Cases for Selective Apply</a></li>
+<li style='margin-left:20px'><a href='#section-12'>Actions Available</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Apply All</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Apply Selected</a></li>
+<li style='margin-left:40px'><a href='#section-15'>Discard</a></li>
+<li style='margin-left:40px'><a href='#section-16'>Copy JSON to Clipboard</a></li>
+<li style='margin-left:40px'><a href='#section-17'>View Raw Response</a></li>
+<li style='margin-left:20px'><a href='#section-18'>Reading the Review Panel Effectively</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Color Coding</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Numeric Changes</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Boolean Changes</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Array/Curve Changes</a></li>
+<li style='margin-left:20px'><a href='#section-23'>Best Practices</a></li>
+<li style='margin-left:40px'><a href='#section-24'>Always Review Before Applying</a></li>
+<li style='margin-left:40px'><a href='#section-25'>Use Selective Apply for Uncertainty</a></li>
+<li style='margin-left:40px'><a href='#section-26'>Compare Magnitudes</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Check Related Components</a></li>
+<li style='margin-left:40px'><a href='#section-28'>Save Before Major Changes</a></li>
+<li style='margin-left:20px'><a href='#section-29'>Integration with Workflow</a></li>
+<li style='margin-left:40px'><a href='#section-30'>In Vehicle Creation</a></li>
+<li style='margin-left:40px'><a href='#section-31'>In Vehicle Customization</a></li>
+<li style='margin-left:40px'><a href='#section-32'>With Specialized Panels</a></li>
+<li style='margin-left:20px'><a href='#section-33'>Troubleshooting</a></li>
+<li style='margin-left:40px'><a href='#section-34'>&quot;No changes detected&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-35'>Values Look Wrong</a></li>
+<li style='margin-left:40px'><a href='#section-36'>Some Components Missing</a></li>
+<li style='margin-left:40px'><a href='#section-37'>Toggle States Not Saving</a></li>
+</ul></div>
+<p>The Review Panel provides a structured preview of AI-generated configurations before applying them. This allows you to understand exactly what changes will be made and selectively apply only the modifications you want.</p>
+<h2 id='section-1'>Purpose</h2>
+<p>The Review Panel serves several important functions:</p>
+<p><strong>Transparency</strong></p>
+<p>See exactly what the AI is proposing before any changes are made to your vehicle.</p>
+<p><strong>Control</strong></p>
+<p>Enable or disable specific component groups to apply only desired changes.</p>
+<p><strong>Comparison</strong></p>
+<p>View before and after values side-by-side to understand the magnitude of changes.</p>
+<p><strong>Safety</strong></p>
+<p>Review potentially impactful changes before committing them to your vehicle.</p>
+<h2 id='section-2'>Structured Change Preview</h2>
+<h3 id='section-3'>How Changes Are Displayed</h3>
+<p>When the AI generates a response, the Review Panel organizes changes into a hierarchical structure:</p>
+<pre><code>
+Engine
+  ├─ maxPower: 250 → 350 hp
+  ├─ maxRPM: 6500 → 7500
+  └─ torqueCurve: [modified]
+
+Gearbox
+  ├─ gearCount: 5 → 6
+  └─ gearRatios: [modified]
+
+Stability
+  ├─ ABS: disabled → enabled
+  ├─ ABSStrength: 0.0 → 0.7
+  └─ ESP: disabled → enabled
+</code></pre>
+<h3 id='section-4'>Component Sections</h3>
+<p>Changes are grouped by RCCP component:</p>
+<table>
+<tr><th>Section</th><th>Components Covered</th></tr>
+<tr><td>Chassis</td><td>Mass, center of mass, drag</td></tr>
+<tr><td>Engine</td><td>Power, RPM, torque curves</td></tr>
+<tr><td>Gearbox</td><td>Gear ratios, shift timing</td></tr>
+<tr><td>Differential</td><td>Drive type, torque split</td></tr>
+<tr><td>Wheels</td><td>Suspension, friction, alignment</td></tr>
+<tr><td>Stability</td><td>ABS, ESP, TCS settings</td></tr>
+<tr><td>Audio</td><td>Engine sound configuration</td></tr>
+<tr><td>Lights</td><td>Light setup</td></tr>
+<tr><td>Damage</td><td>Deformation, detachable parts</td></tr>
+</table>
+<h3 id='section-5'>Collapsible Groups</h3>
+<p>Each component section can be collapsed or expanded:</p>
+<ul>
+<li>Click the section header to toggle</li>
+<li>Collapsed sections show a summary (e.g., &quot;3 changes&quot;)</li>
+<li>Expand to see individual property changes</li>
+</ul>
+<h3 id='section-6'>Before/After Comparison</h3>
+<p>For each modified property, you see:</p>
+<p><strong>Property Name</strong></p>
+<p>The RCCP component field being changed.</p>
+<p><strong>Before Value</strong></p>
+<p>The current value on your vehicle (captured when you clicked Generate).</p>
+<p><strong>After Value</strong></p>
+<p>The proposed new value from the AI.</p>
+<p><strong>Change Indicator</strong></p>
+<p>Visual indication of change type:</p>
+<ul>
+<li>Arrow (→) for value changes</li>
+<li>Plus (+) for newly enabled features</li>
+<li>Minus (-) for disabled features</li>
+</ul>
+<h3 id='section-7'>Complex Value Display</h3>
+<p>For complex values like arrays or curves:</p>
+<ul>
+<li>Simple arrays show element count</li>
+<li>Curves show &quot;modified&quot; with option to expand</li>
+<li>Nested objects show child changes indented</li>
+</ul>
+<h2 id='section-8'>Selective Apply</h2>
+<h3 id='section-9'>Toggle Controls</h3>
+<p>Each component group has a toggle switch:</p>
+<ul>
+<li><strong>Enabled (blue):</strong> This group's changes will be applied</li>
+<li><strong>Disabled (gray):</strong> This group's changes will be skipped</li>
+</ul>
+<p>By default, all groups are enabled after generation.</p>
+<h3 id='section-10'>Selective Workflow</h3>
+<ol>
+<li>Review all proposed changes</li>
+<li>Disable groups you don't want</li>
+<li>Click <strong>Apply Selected</strong></li>
+<li>Only enabled groups are applied</li>
+</ol>
+<h3 id='section-11'>Use Cases for Selective Apply</h3>
+<p><strong>Partial Agreement</strong></p>
+<p>The AI's engine changes are good, but the stability changes are too aggressive. Disable the Stability group.</p>
+<p><strong>Incremental Application</strong></p>
+<p>Apply changes in stages to test each component's effect individually.</p>
+<p><strong>Preserving Manual Work</strong></p>
+<p>You manually tuned the suspension. Disable the Wheels group to preserve your work.</p>
+<p><strong>Testing Individual Components</strong></p>
+<p>Apply only one group at a time to isolate its effect on vehicle behavior.</p>
+<h2 id='section-12'>Actions Available</h2>
+<h3 id='section-13'>Apply All</h3>
+<p>Applies every change in the response, regardless of toggle states.</p>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>You've reviewed everything and approve all changes</li>
+<li>Quick application when you trust the AI's judgment</li>
+<li>Time-sensitive prototyping</li>
+</ul>
+<h3 id='section-14'>Apply Selected</h3>
+<p>Applies only the changes from enabled (toggled on) component groups.</p>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>You want partial changes</li>
+<li>Testing specific modifications</li>
+<li>Preserving some existing configuration</li>
+</ul>
+<h3 id='section-15'>Discard</h3>
+<p>Clears the response without making any changes.</p>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>The response doesn't match your intent</li>
+<li>You want to try a different prompt</li>
+<li>Canceling the operation</li>
+</ul>
+<h3 id='section-16'>Copy JSON to Clipboard</h3>
+<p>Copies the raw JSON response to your clipboard.</p>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>Saving the configuration for later</li>
+<li>Sharing with team members</li>
+<li>Debugging or documentation</li>
+<li>Manual editing before applying</li>
+</ul>
+<h3 id='section-17'>View Raw Response</h3>
+<p>Toggle between structured view and raw JSON display.</p>
+<p><strong>When to use:</strong></p>
+<ul>
+<li>Debugging AI responses</li>
+<li>Understanding the exact data format</li>
+<li>Checking for parsing issues</li>
+</ul>
+<h2 id='section-18'>Reading the Review Panel Effectively</h2>
+<h3 id='section-19'>Color Coding</h3>
+<p>The panel uses colors to convey information:</p>
+<ul>
+<li><strong>Blue:</strong> Primary accent, enabled states</li>
+<li><strong>Green:</strong> Value increases, additions</li>
+<li><strong>Red:</strong> Value decreases, removals</li>
+<li><strong>Gray:</strong> Unchanged, disabled states</li>
+</ul>
+<h3 id='section-20'>Numeric Changes</h3>
+<p>Pay attention to magnitude:</p>
+<ul>
+<li>Small changes (5-10%): Fine-tuning</li>
+<li>Medium changes (20-50%): Noticeable impact</li>
+<li>Large changes (100%+): Significant shift in behavior</li>
+</ul>
+<h3 id='section-21'>Boolean Changes</h3>
+<p>Watch for enable/disable toggles:</p>
+<ul>
+<li>&quot;disabled → enabled&quot;: Feature activation</li>
+<li>&quot;enabled → disabled&quot;: Feature deactivation</li>
+</ul>
+<h3 id='section-22'>Array/Curve Changes</h3>
+<p>For complex data:</p>
+<ul>
+<li>Gear ratios: Check each gear's ratio</li>
+<li>Torque curves: May need testing to feel the change</li>
+<li>Light positions: Review in Scene view after applying</li>
+</ul>
+<h2 id='section-23'>Best Practices</h2>
+<h3 id='section-24'>Always Review Before Applying</h3>
+<p>Even if you trust the AI, a quick scan can catch:</p>
+<ul>
+<li>Misunderstood intent</li>
+<li>Unexpected side effects</li>
+<li>Extreme values</li>
+</ul>
+<h3 id='section-25'>Use Selective Apply for Uncertainty</h3>
+<p>When unsure about a component:</p>
+<ol>
+<li>Disable uncertain groups</li>
+<li>Apply confident changes</li>
+<li>Test the vehicle</li>
+<li>Generate new prompt for remaining adjustments</li>
+</ol>
+<h3 id='section-26'>Compare Magnitudes</h3>
+<p>Large changes deserve extra scrutiny:</p>
+<ul>
+<li>A 50% power increase is significant</li>
+<li>A 200% change might be an AI error</li>
+<li>Very small changes (&lt;1%) might not be worth applying</li>
+</ul>
+<h3 id='section-27'>Check Related Components</h3>
+<p>Some changes interact:</p>
+<ul>
+<li>Power increase might need gear ratio adjustment</li>
+<li>Suspension changes affect handling balance</li>
+<li>Stability system changes affect driving feel</li>
+</ul>
+<h3 id='section-28'>Save Before Major Changes</h3>
+<p>Unity's Undo works, but for safety:</p>
+<ul>
+<li>Save the scene before applying large changes</li>
+<li>Consider making a prefab backup of the vehicle</li>
+</ul>
+<h2 id='section-29'>Integration with Workflow</h2>
+<h3 id='section-30'>In Vehicle Creation</h3>
+<p>After generating a new vehicle configuration:</p>
+<ol>
+<li>Review the complete setup</li>
+<li>Disable any components you want to configure manually</li>
+<li>Apply to create the vehicle</li>
+<li>Proceed to post-creation wizards</li>
+</ol>
+<h3 id='section-31'>In Vehicle Customization</h3>
+<p>After generating modifications:</p>
+<ol>
+<li>Review against your current vehicle state</li>
+<li>Identify unexpected or unwanted changes</li>
+<li>Apply selectively or all at once</li>
+<li>Test immediately to validate</li>
+</ol>
+<h3 id='section-32'>With Specialized Panels</h3>
+<p>Each specialized panel (Behaviors, Wheels, etc.):</p>
+<ol>
+<li>Shows domain-specific changes only</li>
+<li>Uses the same review structure</li>
+<li>Offers the same selective apply controls</li>
+</ol>
+<h2 id='section-33'>Troubleshooting</h2>
+<h3 id='section-34'>&quot;No changes detected&quot;</h3>
+<p>The AI response didn't include modifications. Try:</p>
+<ul>
+<li>A more specific prompt</li>
+<li>Confirming the vehicle was selected</li>
+<li>Checking if desired changes are possible</li>
+</ul>
+<h3 id='section-35'>Values Look Wrong</h3>
+<p>If proposed values seem extreme:</p>
+<ul>
+<li>The AI may have misunderstood units</li>
+<li>Your prompt may have been ambiguous</li>
+<li>Try a more explicit description</li>
+</ul>
+<h3 id='section-36'>Some Components Missing</h3>
+<p>Not all components appear in every response:</p>
+<ul>
+<li>The AI only shows changed values</li>
+<li>Unchanged components don't appear</li>
+<li>Request specific components explicitly if needed</li>
+</ul>
+<h3 id='section-37'>Toggle States Not Saving</h3>
+<p>Toggle states reset after each generation:</p>
+<ul>
+<li>Intentional behavior for clean starts</li>
+<li>Manually set toggles each time</li>
+<li>Or use &quot;Apply All&quot; for quick application</li>
+</ul>
+</div></body></html>

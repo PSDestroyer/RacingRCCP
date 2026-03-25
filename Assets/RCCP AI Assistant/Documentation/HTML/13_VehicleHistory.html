@@ -1,0 +1,380 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>13_VehicleHistory</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Vehicle History</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Vehicle History</a></li>
+<li style='margin-left:20px'><a href='#section-1'>What Is Vehicle History</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Per-Vehicle Tracking</a></li>
+<li style='margin-left:40px'><a href='#section-3'>What Gets Recorded</a></li>
+<li style='margin-left:40px'><a href='#section-4'>The RCCP_AIHistory Component</a></li>
+<li style='margin-left:20px'><a href='#section-5'>Viewing Vehicle History</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Accessing History</a></li>
+<li style='margin-left:40px'><a href='#section-7'>History Panel Layout</a></li>
+<li style='margin-left:40px'><a href='#section-8'>Entry Details</a></li>
+<li style='margin-left:20px'><a href='#section-9'>History Entry Information</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Timestamp</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Panel Type</a></li>
+<li style='margin-left:40px'><a href='#section-12'>User Prompt</a></li>
+<li style='margin-left:40px'><a href='#section-13'>AI Response</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Before State</a></li>
+<li style='margin-left:40px'><a href='#section-15'>After State</a></li>
+<li style='margin-left:20px'><a href='#section-16'>Restoring Previous Configurations</a></li>
+<li style='margin-left:40px'><a href='#section-17'>How Restore Works</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Restore Process</a></li>
+<li style='margin-left:40px'><a href='#section-19'>What Gets Restored</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Partial Restore</a></li>
+<li style='margin-left:20px'><a href='#section-21'>Viewing Differences</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Diff Visualization</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Understanding the Diff</a></li>
+<li style='margin-left:40px'><a href='#section-24'>Using Diffs</a></li>
+<li style='margin-left:20px'><a href='#section-25'>Managing History</a></li>
+<li style='margin-left:40px'><a href='#section-26'>History Storage</a></li>
+<li style='margin-left:40px'><a href='#section-27'>History Size</a></li>
+<li style='margin-left:40px'><a href='#section-28'>Clearing History</a></li>
+<li style='margin-left:40px'><a href='#section-29'>Selective Deletion</a></li>
+<li style='margin-left:20px'><a href='#section-30'>Use Cases</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Undoing Recent Changes</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Comparing Approaches</a></li>
+<li style='margin-left:40px'><a href='#section-33'>Learning from Past Prompts</a></li>
+<li style='margin-left:40px'><a href='#section-34'>Reverting Experiments</a></li>
+<li style='margin-left:40px'><a href='#section-35'>Documenting Configuration Process</a></li>
+<li style='margin-left:20px'><a href='#section-36'>Best Practices</a></li>
+<li style='margin-left:40px'><a href='#section-37'>Before Major Changes</a></li>
+<li style='margin-left:40px'><a href='#section-38'>Regular Saves</a></li>
+<li style='margin-left:40px'><a href='#section-39'>Meaningful Prompts</a></li>
+<li style='margin-left:40px'><a href='#section-40'>Review Before Restore</a></li>
+<li style='margin-left:40px'><a href='#section-41'>Clean Up Periodically</a></li>
+<li style='margin-left:20px'><a href='#section-42'>Troubleshooting</a></li>
+<li style='margin-left:40px'><a href='#section-43'>History Not Appearing</a></li>
+<li style='margin-left:40px'><a href='#section-44'>Missing Before State</a></li>
+<li style='margin-left:40px'><a href='#section-45'>Restore Not Working</a></li>
+<li style='margin-left:40px'><a href='#section-46'>History Lost</a></li>
+<li style='margin-left:20px'><a href='#section-47'>Integration with Other Features</a></li>
+<li style='margin-left:40px'><a href='#section-48'>Prompt History vs Vehicle History</a></li>
+<li style='margin-left:40px'><a href='#section-49'>Using Both Together</a></li>
+</ul></div>
+<p>The Vehicle History feature tracks all AI-generated modifications made to each vehicle. This per-vehicle history allows you to review past changes and restore previous configurations if needed.</p>
+<h2 id='section-1'>What Is Vehicle History</h2>
+<h3 id='section-2'>Per-Vehicle Tracking</h3>
+<p>Each RCCP vehicle maintains its own modification history:</p>
+<ul>
+<li>History is specific to that vehicle instance</li>
+<li>Stored as a component on the vehicle GameObject</li>
+<li>Persists across Unity sessions (saved with scene)</li>
+</ul>
+<h3 id='section-3'>What Gets Recorded</h3>
+<p>Each history entry captures:</p>
+<ul>
+<li>Timestamp of the modification</li>
+<li>Panel used (Creation, Customization, Behaviors, etc.)</li>
+<li>User prompt that generated the change</li>
+<li>AI response (configuration JSON)</li>
+<li>Before state snapshot</li>
+<li>After state snapshot</li>
+<li>Whether changes were applied</li>
+</ul>
+<h3 id='section-4'>The RCCP_AIHistory Component</h3>
+<p>History is stored in a component automatically added to vehicles:</p>
+<ul>
+<li>Added when first modification is tracked</li>
+<li>Visible in Inspector (read-only)</li>
+<li>Serialized with the vehicle</li>
+</ul>
+<h2 id='section-5'>Viewing Vehicle History</h2>
+<h3 id='section-6'>Accessing History</h3>
+<ol>
+<li>Select an RCCP vehicle in the scene</li>
+<li>In the AI Assistant, history is accessible via the sidebar</li>
+<li>Click the vehicle history icon/button</li>
+<li>The history panel opens showing all past modifications</li>
+</ol>
+<h3 id='section-7'>History Panel Layout</h3>
+<p>The panel shows:</p>
+<ul>
+<li>Vehicle name at the top</li>
+<li>List of history entries (newest first)</li>
+<li>Each entry shows timestamp, panel, and summary</li>
+<li>Click an entry to expand details</li>
+</ul>
+<h3 id='section-8'>Entry Details</h3>
+<p>Expanding an entry shows:</p>
+<ul>
+<li>Full user prompt</li>
+<li>Complete AI response</li>
+<li>Before/After state comparison</li>
+<li>Actions (restore, view diff)</li>
+</ul>
+<h2 id='section-9'>History Entry Information</h2>
+<h3 id='section-10'>Timestamp</h3>
+<p>When the modification occurred:</p>
+<ul>
+<li>Date and time</li>
+<li>Relative time (&quot;2 hours ago&quot;)</li>
+</ul>
+<h3 id='section-11'>Panel Type</h3>
+<p>Which panel generated the change:</p>
+<ul>
+<li>Vehicle Creation</li>
+<li>Vehicle Customization</li>
+<li>Behaviors</li>
+<li>Wheels</li>
+<li>Audio</li>
+<li>Lights</li>
+<li>Damage</li>
+</ul>
+<h3 id='section-12'>User Prompt</h3>
+<p>The exact prompt that generated this configuration:</p>
+<ul>
+<li>Full text preserved</li>
+<li>Useful for understanding intent</li>
+<li>Can be copied and reused</li>
+</ul>
+<h3 id='section-13'>AI Response</h3>
+<p>The complete JSON response from the AI:</p>
+<ul>
+<li>All configuration values</li>
+<li>Collapsible for readability</li>
+<li>Can be copied to clipboard</li>
+</ul>
+<h3 id='section-14'>Before State</h3>
+<p>A snapshot of the vehicle's configuration before the change:</p>
+<ul>
+<li>Component values at that moment</li>
+<li>Enables comparison with after state</li>
+<li>Essential for restore functionality</li>
+</ul>
+<h3 id='section-15'>After State</h3>
+<p>The vehicle's configuration after applying the change:</p>
+<ul>
+<li>Shows what was actually applied</li>
+<li>May differ slightly from AI response if selective apply was used</li>
+</ul>
+<h2 id='section-16'>Restoring Previous Configurations</h2>
+<h3 id='section-17'>How Restore Works</h3>
+<p>Restoring reverts the vehicle to a previous state:</p>
+<ol>
+<li>Before state from history entry is loaded</li>
+<li>Current configuration is overwritten</li>
+<li>Vehicle reflects the restored state</li>
+</ol>
+<h3 id='section-18'>Restore Process</h3>
+<ol>
+<li>Open vehicle history</li>
+<li>Find the entry you want to restore to</li>
+<li>Click <strong>Restore to This State</strong></li>
+<li>Confirm the action</li>
+<li>Vehicle configuration is reverted</li>
+</ol>
+<h3 id='section-19'>What Gets Restored</h3>
+<p>Restoration affects:</p>
+<ul>
+<li>All RCCP component values</li>
+<li>Properties that were captured in the before state</li>
+<li>Does not affect non-RCCP components</li>
+</ul>
+<h3 id='section-20'>Partial Restore</h3>
+<p>You can selectively restore components:</p>
+<ul>
+<li>Expand the before state</li>
+<li>Toggle which components to restore</li>
+<li>Apply partial restoration</li>
+</ul>
+<h2 id='section-21'>Viewing Differences</h2>
+<h3 id='section-22'>Diff Visualization</h3>
+<p>Compare two states side-by-side:</p>
+<ul>
+<li>Before state on one side</li>
+<li>After state on other side</li>
+<li>Changed values highlighted</li>
+</ul>
+<h3 id='section-23'>Understanding the Diff</h3>
+<p>The diff shows:</p>
+<ul>
+<li><strong>Added:</strong> Values that didn't exist before (green)</li>
+<li><strong>Removed:</strong> Values that were removed (red)</li>
+<li><strong>Changed:</strong> Values that were modified (yellow)</li>
+<li><strong>Unchanged:</strong> Values that stayed the same (gray)</li>
+</ul>
+<h3 id='section-24'>Using Diffs</h3>
+<p>Diffs help you:</p>
+<ul>
+<li>Understand what a modification actually changed</li>
+<li>Identify unexpected changes</li>
+<li>Learn how different prompts affect configuration</li>
+</ul>
+<h2 id='section-25'>Managing History</h2>
+<h3 id='section-26'>History Storage</h3>
+<p>History is stored:</p>
+<ul>
+<li>As serialized data in RCCP_AIHistory component</li>
+<li>In the scene file (saved with scene)</li>
+<li>Per-vehicle, not globally</li>
+</ul>
+<h3 id='section-27'>History Size</h3>
+<p>By default, history keeps:</p>
+<ul>
+<li>Last 50 entries per vehicle</li>
+<li>Older entries are removed when limit is reached</li>
+<li>Adjustable in settings</li>
+</ul>
+<h3 id='section-28'>Clearing History</h3>
+<p>To clear a vehicle's history:</p>
+<ol>
+<li>Open vehicle history</li>
+<li>Click <strong>Clear History</strong></li>
+<li>Confirm the action</li>
+<li>All entries are removed</li>
+</ol>
+<p>This is irreversible - cleared history cannot be recovered.</p>
+<h3 id='section-29'>Selective Deletion</h3>
+<p>To remove specific entries:</p>
+<ol>
+<li>Open vehicle history</li>
+<li>Select entries to delete</li>
+<li>Click <strong>Delete Selected</strong></li>
+<li>Confirm the action</li>
+</ol>
+<h2 id='section-30'>Use Cases</h2>
+<h3 id='section-31'>Undoing Recent Changes</h3>
+<p>If a recent change made things worse:</p>
+<ol>
+<li>Open history</li>
+<li>Find the last good entry</li>
+<li>Restore to that state</li>
+<li>Continue from there</li>
+</ol>
+<h3 id='section-32'>Comparing Approaches</h3>
+<p>If you tried multiple prompts:</p>
+<ol>
+<li>Review history entries</li>
+<li>Compare their before/after states</li>
+<li>Choose the best result</li>
+<li>Restore to preferred state</li>
+</ol>
+<h3 id='section-33'>Learning from Past Prompts</h3>
+<p>To understand what works:</p>
+<ol>
+<li>Browse successful history entries</li>
+<li>Study the prompts that produced good results</li>
+<li>Adapt successful prompts for future use</li>
+</ol>
+<h3 id='section-34'>Reverting Experiments</h3>
+<p>After experimental changes:</p>
+<ol>
+<li>Find pre-experiment entry</li>
+<li>Restore to before the experiment</li>
+<li>Vehicle is back to stable state</li>
+</ol>
+<h3 id='section-35'>Documenting Configuration Process</h3>
+<p>History serves as documentation:</p>
+<ul>
+<li>Shows how the vehicle evolved</li>
+<li>Records the prompts used</li>
+<li>Provides before/after context</li>
+</ul>
+<h2 id='section-36'>Best Practices</h2>
+<h3 id='section-37'>Before Major Changes</h3>
+<p>Before significant modifications:</p>
+<ul>
+<li>Note the current state's position in history</li>
+<li>Make changes</li>
+<li>If unsatisfied, restore to the noted state</li>
+</ul>
+<h3 id='section-38'>Regular Saves</h3>
+<p>While history provides restore capability:</p>
+<ul>
+<li>Still save your scene regularly</li>
+<li>History relies on scene being saved</li>
+<li>Unsaved history is lost if Unity crashes</li>
+</ul>
+<h3 id='section-39'>Meaningful Prompts</h3>
+<p>Write descriptive prompts:</p>
+<ul>
+<li>History shows the prompt text</li>
+<li>Clear prompts make history more useful</li>
+<li>Future you will thank present you</li>
+</ul>
+<h3 id='section-40'>Review Before Restore</h3>
+<p>Before restoring:</p>
+<ul>
+<li>Check what state you're restoring to</li>
+<li>Verify it's the right entry</li>
+<li>Understand what will change</li>
+</ul>
+<h3 id='section-41'>Clean Up Periodically</h3>
+<p>If history gets cluttered:</p>
+<ul>
+<li>Remove failed experiments</li>
+<li>Keep significant milestones</li>
+<li>Maintain a clean history for easier navigation</li>
+</ul>
+<h2 id='section-42'>Troubleshooting</h2>
+<h3 id='section-43'>History Not Appearing</h3>
+<p>If a vehicle has no history:</p>
+<ul>
+<li>It may not have been modified through the AI Assistant</li>
+<li>Manual Inspector changes aren't tracked</li>
+<li>History component may not have been added</li>
+</ul>
+<h3 id='section-44'>Missing Before State</h3>
+<p>If before state is incomplete:</p>
+<ul>
+<li>State capture may have failed</li>
+<li>Some component values may not serialize</li>
+<li>Check if component was present at modification time</li>
+</ul>
+<h3 id='section-45'>Restore Not Working</h3>
+<p>If restore seems to have no effect:</p>
+<ul>
+<li>Check if values are actually different</li>
+<li>Verify the component still exists</li>
+<li>Ensure scene can be modified (not read-only)</li>
+</ul>
+<h3 id='section-46'>History Lost</h3>
+<p>If history disappears:</p>
+<ul>
+<li>Check if RCCP_AIHistory component was removed</li>
+<li>Verify scene was saved after modifications</li>
+<li>Scene may have been reverted or reloaded</li>
+</ul>
+<h2 id='section-47'>Integration with Other Features</h2>
+<h3 id='section-48'>Prompt History vs Vehicle History</h3>
+<p><strong>Vehicle History:</strong></p>
+<ul>
+<li>Per-vehicle</li>
+<li>Includes before/after states</li>
+<li>Enables restore</li>
+<li>Stored in scene</li>
+</ul>
+<p><strong>Prompt History:</strong></p>
+<ul>
+<li>Global (all vehicles)</li>
+<li>Just prompts and responses</li>
+<li>Enables re-apply to other vehicles</li>
+<li>Stored in EditorPrefs</li>
+</ul>
+<h3 id='section-49'>Using Both Together</h3>
+<ol>
+<li>Use Vehicle History to track a specific vehicle's evolution</li>
+<li>Use Prompt History to find successful prompts</li>
+<li>Apply prompts from history to different vehicles</li>
+<li>Each application creates vehicle history entries</li>
+</ol>
+</div></body></html>

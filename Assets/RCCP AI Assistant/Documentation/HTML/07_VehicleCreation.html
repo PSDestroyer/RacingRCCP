@@ -1,0 +1,306 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>07_VehicleCreation</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Vehicle Creation</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Vehicle Creation</a></li>
+<li style='margin-left:20px'><a href='#section-1'>Prerequisites</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Model Requirements</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Scene Placement</a></li>
+<li style='margin-left:20px'><a href='#section-4'>Eligibility Checks</a></li>
+<li style='margin-left:40px'><a href='#section-5'>Scale Check</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Orientation Check</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Wheel Check</a></li>
+<li style='margin-left:20px'><a href='#section-8'>Step-by-Step Process</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Step 1: Select Your Model</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Step 2: Analyze the Mesh Panel</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Step 3: Write Your Description</a></li>
+<li style='margin-left:40px'><a href='#section-12'>Step 4: Generate Configuration</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Step 5: Review Proposed Configuration</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Step 6: Apply the Configuration</a></li>
+<li style='margin-left:20px'><a href='#section-15'>What the AI Configures</a></li>
+<li style='margin-left:20px'><a href='#section-16'>Handling Eligibility Issues</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Scale Problems</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Orientation Problems</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Missing Wheels</a></li>
+<li style='margin-left:20px'><a href='#section-20'>Tips for Best Results</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Be Specific About Performance</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Reference Real Vehicles</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Describe the Use Case</a></li>
+<li style='margin-left:40px'><a href='#section-24'>Start Conservative</a></li>
+<li style='margin-left:40px'><a href='#section-25'>Use the Right Model</a></li>
+<li style='margin-left:20px'><a href='#section-26'>After Creation</a></li>
+<li style='margin-left:20px'><a href='#section-27'>Common Questions</a></li>
+<li style='margin-left:40px'><a href='#section-28'>Can I undo vehicle creation?</a></li>
+<li style='margin-left:40px'><a href='#section-29'>What if the AI misunderstands my description?</a></li>
+<li style='margin-left:40px'><a href='#section-30'>Can I modify the configuration after creation?</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Do I need to set up physics manually?</a></li>
+</ul></div>
+<p>The Vehicle Creation panel transforms raw 3D models into fully functional RCCP vehicles. This document covers the complete process from model requirements through configuration generation.</p>
+<h2 id='section-1'>Prerequisites</h2>
+<p>Before creating a vehicle, ensure your 3D model meets these requirements:</p>
+<h3 id='section-2'>Model Requirements</h3>
+<p><strong>Separate Wheel Meshes</strong></p>
+<p>Each wheel must be a separate GameObject in the hierarchy, not baked into the body mesh. The assistant needs to identify and configure individual wheels.</p>
+<p><strong>Proper Scale</strong></p>
+<p>Your model should be at real-world scale. A typical passenger car is:</p>
+<ul>
+<li>Length: 4-5 meters</li>
+<li>Width: 1.7-2 meters</li>
+<li>Height: 1.4-1.6 meters</li>
+</ul>
+<p>Models significantly smaller or larger will trigger scale warnings.</p>
+<p><strong>Correct Orientation</strong></p>
+<p>RCCP expects:</p>
+<ul>
+<li>Z-axis pointing forward (front of vehicle)</li>
+<li>Y-axis pointing up (roof of vehicle)</li>
+<li>X-axis pointing right (passenger side)</li>
+</ul>
+<p><strong>No Existing RCCP Components</strong></p>
+<p>The model should be a raw 3D model without existing RCCP components. If it already has RCCP_CarController, use the Vehicle Customization panel instead.</p>
+<h3 id='section-3'>Scene Placement</h3>
+<p>The model must be:</p>
+<ul>
+<li>In the scene (not just in Project window)</li>
+<li>Selected in the Hierarchy</li>
+<li>Active (not disabled)</li>
+<li>At the root level or a clear root GameObject</li>
+</ul>
+<h2 id='section-4'>Eligibility Checks</h2>
+<p>When you select a model, the assistant runs automatic eligibility checks:</p>
+<h3 id='section-5'>Scale Check</h3>
+<p><strong>Pass (Green):</strong> Dimensions are within typical vehicle ranges</p>
+<p><strong>Warning (Yellow):</strong> Unusual size detected (very small or very large)</p>
+<p><strong>Fail (Red):</strong> Scale is clearly wrong (sub-meter or enormous)</p>
+<p>Common issues:</p>
+<ul>
+<li>FBX imported at wrong scale (check import settings)</li>
+<li>Model created at different scale in 3D software</li>
+<li>Model is a component, not complete vehicle</li>
+</ul>
+<h3 id='section-6'>Orientation Check</h3>
+<p><strong>Pass:</strong> Z-forward, Y-up detected</p>
+<p><strong>Warning:</strong> May need rotation, but workable</p>
+<p><strong>Fail:</strong> Completely wrong orientation</p>
+<p>The check analyzes the model's bounding box to determine facing direction.</p>
+<h3 id='section-7'>Wheel Check</h3>
+<p><strong>Pass:</strong> 4+ separate wheel meshes detected</p>
+<p><strong>Warning:</strong> Wheels detected but assignment uncertain</p>
+<p><strong>Fail:</strong> No separate wheels found (merged with body)</p>
+<p>The assistant looks for:</p>
+<ul>
+<li>GameObjects with &quot;wheel&quot; in name</li>
+<li>Circular mesh shapes</li>
+<li>Symmetric pairs in appropriate positions</li>
+</ul>
+<h2 id='section-8'>Step-by-Step Process</h2>
+<h3 id='section-9'>Step 1: Select Your Model</h3>
+<ol>
+<li>In Unity's Hierarchy window, select your 3D model's root GameObject</li>
+<li>The AI Assistant will show:</li>
+</ol>
+<ul>
+<li>Model name and basic info</li>
+<li>Mesh analysis with dimensions</li>
+<li>Eligibility check results</li>
+</ul>
+<p><strong>Review the eligibility results:</strong></p>
+<ul>
+<li>Green checkmarks mean you're ready to proceed</li>
+<li>Yellow warnings suggest reviewing but don't block creation</li>
+<li>Red failures need to be addressed before continuing</li>
+</ul>
+<h3 id='section-10'>Step 2: Analyze the Mesh Panel</h3>
+<p>Expand the mesh analysis to see detailed information:</p>
+<p><strong>Dimensions</strong></p>
+<p>Bounding box size in meters (Length x Width x Height)</p>
+<p><strong>Component Count</strong></p>
+<p>Number of child GameObjects, mesh renderers, etc.</p>
+<p><strong>Wheel Candidates</strong></p>
+<p>List of detected wheel transforms with:</p>
+<ul>
+<li>Name and position</li>
+<li>Estimated radius</li>
+<li>Axle assignment guess (FL, FR, RL, RR)</li>
+</ul>
+<p><strong>Warnings</strong></p>
+<p>Any issues detected during analysis</p>
+<h3 id='section-11'>Step 3: Write Your Description</h3>
+<p>In the prompt text area, describe the vehicle you want to create:</p>
+<p><strong>Include:</strong></p>
+<ul>
+<li>Vehicle type and category</li>
+<li>Engine/power characteristics</li>
+<li>Drivetrain configuration (FWD/RWD/AWD)</li>
+<li>Handling characteristics</li>
+<li>Intended use case</li>
+</ul>
+<p><strong>Example Descriptions:</strong></p>
+<p>Sports Car:</p>
+<pre><code>
+High-performance sports car with a 3.0L turbocharged engine producing
+400hp. Rear-wheel drive with a 6-speed manual transmission. Sharp,
+responsive steering for track use. Firm suspension with minimal body
+roll. Aggressive acceleration and high top speed.
+</code></pre>
+<p>Family SUV:</p>
+<pre><code>
+Mid-size family SUV with a 2.5L naturally aspirated engine making
+200hp. All-wheel drive with automatic transmission. Comfortable ride
+quality with soft suspension for daily driving. Stable handling with
+strong stability control. Good ground clearance for light off-road use.
+</code></pre>
+<p>Drift Car:</p>
+<pre><code>
+Rear-wheel drive drift car with 350hp engine. Quick-ratio steering
+for fast inputs. Minimal stability control for controlled slides.
+Stiff suspension to maintain predictable weight transfer. High-rev
+engine with accessible torque throughout the powerband.
+</code></pre>
+<h3 id='section-12'>Step 4: Generate Configuration</h3>
+<p>Click <strong>Generate</strong> to send your description to the AI.</p>
+<p>During processing:</p>
+<ul>
+<li>The button shows a loading state</li>
+<li>A progress indicator appears</li>
+<li>You cannot submit another request</li>
+</ul>
+<p>The AI analyzes your description along with the mesh data and generates a complete vehicle configuration.</p>
+<h3 id='section-13'>Step 5: Review Proposed Configuration</h3>
+<p>The response appears in a structured format showing:</p>
+<p><strong>Chassis Configuration</strong></p>
+<ul>
+<li>Mass and center of mass position</li>
+<li>Drag coefficients</li>
+<li>Physical properties</li>
+</ul>
+<p><strong>Engine Configuration</strong></p>
+<ul>
+<li>Power output</li>
+<li>RPM ranges (idle, max)</li>
+<li>Torque curves</li>
+</ul>
+<p><strong>Transmission</strong></p>
+<ul>
+<li>Gearbox type (automatic/manual)</li>
+<li>Gear ratios</li>
+<li>Shift behavior</li>
+</ul>
+<p><strong>Drivetrain</strong></p>
+<ul>
+<li>Differential type (FWD/RWD/AWD)</li>
+<li>Torque distribution</li>
+<li>Final drive ratio</li>
+</ul>
+<p><strong>Wheels and Suspension</strong></p>
+<ul>
+<li>Tire friction settings</li>
+<li>Suspension spring/damper values</li>
+<li>Travel distances</li>
+</ul>
+<p><strong>Stability Systems</strong></p>
+<ul>
+<li>ABS configuration</li>
+<li>ESP/TCS settings</li>
+<li>Steering assistance</li>
+</ul>
+<h3 id='section-14'>Step 6: Apply the Configuration</h3>
+<p>Review the proposed changes, then choose:</p>
+<p><strong>Apply All</strong></p>
+<p>Creates the vehicle with all proposed settings.</p>
+<p><strong>Apply Selected</strong></p>
+<p>Use toggles to enable/disable component groups before applying.</p>
+<p><strong>Discard</strong></p>
+<p>Clear the response without creating the vehicle.</p>
+<p>When you click Apply:</p>
+<ol>
+<li>RCCP_CarController is added to the root</li>
+<li>All required RCCP components are configured</li>
+<li>WheelColliders are created for each wheel</li>
+<li>The vehicle enters post-creation state</li>
+</ol>
+<h2 id='section-15'>What the AI Configures</h2>
+<p>The creation process sets up these RCCP components:</p>
+<table>
+<tr><th>Component</th><th>Configuration</th></tr>
+<tr><td>RCCP_CarController</td><td>Main controller setup</td></tr>
+<tr><td>RCCP_Engine</td><td>Power, RPM, torque curves</td></tr>
+<tr><td>RCCP_Clutch</td><td>Clutch behavior</td></tr>
+<tr><td>RCCP_Gearbox</td><td>Gear ratios, shift timing</td></tr>
+<tr><td>RCCP_Differential</td><td>Drive type, torque split</td></tr>
+<tr><td>RCCP_Axles</td><td>Axle setup with wheel references</td></tr>
+<tr><td>RCCP_Stability</td><td>ABS, ESP, TCS settings</td></tr>
+<tr><td>RCCP_Input</td><td>Input configuration</td></tr>
+<tr><td>Rigidbody</td><td>Mass, drag, physics settings</td></tr>
+</table>
+<h2 id='section-16'>Handling Eligibility Issues</h2>
+<h3 id='section-17'>Scale Problems</h3>
+<p>If your model is incorrectly scaled:</p>
+<ol>
+<li>Check the FBX import settings</li>
+<li>Verify &quot;Scale Factor&quot; is appropriate</li>
+<li>Consider the source application's export settings</li>
+<li>Rescale in Unity if necessary (affects children)</li>
+</ol>
+<h3 id='section-18'>Orientation Problems</h3>
+<p>If orientation is wrong:</p>
+<ol>
+<li>Create an empty parent GameObject</li>
+<li>Place your model as a child</li>
+<li>Rotate the child to correct orientation</li>
+<li>Select the parent for vehicle creation</li>
+</ol>
+<h3 id='section-19'>Missing Wheels</h3>
+<p>If wheels aren't detected:</p>
+<ol>
+<li>Ensure wheels are separate GameObjects</li>
+<li>Include &quot;wheel&quot; in wheel names</li>
+<li>Check that wheels aren't merged into body mesh</li>
+<li>Separate meshes in your 3D software if needed</li>
+</ol>
+<h2 id='section-20'>Tips for Best Results</h2>
+<h3 id='section-21'>Be Specific About Performance</h3>
+<p>Instead of &quot;fast&quot; say &quot;400hp, 0-60 in 4 seconds.&quot;</p>
+<p>Instead of &quot;handles well&quot; say &quot;responsive steering with minimal body roll.&quot;</p>
+<h3 id='section-22'>Reference Real Vehicles</h3>
+<p>&quot;Similar to a Porsche 911&quot; gives the AI context about expected behavior.</p>
+<h3 id='section-23'>Describe the Use Case</h3>
+<p>&quot;Track day car&quot; vs &quot;daily driver&quot; implies different configurations.</p>
+<h3 id='section-24'>Start Conservative</h3>
+<p>You can always add more power or loosen stability later. Starting too extreme makes tuning harder.</p>
+<h3 id='section-25'>Use the Right Model</h3>
+<p>Ensure your 3D model matches what you're describing. A truck model described as a sports car won't produce good results.</p>
+<h2 id='section-26'>After Creation</h2>
+<p>After applying the configuration, the assistant enters post-creation mode with wizards for:</p>
+<ul>
+<li>Wheel assignment (confirm which wheels are which)</li>
+<li>Body collider setup (add physics colliders)</li>
+</ul>
+<p>See the Post-Creation Setup documentation for details on these steps.</p>
+<h2 id='section-27'>Common Questions</h2>
+<h3 id='section-28'>Can I undo vehicle creation?</h3>
+<p>Yes, use Edit &gt; Undo (Ctrl+Z) immediately after creation to revert.</p>
+<h3 id='section-29'>What if the AI misunderstands my description?</h3>
+<p>Discard the response and try a more specific description. Iterate until you get the right configuration.</p>
+<h3 id='section-30'>Can I modify the configuration after creation?</h3>
+<p>Yes, use the Vehicle Customization panel or any specialized panel (Behaviors, Wheels, etc.) to modify existing vehicles.</p>
+<h3 id='section-31'>Do I need to set up physics manually?</h3>
+<p>The creation process handles basic physics setup. You may want to add colliders using the Body Colliders wizard for complete physics.</p>
+</div></body></html>

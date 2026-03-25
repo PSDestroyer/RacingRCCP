@@ -1,0 +1,329 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>12_AskMode</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Ask Mode</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Ask Mode</a></li>
+<li style='margin-left:20px'><a href='#section-1'>Understanding the Two Modes</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Configure Mode (Default)</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Ask Mode</a></li>
+<li style='margin-left:20px'><a href='#section-4'>Switching Between Modes</a></li>
+<li style='margin-left:20px'><a href='#section-5'>When to Use Ask Mode</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Learning About Vehicle Physics</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Getting Recommendations</a></li>
+<li style='margin-left:40px'><a href='#section-8'>Understanding Current Configuration</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Comparing Options</a></li>
+<li style='margin-left:20px'><a href='#section-10'>Ask Mode Response Format</a></li>
+<li style='margin-left:40px'><a href='#section-11'>No Review Panel</a></li>
+<li style='margin-left:40px'><a href='#section-12'>No Apply Buttons</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Text-Based Response</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Clear Button</a></li>
+<li style='margin-left:20px'><a href='#section-15'>Example Conversations</a></li>
+<li style='margin-left:40px'><a href='#section-16'>Understanding a Component</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Getting Advice</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Clarifying Before Configuring</a></li>
+<li style='margin-left:20px'><a href='#section-19'>Best Practices</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Use Ask Mode First</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Ask Specific Questions</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Reference Your Vehicle</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Ask Follow-Up Questions</a></li>
+<li style='margin-left:20px'><a href='#section-24'>Limitations of Ask Mode</a></li>
+<li style='margin-left:40px'><a href='#section-25'>No Configuration Changes</a></li>
+<li style='margin-left:40px'><a href='#section-26'>No Before/After Comparison</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Counts Against Request Quota</a></li>
+<li style='margin-left:40px'><a href='#section-28'>Panel Context Still Applies</a></li>
+<li style='margin-left:20px'><a href='#section-29'>Integration with Other Features</a></li>
+<li style='margin-left:40px'><a href='#section-30'>Prompt History</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Vehicle History</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Quick Prompts</a></li>
+<li style='margin-left:20px'><a href='#section-33'>Tips for Effective Questions</a></li>
+<li style='margin-left:40px'><a href='#section-34'>Be Specific About Context</a></li>
+<li style='margin-left:40px'><a href='#section-35'>Ask One Thing at a Time</a></li>
+<li style='margin-left:40px'><a href='#section-36'>Use Technical Terms When You Know Them</a></li>
+<li style='margin-left:40px'><a href='#section-37'>Ask for Recommendations</a></li>
+<li style='margin-left:20px'><a href='#section-38'>Summary</a></li>
+</ul></div>
+<p>Ask Mode allows you to ask questions and get explanations from the AI without making any changes to your vehicle. This is separate from Configure mode, which generates settings you can apply.</p>
+<h2 id='section-1'>Understanding the Two Modes</h2>
+<p>RCCP AI Assistant has two distinct interaction modes for every panel:</p>
+<h3 id='section-2'>Configure Mode (Default)</h3>
+<p>Configure mode is the standard workflow:</p>
+<ul>
+<li>You describe what you want to change</li>
+<li>AI returns JSON configuration</li>
+<li>You review the proposed changes</li>
+<li>You apply changes to your vehicle</li>
+</ul>
+<p>The button appears orange when active, and the Generate button says &quot;Generate&quot;.</p>
+<h3 id='section-3'>Ask Mode</h3>
+<p>Ask mode is for questions and learning:</p>
+<ul>
+<li>You ask a question or request an explanation</li>
+<li>AI returns plain text response</li>
+<li>No configuration changes are proposed</li>
+<li>Nothing is applied to your vehicle</li>
+</ul>
+<p>The button appears blue when active, and the Generate button says &quot;Ask&quot;.</p>
+<h2 id='section-4'>Switching Between Modes</h2>
+<p>At the top of the prompt input area, you'll see two buttons:</p>
+<pre><code>
+[ Configure ]  [ Ask ]
+</code></pre>
+<p>Click the button for the mode you want to use:</p>
+<ul>
+<li><strong>Configure</strong> - For making changes (returns settings)</li>
+<li><strong>Ask</strong> - For getting answers (returns advice only)</li>
+</ul>
+<p>A hint below the buttons confirms your current mode:</p>
+<ul>
+<li>&quot;Returns settings you can review and apply&quot;</li>
+<li>&quot;Returns advice only (no changes)&quot;</li>
+</ul>
+<p>Your mode preference is remembered between sessions.</p>
+<h2 id='section-5'>When to Use Ask Mode</h2>
+<h3 id='section-6'>Learning About Vehicle Physics</h3>
+<p>Ask questions to understand how things work:</p>
+<pre><code>
+What does the differential torque split percentage mean?
+</code></pre>
+<pre><code>
+How do ABS, ESP, and TCS work together?
+</code></pre>
+<pre><code>
+Explain how steering curves affect high-speed handling.
+</code></pre>
+<h3 id='section-7'>Getting Recommendations</h3>
+<p>Ask for advice before making changes:</p>
+<pre><code>
+What power level is appropriate for a family sedan?
+</code></pre>
+<pre><code>
+Should I use FWD, RWD, or AWD for a rally car?
+</code></pre>
+<pre><code>
+What suspension stiffness works best for drifting?
+</code></pre>
+<h3 id='section-8'>Understanding Current Configuration</h3>
+<p>Ask about your vehicle's current state:</p>
+<pre><code>
+Why might my vehicle understeer in corners?
+</code></pre>
+<pre><code>
+What could cause my car to flip over easily?
+</code></pre>
+<pre><code>
+Is 500hp too much for a lightweight sports car?
+</code></pre>
+<h3 id='section-9'>Comparing Options</h3>
+<p>Get explanations of trade-offs:</p>
+<pre><code>
+What are the pros and cons of automatic vs manual transmission?
+</code></pre>
+<pre><code>
+How does lowering center of mass affect handling?
+</code></pre>
+<pre><code>
+What's the difference between soft and stiff suspension?
+</code></pre>
+<h2 id='section-10'>Ask Mode Response Format</h2>
+<p>When you use Ask Mode, the response appears differently:</p>
+<h3 id='section-11'>No Review Panel</h3>
+<p>There's no structured review panel with before/after values. Instead, you see a conversational response.</p>
+<h3 id='section-12'>No Apply Buttons</h3>
+<p>There are no Apply All, Apply Selected, or Discard buttons because there's nothing to apply.</p>
+<h3 id='section-13'>Text-Based Response</h3>
+<p>The AI provides a readable explanation rather than technical JSON:</p>
+<pre><code>
+The differential torque split determines how engine power
+is distributed between the front and rear axles in an AWD
+vehicle. A 50/50 split sends equal power to both axles,
+while a 30/70 split sends more power to the rear...
+</code></pre>
+<h3 id='section-14'>Clear Button</h3>
+<p>A &quot;Clear&quot; button dismisses the response when you're done reading.</p>
+<h2 id='section-15'>Example Conversations</h2>
+<h3 id='section-16'>Understanding a Component</h3>
+<p><strong>Prompt (Ask Mode):</strong></p>
+<pre><code>
+What does the extremumValue in tire friction curves mean?
+</code></pre>
+<p><strong>Response:</strong></p>
+<pre><code>
+The extremumValue in tire friction curves represents the peak
+grip force available before the tire starts to slide. It's the
+maximum coefficient of friction at the optimal slip ratio.
+
+A higher extremumValue means more grip at the peak. Typical
+values range from 1.0 (standard tires) to 1.5+ (racing slicks).
+
+The extremumSlip value paired with it determines how much wheel
+slip occurs at this peak grip point...
+</code></pre>
+<h3 id='section-17'>Getting Advice</h3>
+<p><strong>Prompt (Ask Mode):</strong></p>
+<pre><code>
+My drift car keeps spinning out instead of sliding. What should I adjust?
+</code></pre>
+<p><strong>Response:</strong></p>
+<pre><code>
+If your drift car spins out instead of maintaining a controlled
+slide, consider these adjustments:
+
+1. Increase front grip relative to rear - this helps maintain
+   steering control while the rear slides
+
+2. Enable counter-steer assistance - this helps catch slides
+   before they become spins
+
+3. Reduce rear tire grip gradually - too little rear grip
+   causes snap oversteer
+
+4. Check your ESP settings - even light ESP can fight your
+   drift attempts
+
+5. Adjust weight distribution - more rear weight can help
+   but too much causes instability...
+</code></pre>
+<h3 id='section-18'>Clarifying Before Configuring</h3>
+<p><strong>Prompt (Ask Mode):</strong></p>
+<pre><code>
+What's a realistic power-to-weight ratio for a sports car?
+</code></pre>
+<p><strong>Response:</strong></p>
+<pre><code>
+Realistic sports car power-to-weight ratios vary by class:
+
+Entry sports cars: 100-150 hp per ton
+  Examples: Mazda MX-5, Toyota 86
+
+Performance sports cars: 150-250 hp per ton
+  Examples: Porsche Cayman, BMW M2
+
+Supercars: 300-400 hp per ton
+  Examples: Ferrari 488, Lamborghini Huracan
+
+Hypercars: 500+ hp per ton
+  Examples: McLaren P1, Bugatti Chiron
+
+For a balanced, fun-to-drive experience, aim for 150-200 hp
+per ton. Higher ratios require more skill to control...
+</code></pre>
+<h2 id='section-19'>Best Practices</h2>
+<h3 id='section-20'>Use Ask Mode First</h3>
+<p>When you're unsure about a configuration:</p>
+<ol>
+<li>Switch to Ask Mode</li>
+<li>Ask for advice or explanation</li>
+<li>Switch back to Configure Mode</li>
+<li>Make informed changes</li>
+</ol>
+<h3 id='section-21'>Ask Specific Questions</h3>
+<p>Vague questions get vague answers. Compare:</p>
+<p><strong>Less effective:</strong></p>
+<pre><code>
+How do I make my car better?
+</code></pre>
+<p><strong>More effective:</strong></p>
+<pre><code>
+How can I reduce body roll in corners without making
+the ride too harsh?
+</code></pre>
+<h3 id='section-22'>Reference Your Vehicle</h3>
+<p>Mention relevant details:</p>
+<pre><code>
+My 400hp RWD sports car has trouble putting power down
+from a standstill. What settings should I look at?
+</code></pre>
+<h3 id='section-23'>Ask Follow-Up Questions</h3>
+<p>If the first answer isn't enough:</p>
+<pre><code>
+You mentioned adjusting the torque curve. Can you explain
+what shape works best for linear acceleration feel?
+</code></pre>
+<h2 id='section-24'>Limitations of Ask Mode</h2>
+<h3 id='section-25'>No Configuration Changes</h3>
+<p>Ask Mode cannot modify your vehicle. Even if you phrase a request as a question:</p>
+<pre><code>
+Can you increase my engine power to 300hp?
+</code></pre>
+<p>The AI will explain what that change would involve rather than making the change. Switch to Configure Mode to actually apply changes.</p>
+<h3 id='section-26'>No Before/After Comparison</h3>
+<p>Since no changes are proposed, there's no comparison view. If you want to see what values would change, use Configure Mode.</p>
+<h3 id='section-27'>Counts Against Request Quota</h3>
+<p>Ask Mode requests count toward your usage limits just like Configure Mode requests. Each question uses one request from your daily allowance.</p>
+<h3 id='section-28'>Panel Context Still Applies</h3>
+<p>The AI's knowledge is still focused on the current panel's domain. Asking about lights while in the Behaviors panel may get a less detailed answer than asking in the Lights panel.</p>
+<h2 id='section-29'>Integration with Other Features</h2>
+<h3 id='section-30'>Prompt History</h3>
+<p>Ask Mode prompts are saved to Prompt History with an &quot;Informational&quot; flag. You can:</p>
+<ul>
+<li>Search past questions</li>
+<li>Review previous answers</li>
+<li>Identify which prompts were questions vs configurations</li>
+</ul>
+<h3 id='section-31'>Vehicle History</h3>
+<p>Ask Mode responses are NOT saved to Vehicle History because no changes are made to the vehicle.</p>
+<h3 id='section-32'>Quick Prompts</h3>
+<p>Quick prompt buttons are designed for Configure Mode. In Ask Mode, write your own questions rather than using quick prompts.</p>
+<h2 id='section-33'>Tips for Effective Questions</h2>
+<h3 id='section-34'>Be Specific About Context</h3>
+<p>Include relevant details:</p>
+<ul>
+<li>Vehicle type you're working with</li>
+<li>Current problem you're experiencing</li>
+<li>What you've already tried</li>
+<li>Your intended use case</li>
+</ul>
+<h3 id='section-35'>Ask One Thing at a Time</h3>
+<p>Instead of:</p>
+<pre><code>
+How do ABS, ESP, and TCS work and what settings should I use?
+</code></pre>
+<p>Ask separately:</p>
+<pre><code>
+How does ABS work in RCCP?
+</code></pre>
+<p>Then:</p>
+<pre><code>
+What ABS strength is good for a track car?
+</code></pre>
+<h3 id='section-36'>Use Technical Terms When You Know Them</h3>
+<p>If you know the component name:</p>
+<pre><code>
+What does the RCCP_Differential's viscousLocking parameter do?
+</code></pre>
+<h3 id='section-37'>Ask for Recommendations</h3>
+<p>The AI can suggest starting points:</p>
+<pre><code>
+What are good default values for a pickup truck's suspension?
+</code></pre>
+<h2 id='section-38'>Summary</h2>
+<table>
+<tr><th>Aspect</th><th>Configure Mode</th><th>Ask Mode</th></tr>
+<tr><td>Purpose</td><td>Make changes</td><td>Get answers</td></tr>
+<tr><td>Response</td><td>JSON configuration</td><td>Plain text</td></tr>
+<tr><td>Review Panel</td><td>Yes</td><td>No</td></tr>
+<tr><td>Apply Buttons</td><td>Yes</td><td>No</td></tr>
+<tr><td>Affects Vehicle</td><td>Yes (if applied)</td><td>Never</td></tr>
+<tr><td>Uses Quota</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>History</td><td>Vehicle + Prompt</td><td>Prompt only</td></tr>
+<tr><td>Button Color</td><td>Orange</td><td>Blue</td></tr>
+<tr><td>Generate Text</td><td>&quot;Generate&quot;</td><td>&quot;Ask&quot;</td></tr>
+</table>
+</div></body></html>

@@ -1,0 +1,397 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>14_PromptHistory</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Prompt History</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Prompt History</a></li>
+<li style='margin-left:20px'><a href='#section-1'>What Is Prompt History</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Global History</a></li>
+<li style='margin-left:40px'><a href='#section-3'>What Gets Recorded</a></li>
+<li style='margin-left:40px'><a href='#section-4'>Storage</a></li>
+<li style='margin-left:20px'><a href='#section-5'>Accessing Prompt History</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Opening the Panel</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Panel Layout</a></li>
+<li style='margin-left:20px'><a href='#section-8'>Searching and Filtering</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Search</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Filters</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Sorting</a></li>
+<li style='margin-left:20px'><a href='#section-12'>Entry Details</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Viewing an Entry</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Collapsible JSON</a></li>
+<li style='margin-left:20px'><a href='#section-15'>Actions</a></li>
+<li style='margin-left:40px'><a href='#section-16'>Copy JSON</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Re-Apply to Current Vehicle</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Delete Entry</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Bulk Selection</a></li>
+<li style='margin-left:20px'><a href='#section-20'>Per-Entry Information</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Timestamp</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Panel Type</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Vehicle Name</a></li>
+<li style='margin-left:40px'><a href='#section-24'>User Prompt</a></li>
+<li style='margin-left:40px'><a href='#section-25'>AI Response</a></li>
+<li style='margin-left:40px'><a href='#section-26'>Applied Status</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Informational Flag</a></li>
+<li style='margin-left:20px'><a href='#section-28'>Use Cases</a></li>
+<li style='margin-left:40px'><a href='#section-29'>Finding Successful Prompts</a></li>
+<li style='margin-left:40px'><a href='#section-30'>Reusing Configurations</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Learning What Works</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Configuration Documentation</a></li>
+<li style='margin-left:40px'><a href='#section-33'>Recovering Lost Configurations</a></li>
+<li style='margin-left:20px'><a href='#section-34'>Best Practices</a></li>
+<li style='margin-left:40px'><a href='#section-35'>Write Descriptive Prompts</a></li>
+<li style='margin-left:40px'><a href='#section-36'>Apply Good Results</a></li>
+<li style='margin-left:40px'><a href='#section-37'>Clean Up Failed Experiments</a></li>
+<li style='margin-left:40px'><a href='#section-38'>Use Search Effectively</a></li>
+<li style='margin-left:40px'><a href='#section-39'>Export Important Configurations</a></li>
+<li style='margin-left:20px'><a href='#section-40'>Integration with Vehicle History</a></li>
+<li style='margin-left:40px'><a href='#section-41'>Different Purposes</a></li>
+<li style='margin-left:40px'><a href='#section-42'>Using Together</a></li>
+<li style='margin-left:40px'><a href='#section-43'>Cross-Referencing</a></li>
+<li style='margin-left:20px'><a href='#section-44'>Troubleshooting</a></li>
+<li style='margin-left:40px'><a href='#section-45'>History Not Saving</a></li>
+<li style='margin-left:40px'><a href='#section-46'>Can't Find an Entry</a></li>
+<li style='margin-left:40px'><a href='#section-47'>Re-Apply Not Working</a></li>
+<li style='margin-left:40px'><a href='#section-48'>Entry Shows Wrong Vehicle</a></li>
+</ul></div>
+<p>Prompt History provides a global log of all prompts and responses across all vehicles and sessions. Unlike Vehicle History which is per-vehicle, Prompt History gives you a searchable archive of your AI interactions.</p>
+<h2 id='section-1'>What Is Prompt History</h2>
+<h3 id='section-2'>Global History</h3>
+<p>Prompt History tracks all AI interactions:</p>
+<ul>
+<li>Every prompt you've sent</li>
+<li>Every response you've received</li>
+<li>Across all vehicles</li>
+<li>Across all panels</li>
+<li>Persists between Unity sessions</li>
+</ul>
+<h3 id='section-3'>What Gets Recorded</h3>
+<p>Each entry includes:</p>
+<ul>
+<li>Timestamp</li>
+<li>Panel type used</li>
+<li>Vehicle name (at time of prompt)</li>
+<li>User prompt text</li>
+<li>AI response (JSON)</li>
+<li>Whether it was applied</li>
+<li>Whether it was informational (question vs configuration)</li>
+</ul>
+<h3 id='section-4'>Storage</h3>
+<p>Prompt History is stored in:</p>
+<ul>
+<li>Unity's EditorPrefs</li>
+<li>Persists across sessions</li>
+<li>Not tied to specific scenes or vehicles</li>
+<li>Available immediately on opening the assistant</li>
+</ul>
+<h2 id='section-5'>Accessing Prompt History</h2>
+<h3 id='section-6'>Opening the Panel</h3>
+<ol>
+<li>In the AI Assistant sidebar, click <strong>Prompt History</strong></li>
+<li>The history panel opens</li>
+<li>Recent entries appear at the top</li>
+</ol>
+<h3 id='section-7'>Panel Layout</h3>
+<pre><code>
++-----------------------------------------------+
+|  Search: [____________]  [Filters ▼]         |
++-----------------------------------------------+
+|  [Entry 1 - Today 2:30 PM]                   |
+|    Panel: Behaviors | Vehicle: SportsCar      |
+|    &quot;Make the steering more responsive...&quot;     |
+|    Status: Applied ✓                          |
++-----------------------------------------------+
+|  [Entry 2 - Today 1:15 PM]                   |
+|    Panel: Creation | Vehicle: SUV_Model       |
+|    &quot;Create a family SUV with...&quot;              |
+|    Status: Not Applied                        |
++-----------------------------------------------+
+|  ... more entries ...                         |
++-----------------------------------------------+
+</code></pre>
+<h2 id='section-8'>Searching and Filtering</h2>
+<h3 id='section-9'>Search</h3>
+<p>Type in the search box to filter entries:</p>
+<ul>
+<li>Searches prompt text</li>
+<li>Searches vehicle names</li>
+<li>Searches response content</li>
+<li>Real-time filtering</li>
+</ul>
+<h3 id='section-10'>Filters</h3>
+<p>Filter by various criteria:</p>
+<p><strong>By Applied Status:</strong></p>
+<ul>
+<li>All entries</li>
+<li>Applied only</li>
+<li>Not applied only</li>
+</ul>
+<p><strong>By Panel Type:</strong></p>
+<ul>
+<li>All panels</li>
+<li>Vehicle Creation</li>
+<li>Vehicle Customization</li>
+<li>Behaviors</li>
+<li>Wheels</li>
+<li>Audio</li>
+<li>Lights</li>
+<li>Damage</li>
+</ul>
+<p><strong>By Date:</strong></p>
+<ul>
+<li>All time</li>
+<li>Today</li>
+<li>This week</li>
+<li>This month</li>
+</ul>
+<h3 id='section-11'>Sorting</h3>
+<p>Change the sort order:</p>
+<ul>
+<li>Newest first (default)</li>
+<li>Oldest first</li>
+<li>By vehicle name</li>
+<li>By panel type</li>
+</ul>
+<h2 id='section-12'>Entry Details</h2>
+<h3 id='section-13'>Viewing an Entry</h3>
+<p>Click an entry to expand it and see:</p>
+<p><strong>Full Prompt</strong></p>
+<p>The complete text you wrote.</p>
+<p><strong>Full Response</strong></p>
+<p>The complete AI response, formatted for readability.</p>
+<p><strong>Metadata</strong></p>
+<ul>
+<li>Exact timestamp</li>
+<li>Panel used</li>
+<li>Vehicle name</li>
+<li>Applied status</li>
+</ul>
+<h3 id='section-14'>Collapsible JSON</h3>
+<p>The response JSON can be:</p>
+<ul>
+<li>Collapsed for overview</li>
+<li>Expanded for full detail</li>
+<li>Organized by component section</li>
+</ul>
+<h2 id='section-15'>Actions</h2>
+<h3 id='section-16'>Copy JSON</h3>
+<p>Copy the AI response to clipboard:</p>
+<ul>
+<li>Click <strong>Copy JSON</strong> on any entry</li>
+<li>Paste elsewhere as needed</li>
+<li>Useful for manual application or documentation</li>
+</ul>
+<h3 id='section-17'>Re-Apply to Current Vehicle</h3>
+<p>Apply a past configuration to the currently selected vehicle:</p>
+<ol>
+<li>Select an RCCP vehicle in the scene</li>
+<li>Open Prompt History</li>
+<li>Find the entry you want to reuse</li>
+<li>Click <strong>Re-Apply</strong></li>
+<li>The configuration is applied to the current vehicle</li>
+</ol>
+<p><strong>Note:</strong> This applies the stored response directly, without regenerating from the AI.</p>
+<h3 id='section-18'>Delete Entry</h3>
+<p>Remove entries you no longer need:</p>
+<ul>
+<li>Click <strong>Delete</strong> on individual entries</li>
+<li>Or use bulk selection to delete multiple</li>
+</ul>
+<h3 id='section-19'>Bulk Selection</h3>
+<p>Enable bulk mode to select multiple entries:</p>
+<ol>
+<li>Click <strong>Bulk Select</strong> toggle</li>
+<li>Check entries to select</li>
+<li>Apply bulk actions:</li>
+</ol>
+<ul>
+<li>Delete selected</li>
+<li>Export selected</li>
+<li>Copy selected</li>
+</ul>
+<h2 id='section-20'>Per-Entry Information</h2>
+<h3 id='section-21'>Timestamp</h3>
+<p>When the prompt was sent:</p>
+<ul>
+<li>Full date and time</li>
+<li>Relative time (&quot;3 days ago&quot;)</li>
+</ul>
+<h3 id='section-22'>Panel Type</h3>
+<p>Which panel was used:</p>
+<ul>
+<li>Helps filter by task type</li>
+<li>Indicates what kind of configuration</li>
+</ul>
+<h3 id='section-23'>Vehicle Name</h3>
+<p>The vehicle that was selected:</p>
+<ul>
+<li>May no longer exist in current scene</li>
+<li>Historical reference</li>
+</ul>
+<h3 id='section-24'>User Prompt</h3>
+<p>Your original prompt:</p>
+<ul>
+<li>Preserved exactly as written</li>
+<li>Learn from past successful prompts</li>
+</ul>
+<h3 id='section-25'>AI Response</h3>
+<p>The JSON response:</p>
+<ul>
+<li>Complete configuration data</li>
+<li>Can be re-applied</li>
+</ul>
+<h3 id='section-26'>Applied Status</h3>
+<p>Whether you applied this response:</p>
+<ul>
+<li><strong>Applied:</strong> Changes were committed</li>
+<li><strong>Not Applied:</strong> Response was discarded</li>
+</ul>
+<h3 id='section-27'>Informational Flag</h3>
+<p>Whether this was a question vs configuration:</p>
+<ul>
+<li>Informational responses don't have JSON config</li>
+<li>Questions like &quot;explain how ABS works&quot;</li>
+</ul>
+<h2 id='section-28'>Use Cases</h2>
+<h3 id='section-29'>Finding Successful Prompts</h3>
+<p>When you need a similar configuration:</p>
+<ol>
+<li>Search for relevant keywords</li>
+<li>Find entries that were applied</li>
+<li>Review the prompts that worked</li>
+<li>Adapt for your current need</li>
+</ol>
+<h3 id='section-30'>Reusing Configurations</h3>
+<p>To apply a past config to a new vehicle:</p>
+<ol>
+<li>Open Prompt History</li>
+<li>Find the desired configuration</li>
+<li>Select your new vehicle</li>
+<li>Re-apply the entry</li>
+</ol>
+<h3 id='section-31'>Learning What Works</h3>
+<p>Study your history to understand:</p>
+<ul>
+<li>Which prompts produce good results</li>
+<li>What level of detail is needed</li>
+<li>How to phrase requests effectively</li>
+</ul>
+<h3 id='section-32'>Configuration Documentation</h3>
+<p>Use history as documentation:</p>
+<ul>
+<li>Record of all changes made</li>
+<li>Searchable by vehicle or feature</li>
+<li>Exportable for reference</li>
+</ul>
+<h3 id='section-33'>Recovering Lost Configurations</h3>
+<p>If you need to recreate a vehicle:</p>
+<ol>
+<li>Find the original creation entry</li>
+<li>Create a new vehicle from the same model</li>
+<li>Re-apply the stored configuration</li>
+</ol>
+<h2 id='section-34'>Best Practices</h2>
+<h3 id='section-35'>Write Descriptive Prompts</h3>
+<p>Prompts appear in history - make them clear:</p>
+<ul>
+<li>Describe what you want clearly</li>
+<li>Include context when helpful</li>
+<li>Future searches will thank you</li>
+</ul>
+<h3 id='section-36'>Apply Good Results</h3>
+<p>When a configuration works well:</p>
+<ul>
+<li>Actually apply it (not just preview)</li>
+<li>&quot;Applied&quot; status helps find successes later</li>
+</ul>
+<h3 id='section-37'>Clean Up Failed Experiments</h3>
+<p>Periodically remove:</p>
+<ul>
+<li>Failed attempts</li>
+<li>Duplicate prompts</li>
+<li>Outdated configurations</li>
+</ul>
+<h3 id='section-38'>Use Search Effectively</h3>
+<p>Instead of scrolling:</p>
+<ul>
+<li>Search for vehicle names</li>
+<li>Search for feature keywords</li>
+<li>Search for panel-specific terms</li>
+</ul>
+<h3 id='section-39'>Export Important Configurations</h3>
+<p>For critical configurations:</p>
+<ul>
+<li>Copy JSON to a text file</li>
+<li>Store outside Unity as backup</li>
+<li>Document with the prompt used</li>
+</ul>
+<h2 id='section-40'>Integration with Vehicle History</h2>
+<h3 id='section-41'>Different Purposes</h3>
+<p><strong>Prompt History:</strong></p>
+<ul>
+<li>Global across all vehicles</li>
+<li>Focus on prompts and responses</li>
+<li>For finding and reusing configurations</li>
+<li>Stored in EditorPrefs</li>
+</ul>
+<p><strong>Vehicle History:</strong></p>
+<ul>
+<li>Specific to one vehicle</li>
+<li>Includes before/after states</li>
+<li>For restore and comparison</li>
+<li>Stored in scene</li>
+</ul>
+<h3 id='section-42'>Using Together</h3>
+<ol>
+<li>Use Prompt History to find successful prompts</li>
+<li>Re-apply them to new vehicles</li>
+<li>Vehicle History tracks the application on each vehicle</li>
+<li>Use Vehicle History to restore if needed</li>
+</ol>
+<h3 id='section-43'>Cross-Referencing</h3>
+<p>A single prompt in Prompt History may have been applied to multiple vehicles. Each application creates a separate Vehicle History entry on each vehicle.</p>
+<h2 id='section-44'>Troubleshooting</h2>
+<h3 id='section-45'>History Not Saving</h3>
+<p>If entries disappear:</p>
+<ul>
+<li>EditorPrefs may have been cleared</li>
+<li>Different Unity installation</li>
+<li>Check EditorPrefs storage</li>
+</ul>
+<h3 id='section-46'>Can't Find an Entry</h3>
+<p>If you can't find a past entry:</p>
+<ul>
+<li>Check filters aren't hiding it</li>
+<li>Search for different keywords</li>
+<li>Entry may have been deleted</li>
+</ul>
+<h3 id='section-47'>Re-Apply Not Working</h3>
+<p>If re-apply fails:</p>
+<ul>
+<li>Ensure a valid RCCP vehicle is selected</li>
+<li>Check the stored response is valid JSON</li>
+<li>Verify the vehicle can receive the configuration</li>
+</ul>
+<h3 id='section-48'>Entry Shows Wrong Vehicle</h3>
+<p>The vehicle name is captured at prompt time:</p>
+<ul>
+<li>If vehicle was renamed, old name shows</li>
+<li>If vehicle was deleted, name is still recorded</li>
+<li>This is expected behavior</li>
+</ul>
+</div></body></html>

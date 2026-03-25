@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>03_QuickStart</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Quick Start Guide</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Quick Start Guide</a></li>
+<li style='margin-left:20px'><a href='#section-1'>Opening the Assistant</a></li>
+<li style='margin-left:20px'><a href='#section-2'>Choosing Your API Mode</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Option A: Server Proxy (Recommended for Getting Started)</a></li>
+<li style='margin-left:40px'><a href='#section-4'>Option B: Own API Key</a></li>
+<li style='margin-left:20px'><a href='#section-5'>The Three-Step Workflow</a></li>
+<li style='margin-left:20px'><a href='#section-6'>Creating Your First Vehicle</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Prerequisites</a></li>
+<li style='margin-left:40px'><a href='#section-8'>Step 1: Select Your Model</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Step 2: Describe Your Vehicle</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Step 3: Review and Apply</a></li>
+<li style='margin-left:20px'><a href='#section-11'>Post-Creation Setup</a></li>
+<li style='margin-left:40px'><a href='#section-12'>Wheel Assignment Wizard</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Body Colliders Wizard</a></li>
+<li style='margin-left:20px'><a href='#section-14'>Testing Your Vehicle</a></li>
+<li style='margin-left:20px'><a href='#section-15'>Understanding the Workflow: A Summary</a></li>
+<li style='margin-left:20px'><a href='#section-16'>Quick Tips</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Writing Effective Prompts</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Using Quick Prompts</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Panel Selection Guide</a></li>
+<li style='margin-left:20px'><a href='#section-20'>Next Steps</a></li>
+</ul></div>
+<p>This guide walks you through creating your first AI-configured vehicle in RCCP AI Assistant. By the end, you'll have a fully functional vehicle and understand the basic workflow.</p>
+<h2 id='section-1'>Opening the Assistant</h2>
+<ol>
+<li>In Unity, go to <strong>Tools &gt; BoneCracker Games &gt; RCCP AI Assistant &gt; Open Assistant</strong></li>
+<li>The AI Assistant window will open</li>
+</ol>
+<p>If this is your first time, you'll see the Welcome panel. Take a moment to read through it, then click &quot;Get Started&quot; to proceed.</p>
+<h2 id='section-2'>Choosing Your API Mode</h2>
+<p>Before using the AI features, you need to configure how the assistant accesses the Claude AI. You have two options:</p>
+<h3 id='section-3'>Option A: Server Proxy (Recommended for Getting Started)</h3>
+<ul>
+<li>No API key needed</li>
+<li>Free tier included (400 setup requests at 20/hour, then 20/day at 10/hour)</li>
+<li>Automatic device registration</li>
+<li>Just click &quot;Use Server Proxy&quot; in Settings</li>
+</ul>
+<h3 id='section-4'>Option B: Own API Key</h3>
+<ul>
+<li>Unlimited requests</li>
+<li>Pay per usage directly to Anthropic</li>
+<li>Requires Claude API key from console.anthropic.com</li>
+<li>Enter your key in Settings &gt; API Configuration</li>
+</ul>
+<p>For first-time users, the Server Proxy is the easiest way to start. You can always switch to your own API key later.</p>
+<h2 id='section-5'>The Three-Step Workflow</h2>
+<p>All vehicle creation and customization follows the same three-step pattern:</p>
+<pre><code>
+1. Select Target  -&gt;  2. Describe  -&gt;  3. Review &amp; Apply
+</code></pre>
+<p>This keeps you in control while the AI handles the technical complexity.</p>
+<h2 id='section-6'>Creating Your First Vehicle</h2>
+<h3 id='section-7'>Prerequisites</h3>
+<p>Before creating a vehicle, you need:</p>
+<ul>
+<li>A 3D car model in your scene (not a prefab in Project)</li>
+<li>The model should have separate wheel meshes</li>
+<li>Proper real-world scale (a typical sedan is 4-5 meters long)</li>
+<li>Z-axis pointing forward, Y-axis pointing up</li>
+</ul>
+<h3 id='section-8'>Step 1: Select Your Model</h3>
+<ol>
+<li>In the Hierarchy window, select your 3D car model's root GameObject</li>
+<li>In the AI Assistant window, select the <strong>Vehicle Creation</strong> panel from the sidebar</li>
+<li>The assistant will analyze your selection and show:</li>
+</ol>
+<ul>
+<li>Model dimensions</li>
+<li>Detected wheel count</li>
+<li>Any eligibility warnings</li>
+</ul>
+<p>If you see green checkmarks for Scale, Orientation, and Wheels, your model is ready.</p>
+<h3 id='section-9'>Step 2: Describe Your Vehicle</h3>
+<p>In the text area, describe what kind of vehicle you want to create. Be specific about:</p>
+<ul>
+<li>Vehicle type (sports car, sedan, truck, etc.)</li>
+<li>Performance characteristics (fast, stable, powerful, etc.)</li>
+<li>Handling feel (responsive, comfortable, drift-ready, etc.)</li>
+</ul>
+<p><strong>Example prompts:</strong></p>
+<p>For a sports car:</p>
+<pre><code>
+High-performance sports car with 400 horsepower, rear-wheel drive,
+responsive steering, and firm suspension for track use.
+</code></pre>
+<p>For a family sedan:</p>
+<pre><code>
+Comfortable family sedan with smooth acceleration, stable handling,
+all-wheel drive, and forgiving suspension for daily driving.
+</code></pre>
+<p>For a drift car:</p>
+<pre><code>
+Rear-wheel drive drift car with high power, loose rear end,
+quick steering response, and reduced stability control.
+</code></pre>
+<p>Click <strong>Generate</strong> (or press Enter if enabled in settings).</p>
+<h3 id='section-10'>Step 3: Review and Apply</h3>
+<p>The AI will generate a configuration. Before applying, you'll see:</p>
+<ol>
+<li><strong>Proposed Changes</strong> - A structured view of all components and their values</li>
+<li><strong>Selective Apply Options</strong> - Toggle which component groups to apply</li>
+<li><strong>Action Buttons</strong> - Apply All, Apply Selected, or Discard</li>
+</ol>
+<p>Review the configuration:</p>
+<ul>
+<li>Check that engine power matches your expectations</li>
+<li>Verify drivetrain type (FWD/RWD/AWD)</li>
+<li>Look at stability settings</li>
+</ul>
+<p>When satisfied, click <strong>Apply</strong> to create the vehicle.</p>
+<h2 id='section-11'>Post-Creation Setup</h2>
+<p>After clicking Apply, the assistant adds RCCP components to your model and enters post-creation mode:</p>
+<h3 id='section-12'>Wheel Assignment Wizard</h3>
+<p>The assistant needs to know which wheel meshes correspond to which wheel positions:</p>
+<ol>
+<li>You'll see a wheel assignment panel with four positions:</li>
+</ol>
+<ul>
+<li>Front Left (FL)</li>
+<li>Front Right (FR)</li>
+<li>Rear Left (RL)</li>
+<li>Rear Right (RR)</li>
+</ul>
+<ol>
+<li>The AI attempts auto-detection based on wheel positions. If correct, click <strong>Confirm Assignment</strong>.</li>
+</ol>
+<ol>
+<li>If auto-detection is wrong, click each button and select the correct wheel transform from your model's hierarchy.</li>
+</ol>
+<h3 id='section-13'>Body Colliders Wizard</h3>
+<p>After wheels are assigned, you can add physics colliders:</p>
+<ol>
+<li>Click <strong>Add Body Colliders</strong> to open the wizard</li>
+<li>Choose collider types (box, convex mesh, etc.)</li>
+<li>Adjust as needed for your model's shape</li>
+<li>Click <strong>Apply Colliders</strong></li>
+</ol>
+<p>Proper colliders are essential for realistic physics and collision detection.</p>
+<h2 id='section-14'>Testing Your Vehicle</h2>
+<ol>
+<li>Add a ground plane to your scene if not present</li>
+<li>Enter Play mode</li>
+<li>Your vehicle should be drivable with RCCP's default input settings</li>
+</ol>
+<p>If the vehicle doesn't behave as expected, you can return to the AI Assistant and use the <strong>Vehicle Customization</strong> panel to make adjustments.</p>
+<h2 id='section-15'>Understanding the Workflow: A Summary</h2>
+<ol>
+<li><strong>Select</strong> - Choose a raw 3D model (for creation) or existing RCCP vehicle (for customization)</li>
+<li><strong>Describe</strong> - Write natural language describing what you want</li>
+<li><strong>Review</strong> - See proposed changes with before/after comparisons</li>
+<li><strong>Apply</strong> - Commit changes to your vehicle</li>
+<li><strong>Post-Setup</strong> - Assign wheels and colliders (creation only)</li>
+</ol>
+<h2 id='section-16'>Quick Tips</h2>
+<h3 id='section-17'>Writing Effective Prompts</h3>
+<p><strong>Be specific about performance:</strong></p>
+<ul>
+<li>Instead of &quot;fast car&quot; say &quot;sports car with 350hp and 6-speed manual&quot;</li>
+<li>Instead of &quot;stable&quot; say &quot;highway cruiser with soft suspension and strong stability control&quot;</li>
+</ul>
+<p><strong>Mention handling characteristics:</strong></p>
+<ul>
+<li>&quot;responsive steering at low speeds&quot;</li>
+<li>&quot;predictable understeer at the limit&quot;</li>
+<li>&quot;loose rear end for drifting&quot;</li>
+</ul>
+<p><strong>Reference real vehicles for context:</strong></p>
+<ul>
+<li>&quot;handling similar to a BMW M3&quot;</li>
+<li>&quot;comfort-focused like a luxury sedan&quot;</li>
+</ul>
+<h3 id='section-18'>Using Quick Prompts</h3>
+<p>Each panel has quick prompt buttons with common requests. These are great starting points - click one and modify it to fit your needs.</p>
+<h3 id='section-19'>Panel Selection Guide</h3>
+<table>
+<tr><th>Panel</th><th>Use When</th></tr>
+<tr><td>Vehicle Creation</td><td>Converting raw 3D models to RCCP vehicles</td></tr>
+<tr><td>Vehicle Customization</td><td>General modifications to existing vehicles</td></tr>
+<tr><td>Behaviors</td><td>Adjusting driving feel and stability</td></tr>
+<tr><td>Wheels</td><td>Tuning grip, suspension, alignment</td></tr>
+<tr><td>Audio</td><td>Configuring engine sounds</td></tr>
+<tr><td>Lights</td><td>Setting up vehicle lighting</td></tr>
+<tr><td>Damage</td><td>Configuring deformation and detachable parts</td></tr>
+<tr><td>Diagnostics</td><td>Checking vehicle setup for issues</td></tr>
+</table>
+<h2 id='section-20'>Next Steps</h2>
+<p>Now that you've created your first vehicle:</p>
+<ol>
+<li><strong>Experiment with Customization</strong> - Select your vehicle and try the customization panels</li>
+<li><strong>Read API Configuration</strong> - Learn about the different API modes in detail</li>
+<li><strong>Explore Panel Documentation</strong> - Each panel has specific features documented</li>
+<li><strong>Check Prompt History</strong> - Your prompts are saved for future reference</li>
+</ol>
+<p>The AI Assistant is designed for iteration. Don't expect perfection on the first try - use the conversational workflow to refine your vehicles until they feel right.</p>
+</div></body></html>

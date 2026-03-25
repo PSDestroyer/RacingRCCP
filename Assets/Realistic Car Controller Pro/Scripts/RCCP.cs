@@ -1,0 +1,360 @@
+//----------------------------------------------
+//        Realistic Car Controller Pro
+//
+// Copyright 2014 - 2025 BoneCracker Games
+// https://www.bonecrackergames.com
+// Ekrem Bugra Ozdoganlar
+//
+//----------------------------------------------
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+///<summary>
+/// API for instantiating, registering new RCCP vehicles, and changes at runtime.
+///</summary>
+public class RCCP {
+
+    ///<summary>
+    /// Spawn a RCCP vehicle prefab with given position, rotation, sets its controllable, and engine state.
+    ///</summary>
+    public static RCCP_CarController SpawnRCC(RCCP_CarController vehiclePrefab, Vector3 position, Quaternion rotation, bool registerAsPlayerVehicle, bool isControllable, bool isEngineRunning) {
+
+        RCCP_CarController spawnedRCC = GameObject.Instantiate(vehiclePrefab, position, rotation);
+        spawnedRCC.gameObject.SetActive(true);
+        spawnedRCC.SetCanControl(isControllable);
+
+        if (registerAsPlayerVehicle)
+            RCCP_SceneManager.Instance.RegisterPlayer(spawnedRCC);
+
+        if (isEngineRunning)
+            spawnedRCC.StartEngine();
+        else
+            spawnedRCC.KillEngine();
+
+        return spawnedRCC;
+
+    }
+
+    ///<summary>
+    /// Registers the vehicle as player vehicle. 
+    ///</summary>
+    public static void RegisterPlayerVehicle(RCCP_CarController vehicle) {
+
+        RCCP_SceneManager.Instance.RegisterPlayer(vehicle);
+
+    }
+
+    ///<summary>
+    /// Registers the vehicle as player vehicle with controllable state. 
+    ///</summary>
+    public static void RegisterPlayerVehicle(RCCP_CarController vehicle, bool isControllable) {
+
+        RCCP_SceneManager.Instance.RegisterPlayer(vehicle, isControllable);
+
+    }
+
+    ///<summary>
+    /// Registers the vehicle as player vehicle with controllable and engine state. 
+    ///</summary>
+    public static void RegisterPlayerVehicle(RCCP_CarController vehicle, bool isControllable, bool engineState) {
+
+        RCCP_SceneManager.Instance.RegisterPlayer(vehicle, isControllable, engineState);
+
+    }
+
+    ///<summary>
+    /// De-Registers the player vehicle. 
+    ///</summary>
+    public static void DeRegisterPlayerVehicle() {
+
+        RCCP_SceneManager.Instance.DeRegisterPlayer();
+
+    }
+
+    ///<summary>
+    /// Sets controllable state of the vehicle.
+    ///</summary>
+    public static void SetControl(RCCP_CarController vehicle, bool isControllable) {
+
+        vehicle.SetCanControl(isControllable);
+
+    }
+
+    ///<summary>
+    /// Sets whether the vehicle is currently driven by an external controller.
+    ///</summary>
+    public static void SetExternalControl(RCCP_CarController vehicle, bool isExternal) {
+
+        if (vehicle == null)
+            return;
+
+        vehicle.externalControl = isExternal;
+
+    }
+
+    ///<summary>
+    /// Sets engine state of the vehicle.
+    ///</summary>
+    public static void SetEngine(RCCP_CarController vehicle, bool engineState) {
+
+        if (engineState)
+            vehicle.StartEngine();
+        else
+            vehicle.KillEngine();
+
+    }
+
+    ///<summary>
+    /// Sets the mobile controller type.
+    ///</summary>
+    public static void SetMobileController(RCCP_Settings.MobileController mobileController) {
+
+        RCCP_SceneManager.Instance.SetMobileController(mobileController);
+        Debug.Log("Mobile Controller has been changed to " + mobileController.ToString());
+
+    }
+
+    ///<summary>
+    /// Sets the vehicle's gearbox to automatic or manual based on the specified state.
+    ///</summary>
+    public static void SetAutomaticGear(RCCP_CarController vehicle, bool state) {
+
+        if (!vehicle.Gearbox)
+            return;
+
+        vehicle.Gearbox.transmissionType = state ? RCCP_Gearbox.TransmissionType.Automatic : RCCP_Gearbox.TransmissionType.Manual;
+
+    }
+
+    ///<summary>
+    /// Sets the vehicle's gearbox to the specified transmission type.
+    ///</summary>
+    public static void SetAutomaticGear(RCCP_CarController vehicle, RCCP_Gearbox.TransmissionType transmissionType) {
+
+        if (!vehicle.Gearbox)
+            return;
+
+        vehicle.Gearbox.transmissionType = transmissionType;
+
+    }
+
+    ///<summary>
+    /// Starts / stops recording the player vehicle.
+    ///</summary>
+    public static void StartStopRecord(RCCP_CarController vehicle) {
+
+        if (!vehicle.OtherAddonsManager)
+            return;
+
+        if (!vehicle.OtherAddonsManager.Recorder)
+            return;
+
+        vehicle.OtherAddonsManager.Recorder.Record();
+
+    }
+
+    ///<summary>
+    /// Starts / stops replay of the last record.
+    ///</summary>
+    public static void StartStopReplay(RCCP_CarController vehicle) {
+
+        if (!vehicle.OtherAddonsManager)
+            return;
+
+        if (!vehicle.OtherAddonsManager.Recorder)
+            return;
+
+        vehicle.OtherAddonsManager.Recorder.Play();
+
+    }
+
+    ///<summary>
+    /// Starts or stops replay of the specified record.
+    ///</summary>
+    public static void StartStopReplay(RCCP_CarController vehicle, RCCP_Recorder.RecordedClip recordedClip) {
+
+        if (!vehicle.OtherAddonsManager)
+            return;
+
+        if (!vehicle.OtherAddonsManager.Recorder)
+            return;
+
+        vehicle.OtherAddonsManager.Recorder.Play(recordedClip);
+
+    }
+
+    ///<summary>
+    /// Stops record / replay.
+    ///</summary>
+    public static void StopRecordReplay(RCCP_CarController vehicle) {
+
+        if (!vehicle.OtherAddonsManager)
+            return;
+
+        if (!vehicle.OtherAddonsManager.Recorder)
+            return;
+
+        vehicle.OtherAddonsManager.Recorder.Stop();
+
+    }
+
+    ///<summary>
+    /// Sets new behavior.
+    ///</summary>
+    public static void SetBehavior(int behaviorIndex) {
+
+        RCCP_SceneManager.Instance.SetBehavior(behaviorIndex);
+        Debug.Log("Behavior has been changed to " + behaviorIndex.ToString());
+
+    }
+
+    /// <summary>
+    /// Gets the index of a behavior preset by its name.
+    /// Returns -1 if not found.
+    /// </summary>
+    /// <param name="behaviorName">Name of the behavior preset (case-insensitive)</param>
+    public static int GetBehaviorIndexByName(string behaviorName) {
+
+        if (string.IsNullOrEmpty(behaviorName))
+            return -1;
+
+        RCCP_Settings settings = RCCP_Settings.Instance;
+
+        if (settings == null || settings.behaviorTypes == null)
+            return -1;
+
+        for (int i = 0; i < settings.behaviorTypes.Length; i++) {
+
+            if (settings.behaviorTypes[i] != null &&
+                string.Equals(settings.behaviorTypes[i].behaviorName, behaviorName, System.StringComparison.OrdinalIgnoreCase)) {
+                return i;
+            }
+
+        }
+
+        return -1;
+
+    }
+
+    /// <summary>
+    /// Gets a behavior preset by its name.
+    /// Returns null if not found.
+    /// </summary>
+    /// <param name="behaviorName">Name of the behavior preset (case-insensitive)</param>
+    public static RCCP_Settings.BehaviorType GetBehaviorByName(string behaviorName) {
+
+        int index = GetBehaviorIndexByName(behaviorName);
+
+        if (index >= 0 && RCCP_Settings.Instance != null && index < RCCP_Settings.Instance.behaviorTypes.Length)
+            return RCCP_Settings.Instance.behaviorTypes[index];
+
+        return null;
+
+    }
+
+    /// <summary>
+    /// Sets new behavior by name.
+    /// </summary>
+    /// <param name="behaviorName">Name of the behavior preset (case-insensitive)</param>
+    public static void SetBehavior(string behaviorName) {
+
+        int index = GetBehaviorIndexByName(behaviorName);
+
+        if (index >= 0) {
+            SetBehavior(index);
+        } else {
+            Debug.LogWarning("Behavior preset '" + behaviorName + "' not found.");
+        }
+
+    }
+
+    /// <summary>
+    /// Changes the camera mode.
+    /// </summary>
+    public static void ChangeCamera() {
+
+        RCCP_SceneManager.Instance.ChangeCamera();
+
+    }
+
+    /// <summary>
+    /// Transport player vehicle the specified position and rotation.
+    /// </summary>
+    /// <param name="position">Position.</param>
+    /// <param name="rotation">Rotation.</param>
+    public static void Transport(Vector3 position, Quaternion rotation) {
+
+        RCCP_SceneManager.Instance.Transport(position, rotation);
+
+    }
+
+    /// <summary>
+    /// Transport the target vehicle to specified position and rotation.
+    /// </summary>
+    /// <param name="vehicle"></param>
+    /// <param name="position"></param>
+    /// <param name="rotation"></param>
+    public static void Transport(RCCP_CarController vehicle, Vector3 position, Quaternion rotation) {
+
+        RCCP_SceneManager.Instance.Transport(vehicle, position, rotation);
+
+    }
+
+    /// <summary>
+    /// Transport the target vehicle to specified position and rotation.
+    /// </summary>
+    /// <param name="vehicle"></param>
+    /// <param name="position"></param>
+    /// <param name="rotation"></param>
+    /// <param name="resetVelocity"></param>
+    public static void Transport(RCCP_CarController vehicle, Vector3 position, Quaternion rotation, bool resetVelocity) {
+
+        RCCP_SceneManager.Instance.Transport(vehicle, position, rotation, resetVelocity);
+
+    }
+
+    /// <summary>
+    /// Cleans all skidmarks on the current scene.
+    /// </summary>
+    public static void CleanSkidmarks() {
+
+        RCCP_SkidmarksManager.Instance.CleanSkidmarks();
+
+    }
+
+    /// <summary>
+    /// Cleans target skidmarks on the current scene.
+    /// </summary>
+    public static void CleanSkidmarks(int index) {
+
+        RCCP_SkidmarksManager.Instance.CleanSkidmarks(index);
+
+    }
+
+    /// <summary>
+    /// Repairs the target vehicle.
+    /// </summary>
+    /// <param name="carController"></param>
+    public static void Repair(RCCP_CarController carController) {
+
+        carController.Damage.repairNow = true;
+
+    }
+
+    /// <summary>
+    /// Repairs the player vehicle. Does nothing if no player vehicle is found.
+    /// </summary>
+    public static void Repair() {
+
+        RCCP_CarController carController = RCCP_SceneManager.Instance.activePlayerVehicle;
+
+        if (!carController)
+            return;
+
+        carController.Damage.repairNow = true;
+
+    }
+
+}

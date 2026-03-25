@@ -1,0 +1,221 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>02_Installation</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Installation</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Installation</a></li>
+<li style='margin-left:20px'><a href='#section-1'>System Requirements</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Unity Version</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Required Packages</a></li>
+<li style='margin-left:40px'><a href='#section-4'>Internet Connection</a></li>
+<li style='margin-left:20px'><a href='#section-5'>Installation Steps</a></li>
+<li style='margin-left:40px'><a href='#section-6'>From Unity Asset Store</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Manual Installation</a></li>
+<li style='margin-left:20px'><a href='#section-8'>First-Time Setup</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Opening the Window</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Automatic Asset Creation</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Welcome Panel</a></li>
+<li style='margin-left:20px'><a href='#section-12'>Folder Structure</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Key Files</a></li>
+<li style='margin-left:20px'><a href='#section-14'>Verification Steps</a></li>
+<li style='margin-left:40px'><a href='#section-15'>Check Menu Items</a></li>
+<li style='margin-left:40px'><a href='#section-16'>Check Console</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Check Settings Asset</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Test Window Opening</a></li>
+<li style='margin-left:20px'><a href='#section-19'>Troubleshooting Installation Issues</a></li>
+<li style='margin-left:40px'><a href='#section-20'>&quot;The type or namespace 'EditorCoroutines' could not be found&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Menu items don't appear</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Settings asset is null or missing prompts</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Window opens but shows warnings</a></li>
+<li style='margin-left:40px'><a href='#section-24'>RCCP components not recognized</a></li>
+<li style='margin-left:20px'><a href='#section-25'>Updating RCCP</a></li>
+<li style='margin-left:20px'><a href='#section-26'>Next Steps</a></li>
+</ul></div>
+<h2 id='section-1'>System Requirements</h2>
+<h3 id='section-2'>Unity Version</h3>
+<p>RCCP AI Assistant requires <strong>Unity 6000.0.49f1 or later</strong> (Unity 6). Earlier versions of Unity are not supported due to API dependencies and editor features introduced in Unity 6.</p>
+<h3 id='section-3'>Required Packages</h3>
+<h4>Editor Coroutines (Required)</h4>
+<p>The assistant uses editor coroutines for asynchronous API communication. Install version <strong>1.0.1 or later</strong> from the Package Manager:</p>
+<ol>
+<li>Open <strong>Window &gt; Package Manager</strong></li>
+<li>Click the <strong>+</strong> button and select &quot;Add package by name&quot;</li>
+<li>Enter: <code>com.unity.editorcoroutines</code></li>
+<li>Click Add</li>
+</ol>
+<p>Alternatively, add this line to your <code>Packages/manifest.json</code>:</p>
+<pre><code>
+&quot;com.unity.editorcoroutines&quot;: &quot;1.0.1&quot;
+</code></pre>
+<h4>RCCP (Realistic Car Controller Pro) (Required)</h4>
+<p>RCCP AI Assistant is designed to work with RCCP. Ensure you have RCCP installed and configured in your project before using the AI assistant.</p>
+<h3 id='section-4'>Internet Connection</h3>
+<p>An active internet connection is required for AI functionality. The assistant communicates with either the Anthropic Claude API directly (if using your own key) or through the BoneCracker Games server proxy.</p>
+<h2 id='section-5'>Installation Steps</h2>
+<h3 id='section-6'>From Unity Asset Store</h3>
+<ol>
+<li><strong>Purchase and Download</strong></li>
+</ol>
+<ul>
+<li>Purchase RCCP AI Assistant from the Unity Asset Store</li>
+<li>Open the Package Manager (<strong>Window &gt; Package Manager</strong>)</li>
+<li>Select &quot;My Assets&quot; from the dropdown</li>
+<li>Find &quot;RCCP AI Assistant&quot; and click &quot;Download&quot;</li>
+<li>Click &quot;Import&quot; to add it to your project</li>
+</ul>
+<ol>
+<li><strong>Import Settings</strong></li>
+</ol>
+<ul>
+<li>Import all files when prompted</li>
+<li>The package will be installed to <code>Assets/RCCP AI Assistant/</code></li>
+</ul>
+<ol>
+<li><strong>Verify Installation</strong></li>
+</ol>
+<ul>
+<li>Check that the menu item appears: <strong>Tools &gt; BoneCracker Games &gt; RCCP AI Assistant</strong></li>
+<li>You should see both &quot;Open Assistant&quot; and other submenu items</li>
+</ul>
+<h3 id='section-7'>Manual Installation</h3>
+<p>If you have the package files directly:</p>
+<ol>
+<li>Copy the <code>RCCP AI Assistant</code> folder to your project's <code>Assets</code> directory</li>
+<li>Wait for Unity to compile scripts</li>
+<li>Verify the menu items appear under <strong>Tools &gt; BoneCracker Games</strong></li>
+</ol>
+<h2 id='section-8'>First-Time Setup</h2>
+<h3 id='section-9'>Opening the Window</h3>
+<p>Open the AI Assistant window:</p>
+<ul>
+<li><strong>Tools &gt; BoneCracker Games &gt; RCCP AI Assistant &gt; Open Assistant</strong></li>
+</ul>
+<h3 id='section-10'>Automatic Asset Creation</h3>
+<p>On first launch, the assistant automatically creates required assets if they don't exist:</p>
+<ul>
+<li><strong>RCCP_AISettings.asset</strong> - Main settings file (created in <code>Assets/RCCP AI Assistant/Resources/</code>)</li>
+<li><strong>Prompt Assets</strong> - Panel-specific AI prompts (created in <code>Assets/RCCP AI Assistant/Resources/Prompts/</code>)</li>
+<li><strong>Component Defaults</strong> - RCCP default values reference (created in <code>Assets/RCCP AI Assistant/Resources/</code>)</li>
+</ul>
+<p>These assets are ScriptableObjects that store configuration. You don't need to modify them directly - the Settings panel in the assistant window provides access to all configurable options.</p>
+<h3 id='section-11'>Welcome Panel</h3>
+<p>The first time you open the assistant, a Welcome panel appears with:</p>
+<ul>
+<li>Brief overview of features</li>
+<li>API configuration options</li>
+<li>Quick start guidance</li>
+</ul>
+<p>You can dismiss this panel and access it later from the Settings if needed.</p>
+<h2 id='section-12'>Folder Structure</h2>
+<p>After installation, your project will have the following structure:</p>
+<pre><code>
+Assets/
+  RCCP AI Assistant/
+    Documentation/         &lt;- Documentation files (this content)
+    Editor/               &lt;- Editor scripts (core functionality)
+    Resources/
+      RCCP_AISettings.asset    &lt;- Main settings
+      RCCP_AIComponentDefaults.asset &lt;- RCCP defaults reference
+      Prompts/            &lt;- AI prompt assets for each panel
+    Scenes/               &lt;- Demo scene (optional)
+</code></pre>
+<h3 id='section-13'>Key Files</h3>
+<table>
+<tr><th>File</th><th>Purpose</th></tr>
+<tr><td><code>RCCP_AISettings.asset</code></td><td>Stores API endpoint, model selection, max tokens, global prompts</td></tr>
+<tr><td><code>RCCP_AIComponentDefaults.asset</code></td><td>Stores extracted default values from RCCP components</td></tr>
+<tr><td><code>Prompts/*.asset</code></td><td>Individual prompt configurations for each panel</td></tr>
+</table>
+<h2 id='section-14'>Verification Steps</h2>
+<p>After installation, verify everything is working:</p>
+<h3 id='section-15'>Check Menu Items</h3>
+<ol>
+<li>Open <strong>Tools &gt; BoneCracker Games</strong></li>
+<li>You should see:</li>
+</ol>
+<ul>
+<li><strong>RCCP AI Assistant</strong> submenu with &quot;Open Assistant&quot;</li>
+<li><strong>Documentation Viewer</strong> (for viewing this documentation)</li>
+</ul>
+<h3 id='section-16'>Check Console</h3>
+<p>Open the Console window (<strong>Window &gt; General &gt; Console</strong>) and look for:</p>
+<ul>
+<li>No error messages related to RCCP AI Assistant</li>
+<li>If you see errors about missing assemblies or types, ensure Editor Coroutines is installed</li>
+</ul>
+<h3 id='section-17'>Check Settings Asset</h3>
+<ol>
+<li>Navigate to <code>Assets/RCCP AI Assistant/Resources/</code> in the Project window</li>
+<li>Select <code>RCCP_AISettings</code></li>
+<li>In the Inspector, verify:</li>
+</ol>
+<ul>
+<li>Prompts array is populated with panel assets</li>
+<li>API endpoint is set (default: <code>https://api.anthropic.com/v1/messages</code>)</li>
+</ul>
+<h3 id='section-18'>Test Window Opening</h3>
+<ol>
+<li>Open <strong>Tools &gt; BoneCracker Games &gt; RCCP AI Assistant &gt; Open Assistant</strong></li>
+<li>The window should open without errors</li>
+<li>You should see either:</li>
+</ol>
+<ul>
+<li>Welcome panel (first launch)</li>
+<li>Main interface with sidebar and panels</li>
+</ul>
+<h2 id='section-19'>Troubleshooting Installation Issues</h2>
+<h3 id='section-20'>&quot;The type or namespace 'EditorCoroutines' could not be found&quot;</h3>
+<p>The Editor Coroutines package is not installed. Install it from Package Manager as described above.</p>
+<h3 id='section-21'>Menu items don't appear</h3>
+<ol>
+<li>Check Console for compilation errors</li>
+<li>Try <strong>Assets &gt; Reimport All</strong></li>
+<li>Restart Unity</li>
+</ol>
+<h3 id='section-22'>Settings asset is null or missing prompts</h3>
+<ol>
+<li>Delete <code>Assets/RCCP AI Assistant/Resources/RCCP_AISettings.asset</code></li>
+<li>Reopen the AI Assistant window - it will recreate missing assets</li>
+</ol>
+<h3 id='section-23'>Window opens but shows warnings</h3>
+<p>If you see &quot;Settings not found&quot; or similar warnings:</p>
+<ol>
+<li>Close the AI Assistant window</li>
+<li>Run <strong>Assets &gt; Reimport All</strong></li>
+<li>Reopen the window</li>
+</ol>
+<h3 id='section-24'>RCCP components not recognized</h3>
+<p>Ensure RCCP (Realistic Car Controller Pro) is properly installed and has no compilation errors before using the AI Assistant.</p>
+<h2 id='section-25'>Updating RCCP</h2>
+<p>When you update RCCP to a new version, component defaults may change. To sync the AI assistant with the new defaults:</p>
+<ol>
+<li>Open <strong>Tools &gt; BoneCracker Games &gt; RCCP AI Assistant &gt; Extract Component Defaults</strong></li>
+<li>This updates <code>RCCP_AIComponentDefaults.asset</code> with current RCCP values</li>
+<li>The AI will now use the correct default values when generating configurations</li>
+</ol>
+<p>Running the defaults extractor ensures the AI has accurate information about RCCP's current state.</p>
+<h2 id='section-26'>Next Steps</h2>
+<p>After successful installation:</p>
+<ol>
+<li><strong>Configure API Access</strong> - Choose between using your own Claude API key or the server proxy</li>
+<li><strong>Read Quick Start</strong> - Follow the quick start guide to create your first vehicle</li>
+<li><strong>Explore Panels</strong> - Familiarize yourself with the different configuration panels</li>
+</ol>
+<p>See the Quick Start guide for creating your first AI-configured vehicle.</p>
+</div></body></html>

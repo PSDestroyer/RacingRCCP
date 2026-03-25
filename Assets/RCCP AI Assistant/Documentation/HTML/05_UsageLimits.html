@@ -1,0 +1,233 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>05_UsageLimits</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Usage Limits</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Usage Limits</a></li>
+<li style='margin-left:20px'><a href='#section-1'>Overview</a></li>
+<li style='margin-left:20px'><a href='#section-2'>Two-Phase Tier System</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Phase 1: Setup Phase</a></li>
+<li style='margin-left:40px'><a href='#section-4'>Phase 2: Free Phase</a></li>
+<li style='margin-left:40px'><a href='#section-5'>Transition Notification</a></li>
+<li style='margin-left:20px'><a href='#section-6'>Reset Schedule</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Daily Limit Reset</a></li>
+<li style='margin-left:40px'><a href='#section-8'>Hourly Burst Reset</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Server-Authoritative</a></li>
+<li style='margin-left:20px'><a href='#section-10'>Monitoring Usage</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Context Bar Display</a></li>
+<li style='margin-left:40px'><a href='#section-12'>Settings Panel Breakdown</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Progress Bars</a></li>
+<li style='margin-left:20px'><a href='#section-14'>What Happens When Limits Are Reached</a></li>
+<li style='margin-left:40px'><a href='#section-15'>Daily Limit Reached</a></li>
+<li style='margin-left:40px'><a href='#section-16'>Hourly Burst Reached</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Setup Pool Exhausted</a></li>
+<li style='margin-left:20px'><a href='#section-18'>Tips for Managing Usage</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Maximize Each Request</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Use Free Features</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Plan Intensive Work</a></li>
+<li style='margin-left:20px'><a href='#section-22'>Upgrading to Unlimited</a></li>
+<li style='margin-left:20px'><a href='#section-23'>FAQ</a></li>
+<li style='margin-left:40px'><a href='#section-24'>Can I get more setup requests?</a></li>
+<li style='margin-left:40px'><a href='#section-25'>Do unused daily requests carry over?</a></li>
+<li style='margin-left:40px'><a href='#section-26'>What counts as a request?</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Do Diagnostics use requests?</a></li>
+<li style='margin-left:40px'><a href='#section-28'>Can I check my usage without making a request?</a></li>
+<li style='margin-left:40px'><a href='#section-29'>What if I need unlimited for a day then go back to free?</a></li>
+</ul></div>
+<p>When using the server proxy (not your own API key), RCCP AI Assistant implements a two-phase tier system to provide fair access while protecting shared resources. This document explains how the system works and how to manage your usage effectively.</p>
+<h2 id='section-1'>Overview</h2>
+<p>The usage limit system has two phases:</p>
+<ol>
+<li><strong>Setup Phase (Tier 1):</strong> Generous initial pool for evaluation and setup</li>
+<li><strong>Free Phase (Tier 2):</strong> Sustainable daily limits for ongoing use</li>
+</ol>
+<p>If you use your own API key, these limits don't apply - you have unlimited requests.</p>
+<h2 id='section-2'>Two-Phase Tier System</h2>
+<h3 id='section-3'>Phase 1: Setup Phase</h3>
+<p>When you first register a device, you receive a <strong>setup pool</strong> of requests with no daily limits.</p>
+<table>
+<tr><th>Metric</th><th>Value</th></tr>
+<tr><td>Total Requests</td><td>400</td></tr>
+<tr><td>Daily Limit</td><td>None</td></tr>
+<tr><td>Hourly Burst</td><td>20 per hour</td></tr>
+<tr><td>Expiration</td><td>Never (until exhausted)</td></tr>
+</table>
+<p><strong>Purpose:</strong> The setup pool lets you thoroughly evaluate the tool and set up initial vehicles without worrying about daily limits. You can use all 400 requests in a single day if needed.</p>
+<p><strong>Best Practices:</strong></p>
+<ul>
+<li>Use the setup phase for intensive initial configuration</li>
+<li>Experiment with different prompts to learn what works</li>
+<li>Set up your main vehicles during this phase</li>
+<li>Take advantage of no daily limits for iteration</li>
+</ul>
+<h3 id='section-4'>Phase 2: Free Phase</h3>
+<p>After exhausting your setup pool, you transition to the free phase with daily limits.</p>
+<table>
+<tr><th>Metric</th><th>Value</th></tr>
+<tr><td>Daily Requests</td><td>20</td></tr>
+<tr><td>Hourly Burst</td><td>10 per hour</td></tr>
+<tr><td>Daily Reset</td><td>Midnight (local time)</td></tr>
+<tr><td>Hourly Reset</td><td>Every 60 minutes</td></tr>
+</table>
+<p><strong>Purpose:</strong> The free phase provides sustainable ongoing access for light usage and maintenance tasks.</p>
+<p><strong>Best Practices:</strong></p>
+<ul>
+<li>Plan your daily requests to maximize value</li>
+<li>Use diagnostics (no AI cost) for validation</li>
+<li>Consider using your own API key for intensive work</li>
+</ul>
+<h3 id='section-5'>Transition Notification</h3>
+<p>When you exhaust your setup pool, a dialog appears explaining:</p>
+<ul>
+<li>Your setup phase is complete</li>
+<li>You now have 20 free requests per day</li>
+<li>Consider using your own API key for unlimited access</li>
+</ul>
+<p>This notification appears once to ensure you understand the change.</p>
+<h2 id='section-6'>Reset Schedule</h2>
+<h3 id='section-7'>Daily Limit Reset</h3>
+<p>The daily limit resets at <strong>midnight local time</strong> on your machine. After reset:</p>
+<ul>
+<li>Daily used counter returns to 0</li>
+<li>You have 20 fresh requests for the new day</li>
+</ul>
+<p><strong>Note:</strong> The server uses your device's reported timezone for reset timing.</p>
+<h3 id='section-8'>Hourly Burst Reset</h3>
+<p>The hourly burst limit resets <strong>60 minutes after your first request</strong> of each hour. This prevents rapid consecutive requests while still allowing sustained usage throughout the day.</p>
+<p>Example timeline:</p>
+<ul>
+<li>10:00 AM - First request (19 remaining during setup, 9 during free phase)</li>
+<li>10:15 AM - Second request (18 or 8 remaining)</li>
+<li>10:30 AM - Third request (17 or 7 remaining)</li>
+<li>11:00 AM - Hourly reset (20 or 10 available again)</li>
+</ul>
+<h3 id='section-9'>Server-Authoritative</h3>
+<p>All limits are enforced server-side. The local UI displays cached values for convenience, but the server has the final say on whether a request is allowed. This prevents tampering with local counters.</p>
+<h2 id='section-10'>Monitoring Usage</h2>
+<h3 id='section-11'>Context Bar Display</h3>
+<p>At the top of the main window, the context bar shows your current usage status:</p>
+<p><strong>Setup Phase:</strong></p>
+<pre><code>
+Setup: 350/400 requests remaining
+</code></pre>
+<p><strong>Free Phase:</strong></p>
+<pre><code>
+Daily: 15/20 remaining | Resets in 5h 23m
+</code></pre>
+<p><strong>Own API Key:</strong></p>
+<pre><code>
+Using your API key (unlimited) | Total requests: 47
+</code></pre>
+<h3 id='section-12'>Settings Panel Breakdown</h3>
+<p>Open Settings for detailed usage information:</p>
+<ul>
+<li><strong>Current Tier:</strong> Setup Phase, Daily Free, or Own API Key</li>
+<li><strong>Setup Pool:</strong> Remaining/Total (if in setup phase)</li>
+<li><strong>Daily Requests:</strong> Used/Limit with time until reset</li>
+<li><strong>Hourly Burst:</strong> Used/Limit with time until reset</li>
+<li><strong>Total Requests:</strong> Lifetime count across all tiers</li>
+<li><strong>Last Sync:</strong> When usage was last updated from server</li>
+</ul>
+<h3 id='section-13'>Progress Bars</h3>
+<p>Visual progress bars show usage at a glance:</p>
+<ul>
+<li><strong>Green:</strong> More than 50% remaining</li>
+<li><strong>Yellow:</strong> 20-50% remaining</li>
+<li><strong>Red:</strong> Less than 20% remaining</li>
+</ul>
+<h2 id='section-14'>What Happens When Limits Are Reached</h2>
+<h3 id='section-15'>Daily Limit Reached</h3>
+<p>When you hit the daily limit:</p>
+<ol>
+<li>A dialog appears explaining the situation</li>
+<li>The Generate button becomes disabled</li>
+<li>The context bar shows &quot;Daily limit reached&quot;</li>
+</ol>
+<p><strong>Options:</strong></p>
+<ul>
+<li>Wait until midnight for reset</li>
+<li>Switch to your own API key for immediate access</li>
+<li>Use Diagnostics panel (no AI required)</li>
+</ul>
+<h3 id='section-16'>Hourly Burst Reached</h3>
+<p>When you hit the hourly burst limit:</p>
+<ol>
+<li>The UI shows time until hourly reset</li>
+<li>You can still make requests up to your daily limit after the hour passes</li>
+</ol>
+<p><strong>Note:</strong> Hourly limits prevent rapid automated usage but shouldn't impact normal human interaction patterns.</p>
+<h3 id='section-17'>Setup Pool Exhausted</h3>
+<p>When you use your last setup request:</p>
+<ol>
+<li>Transition dialog appears (once)</li>
+<li>System switches to Free Phase</li>
+<li>Daily limits now apply</li>
+</ol>
+<h2 id='section-18'>Tips for Managing Usage</h2>
+<h3 id='section-19'>Maximize Each Request</h3>
+<p><strong>Write Complete Prompts</strong></p>
+<p>Instead of iterating with vague requests, write detailed prompts that describe exactly what you want. One well-crafted prompt often beats three vague ones.</p>
+<p><strong>Use Appropriate Panels</strong></p>
+<p>Select the panel that matches your task. The Wheels panel has context about wheel-specific options that might require multiple generic requests to achieve.</p>
+<p><strong>Leverage Quick Prompts</strong></p>
+<p>Quick prompt buttons provide tested, effective starting points. Modify them rather than starting from scratch.</p>
+<h3 id='section-20'>Use Free Features</h3>
+<p><strong>Diagnostics Panel</strong></p>
+<p>The Diagnostics panel runs local validation without any AI calls. Use it freely to check vehicle setup.</p>
+<p><strong>Review Before Applying</strong></p>
+<p>Take time to review AI responses before applying. Catching issues before applying saves re-generation requests.</p>
+<p><strong>Prompt History</strong></p>
+<p>Browse your prompt history to re-use successful prompts instead of writing new ones.</p>
+<h3 id='section-21'>Plan Intensive Work</h3>
+<p>If you need to do intensive vehicle setup:</p>
+<ol>
+<li>Do it during your Setup Phase when possible</li>
+<li>Consider switching to your own API key temporarily</li>
+<li>Batch similar vehicles together using batch operations</li>
+</ol>
+<h2 id='section-22'>Upgrading to Unlimited</h2>
+<p>If the free tier doesn't meet your needs, using your own API key provides unlimited access:</p>
+<ol>
+<li>Create account at <a href='https://console.anthropic.com'>console.anthropic.com</a></li>
+<li>Add a payment method</li>
+<li>Generate an API key</li>
+<li>Enter the key in Settings &gt; API Configuration</li>
+<li>Toggle &quot;Use Own API Key&quot; to enabled</li>
+</ol>
+<p>With your own key:</p>
+<ul>
+<li>No request limits</li>
+<li>No daily resets to wait for</li>
+<li>Pay only for what you use</li>
+<li>Choose any Claude model</li>
+</ul>
+<h2 id='section-23'>FAQ</h2>
+<h3 id='section-24'>Can I get more setup requests?</h3>
+<p>The setup pool is per-device and doesn't reset. If you need more requests, consider using your own API key.</p>
+<h3 id='section-25'>Do unused daily requests carry over?</h3>
+<p>No, daily allowances reset to 20 each midnight regardless of how many you used the previous day.</p>
+<h3 id='section-26'>What counts as a request?</h3>
+<p>Each time you click Generate and receive a response, that's one request. Failed requests that return errors may not count, depending on where the failure occurred.</p>
+<h3 id='section-27'>Do Diagnostics use requests?</h3>
+<p>No, the Diagnostics panel runs entirely locally without AI calls.</p>
+<h3 id='section-28'>Can I check my usage without making a request?</h3>
+<p>Yes, the Settings panel shows cached usage information. The data syncs with the server periodically and after each request.</p>
+<h3 id='section-29'>What if I need unlimited for a day then go back to free?</h3>
+<p>You can switch between modes freely. Use your API key for intensive sessions, then disable it to return to server proxy mode.</p>
+</div></body></html>

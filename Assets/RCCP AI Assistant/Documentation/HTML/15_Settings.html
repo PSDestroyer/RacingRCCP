@@ -1,0 +1,464 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>15_Settings</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Settings</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Settings</a></li>
+<li style='margin-left:20px'><a href='#section-1'>Accessing Settings</a></li>
+<li style='margin-left:20px'><a href='#section-2'>API Configuration</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Use Own API Key</a></li>
+<li style='margin-left:40px'><a href='#section-4'>API Key Field</a></li>
+<li style='margin-left:40px'><a href='#section-5'>Validate Key Button</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Server Connection Test</a></li>
+<li style='margin-left:40px'><a href='#section-7'>API Endpoint (Advanced)</a></li>
+<li style='margin-left:20px'><a href='#section-8'>Model Selection</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Text Model</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Vision Model</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Cost Indicator</a></li>
+<li style='margin-left:20px'><a href='#section-12'>UI Settings</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Window Mode</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Show Welcome on Startup</a></li>
+<li style='margin-left:40px'><a href='#section-15'>Quick Prompt Count</a></li>
+<li style='margin-left:20px'><a href='#section-16'>Animation Settings</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Enable Animations</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Animation Speed</a></li>
+<li style='margin-left:20px'><a href='#section-19'>Prompt Settings</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Global Prefix</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Global Suffix</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Max Prompt Length</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Send on Enter</a></li>
+<li style='margin-left:40px'><a href='#section-24'>Auto-Apply (Vehicle Creation)</a></li>
+<li style='margin-left:20px'><a href='#section-25'>Keyboard Shortcuts</a></li>
+<li style='margin-left:40px'><a href='#section-26'>Enable Shortcuts</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Shortcut Reference</a></li>
+<li style='margin-left:20px'><a href='#section-28'>Developer Options</a></li>
+<li style='margin-left:40px'><a href='#section-29'>Developer Mode</a></li>
+<li style='margin-left:40px'><a href='#section-30'>Verbose Logging</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Force Repaint</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Save Vision Debug Screenshots</a></li>
+<li style='margin-left:40px'><a href='#section-33'>Vision Detection Settings</a></li>
+<li style='margin-left:40px'><a href='#section-34'>Show Raw AI Responses</a></li>
+<li style='margin-left:40px'><a href='#section-35'>Show Request/Response Times</a></li>
+<li style='margin-left:40px'><a href='#section-36'>Disable TLS Validation</a></li>
+<li style='margin-left:20px'><a href='#section-37'>Usage Information</a></li>
+<li style='margin-left:40px'><a href='#section-38'>Current Tier</a></li>
+<li style='margin-left:40px'><a href='#section-39'>Usage Statistics</a></li>
+<li style='margin-left:40px'><a href='#section-40'>Total Requests</a></li>
+<li style='margin-left:40px'><a href='#section-41'>Last Sync</a></li>
+<li style='margin-left:20px'><a href='#section-42'>Prompt Assets</a></li>
+<li style='margin-left:40px'><a href='#section-43'>View Prompt Assets</a></li>
+<li style='margin-left:40px'><a href='#section-44'>Refresh Prompt Assets</a></li>
+<li style='margin-left:40px'><a href='#section-45'>Edit Prompts (Advanced)</a></li>
+<li style='margin-left:20px'><a href='#section-46'>Resetting Settings</a></li>
+<li style='margin-left:40px'><a href='#section-47'>Reset to Defaults</a></li>
+<li style='margin-left:20px'><a href='#section-48'>Settings Storage</a></li>
+<li style='margin-left:40px'><a href='#section-49'>Where Settings Are Stored</a></li>
+<li style='margin-left:40px'><a href='#section-50'>Sharing Settings</a></li>
+<li style='margin-left:40px'><a href='#section-51'>Backup Considerations</a></li>
+<li style='margin-left:20px'><a href='#section-52'>Common Configurations</a></li>
+<li style='margin-left:40px'><a href='#section-53'>For Evaluation</a></li>
+<li style='margin-left:40px'><a href='#section-54'>For Production</a></li>
+<li style='margin-left:40px'><a href='#section-55'>For Debugging</a></li>
+</ul></div>
+<p>The Settings panel provides access to all configuration options for RCCP AI Assistant. This document covers every setting, what it does, and when to adjust it.</p>
+<h2 id='section-1'>Accessing Settings</h2>
+<p>Open Settings by:</p>
+<ul>
+<li>Clicking the gear icon in the sidebar</li>
+<li>Pressing the Settings button at the bottom of the sidebar</li>
+<li>Using keyboard shortcut (if configured)</li>
+</ul>
+<h2 id='section-2'>API Configuration</h2>
+<h3 id='section-3'>Use Own API Key</h3>
+<p>Toggle between API modes:</p>
+<p><strong>Enabled:</strong> Use your personal Anthropic API key</p>
+<ul>
+<li>Direct connection to Claude API</li>
+<li>Unlimited requests (pay per use)</li>
+<li>Requires valid API key entered below</li>
+</ul>
+<p><strong>Disabled:</strong> Use BoneCracker Games server proxy</p>
+<ul>
+<li>No API key needed</li>
+<li>Free tier with usage limits</li>
+<li>Automatic device registration</li>
+</ul>
+<h3 id='section-4'>API Key Field</h3>
+<p>Enter your Anthropic API key:</p>
+<ul>
+<li>Starts with <code>sk-ant-</code></li>
+<li>Stored securely in EditorPrefs</li>
+<li>Not visible by default (toggle eye icon to show)</li>
+</ul>
+<h3 id='section-5'>Validate Key Button</h3>
+<p>Test your API key:</p>
+<ul>
+<li>Makes a minimal API call</li>
+<li>Confirms key is valid</li>
+<li>Shows success or error message</li>
+</ul>
+<h3 id='section-6'>Server Connection Test</h3>
+<p>Test server proxy connection:</p>
+<ul>
+<li>Verifies server is reachable</li>
+<li>Checks device registration</li>
+<li>Confirms authentication works</li>
+</ul>
+<h3 id='section-7'>API Endpoint (Advanced)</h3>
+<p>The API endpoint URL:</p>
+<ul>
+<li>Default: <code>https://api.anthropic.com/v1/messages</code></li>
+<li>Only change for custom setups</li>
+<li>Leave default for normal use</li>
+</ul>
+<h2 id='section-8'>Model Selection</h2>
+<h3 id='section-9'>Text Model</h3>
+<p>Choose the Claude model for text requests:</p>
+<p><strong>Haiku 4.5</strong> (Fastest, Cheapest)</p>
+<ul>
+<li>Best for: Quick iterations, simple requests</li>
+<li>Response time: 2-5 seconds</li>
+<li>Cost: ~12x cheaper than Sonnet</li>
+</ul>
+<p><strong>Sonnet 4.5</strong> (Balanced)</p>
+<ul>
+<li>Best for: Most use cases</li>
+<li>Response time: 5-15 seconds</li>
+<li>Cost: Baseline reference</li>
+</ul>
+<p><strong>Opus 4.5</strong> (Most Capable)</p>
+<ul>
+<li>Best for: Complex requests</li>
+<li>Response time: 10-30 seconds</li>
+<li>Cost: ~5x more expensive than Sonnet</li>
+</ul>
+<h3 id='section-10'>Vision Model</h3>
+<p>Choose the model for vision-based light detection:</p>
+<ul>
+<li>Same options as text model</li>
+<li>Vision requests are more expensive</li>
+<li>Sonnet recommended for vision tasks</li>
+</ul>
+<h3 id='section-11'>Cost Indicator</h3>
+<p>Shows relative cost multiplier:</p>
+<ul>
+<li>Haiku: 0.08x</li>
+<li>Sonnet: 1.0x</li>
+<li>Opus: 5.0x</li>
+</ul>
+<h2 id='section-12'>UI Settings</h2>
+<h3 id='section-13'>Window Mode</h3>
+<p>Choose how the window behaves:</p>
+<p><strong>Utility Window</strong></p>
+<ul>
+<li>Fixed size (800x850 pixels)</li>
+<li>Floats above other windows</li>
+<li>Cannot be docked</li>
+</ul>
+<p><strong>Dockable Window</strong></p>
+<ul>
+<li>Resizable</li>
+<li>Can dock to editor layout</li>
+<li>Integrates with your workspace</li>
+</ul>
+<p><strong>Note:</strong> Changing this requires restarting the window.</p>
+<h3 id='section-14'>Show Welcome on Startup</h3>
+<p>When enabled:</p>
+<ul>
+<li>Welcome panel appears on first open</li>
+<li>Provides quick-start guidance</li>
+<li>Disable after you're familiar with the tool</li>
+</ul>
+<h3 id='section-15'>Quick Prompt Count</h3>
+<p>Number of quick prompt buttons to show (0-25):</p>
+<ul>
+<li>0: Hide quick prompts entirely</li>
+<li>5-10: Moderate selection</li>
+<li>15-25: Full variety</li>
+</ul>
+<p>Quick prompts shuffle randomly from the available pool.</p>
+<h2 id='section-16'>Animation Settings</h2>
+<h3 id='section-17'>Enable Animations</h3>
+<p>Toggle UI animations:</p>
+<p><strong>Enabled:</strong></p>
+<ul>
+<li>Smooth panel transitions</li>
+<li>Response fade-in effects</li>
+<li>Status message fading</li>
+<li>Processing pulse indicator</li>
+</ul>
+<p><strong>Disabled:</strong></p>
+<ul>
+<li>Instant transitions</li>
+<li>No visual effects</li>
+<li>Slightly better performance</li>
+</ul>
+<h3 id='section-18'>Animation Speed</h3>
+<p>Adjust animation speed (0.5x - 2.0x):</p>
+<ul>
+<li>0.5x: Slow, deliberate animations</li>
+<li>1.0x: Normal speed</li>
+<li>2.0x: Fast, snappy animations</li>
+</ul>
+<h2 id='section-19'>Prompt Settings</h2>
+<h3 id='section-20'>Global Prefix</h3>
+<p>Text added before every prompt:</p>
+<ul>
+<li>Applied to all panels</li>
+<li>Useful for consistent instructions</li>
+<li>Default: &quot;RESPOND WITH ONLY JSON...&quot;</li>
+</ul>
+<h3 id='section-21'>Global Suffix</h3>
+<p>Text added after every prompt:</p>
+<ul>
+<li>Applied to all panels</li>
+<li>Useful for closing instructions</li>
+</ul>
+<h3 id='section-22'>Max Prompt Length</h3>
+<p>Maximum characters allowed in prompt input:</p>
+<ul>
+<li>Default: 1000 characters</li>
+<li>Increase for longer descriptions</li>
+<li>Helps prevent overly verbose prompts</li>
+</ul>
+<h3 id='section-23'>Send on Enter</h3>
+<p>Toggle Enter key behavior:</p>
+<p><strong>Enabled:</strong></p>
+<ul>
+<li>Enter sends the prompt</li>
+<li>Shift+Enter inserts new line</li>
+</ul>
+<p><strong>Disabled:</strong></p>
+<ul>
+<li>Enter inserts new line</li>
+<li>Ctrl+Enter sends the prompt</li>
+</ul>
+<h3 id='section-24'>Auto-Apply (Vehicle Creation)</h3>
+<p>Toggle automatic application of generated configurations:</p>
+<p><strong>Enabled:</strong></p>
+<ul>
+<li>After AI generates a configuration, it's applied immediately</li>
+<li>Skips the review step for faster workflow</li>
+<li>Text area shows orange border as visual indicator</li>
+<li>Best for: Rapid prototyping, experienced users</li>
+</ul>
+<p><strong>Disabled (Default):</strong></p>
+<ul>
+<li>Generated configurations go to the Review Panel</li>
+<li>You review before/after values before applying</li>
+<li>Best for: Careful review, learning, production work</li>
+</ul>
+<p><strong>Note:</strong> Auto-Apply only affects the Vehicle Creation panel. Other panels always show the review step.</p>
+<h2 id='section-25'>Keyboard Shortcuts</h2>
+<h3 id='section-26'>Enable Shortcuts</h3>
+<p>Toggle keyboard shortcuts:</p>
+<ul>
+<li>When enabled, shortcuts are active</li>
+<li>When disabled, only standard keys work</li>
+</ul>
+<h3 id='section-27'>Shortcut Reference</h3>
+<table>
+<tr><th>Shortcut</th><th>Action</th></tr>
+<tr><td>Enter/Ctrl+Enter</td><td>Send prompt (depends on setting)</td></tr>
+<tr><td>Shift+Enter</td><td>New line</td></tr>
+<tr><td>Escape</td><td>Close panel/overlay</td></tr>
+</table>
+<h2 id='section-28'>Developer Options</h2>
+<p><strong>Note:</strong> These options are for debugging and development. Enable Developer Mode to access them.</p>
+<h3 id='section-29'>Developer Mode</h3>
+<p>Enables advanced options:</p>
+<ul>
+<li>Shows additional controls</li>
+<li>Exposes debugging features</li>
+<li>Not needed for normal use</li>
+</ul>
+<h3 id='section-30'>Verbose Logging</h3>
+<p>When enabled:</p>
+<ul>
+<li>Logs detailed information to Console</li>
+<li>Shows API requests and responses</li>
+<li>Useful for troubleshooting</li>
+</ul>
+<h3 id='section-31'>Force Repaint</h3>
+<p>When enabled:</p>
+<ul>
+<li>Window repaints every frame</li>
+<li>Higher CPU usage</li>
+<li>Useful for animation debugging</li>
+</ul>
+<h3 id='section-32'>Save Vision Debug Screenshots</h3>
+<p>When enabled:</p>
+<ul>
+<li>Saves screenshots used for vision detection</li>
+<li>Stored in project folder</li>
+<li>Useful for debugging detection issues</li>
+</ul>
+<h3 id='section-33'>Vision Detection Settings</h3>
+<p>Configure how vision-based light detection works:</p>
+<p><strong>Orthographic Zoom Multiplier</strong></p>
+<p>Adjusts the camera zoom for vehicle screenshots:</p>
+<ul>
+<li>Higher values = closer zoom (more detail)</li>
+<li>Lower values = wider view (more context)</li>
+<li>Default: 1.0</li>
+<li>Adjust if light detection seems inaccurate</li>
+</ul>
+<p><strong>Screenshot Resolution</strong></p>
+<p>The resolution of captured screenshots:</p>
+<ul>
+<li>Higher = more accurate detection, larger file</li>
+<li>Default: 512 pixels</li>
+<li>Increase for complex vehicles with many lights</li>
+</ul>
+<h3 id='section-34'>Show Raw AI Responses</h3>
+<p>When enabled:</p>
+<ul>
+<li>Shows unprocessed JSON responses</li>
+<li>Bypasses structured view</li>
+<li>Useful for debugging parsing</li>
+</ul>
+<h3 id='section-35'>Show Request/Response Times</h3>
+<p>When enabled:</p>
+<ul>
+<li>Displays timing information</li>
+<li>Shows how long requests take</li>
+<li>Useful for performance analysis</li>
+</ul>
+<h3 id='section-36'>Disable TLS Validation</h3>
+<p><strong>DANGEROUS - Testing Only</strong></p>
+<p>When enabled:</p>
+<ul>
+<li>Disables SSL certificate validation</li>
+<li>ONLY for local development with self-signed certs</li>
+<li>Never use with production servers</li>
+<li>Security risk</li>
+</ul>
+<h2 id='section-37'>Usage Information</h2>
+<p>This section displays your current usage (when using server proxy):</p>
+<h3 id='section-38'>Current Tier</h3>
+<p>Shows your usage tier:</p>
+<ul>
+<li>Setup Phase: Using initial pool</li>
+<li>Free Phase: Using daily allowance</li>
+<li>Own API Key: Unlimited</li>
+</ul>
+<h3 id='section-39'>Usage Statistics</h3>
+<p>Depending on tier:</p>
+<ul>
+<li>Setup pool remaining/total</li>
+<li>Daily usage/limit</li>
+<li>Hourly burst usage/limit</li>
+<li>Time until reset</li>
+</ul>
+<h3 id='section-40'>Total Requests</h3>
+<p>Lifetime request count across all sessions.</p>
+<h3 id='section-41'>Last Sync</h3>
+<p>When usage data was last updated from server.</p>
+<h2 id='section-42'>Prompt Assets</h2>
+<p>Advanced section for managing prompt assets:</p>
+<h3 id='section-43'>View Prompt Assets</h3>
+<p>Shows all configured prompt assets:</p>
+<ul>
+<li>One per panel type</li>
+<li>Click to open in Inspector</li>
+</ul>
+<h3 id='section-44'>Refresh Prompt Assets</h3>
+<p>Reloads prompt assets from disk:</p>
+<ul>
+<li>Use if assets were modified externally</li>
+<li>Forces re-read of all prompts</li>
+</ul>
+<h3 id='section-45'>Edit Prompts (Advanced)</h3>
+<p>Direct editing of prompt assets:</p>
+<ul>
+<li>System prompts</li>
+<li>Example prompts</li>
+<li>Panel configuration</li>
+</ul>
+<p><strong>Note:</strong> Modifying prompts requires understanding of the AI system. Incorrect prompts may produce poor results.</p>
+<h2 id='section-46'>Resetting Settings</h2>
+<h3 id='section-47'>Reset to Defaults</h3>
+<p>Available reset options:</p>
+<p><strong>Reset UI Preferences</strong></p>
+<ul>
+<li>Window mode</li>
+<li>Animation settings</li>
+<li>Quick prompt count</li>
+<li>Keyboard settings</li>
+</ul>
+<p><strong>Reset Developer Options</strong></p>
+<ul>
+<li>Verbose logging</li>
+<li>Debug options</li>
+<li>All dev-only settings</li>
+</ul>
+<p><strong>Reset All</strong></p>
+<ul>
+<li>Everything including API key</li>
+<li>Fresh start</li>
+<li>Requires re-configuration</li>
+</ul>
+<p><strong>Note:</strong> Reset operations cannot be undone.</p>
+<h2 id='section-48'>Settings Storage</h2>
+<h3 id='section-49'>Where Settings Are Stored</h3>
+<table>
+<tr><th>Setting</th><th>Storage Location</th></tr>
+<tr><td>API Key</td><td>EditorPrefs (secure)</td></tr>
+<tr><td>UI Preferences</td><td>EditorPrefs</td></tr>
+<tr><td>Prompt Assets</td><td>ScriptableObjects in project</td></tr>
+<tr><td>Global Prefix/Suffix</td><td>RCCP_AISettings asset</td></tr>
+<tr><td>Model Selection</td><td>RCCP_AISettings asset</td></tr>
+</table>
+<h3 id='section-50'>Sharing Settings</h3>
+<p>To share settings between team members:</p>
+<ul>
+<li>RCCP_AISettings asset can be version controlled</li>
+<li>API keys should NOT be shared</li>
+<li>EditorPrefs are per-user</li>
+</ul>
+<h3 id='section-51'>Backup Considerations</h3>
+<p>Important settings to preserve:</p>
+<ul>
+<li>API key (store separately, securely)</li>
+<li>Custom prompt modifications</li>
+<li>RCCP_AISettings asset customizations</li>
+</ul>
+<h2 id='section-52'>Common Configurations</h2>
+<h3 id='section-53'>For Evaluation</h3>
+<ul>
+<li>Use server proxy (no API key)</li>
+<li>Sonnet model for quality</li>
+<li>Animations enabled</li>
+<li>Default prompt settings</li>
+</ul>
+<h3 id='section-54'>For Production</h3>
+<ul>
+<li>Use own API key</li>
+<li>Haiku for speed, Sonnet for quality</li>
+<li>Consider disabling animations for performance</li>
+<li>Document any prompt customizations</li>
+</ul>
+<h3 id='section-55'>For Debugging</h3>
+<ul>
+<li>Enable developer mode</li>
+<li>Enable verbose logging</li>
+<li>Show raw AI responses</li>
+<li>Save vision debug screenshots</li>
+</ul>
+</div></body></html>

@@ -1,0 +1,304 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>Audio</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Audio Panel</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Audio Panel</a></li>
+<li style='margin-left:20px'><a href='#section-1'>What This Panel Configures</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Engine Sound System Overview</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Layer Configuration</a></li>
+<li style='margin-left:40px'><a href='#section-4'>Audio Clips</a></li>
+<li style='margin-left:20px'><a href='#section-5'>Common Configurations</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Sports Car Engine</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Muscle Car Engine</a></li>
+<li style='margin-left:40px'><a href='#section-8'>Economy Car Engine</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Electric Vehicle</a></li>
+<li style='margin-left:20px'><a href='#section-10'>Understanding RPM Ranges</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Layer Overlap</a></li>
+<li style='margin-left:40px'><a href='#section-12'>Typical Ranges</a></li>
+<li style='margin-left:20px'><a href='#section-13'>Volume Curves</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Shape Importance</a></li>
+<li style='margin-left:40px'><a href='#section-15'>Describing Curves to AI</a></li>
+<li style='margin-left:40px'><a href='#section-16'>Cross-Fade Between Layers</a></li>
+<li style='margin-left:20px'><a href='#section-17'>Pitch Curves</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Basic Concept</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Linear vs Non-Linear</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Source Recording Pitch</a></li>
+<li style='margin-left:20px'><a href='#section-21'>Enabling and Disabling Layers</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Enabling Layers</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Disabling Layers</a></li>
+<li style='margin-left:20px'><a href='#section-24'>Adding Custom Audio Clips</a></li>
+<li style='margin-left:20px'><a href='#section-25'>Prompt Examples</a></li>
+<li style='margin-left:40px'><a href='#section-26'>Aggressive Sound</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Refined Sound</a></li>
+<li style='margin-left:40px'><a href='#section-28'>RPM Range Adjustment</a></li>
+<li style='margin-left:40px'><a href='#section-29'>Fix Transition Issues</a></li>
+<li style='margin-left:20px'><a href='#section-30'>Tips for This Panel</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Listen During Configuration</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Match Audio to Engine Type</a></li>
+<li style='margin-left:40px'><a href='#section-33'>Test Across RPM Range</a></li>
+<li style='margin-left:40px'><a href='#section-34'>Consider Gameplay</a></li>
+<li style='margin-left:40px'><a href='#section-35'>Start with Defaults</a></li>
+<li style='margin-left:40px'><a href='#section-36'>Use Quality Source Audio</a></li>
+</ul></div>
+<p>The Audio panel configures engine sound for RCCP vehicles. The engine sound system uses multiple audio layers that blend based on RPM and load to create realistic engine audio.</p>
+<h2 id='section-1'>What This Panel Configures</h2>
+<h3 id='section-2'>Engine Sound System Overview</h3>
+<p>RCCP's engine audio consists of multiple sound layers:</p>
+<p><strong>Idle Layer</strong></p>
+<p>The engine sound at rest or very low RPM:</p>
+<ul>
+<li>Plays when vehicle is stationary or coasting</li>
+<li>Typically a low, steady rumble</li>
+<li>Volume fades as RPM increases</li>
+</ul>
+<p><strong>Low RPM Layer</strong></p>
+<p>Engine sound at low to mid RPM range:</p>
+<ul>
+<li>Active during normal driving</li>
+<li>Blends with idle at low end</li>
+<li>Blends with mid layer at high end</li>
+</ul>
+<p><strong>Mid RPM Layer</strong></p>
+<p>Engine sound at medium RPM range:</p>
+<ul>
+<li>The &quot;meat&quot; of the engine sound</li>
+<li>Most commonly heard during acceleration</li>
+<li>Carries the engine's character</li>
+</ul>
+<p><strong>High RPM Layer</strong></p>
+<p>Engine sound at high RPM range:</p>
+<ul>
+<li>Screaming engine sound near redline</li>
+<li>Dramatic, exciting quality</li>
+<li>Blends out as RPM drops</li>
+</ul>
+<p><strong>Off Throttle Layer</strong> (optional)</p>
+<p>Engine sound during deceleration:</p>
+<ul>
+<li>Overrun, popping, burbling</li>
+<li>Adds realism to coasting</li>
+</ul>
+<h3 id='section-3'>Layer Configuration</h3>
+<p>Each layer has these properties:</p>
+<p><strong>RPM Range</strong></p>
+<p>When this layer is audible:</p>
+<ul>
+<li>Minimum RPM: Where layer starts</li>
+<li>Maximum RPM: Where layer ends</li>
+<li>Overlap creates smooth transitions</li>
+</ul>
+<p><strong>Volume Curve</strong></p>
+<p>How loud the layer is across its RPM range:</p>
+<ul>
+<li>Usually fades in and out at edges</li>
+<li>Peak volume in the middle of range</li>
+</ul>
+<p><strong>Pitch Curve</strong></p>
+<p>How the sound's pitch changes with RPM:</p>
+<ul>
+<li>Higher RPM = higher pitch</li>
+<li>Curve shape affects perceived engine character</li>
+</ul>
+<h3 id='section-4'>Audio Clips</h3>
+<p>The actual sound files used for each layer:</p>
+<ul>
+<li>WAV or OGG format recommended</li>
+<li>Should be recorded at consistent pitch</li>
+<li>Loop-friendly for seamless playback</li>
+</ul>
+<h2 id='section-5'>Common Configurations</h2>
+<h3 id='section-6'>Sports Car Engine</h3>
+<pre><code>
+Configure a high-revving sports car engine sound:
+- Smooth idle with moderate volume
+- Low layer up to 3000 RPM with warm tone
+- Mid layer from 2500-5500 RPM carrying main character
+- High layer from 5000-8000 RPM with exciting scream
+- Emphasize high-RPM drama
+</code></pre>
+<h3 id='section-7'>Muscle Car Engine</h3>
+<pre><code>
+Set up an American muscle car sound:
+- Aggressive, lopey idle
+- Strong low-end rumble in low layer
+- Powerful mid-range growl
+- High layer less prominent (lower-revving engine)
+- Overall deeper, more bass-heavy character
+</code></pre>
+<h3 id='section-8'>Economy Car Engine</h3>
+<pre><code>
+Configure a basic economy car engine:
+- Quiet, unobtrusive idle
+- Soft low and mid layers
+- High layer relatively quiet (not meant to be exciting)
+- Overall modest, refined character
+</code></pre>
+<h3 id='section-9'>Electric Vehicle</h3>
+<pre><code>
+Set up electric motor sound:
+- No idle layer (silent at rest)
+- High-pitched whine increasing with speed
+- Single layer covering full &quot;RPM&quot; range
+- Futuristic, sci-fi character
+</code></pre>
+<h2 id='section-10'>Understanding RPM Ranges</h2>
+<h3 id='section-11'>Layer Overlap</h3>
+<p>Layers should overlap for smooth transitions:</p>
+<pre><code>
+Idle:  0 ------[=======]
+Low:   1000 ------[=============]
+Mid:   2500 ------------[=================]
+High:  5000 --------------------[===========] 8000
+</code></pre>
+<p>Without overlap, transitions sound jarring.</p>
+<h3 id='section-12'>Typical Ranges</h3>
+<p><strong>High-Revving Engine (8000+ RPM redline):</strong></p>
+<table>
+<tr><th>Layer</th><th>Start RPM</th><th>End RPM</th></tr>
+<tr><td>Idle</td><td>0</td><td>1200</td></tr>
+<tr><td>Low</td><td>800</td><td>3500</td></tr>
+<tr><td>Mid</td><td>3000</td><td>6000</td></tr>
+<tr><td>High</td><td>5500</td><td>8500</td></tr>
+</table>
+<p><strong>Low-Revving Engine (6000 RPM redline):</strong></p>
+<table>
+<tr><th>Layer</th><th>Start RPM</th><th>End RPM</th></tr>
+<tr><td>Idle</td><td>0</td><td>1000</td></tr>
+<tr><td>Low</td><td>700</td><td>2800</td></tr>
+<tr><td>Mid</td><td>2400</td><td>4500</td></tr>
+<tr><td>High</td><td>4000</td><td>6500</td></tr>
+</table>
+<h2 id='section-13'>Volume Curves</h2>
+<h3 id='section-14'>Shape Importance</h3>
+<p>Volume curves control when each layer is prominent:</p>
+<p><strong>Fade-In:</strong></p>
+<p>At the start of the RPM range, volume increases gradually.</p>
+<p><strong>Peak:</strong></p>
+<p>In the middle of the range, volume is at maximum.</p>
+<p><strong>Fade-Out:</strong></p>
+<p>At the end of the range, volume decreases gradually.</p>
+<h3 id='section-15'>Describing Curves to AI</h3>
+<pre><code>
+The mid layer should fade in starting at 2500 RPM, reach full
+volume by 4000 RPM, stay full until 5500 RPM, then fade out
+by 6500 RPM.
+</code></pre>
+<h3 id='section-16'>Cross-Fade Between Layers</h3>
+<p>Where layers overlap, their volumes should cross-fade:</p>
+<ul>
+<li>As low layer fades out, mid layer fades in</li>
+<li>Total volume stays consistent</li>
+<li>No sudden jumps or dips</li>
+</ul>
+<h2 id='section-17'>Pitch Curves</h2>
+<h3 id='section-18'>Basic Concept</h3>
+<p>Pitch increases with RPM to simulate engine speed:</p>
+<ul>
+<li>At 1000 RPM, pitch might be 0.5x</li>
+<li>At 4000 RPM, pitch might be 1.0x</li>
+<li>At 7000 RPM, pitch might be 1.5x</li>
+</ul>
+<h3 id='section-19'>Linear vs Non-Linear</h3>
+<p><strong>Linear Pitch:</strong></p>
+<p>Consistent pitch increase per RPM.</p>
+<p>Simple and predictable.</p>
+<p><strong>Non-Linear Pitch:</strong></p>
+<p>Varies across RPM range.</p>
+<p>More realistic for some engines.</p>
+<h3 id='section-20'>Source Recording Pitch</h3>
+<p>The pitch curve should account for the source recording:</p>
+<ul>
+<li>If recorded at 4000 RPM, that's your 1.0x reference</li>
+<li>Lower RPM = lower pitch multiplier</li>
+<li>Higher RPM = higher pitch multiplier</li>
+</ul>
+<h2 id='section-21'>Enabling and Disabling Layers</h2>
+<h3 id='section-22'>Enabling Layers</h3>
+<p>By default, all available layers may be active. To enable a disabled layer:</p>
+<pre><code>
+Enable the off-throttle layer for engine overrun sounds.
+Set its volume to 60% of the on-throttle sound.
+</code></pre>
+<h3 id='section-23'>Disabling Layers</h3>
+<p>To disable layers you don't want:</p>
+<pre><code>
+Disable the off-throttle layer for a simpler sound profile.
+</code></pre>
+<p>Or:</p>
+<pre><code>
+Use only idle and mid layers for a basic two-layer setup.
+</code></pre>
+<h2 id='section-24'>Adding Custom Audio Clips</h2>
+<p>The AI can reference audio clips by name if they exist in your project:</p>
+<pre><code>
+Use the &quot;V8_Idle_Loop&quot; clip for the idle layer.
+Use &quot;V8_Low_Accel&quot; for the low layer.
+</code></pre>
+<p><strong>Requirements for clips:</strong></p>
+<ul>
+<li>Must exist in the project</li>
+<li>Should be loop-friendly (seamless endpoints)</li>
+<li>Should be recorded at consistent pitch</li>
+<li>WAV or OGG format for best quality</li>
+</ul>
+<h2 id='section-25'>Prompt Examples</h2>
+<h3 id='section-26'>Aggressive Sound</h3>
+<pre><code>
+Make the engine sound more aggressive:
+- Increase overall volume by 20%
+- Add more bass to the low layer
+- Make the high layer more prominent
+- Extend the high layer to start earlier
+</code></pre>
+<h3 id='section-27'>Refined Sound</h3>
+<pre><code>
+Refine the engine sound for luxury feel:
+- Reduce overall volume slightly
+- Smooth out transitions between layers
+- Make the high layer subtle
+- Emphasize mid-range smoothness
+</code></pre>
+<h3 id='section-28'>RPM Range Adjustment</h3>
+<pre><code>
+The engine redlines at 7500 RPM now. Adjust the audio layers:
+- Extend all layers proportionally
+- High layer should peak around 7000 RPM
+- Maintain smooth transitions
+</code></pre>
+<h3 id='section-29'>Fix Transition Issues</h3>
+<pre><code>
+There's a noticeable volume dip around 3500 RPM.
+Increase the overlap between low and mid layers.
+The transition should be smooth with no dips.
+</code></pre>
+<h2 id='section-30'>Tips for This Panel</h2>
+<h3 id='section-31'>Listen During Configuration</h3>
+<p>Play the vehicle in the editor while adjusting to hear changes immediately.</p>
+<h3 id='section-32'>Match Audio to Engine Type</h3>
+<p>A V8 should sound different from an I4. Choose appropriate clips and settings.</p>
+<h3 id='section-33'>Test Across RPM Range</h3>
+<p>Rev the engine through its full range to check all transitions.</p>
+<h3 id='section-34'>Consider Gameplay</h3>
+<p>Some games want dramatic sound; others want realism. Tune for your goal.</p>
+<h3 id='section-35'>Start with Defaults</h3>
+<p>RCCP includes default audio settings. Modify from those rather than starting from scratch.</p>
+<h3 id='section-36'>Use Quality Source Audio</h3>
+<p>The best configuration won't fix poor quality audio clips. Start with good recordings.</p>
+</div></body></html>

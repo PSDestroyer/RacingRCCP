@@ -1,0 +1,320 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>Behaviors</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Behaviors Panel</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Behaviors Panel</a></li>
+<li style='margin-left:20px'><a href='#section-1'>What This Panel Configures</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Driving Styles</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Stability Systems</a></li>
+<li style='margin-left:40px'><a href='#section-4'>Steering Response</a></li>
+<li style='margin-left:40px'><a href='#section-5'>Driving Limits</a></li>
+<li style='margin-left:20px'><a href='#section-6'>Common Configurations</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Racing Setup</a></li>
+<li style='margin-left:40px'><a href='#section-8'>Drift Setup</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Stable Daily Driver</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Off-Road Configuration</a></li>
+<li style='margin-left:20px'><a href='#section-11'>Understanding Steering Curves</a></li>
+<li style='margin-left:40px'><a href='#section-12'>Example Curve Points</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Why This Matters</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Describing Curves to the AI</a></li>
+<li style='margin-left:20px'><a href='#section-15'>Stability System Deep Dive</a></li>
+<li style='margin-left:40px'><a href='#section-16'>ABS Configuration</a></li>
+<li style='margin-left:40px'><a href='#section-17'>ESP Configuration</a></li>
+<li style='margin-left:40px'><a href='#section-18'>TCS Configuration</a></li>
+<li style='margin-left:20px'><a href='#section-19'>Counter-Steer Assistance</a></li>
+<li style='margin-left:40px'><a href='#section-20'>How It Works</a></li>
+<li style='margin-left:40px'><a href='#section-21'>When to Enable</a></li>
+<li style='margin-left:40px'><a href='#section-22'>When to Disable</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Strength Guidelines</a></li>
+<li style='margin-left:20px'><a href='#section-24'>Preset Examples</a></li>
+<li style='margin-left:40px'><a href='#section-25'>&quot;Track Day&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-26'>&quot;Sunday Drive&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-27'>&quot;Rally Stage&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-28'>&quot;Arcade Fun&quot;</a></li>
+<li style='margin-left:20px'><a href='#section-29'>Tips for This Panel</a></li>
+<li style='margin-left:40px'><a href='#section-30'>Start with Stability Systems</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Test at Multiple Speeds</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Balance Related Settings</a></li>
+<li style='margin-left:40px'><a href='#section-33'>Consider the Whole Package</a></li>
+<li style='margin-left:40px'><a href='#section-34'>Use Descriptive Language</a></li>
+</ul></div>
+<p>The Behaviors panel focuses on driving dynamics, stability systems, and steering response. Use this panel to define how the vehicle feels to drive and how it responds to driver inputs.</p>
+<h2 id='section-1'>What This Panel Configures</h2>
+<h3 id='section-2'>Driving Styles</h3>
+<p>The overall character of the vehicle's handling:</p>
+<ul>
+<li><strong>Sporty:</strong> Quick responses, minimal assists, driver-focused</li>
+<li><strong>Comfortable:</strong> Smooth transitions, forgiving behavior</li>
+<li><strong>Racing:</strong> Maximum performance, professional-level control</li>
+<li><strong>Off-road:</strong> High travel, stable on uneven terrain</li>
+<li><strong>Drift:</strong> Loose rear end, counter-steer friendly</li>
+</ul>
+<h3 id='section-3'>Stability Systems</h3>
+<p>Electronic aids that assist the driver:</p>
+<p><strong>ABS (Anti-lock Braking System)</strong></p>
+<p>Prevents wheel lockup during braking. Configurable parameters:</p>
+<ul>
+<li>Enable/disable</li>
+<li>Intervention strength (0-1)</li>
+<li>Activation threshold</li>
+</ul>
+<p><strong>ESP (Electronic Stability Program)</strong></p>
+<p>Corrects oversteer and understeer. Configurable parameters:</p>
+<ul>
+<li>Enable/disable</li>
+<li>Correction strength</li>
+<li>Slip angle threshold</li>
+<li>Brake intervention rate</li>
+</ul>
+<p><strong>TCS (Traction Control System)</strong></p>
+<p>Limits wheel spin during acceleration. Configurable parameters:</p>
+<ul>
+<li>Enable/disable</li>
+<li>Slip limit</li>
+<li>Power reduction rate</li>
+<li>Engagement smoothness</li>
+</ul>
+<h3 id='section-4'>Steering Response</h3>
+<p>How the vehicle responds to steering input:</p>
+<p><strong>Steering Angle</strong></p>
+<p>Maximum wheel turn angle at standstill.</p>
+<p><strong>Speed-Sensitive Steering</strong></p>
+<p>Steering multiplier curves that reduce sensitivity at high speeds:</p>
+<ul>
+<li>X-axis: Vehicle speed (km/h)</li>
+<li>Y-axis: Steering multiplier (0-1)</li>
+</ul>
+<p><strong>Counter-Steer Assistance</strong></p>
+<p>Automatic correction during slides:</p>
+<ul>
+<li>Enable/disable</li>
+<li>Assistance strength</li>
+<li>Activation threshold</li>
+</ul>
+<h3 id='section-5'>Driving Limits</h3>
+<p><strong>Speed Limiter</strong></p>
+<p>Maximum vehicle speed enforcement:</p>
+<ul>
+<li>Enable/disable</li>
+<li>Speed limit value</li>
+<li>Enforcement method</li>
+</ul>
+<p><strong>Rev Limiter</strong></p>
+<p>Engine RPM ceiling behavior:</p>
+<ul>
+<li>Hard limiter (fuel cut)</li>
+<li>Soft limiter (gradual reduction)</li>
+</ul>
+<h2 id='section-6'>Common Configurations</h2>
+<h3 id='section-7'>Racing Setup</h3>
+<pre><code>
+Create a racing setup with:
+- ABS enabled at 0.8 strength for threshold braking
+- ESP disabled for maximum driver control
+- TCS at 0.3 for corner exit assist
+- Quick steering response that reduces by 40% at 200 km/h
+- No speed limiter
+</code></pre>
+<h3 id='section-8'>Drift Setup</h3>
+<pre><code>
+Configure for drifting:
+- ABS at 0.5 for brake-initiated slides
+- ESP completely disabled
+- TCS disabled for unrestricted wheel spin
+- Maximum steering angle for deep counter-steer
+- Counter-steer assistance at 0.6 strength
+</code></pre>
+<h3 id='section-9'>Stable Daily Driver</h3>
+<pre><code>
+Set up a stable daily driver:
+- ABS at full strength for safe braking
+- ESP enabled at 0.7 with early intervention
+- TCS enabled at 0.5 to prevent accidental wheel spin
+- Progressive steering that becomes very stable at highway speeds
+- Speed limiter at 180 km/h
+</code></pre>
+<h3 id='section-10'>Off-Road Configuration</h3>
+<pre><code>
+Configure for off-road use:
+- ABS at 0.4 to allow controlled slides on loose surfaces
+- ESP at 0.3 for light correction without fighting terrain
+- TCS at 0.4 balanced for traction without over-intervention
+- Linear steering response regardless of speed
+</code></pre>
+<h2 id='section-11'>Understanding Steering Curves</h2>
+<p>Steering curves are essential for realistic handling. The X-axis represents speed in km/h, and the Y-axis represents a multiplier (0-1) applied to the maximum steering angle.</p>
+<h3 id='section-12'>Example Curve Points</h3>
+<table>
+<tr><th>Speed (km/h)</th><th>Multiplier</th><th>Effect</th></tr>
+<tr><td>0</td><td>1.0</td><td>Full steering at standstill</td></tr>
+<tr><td>50</td><td>0.8</td><td>80% steering at city speeds</td></tr>
+<tr><td>100</td><td>0.5</td><td>50% steering at highway speeds</td></tr>
+<tr><td>200</td><td>0.3</td><td>30% steering at high speeds</td></tr>
+</table>
+<h3 id='section-13'>Why This Matters</h3>
+<p>At high speeds:</p>
+<ul>
+<li>Full steering would cause immediate loss of control</li>
+<li>Reduced steering makes the vehicle stable</li>
+<li>Real cars have this effect mechanically</li>
+</ul>
+<p>The curve should:</p>
+<ul>
+<li>Start at 1.0 for low speeds</li>
+<li>Decrease progressively</li>
+<li>Level off at high speeds</li>
+</ul>
+<h3 id='section-14'>Describing Curves to the AI</h3>
+<p>Instead of specifying exact curve points, describe the behavior:</p>
+<pre><code>
+Make steering very responsive at parking speeds but reduce to about
+30% effectiveness at highway speeds. The transition should be gradual
+and smooth, not abrupt.
+</code></pre>
+<h2 id='section-15'>Stability System Deep Dive</h2>
+<h3 id='section-16'>ABS Configuration</h3>
+<p><strong>When to enable:</strong></p>
+<ul>
+<li>Road vehicles for consistent braking</li>
+<li>Racing where threshold braking is allowed</li>
+<li>Wet conditions</li>
+</ul>
+<p><strong>When to reduce/disable:</strong></p>
+<ul>
+<li>Off-road for controlled slides</li>
+<li>Drift vehicles for brake-initiated techniques</li>
+<li>Realistic simulations where driver skill matters</li>
+</ul>
+<p><strong>Strength guidelines:</strong></p>
+<ul>
+<li>1.0: Maximum intervention, wheel never locks</li>
+<li>0.7-0.8: Strong assist, brief lockups possible</li>
+<li>0.4-0.6: Moderate, requires driver attention</li>
+<li>0.1-0.3: Light assist, mostly driver controlled</li>
+<li>0.0: Disabled</li>
+</ul>
+<h3 id='section-17'>ESP Configuration</h3>
+<p><strong>When to enable:</strong></p>
+<ul>
+<li>Novice-friendly vehicles</li>
+<li>High-powered vehicles</li>
+<li>Adverse conditions</li>
+</ul>
+<p><strong>When to reduce/disable:</strong></p>
+<ul>
+<li>Drift vehicles (ESP fights sliding)</li>
+<li>Professional racing simulations</li>
+<li>When deliberate oversteer is desired</li>
+</ul>
+<p><strong>Strength guidelines:</strong></p>
+<ul>
+<li>1.0: Very aggressive correction</li>
+<li>0.6-0.8: Strong but allows minor slides</li>
+<li>0.3-0.5: Moderate, catches big slides only</li>
+<li>0.1-0.2: Light safety net</li>
+<li>0.0: Disabled</li>
+</ul>
+<h3 id='section-18'>TCS Configuration</h3>
+<p><strong>When to enable:</strong></p>
+<ul>
+<li>Powerful vehicles</li>
+<li>Slippery conditions</li>
+<li>Novice-friendly setups</li>
+</ul>
+<p><strong>When to reduce/disable:</strong></p>
+<ul>
+<li>Drift vehicles</li>
+<li>When wheel spin is desired for show</li>
+<li>Rally/off-road for terrain adaptation</li>
+</ul>
+<p><strong>Strength guidelines:</strong></p>
+<ul>
+<li>1.0: No wheel spin possible</li>
+<li>0.6-0.8: Minimal slip allowed</li>
+<li>0.3-0.5: Moderate slip before intervention</li>
+<li>0.1-0.2: Only prevents extreme spin</li>
+<li>0.0: Disabled</li>
+</ul>
+<h2 id='section-19'>Counter-Steer Assistance</h2>
+<p>This feature helps maintain control during slides by automatically applying corrective steering.</p>
+<h3 id='section-20'>How It Works</h3>
+<ol>
+<li>Vehicle begins to slide (rear stepping out)</li>
+<li>System detects slip angle</li>
+<li>Steering is automatically adjusted toward the slide direction</li>
+<li>Driver maintains control with less effort</li>
+</ol>
+<h3 id='section-21'>When to Enable</h3>
+<ul>
+<li>Drift vehicles (makes drifting easier)</li>
+<li>Arcade-style handling</li>
+<li>Novice-friendly configurations</li>
+<li>When natural drifting feel is desired</li>
+</ul>
+<h3 id='section-22'>When to Disable</h3>
+<ul>
+<li>Simulation-focused vehicles</li>
+<li>Professional driving experience</li>
+<li>When maximum driver control is preferred</li>
+</ul>
+<h3 id='section-23'>Strength Guidelines</h3>
+<ul>
+<li>1.0: Very strong assistance (almost automatic)</li>
+<li>0.5-0.7: Helpful without taking over</li>
+<li>0.2-0.4: Subtle assistance</li>
+<li>0.0: Disabled (pure driver control)</li>
+</ul>
+<h2 id='section-24'>Preset Examples</h2>
+<h3 id='section-25'>&quot;Track Day&quot;</h3>
+<pre><code>
+Sharp steering response at low speeds, stabilizing at high speeds.
+Strong ABS for consistent braking. ESP disabled for driver control.
+Light TCS for corner exit traction. No speed limiter.
+</code></pre>
+<h3 id='section-26'>&quot;Sunday Drive&quot;</h3>
+<pre><code>
+Smooth, predictable steering at all speeds. Full ABS for safety.
+Moderate ESP for stability. TCS enabled to prevent wheel spin.
+Speed limiter at 200 km/h.
+</code></pre>
+<h3 id='section-27'>&quot;Rally Stage&quot;</h3>
+<pre><code>
+Quick steering maintained even at speed for rapid corrections.
+Reduced ABS for controlled slides on gravel. Light ESP for
+extreme situations only. TCS off for natural terrain adaptation.
+</code></pre>
+<h3 id='section-28'>&quot;Arcade Fun&quot;</h3>
+<pre><code>
+Very responsive steering. Moderate ABS. ESP at 0.5 for
+catchable slides. TCS off. Strong counter-steer assistance
+for easy drifting.
+</code></pre>
+<h2 id='section-29'>Tips for This Panel</h2>
+<h3 id='section-30'>Start with Stability Systems</h3>
+<p>Get the electronic aids right first - they have the biggest impact on feel.</p>
+<h3 id='section-31'>Test at Multiple Speeds</h3>
+<p>Steering curves affect different speed ranges. Test parking, city, and highway speeds.</p>
+<h3 id='section-32'>Balance Related Settings</h3>
+<p>ESP and TCS interact. Very strong ESP with no TCS can feel inconsistent.</p>
+<h3 id='section-33'>Consider the Whole Package</h3>
+<p>Behaviors affect how power delivery and suspension feel. Tune iteratively.</p>
+<h3 id='section-34'>Use Descriptive Language</h3>
+<p>Instead of numbers, describe feelings: &quot;catches slides but allows some fun.&quot;</p>
+</div></body></html>

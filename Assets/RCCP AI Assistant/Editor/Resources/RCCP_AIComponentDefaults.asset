@@ -1,0 +1,284 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38881ab813b3ad24caf513bb20b66e17, type: 3}
+  m_Name: RCCP_AIComponentDefaults
+  m_EditorClassIdentifier: 
+  extractedDate: 2026-02-10 10:05:35
+  rccpVersion: V2.2
+  rigidbody:
+    mass: 1350
+    linearDamping: 0.0025
+    angularDamping: 0.35
+    maxAngularVelocity: 8
+  engine:
+    minEngineRPM: 750
+    maxEngineRPM: 7000
+    maximumTorqueAsNM: 200
+    maximumSpeed: 240
+    engineAccelerationRate: 0.75
+    engineCouplingToWheelsRate: 1.5
+    engineDecelerationRate: 0.35
+    engineInertia: 0.2
+    engineFriction: 0.2
+    turboCharged: 0
+    maxTurboChargePsi: 12
+    turboChargerCoEfficient: 1.25
+    engineRevLimiter: 1
+    revLimiterCutFrequency: 15
+    peakRPM: 4000
+  gearbox:
+    transmissionType: Automatic
+    gearRatios:
+    - 4.35
+    - 2.5
+    - 1.66
+    - 1.23
+    - 1
+    - 0.85
+    shiftingTime: 0.2
+    shiftThreshold: 0.8
+    shiftUpRPM: 5500
+    shiftDownRPM: 2750
+  clutch:
+    clutchInertia: 0.5
+    engageRPM: 1600
+    automaticClutch: 1
+    pressClutchWhileShiftingGears: 1
+    pressClutchWhileHandbraking: 1
+  differential:
+    differentialType: Limited
+    limitedSlipRatio: 80
+    finalDriveRatio: 3.73
+  axle:
+    antirollForce: 500
+    maxSteerAngle: 40
+    maxBrakeTorque: 5000
+    maxHandbrakeTorque: 5000
+    steerSpeed: 1
+    powerMultiplier: 1
+    steerMultiplier: 1
+    brakeMultiplier: 1
+    handbrakeMultiplier: 1
+    frontIsSteer: 1
+    frontIsBrake: 1
+    frontIsHandbrake: 0
+    rearIsSteer: 0
+    rearIsBrake: 1
+    rearIsHandbrake: 1
+  stability:
+    ABS: 1
+    ESP: 1
+    TCS: 1
+    steeringHelper: 1
+    tractionHelper: 1
+    angularDragHelper: 0
+    engageABSThreshold: 0.35
+    engageESPThreshold: 0.35
+    engageTCSThreshold: 0.35
+    steerHelperStrength: 0.025
+    tractionHelperStrength: 0.05
+    angularDragHelperStrength: 0.075
+  wheelCollider:
+    wheelRadius: 0.5
+    wheelWidth: 0.25
+    suspensionDistance: 0.2
+    suspensionSpring: 50000
+    suspensionDamper: 3500
+    camber: 0
+    caster: 0
+    grip: 1
+    forwardExtremumSlip: 0.4
+    forwardExtremumValue: 1
+    forwardAsymptoteSlip: 0.8
+    forwardAsymptoteValue: 0.5
+    forwardStiffness: 1
+    sidewaysExtremumSlip: 0.35
+    sidewaysExtremumValue: 1
+    sidewaysAsymptoteSlip: 0.5
+    sidewaysAsymptoteValue: 0.75
+    sidewaysStiffness: 1
+  aeroDynamics:
+    downForce: 10
+    airResistance: 10
+    wheelResistance: 10
+    dynamicCOM: 0
+    autoReset: 1
+    autoResetTime: 3
+  nos:
+    enabled: 1
+    torqueMultiplier: 2.5
+    durationTime: 3
+    regenerateTime: 2
+    regenerateRate: 1
+  fuelTank:
+    enabled: 1
+    fuelTankCapacity: 60
+    fuelTankFillAmount: 1
+    stopEngineWhenEmpty: 1
+    baseLitersPerHour: 1
+    maxLitersPerHour: 25
+    minimalIdleThrottle: 0.05
+  limiter:
+    enabled: 1
+    applyDownhillForce: 1
+    downhillForceStrength: 20
+  damage:
+    meshDeformation: 1
+    maximumDamage: 0.75
+    deformationRadius: 0.75
+    deformationMultiplier: 1
+  input:
+    counterSteerFactor: 0.5
+    counterSteering: 1
+    steeringLimiter: 1
+    autoReverse: 1
+    inverseThrottleBrakeOnReverse: 1
+    cutThrottleWhenShifting: 1
+    applyBrakeOnDisable: 0
+    applyHandBrakeOnDisable: 1
+    steeringDeadzone: 0.05
+    throttleDeadzone: 0.05
+    brakeDeadzone: 0.05
+    handbrakeDeadzone: 0.05
+    nosDeadzone: 0.05
+    clutchDeadzone: 0.05
+  audio:
+    engineMinPitch: 0.85
+    engineMaxPitch: 1.45
+    engineMinRPM: 0
+    engineMaxRPM: 4000
+    engineMinDistance: 10
+    engineMaxDistance: 120
+    engineMaxVolume: 0.6
+  lights:
+    intensity: 1
+    smoothness: 0.5
+    useLensFlares: 1
+    flareBrightness: 1.5
+    isBreakable: 1
+    breakStrength: 100
+  particles:
+    collisionFilterValue: -1
+  lod:
+    forceToFirstLevel: 0
+    forceToLatestLevel: 0
+    lodFactor: 0.8
+  ai:
+    waypointRadius: 5
+    nextWaypointDistance: 20
+    maxSpeed: 100
+    smoothedSteer: 5
+    raycastDistance: 30
+    raycastAngle: 30
+    raycastCount: 5
+    aggressiveness: 0.5
+    brakeDistance: 10
+    steeringSensitivity: 1
+    steerPID_P: 1
+    steerPID_I: 0
+    steerPID_D: 0.1
+    throttlePID_P: 1
+    throttlePID_I: 0
+    throttlePID_D: 0.1
+  aiObstacleAvoidance:
+    enabled: 1
+    detectionDistance: 20
+    detectionAngle: 45
+    avoidanceStrength: 1
+    reactionTime: 0.5
+    rayCount: 5
+    obstacleLayers:
+      serializedVersion: 2
+      m_Bits: 0
+  bodyTilt:
+    enabled: 1
+    tiltAngle: 5
+    tiltSpeed: 2
+    verticalTiltAngle: 2
+  exhausts:
+    emissionMultiplier: 1
+    smokeIntensity: 1
+    flameEnabled: 1
+    flameThreshold: 0.8
+  trailerAttacher:
+    connectionDistance: 2
+    breakForce: 10000
+    breakTorque: 10000
+    autoConnect: 0
+  wheelBlur:
+    enabled: 1
+    blurStartSpeed: 50
+    blurFullSpeed: 100
+    blurIntensity: 1
+  recorder:
+    enabled: 1
+    recordInterval: 0.1
+    maxRecordedFrames: 1000
+    recordPosition: 1
+    recordRotation: 1
+    recordInputs: 1
+  detachablePart:
+    detachmentForce: 5000
+    detachmentTorque: 5000
+    canDetach: 1
+    randomRotationForce: 10
+  visualDashboard:
+    needleSmoothness: 5
+    rpmMultiplier: 1
+    speedMultiplier: 1
+    digitalDisplay: 1
+  exteriorCameras:
+    hoodCameraFOV: 60
+    wheelCameraFOV: 70
+    cameraSmoothing: 5
+    autoSwitch: 0
+  upgradeEngine:
+    maxLevel: 5
+    torqueIncreasePerLevel: 25
+    rpmIncreasePerLevel: 500
+    efficiencyPerLevel: 0.05
+  upgradeBrake:
+    maxLevel: 5
+    brakeForceIncreasePerLevel: 500
+    absEfficiencyPerLevel: 0.05
+  upgradeHandling:
+    maxLevel: 5
+    steerAngleIncreasePerLevel: 2
+    stabilityIncreasePerLevel: 0.1
+    tractionIncreasePerLevel: 0.05
+  upgradeSpeed:
+    maxLevel: 5
+    topSpeedIncreasePerLevel: 10
+    accelerationIncreasePerLevel: 0.05
+  upgradeSpoiler:
+    maxLevel: 3
+    downforceIncreasePerLevel: 50
+    dragIncreasePerLevel: 5
+  upgradePaint:
+    useMetallic: 1
+    defaultSmoothness: 0.8
+    defaultMetallic: 0.5
+  upgradeNeon:
+    enabled: 0
+    intensity: 1
+    range: 5
+    underglow: 1
+  upgradeDecal:
+    defaultScale: 1
+    defaultOpacity: 1
+    allowMultiple: 1
+  upgradeSiren:
+    enabled: 0
+    lightIntensity: 2
+    flashInterval: 0.25
+    soundEnabled: 1
+    soundVolume: 1

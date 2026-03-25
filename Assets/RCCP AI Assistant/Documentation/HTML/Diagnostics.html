@@ -1,0 +1,424 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>Diagnostics</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Diagnostics Panel</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Diagnostics Panel</a></li>
+<li style='margin-left:20px'><a href='#section-1'>What This Panel Does</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Local Validation</a></li>
+<li style='margin-left:40px'><a href='#section-3'>What Gets Checked</a></li>
+<li style='margin-left:20px'><a href='#section-4'>Running Diagnostics</a></li>
+<li style='margin-left:40px'><a href='#section-5'>How to Use</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Results Display</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Filtering Results</a></li>
+<li style='margin-left:20px'><a href='#section-8'>Auto-Fix Feature</a></li>
+<li style='margin-left:40px'><a href='#section-9'>How Auto-Fix Works</a></li>
+<li style='margin-left:40px'><a href='#section-10'>What Can Be Auto-Fixed</a></li>
+<li style='margin-left:40px'><a href='#section-11'>What Cannot Be Auto-Fixed</a></li>
+<li style='margin-left:40px'><a href='#section-12'>Per-Issue Fix Buttons</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Auto-Fix Safety</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Recommended Workflow</a></li>
+<li style='margin-left:20px'><a href='#section-15'>Common Diagnostics</a></li>
+<li style='margin-left:40px'><a href='#section-16'>Structure Checks</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Component Checks</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Configuration Checks</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Physical Checks</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Reference Checks</a></li>
+<li style='margin-left:20px'><a href='#section-21'>Interpreting Results</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Info Messages</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Warning Messages</a></li>
+<li style='margin-left:40px'><a href='#section-24'>Error Messages</a></li>
+<li style='margin-left:20px'><a href='#section-25'>When to Run Diagnostics</a></li>
+<li style='margin-left:40px'><a href='#section-26'>After Vehicle Creation</a></li>
+<li style='margin-left:40px'><a href='#section-27'>After Manual Changes</a></li>
+<li style='margin-left:40px'><a href='#section-28'>When Something Doesn't Work</a></li>
+<li style='margin-left:40px'><a href='#section-29'>Before Shipping</a></li>
+<li style='margin-left:20px'><a href='#section-30'>Diagnostic Categories</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Critical Issues</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Important Issues</a></li>
+<li style='margin-left:40px'><a href='#section-33'>Minor Issues</a></li>
+<li style='margin-left:20px'><a href='#section-34'>Tips for This Panel</a></li>
+<li style='margin-left:40px'><a href='#section-35'>Use Frequently</a></li>
+<li style='margin-left:40px'><a href='#section-36'>Fix Errors First</a></li>
+<li style='margin-left:40px'><a href='#section-37'>Understand Warnings</a></li>
+<li style='margin-left:40px'><a href='#section-38'>Use with Other Panels</a></li>
+<li style='margin-left:40px'><a href='#section-39'>Keep Vehicles Clean</a></li>
+<li style='margin-left:40px'><a href='#section-40'>Pre-Flight Check</a></li>
+<li style='margin-left:20px'><a href='#section-41'>Troubleshooting Common Issues</a></li>
+<li style='margin-left:40px'><a href='#section-42'>&quot;Missing RCCP_CarController&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-43'>&quot;WheelColliders not found&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-44'>&quot;Mass not set&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-45'>&quot;Invalid gear ratios&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-46'>&quot;Suspension travel invalid&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-47'>Many warnings after creation</a></li>
+<li style='margin-left:40px'><a href='#section-48'>Auto-Fix did nothing</a></li>
+<li style='margin-left:40px'><a href='#section-49'>Auto-Fix made things worse</a></li>
+</ul></div>
+<p>The Diagnostics panel performs local validation of RCCP vehicles without using AI. It checks for common issues, missing components, and configuration problems to help ensure your vehicles are properly set up.</p>
+<h2 id='section-1'>What This Panel Does</h2>
+<h3 id='section-2'>Local Validation</h3>
+<p>Unlike other panels that use AI to generate configurations, Diagnostics runs entirely locally:</p>
+<ul>
+<li>No API calls required</li>
+<li>No usage of your request quota</li>
+<li>Instant results</li>
+<li>Works offline</li>
+</ul>
+<h3 id='section-3'>What Gets Checked</h3>
+<p>The diagnostic system examines:</p>
+<p><strong>Vehicle Structure</strong></p>
+<ul>
+<li>RCCP_CarController presence and state</li>
+<li>Required component hierarchy</li>
+<li>GameObject structure</li>
+</ul>
+<p><strong>Component Presence</strong></p>
+<ul>
+<li>Required components (Engine, Gearbox, etc.)</li>
+<li>Optional components and their state</li>
+<li>Component references and connections</li>
+</ul>
+<p><strong>Configuration Values</strong></p>
+<ul>
+<li>Invalid or extreme values</li>
+<li>Missing required values</li>
+<li>Conflicting settings</li>
+</ul>
+<p><strong>Physical Setup</strong></p>
+<ul>
+<li>Rigidbody configuration</li>
+<li>WheelCollider setup</li>
+<li>Collider presence and types</li>
+</ul>
+<p><strong>References</strong></p>
+<ul>
+<li>Missing or broken references</li>
+<li>Orphaned components</li>
+<li>Circular dependencies</li>
+</ul>
+<h2 id='section-4'>Running Diagnostics</h2>
+<h3 id='section-5'>How to Use</h3>
+<ol>
+<li>Select an RCCP vehicle in the scene</li>
+<li>Switch to the Diagnostics panel</li>
+<li>Click <strong>Run Diagnostics</strong></li>
+<li>Review the results</li>
+</ol>
+<p>There's no prompt input - diagnostics are automatic based on the vehicle's current state.</p>
+<h3 id='section-6'>Results Display</h3>
+<p>Results are categorized by severity:</p>
+<p><strong>Info (Blue)</strong></p>
+<p>Informational messages that don't indicate problems:</p>
+<ul>
+<li>Configuration details</li>
+<li>Statistics</li>
+<li>Notes</li>
+</ul>
+<p><strong>Warning (Yellow)</strong></p>
+<p>Potential issues that may or may not cause problems:</p>
+<ul>
+<li>Unusual but valid configurations</li>
+<li>Missing optional components</li>
+<li>Performance concerns</li>
+</ul>
+<p><strong>Error (Red)</strong></p>
+<p>Actual problems that need attention:</p>
+<ul>
+<li>Missing required components</li>
+<li>Invalid configurations</li>
+<li>Broken references</li>
+</ul>
+<h3 id='section-7'>Filtering Results</h3>
+<p>Toggle filters to show/hide severity levels:</p>
+<ul>
+<li>Show/Hide Info messages</li>
+<li>Show/Hide Warnings</li>
+<li>Show/Hide Errors</li>
+</ul>
+<p>This helps focus on what matters to you.</p>
+<h2 id='section-8'>Auto-Fix Feature</h2>
+<p>Some common issues can be automatically fixed without manual intervention.</p>
+<h3 id='section-9'>How Auto-Fix Works</h3>
+<p>When diagnostics identify fixable issues:</p>
+<ol>
+<li>An <strong>Auto-Fix</strong> button appears in the results area</li>
+<li>Click the button to attempt automatic repairs</li>
+<li>The system fixes what it can and reports results</li>
+<li>Diagnostics run again to verify fixes</li>
+</ol>
+<h3 id='section-10'>What Can Be Auto-Fixed</h3>
+<p>The auto-fix system can resolve:</p>
+<p><strong>Missing References</strong></p>
+<ul>
+<li>Reconnect broken component references</li>
+<li>Link orphaned wheel colliders</li>
+<li>Restore axle-to-wheel connections</li>
+</ul>
+<p><strong>Invalid Values</strong></p>
+<ul>
+<li>Reset zero or negative values to valid defaults</li>
+<li>Correct out-of-range settings</li>
+<li>Fix inverted min/max values</li>
+</ul>
+<p><strong>Component Setup</strong></p>
+<ul>
+<li>Add missing required child components</li>
+<li>Initialize unset required fields</li>
+<li>Correct component hierarchy issues</li>
+</ul>
+<h3 id='section-11'>What Cannot Be Auto-Fixed</h3>
+<p>Some issues require manual attention:</p>
+<p><strong>Structural Problems</strong></p>
+<ul>
+<li>Missing wheel meshes in the model</li>
+<li>Incorrect model scale or orientation</li>
+<li>Merged wheels that need separation</li>
+</ul>
+<p><strong>Design Decisions</strong></p>
+<ul>
+<li>Center of mass positioning</li>
+<li>Collider shapes and sizes</li>
+<li>Physics layer assignments</li>
+</ul>
+<p><strong>Asset References</strong></p>
+<ul>
+<li>Missing audio clips</li>
+<li>Missing materials</li>
+<li>Missing prefab references</li>
+</ul>
+<h3 id='section-12'>Per-Issue Fix Buttons</h3>
+<p>Individual issues that can be fixed show a small fix button:</p>
+<pre><code>
+[!] WheelCollider radius is zero        [Fix]
+    Suggestion: Set radius to match wheel mesh
+</code></pre>
+<p>Click the individual fix button to resolve just that issue.</p>
+<h3 id='section-13'>Auto-Fix Safety</h3>
+<p>Auto-fix operations are safe:</p>
+<ul>
+<li>All changes support Unity Undo (Ctrl+Z)</li>
+<li>Original values are logged to Console</li>
+<li>Fixes use RCCP default values when appropriate</li>
+<li>Prefab instances are handled correctly</li>
+</ul>
+<h3 id='section-14'>Recommended Workflow</h3>
+<ol>
+<li>Run diagnostics first</li>
+<li>Review the error list</li>
+<li>Click Auto-Fix to resolve what's possible</li>
+<li>Manually address remaining issues</li>
+<li>Run diagnostics again to confirm</li>
+</ol>
+<h2 id='section-15'>Common Diagnostics</h2>
+<h3 id='section-16'>Structure Checks</h3>
+<p><strong>RCCP_CarController Status</strong></p>
+<ul>
+<li>Present and enabled</li>
+<li>Properly initialized</li>
+<li>References valid</li>
+</ul>
+<p><strong>Hierarchy Check</strong></p>
+<ul>
+<li>Standard RCCP hierarchy maintained</li>
+<li>No unexpected parents or children</li>
+<li>Proper nesting of components</li>
+</ul>
+<h3 id='section-17'>Component Checks</h3>
+<p><strong>Required Components:</strong></p>
+<ul>
+<li>RCCP_Engine - Power source</li>
+<li>RCCP_Gearbox - Transmission</li>
+<li>RCCP_Differential - Power distribution</li>
+<li>RCCP_Axles - Wheel connections</li>
+<li>RCCP_Input - Control input</li>
+</ul>
+<p><strong>Optional Components:</strong></p>
+<ul>
+<li>RCCP_Stability - ABS/ESP/TCS</li>
+<li>RCCP_Audio - Engine sound</li>
+<li>RCCP_Lights - Vehicle lighting</li>
+<li>RCCP_Damage - Damage system</li>
+</ul>
+<h3 id='section-18'>Configuration Checks</h3>
+<p><strong>Engine</strong></p>
+<ul>
+<li>Power values within reasonable range</li>
+<li>RPM range valid (idle &lt; max)</li>
+<li>Torque curve defined</li>
+</ul>
+<p><strong>Gearbox</strong></p>
+<ul>
+<li>Gear count matches gear ratios</li>
+<li>Ratios are valid numbers</li>
+<li>Final drive defined</li>
+</ul>
+<p><strong>Wheels</strong></p>
+<ul>
+<li>WheelColliders present for each wheel</li>
+<li>Suspension values positive</li>
+<li>Friction curves defined</li>
+</ul>
+<h3 id='section-19'>Physical Checks</h3>
+<p><strong>Rigidbody</strong></p>
+<ul>
+<li>Present on main vehicle body</li>
+<li>Mass is reasonable</li>
+<li>Drag values appropriate</li>
+<li>Center of mass configured</li>
+</ul>
+<p><strong>Colliders</strong></p>
+<ul>
+<li>At least one collider on body</li>
+<li>No inverted or zero-size colliders</li>
+<li>Appropriate collision layers</li>
+</ul>
+<p><strong>WheelColliders</strong></p>
+<ul>
+<li>Correct number (typically 4)</li>
+<li>Radius appropriate for wheel mesh</li>
+<li>Suspension travel defined</li>
+</ul>
+<h3 id='section-20'>Reference Checks</h3>
+<p><strong>Component References</strong></p>
+<ul>
+<li>All required references assigned</li>
+<li>No null references where required</li>
+<li>No circular references</li>
+</ul>
+<p><strong>Asset References</strong></p>
+<ul>
+<li>Audio clips assigned (if audio enabled)</li>
+<li>Materials/textures present</li>
+<li>Prefab references valid</li>
+</ul>
+<h2 id='section-21'>Interpreting Results</h2>
+<h3 id='section-22'>Info Messages</h3>
+<p><strong>&quot;Vehicle has X components configured&quot;</strong></p>
+<p>Summary of what's set up. Not a problem.</p>
+<p><strong>&quot;Using default values for Y&quot;</strong></p>
+<p>Component is using RCCP defaults. May want to customize.</p>
+<p><strong>&quot;Optional component Z not present&quot;</strong></p>
+<p>An optional feature isn't configured. Add if desired.</p>
+<h3 id='section-23'>Warning Messages</h3>
+<p><strong>&quot;Engine power unusually high/low&quot;</strong></p>
+<p>Power value is outside typical range. May be intentional for special vehicles.</p>
+<p><strong>&quot;Suspension travel very short&quot;</strong></p>
+<p>May bottom out easily. Could be intentional for low-rider style.</p>
+<p><strong>&quot;Center of mass not configured&quot;</strong></p>
+<p>Using automatic calculation. May want to fine-tune.</p>
+<p><strong>&quot;No audio configured&quot;</strong></p>
+<p>Vehicle will be silent. Add audio if desired.</p>
+<h3 id='section-24'>Error Messages</h3>
+<p><strong>&quot;Missing RCCP_Engine component&quot;</strong></p>
+<p>Required component not found. Vehicle won't function.</p>
+<p><strong>&quot;WheelCollider radius is zero&quot;</strong></p>
+<p>Invalid configuration. Wheel won't work correctly.</p>
+<p><strong>&quot;Null reference in axle configuration&quot;</strong></p>
+<p>A required reference is missing. Needs to be assigned.</p>
+<p><strong>&quot;Rigidbody mass is zero&quot;</strong></p>
+<p>Physics won't work correctly. Set a valid mass.</p>
+<h2 id='section-25'>When to Run Diagnostics</h2>
+<h3 id='section-26'>After Vehicle Creation</h3>
+<p>Run diagnostics immediately after creating a vehicle to catch any setup issues:</p>
+<ol>
+<li>Complete vehicle creation</li>
+<li>Finish post-creation setup</li>
+<li>Run diagnostics</li>
+<li>Address any errors before testing</li>
+</ol>
+<h3 id='section-27'>After Manual Changes</h3>
+<p>If you've made manual changes in the Inspector:</p>
+<ol>
+<li>Make your changes</li>
+<li>Run diagnostics</li>
+<li>Verify nothing was broken</li>
+</ol>
+<h3 id='section-28'>When Something Doesn't Work</h3>
+<p>If your vehicle behaves unexpectedly:</p>
+<ol>
+<li>Run diagnostics first</li>
+<li>Check for errors</li>
+<li>Address problems before investigating further</li>
+</ol>
+<h3 id='section-29'>Before Shipping</h3>
+<p>As a final check before releasing:</p>
+<ol>
+<li>Run diagnostics on all vehicles</li>
+<li>Ensure no errors</li>
+<li>Review warnings for acceptability</li>
+</ol>
+<h2 id='section-30'>Diagnostic Categories</h2>
+<h3 id='section-31'>Critical Issues</h3>
+<p>Must be fixed for the vehicle to function:</p>
+<ul>
+<li>Missing required components</li>
+<li>Null references</li>
+<li>Zero or negative physics values</li>
+<li>Broken component connections</li>
+</ul>
+<h3 id='section-32'>Important Issues</h3>
+<p>Should usually be fixed:</p>
+<ul>
+<li>Unusual value ranges</li>
+<li>Missing common components</li>
+<li>Configuration inconsistencies</li>
+</ul>
+<h3 id='section-33'>Minor Issues</h3>
+<p>May or may not need attention:</p>
+<ul>
+<li>Missing optional features</li>
+<li>Using default values</li>
+<li>Non-standard configurations</li>
+</ul>
+<h2 id='section-34'>Tips for This Panel</h2>
+<h3 id='section-35'>Use Frequently</h3>
+<p>Diagnostics are free (no API cost). Run them often during development.</p>
+<h3 id='section-36'>Fix Errors First</h3>
+<p>Always address red errors before worrying about warnings.</p>
+<h3 id='section-37'>Understand Warnings</h3>
+<p>Some warnings are intentional for special vehicles. Know why they appear.</p>
+<h3 id='section-38'>Use with Other Panels</h3>
+<p>After using other panels to modify a vehicle, run diagnostics to verify the result.</p>
+<h3 id='section-39'>Keep Vehicles Clean</h3>
+<p>Regular diagnostics help maintain vehicle quality throughout development.</p>
+<h3 id='section-40'>Pre-Flight Check</h3>
+<p>Make diagnostics part of your workflow before each play test.</p>
+<h2 id='section-41'>Troubleshooting Common Issues</h2>
+<h3 id='section-42'>&quot;Missing RCCP_CarController&quot;</h3>
+<p>The selected object isn't an RCCP vehicle. Select a proper vehicle or create one first.</p>
+<h3 id='section-43'>&quot;WheelColliders not found&quot;</h3>
+<p>Wheels weren't set up properly. Re-run post-creation wheel wizard or manually add WheelColliders.</p>
+<h3 id='section-44'>&quot;Mass not set&quot;</h3>
+<p>The Rigidbody needs a mass value. Set it manually or regenerate vehicle configuration.</p>
+<h3 id='section-45'>&quot;Invalid gear ratios&quot;</h3>
+<p>Gearbox configuration has problems. Check for zero or negative ratios.</p>
+<h3 id='section-46'>&quot;Suspension travel invalid&quot;</h3>
+<p>WheelCollider suspension values are wrong. Ensure positive travel distances.</p>
+<h3 id='section-47'>Many warnings after creation</h3>
+<p>Some warnings are expected for newly created vehicles before full customization. Focus on errors first.</p>
+<h3 id='section-48'>Auto-Fix did nothing</h3>
+<p>If Auto-Fix reports &quot;No auto-fixable issues found&quot;:</p>
+<ul>
+<li>The detected issues may require manual intervention</li>
+<li>Check if issues are warnings vs errors (some warnings aren't fixable)</li>
+<li>The issues may be design decisions rather than errors</li>
+</ul>
+<h3 id='section-49'>Auto-Fix made things worse</h3>
+<p>Use Undo (Ctrl+Z) immediately to revert. Auto-fix uses safe defaults, but your specific configuration may need different values.</p>
+</div></body></html>

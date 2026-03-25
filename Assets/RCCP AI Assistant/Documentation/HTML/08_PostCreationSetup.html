@@ -1,0 +1,298 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>08_PostCreationSetup</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Post-Creation Setup</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Post-Creation Setup</a></li>
+<li style='margin-left:20px'><a href='#section-1'>Post-Creation State</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Progress Indicator</a></li>
+<li style='margin-left:40px'><a href='#section-3'>What's Already Done</a></li>
+<li style='margin-left:40px'><a href='#section-4'>What Remains</a></li>
+<li style='margin-left:20px'><a href='#section-5'>Wheel Assignment Wizard</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Why It's Needed</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Auto-Detection</a></li>
+<li style='margin-left:40px'><a href='#section-8'>Reviewing Auto-Detection</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Confirming Assignments</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Manual Reassignment</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Common Assignment Issues</a></li>
+<li style='margin-left:40px'><a href='#section-12'>Six-Wheel Vehicles</a></li>
+<li style='margin-left:20px'><a href='#section-13'>Body Colliders Wizard</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Why Colliders Matter</a></li>
+<li style='margin-left:40px'><a href='#section-15'>Collider Options</a></li>
+<li style='margin-left:40px'><a href='#section-16'>Quick Setup</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Custom Setup</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Post-Collider Adjustments</a></li>
+<li style='margin-left:20px'><a href='#section-19'>Transitioning to Customization</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Continue Customizing</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Test Your Vehicle</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Use Specialized Panels</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Run Diagnostics</a></li>
+<li style='margin-left:20px'><a href='#section-24'>Common Post-Creation Tasks</a></li>
+<li style='margin-left:40px'><a href='#section-25'>Adjusting Center of Mass</a></li>
+<li style='margin-left:40px'><a href='#section-26'>Adding More Colliders</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Setting Up Physics Layers</a></li>
+<li style='margin-left:20px'><a href='#section-28'>Tips</a></li>
+<li style='margin-left:40px'><a href='#section-29'>Test Early and Often</a></li>
+<li style='margin-left:40px'><a href='#section-30'>Save a Backup</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Use Prefabs Carefully</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Document Your Configuration</a></li>
+<li style='margin-left:20px'><a href='#section-33'>Troubleshooting</a></li>
+<li style='margin-left:40px'><a href='#section-34'>Vehicle Falls Through Ground</a></li>
+<li style='margin-left:40px'><a href='#section-35'>Vehicle Flips Immediately</a></li>
+<li style='margin-left:40px'><a href='#section-36'>Wheels Don't Touch Ground</a></li>
+<li style='margin-left:40px'><a href='#section-37'>Vehicle Doesn't Move</a></li>
+<li style='margin-left:40px'><a href='#section-38'>Steering Doesn't Work</a></li>
+</ul></div>
+<p>After creating a vehicle with the AI Assistant, additional setup steps ensure your vehicle is fully functional. This document covers the wheel assignment wizard, body colliders wizard, and transitioning to customization.</p>
+<h2 id='section-1'>Post-Creation State</h2>
+<p>When vehicle creation completes successfully, the assistant enters a special post-creation state that guides you through essential setup steps.</p>
+<h3 id='section-2'>Progress Indicator</h3>
+<p>The interface shows a progress indicator:</p>
+<pre><code>
+Target -&gt; Describe -&gt; Apply -&gt; Wheels -&gt; Colliders
+                              ^^^^^^^^
+                           (You are here)
+</code></pre>
+<p>This helps track which steps are complete and what remains.</p>
+<h3 id='section-3'>What's Already Done</h3>
+<p>At this point, your vehicle has:</p>
+<ul>
+<li>RCCP_CarController added and configured</li>
+<li>Engine, gearbox, differential components set up</li>
+<li>Basic WheelCollider components created</li>
+<li>Physics properties configured</li>
+<li>Input system ready</li>
+</ul>
+<h3 id='section-4'>What Remains</h3>
+<p>You need to complete:</p>
+<ol>
+<li><strong>Wheel Assignment</strong> - Confirm which wheel meshes match which positions</li>
+<li><strong>Body Colliders</strong> - Add collision geometry for physics</li>
+</ol>
+<h2 id='section-5'>Wheel Assignment Wizard</h2>
+<p>The wheel assignment wizard ensures your wheel meshes are correctly mapped to RCCP's wheel positions.</p>
+<h3 id='section-6'>Why It's Needed</h3>
+<p>RCCP needs to know:</p>
+<ul>
+<li>Which wheel is front-left vs front-right vs rear-left vs rear-right</li>
+<li>Where to position WheelColliders</li>
+<li>Which wheels to apply steering to</li>
+<li>Which wheels receive power (based on drivetrain)</li>
+</ul>
+<h3 id='section-7'>Auto-Detection</h3>
+<p>The assistant attempts automatic detection based on:</p>
+<ul>
+<li>Wheel positions relative to vehicle center</li>
+<li>Forward direction (Z+) for front/rear</li>
+<li>Left/Right position (X axis) for side</li>
+</ul>
+<p><strong>Detection Logic:</strong></p>
+<ul>
+<li>Wheels ahead of center = Front</li>
+<li>Wheels behind center = Rear</li>
+<li>Wheels on negative X = Left</li>
+<li>Wheels on positive X = Right</li>
+</ul>
+<h3 id='section-8'>Reviewing Auto-Detection</h3>
+<p>The wizard shows four assignment slots:</p>
+<pre><code>
+Front Left (FL):  [WheelFL_Mesh]     [Change]
+Front Right (FR): [WheelFR_Mesh]     [Change]
+Rear Left (RL):   [WheelRL_Mesh]     [Change]
+Rear Right (RR):  [WheelRR_Mesh]     [Change]
+</code></pre>
+<p>Each slot shows:</p>
+<ul>
+<li>Position label</li>
+<li>Currently assigned wheel name</li>
+<li>Change button to reassign</li>
+</ul>
+<h3 id='section-9'>Confirming Assignments</h3>
+<p>If auto-detection is correct:</p>
+<ol>
+<li>Verify each wheel name looks right</li>
+<li>Click <strong>Confirm Assignments</strong></li>
+<li>The wizard proceeds to the next step</li>
+</ol>
+<h3 id='section-10'>Manual Reassignment</h3>
+<p>If a wheel is incorrectly assigned:</p>
+<ol>
+<li>Click <strong>Change</strong> next to the wrong assignment</li>
+<li>A dropdown or picker appears with available wheel transforms</li>
+<li>Select the correct wheel</li>
+<li>Repeat for any other incorrect assignments</li>
+<li>Click <strong>Confirm Assignments</strong></li>
+</ol>
+<h3 id='section-11'>Common Assignment Issues</h3>
+<p><strong>All wheels on one side</strong></p>
+<p>Your model may have non-standard orientation. Check the forward direction.</p>
+<p><strong>Wheels swapped front/rear</strong></p>
+<p>The model's Z-axis may be pointing backward. You may need to rotate the model or parent.</p>
+<p><strong>Wheels swapped left/right</strong></p>
+<p>Check if your model uses a different coordinate convention.</p>
+<p><strong>Missing wheels</strong></p>
+<p>Some wheel meshes weren't detected. Ensure they're separate GameObjects with &quot;wheel&quot; in the name.</p>
+<h3 id='section-12'>Six-Wheel Vehicles</h3>
+<p>For vehicles with more than four wheels (trucks, buses):</p>
+<ul>
+<li>The wizard focuses on the primary four wheels</li>
+<li>Additional wheels can be configured manually in RCCP components</li>
+<li>Front-most and rear-most pairs are typically auto-detected</li>
+</ul>
+<h2 id='section-13'>Body Colliders Wizard</h2>
+<p>After wheel assignment, the body colliders wizard helps add physics collision geometry.</p>
+<h3 id='section-14'>Why Colliders Matter</h3>
+<p>Without colliders:</p>
+<ul>
+<li>The vehicle passes through objects</li>
+<li>Damage detection doesn't work</li>
+<li>Physics interactions fail</li>
+<li>Flipping/rolling behavior is incorrect</li>
+</ul>
+<h3 id='section-15'>Collider Options</h3>
+<p>The wizard offers several collider types:</p>
+<p><strong>Box Colliders</strong></p>
+<ul>
+<li>Simplest option</li>
+<li>Fast performance</li>
+<li>Less accurate for curved shapes</li>
+<li>Good for: Boxy vehicles, prototyping</li>
+</ul>
+<p><strong>Convex Mesh Colliders</strong></p>
+<ul>
+<li>Follows mesh shape</li>
+<li>Convex hull approximation</li>
+<li>Good balance of accuracy and performance</li>
+<li>Good for: Most vehicles</li>
+</ul>
+<p><strong>Multiple Primitive Colliders</strong></p>
+<ul>
+<li>Several boxes/capsules combined</li>
+<li>Manual positioning required</li>
+<li>Accurate and performant</li>
+<li>Good for: Complex shapes</li>
+</ul>
+<h3 id='section-16'>Quick Setup</h3>
+<p>For rapid setup:</p>
+<ol>
+<li>Click <strong>Add Basic Colliders</strong></li>
+<li>The wizard generates box colliders based on mesh bounds</li>
+<li>Adjust positions/sizes in the Inspector if needed</li>
+<li>Click <strong>Done</strong></li>
+</ol>
+<h3 id='section-17'>Custom Setup</h3>
+<p>For more control:</p>
+<ol>
+<li>Click <strong>Advanced Setup</strong></li>
+<li>Choose collider type (Box, Convex, etc.)</li>
+<li>Configure generation settings</li>
+<li>Preview the result</li>
+<li>Adjust individual colliders</li>
+<li>Click <strong>Finish Setup</strong></li>
+</ol>
+<h3 id='section-18'>Post-Collider Adjustments</h3>
+<p>After the wizard completes, you can still adjust colliders:</p>
+<ol>
+<li>Select the vehicle in Hierarchy</li>
+<li>Expand to find collider GameObjects</li>
+<li>Use standard Unity tools to resize/reposition</li>
+<li>Consider physics layers for different collision behaviors</li>
+</ol>
+<h2 id='section-19'>Transitioning to Customization</h2>
+<p>After completing post-creation setup, you have several paths forward:</p>
+<h3 id='section-20'>Continue Customizing</h3>
+<p>The assistant offers to continue with the Vehicle Customization panel:</p>
+<ol>
+<li>A prompt asks &quot;Continue to customization?&quot;</li>
+<li>Click <strong>Yes</strong> to switch panels</li>
+<li>Your newly created vehicle remains selected</li>
+<li>Write customization requests to refine the vehicle</li>
+</ol>
+<h3 id='section-21'>Test Your Vehicle</h3>
+<p>Before extensive customization:</p>
+<ol>
+<li>Add a ground plane if not present</li>
+<li>Enter Play mode</li>
+<li>Test basic driving behavior</li>
+<li>Note what needs adjustment</li>
+<li>Exit Play mode and customize accordingly</li>
+</ol>
+<h3 id='section-22'>Use Specialized Panels</h3>
+<p>Jump directly to specific aspects:</p>
+<ul>
+<li><strong>Behaviors</strong> - Adjust handling characteristics</li>
+<li><strong>Wheels</strong> - Fine-tune grip and suspension</li>
+<li><strong>Audio</strong> - Configure engine sounds</li>
+<li><strong>Lights</strong> - Set up vehicle lighting</li>
+<li><strong>Damage</strong> - Configure damage system</li>
+</ul>
+<h3 id='section-23'>Run Diagnostics</h3>
+<p>Validate your new vehicle:</p>
+<ol>
+<li>Switch to the Diagnostics panel</li>
+<li>Click <strong>Run Diagnostics</strong></li>
+<li>Review any warnings or issues</li>
+<li>Address problems before extensive customization</li>
+</ol>
+<h2 id='section-24'>Common Post-Creation Tasks</h2>
+<h3 id='section-25'>Adjusting Center of Mass</h3>
+<p>If the vehicle tips over easily:</p>
+<ol>
+<li>Select the vehicle</li>
+<li>In RCCP_CarController, adjust Center of Mass offset</li>
+<li>Lower Y value = more stability</li>
+<li>Test and iterate</li>
+</ol>
+<h3 id='section-26'>Adding More Colliders</h3>
+<p>For complex collision needs:</p>
+<ol>
+<li>Create empty child GameObjects</li>
+<li>Add collider components</li>
+<li>Position and size appropriately</li>
+<li>Consider trigger colliders for special zones</li>
+</ol>
+<h3 id='section-27'>Setting Up Physics Layers</h3>
+<p>For proper collision filtering:</p>
+<ol>
+<li>Create layers for vehicle body and wheels</li>
+<li>Assign layers to colliders</li>
+<li>Configure Physics collision matrix</li>
+<li>Prevent unwanted collisions</li>
+</ol>
+<h2 id='section-28'>Tips</h2>
+<h3 id='section-29'>Test Early and Often</h3>
+<p>Don't wait until everything is &quot;perfect&quot; to test. Early testing reveals issues.</p>
+<h3 id='section-30'>Save a Backup</h3>
+<p>After successful creation, save the scene. You can always revert if later changes go wrong.</p>
+<h3 id='section-31'>Use Prefabs Carefully</h3>
+<p>Don't make the vehicle a prefab until post-creation is complete. RCCP setup can behave differently with prefabs.</p>
+<h3 id='section-32'>Document Your Configuration</h3>
+<p>Note what description you used. This helps reproduce or reference the configuration later.</p>
+<h2 id='section-33'>Troubleshooting</h2>
+<h3 id='section-34'>Vehicle Falls Through Ground</h3>
+<p>Missing or incorrectly positioned wheel colliders. Re-run wheel assignment or check collider setup.</p>
+<h3 id='section-35'>Vehicle Flips Immediately</h3>
+<p>Center of mass too high or colliders intersecting ground. Adjust COM or collider positions.</p>
+<h3 id='section-36'>Wheels Don't Touch Ground</h3>
+<p>WheelCollider radius or suspension settings incorrect. Check wheel configuration in RCCP_Axles.</p>
+<h3 id='section-37'>Vehicle Doesn't Move</h3>
+<p>Input not configured or drivetrain not connected. Run diagnostics to identify issues.</p>
+<h3 id='section-38'>Steering Doesn't Work</h3>
+<p>Front wheels not marked for steering. Check RCCP_Axle steering settings.</p>
+</div></body></html>

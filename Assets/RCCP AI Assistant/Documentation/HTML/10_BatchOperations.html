@@ -1,0 +1,333 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>10_BatchOperations</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Batch Operations</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Batch Operations</a></li>
+<li style='margin-left:20px'><a href='#section-1'>Overview</a></li>
+<li style='margin-left:20px'><a href='#section-2'>Batch Vehicle Creation</a></li>
+<li style='margin-left:40px'><a href='#section-3'>When to Use</a></li>
+<li style='margin-left:40px'><a href='#section-4'>How to Select Multiple Models</a></li>
+<li style='margin-left:40px'><a href='#section-5'>Requirements for Batch Creation</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Writing a Batch Description</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Processing Flow</a></li>
+<li style='margin-left:40px'><a href='#section-8'>Progress Display</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Handling Failures</a></li>
+<li style='margin-left:20px'><a href='#section-10'>Batch Vehicle Customization</a></li>
+<li style='margin-left:40px'><a href='#section-11'>When to Use</a></li>
+<li style='margin-left:40px'><a href='#section-12'>How to Select Multiple RCCP Vehicles</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Writing a Batch Customization Prompt</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Processing Flow</a></li>
+<li style='margin-left:40px'><a href='#section-15'>Considerations for Batch Customization</a></li>
+<li style='margin-left:20px'><a href='#section-16'>Batch Limitations</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Available Panels</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Selection Limits</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Post-Creation Handling</a></li>
+<li style='margin-left:20px'><a href='#section-20'>Best Practices</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Prepare Models First</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Use Consistent Naming</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Test with Small Batches</a></li>
+<li style='margin-left:40px'><a href='#section-24'>Document Your Batch Prompts</a></li>
+<li style='margin-left:40px'><a href='#section-25'>Plan for Individual Tuning</a></li>
+<li style='margin-left:20px'><a href='#section-26'>Use Cases</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Racing Game Fleet</a></li>
+<li style='margin-left:40px'><a href='#section-28'>City Traffic Vehicles</a></li>
+<li style='margin-left:40px'><a href='#section-29'>Vehicle Variants</a></li>
+<li style='margin-left:40px'><a href='#section-30'>Rebalancing Update</a></li>
+<li style='margin-left:20px'><a href='#section-31'>Troubleshooting</a></li>
+<li style='margin-left:40px'><a href='#section-32'>&quot;No valid models selected&quot;</a></li>
+<li style='margin-left:40px'><a href='#section-33'>Some vehicles not processing</a></li>
+<li style='margin-left:40px'><a href='#section-34'>Inconsistent results</a></li>
+<li style='margin-left:40px'><a href='#section-35'>Editor slowdown</a></li>
+</ul></div>
+<p>RCCP AI Assistant supports batch operations for creating or customizing multiple vehicles at once. This feature is ideal for setting up vehicle fleets, applying consistent configurations across variants, or rapidly prototyping multiple vehicle types.</p>
+<h2 id='section-1'>Overview</h2>
+<p>Batch operations allow you to:</p>
+<ul>
+<li>Select multiple raw 3D models and create RCCP vehicles for all of them</li>
+<li>Select multiple existing RCCP vehicles and apply the same customization to all</li>
+<li>Use a single description that applies to all selected items</li>
+<li>Process vehicles sequentially with a single AI generation</li>
+</ul>
+<h2 id='section-2'>Batch Vehicle Creation</h2>
+<h3 id='section-3'>When to Use</h3>
+<p>Batch creation is useful when:</p>
+<ul>
+<li>You have multiple car models that need similar configurations</li>
+<li>You're setting up a vehicle lineup for a racing game</li>
+<li>You want to prototype several vehicles quickly</li>
+<li>You need consistent base configurations across a fleet</li>
+</ul>
+<h3 id='section-4'>How to Select Multiple Models</h3>
+<ol>
+<li>In the Hierarchy window, hold <strong>Ctrl</strong> (Windows) or <strong>Cmd</strong> (Mac)</li>
+<li>Click each 3D model root you want to include</li>
+<li>Or use <strong>Shift+Click</strong> to select a range</li>
+</ol>
+<p>The AI Assistant shows:</p>
+<ul>
+<li>&quot;X models selected&quot; indicator</li>
+<li>List of selected model names</li>
+<li>Combined eligibility summary</li>
+</ul>
+<h3 id='section-5'>Requirements for Batch Creation</h3>
+<p>Each selected model must:</p>
+<ul>
+<li>Be a raw 3D model (no existing RCCP_CarController)</li>
+<li>Be in the scene (not project assets)</li>
+<li>Pass basic eligibility checks (scale, wheels)</li>
+</ul>
+<p>Models that fail eligibility are flagged but don't block the operation.</p>
+<h3 id='section-6'>Writing a Batch Description</h3>
+<p>Write a single description that applies to all vehicles:</p>
+<p><strong>Good batch descriptions:</strong></p>
+<pre><code>
+Create standard passenger sedans with 180hp front-wheel drive,
+automatic transmission, and balanced handling for daily driving.
+All vehicles should have moderate stability control.
+</code></pre>
+<pre><code>
+Set up race cars with 350hp rear-wheel drive, manual transmission,
+stiff suspension, and minimal stability assists for track use.
+</code></pre>
+<p><strong>Consider that:</strong></p>
+<ul>
+<li>The description applies identically to all vehicles</li>
+<li>Model-specific characteristics (size, shape) aren't considered</li>
+<li>You can customize individual vehicles afterward</li>
+</ul>
+<h3 id='section-7'>Processing Flow</h3>
+<ol>
+<li>Click <strong>Generate</strong> with multiple models selected</li>
+<li>The AI generates a single configuration</li>
+<li>Click <strong>Apply</strong> to create all vehicles</li>
+<li>Each model is processed sequentially:</li>
+</ol>
+<ul>
+<li>RCCP components added</li>
+<li>Configuration applied</li>
+<li>Progress shown</li>
+</ul>
+<ol>
+<li>Post-creation wizard appears for each vehicle (optional)</li>
+</ol>
+<h3 id='section-8'>Progress Display</h3>
+<p>During batch processing:</p>
+<pre><code>
+Processing: 3 of 8 vehicles
+Current: SportsCar_Model_03
+Status: Adding components...
+</code></pre>
+<p>A progress bar shows overall completion.</p>
+<h3 id='section-9'>Handling Failures</h3>
+<p>If a vehicle fails during batch creation:</p>
+<ul>
+<li>An error message is logged</li>
+<li>Processing continues to the next vehicle</li>
+<li>A summary shows successes and failures</li>
+<li>Failed vehicles can be retried individually</li>
+</ul>
+<h2 id='section-10'>Batch Vehicle Customization</h2>
+<h3 id='section-11'>When to Use</h3>
+<p>Batch customization is useful when:</p>
+<ul>
+<li>You need to apply the same tuning to multiple vehicles</li>
+<li>You're balancing a vehicle roster</li>
+<li>You want consistent changes across variants</li>
+<li>You're updating a fleet configuration</li>
+</ul>
+<h3 id='section-12'>How to Select Multiple RCCP Vehicles</h3>
+<ol>
+<li>Select multiple GameObjects that have RCCP_CarController</li>
+<li>The assistant automatically identifies RCCP vehicles</li>
+<li>Duplicates (selecting both a parent and child) are deduplicated</li>
+</ol>
+<p>Note: If you select a mix of RCCP vehicles and raw models, only the RCCP vehicles are included for customization.</p>
+<h3 id='section-13'>Writing a Batch Customization Prompt</h3>
+<p>Your description applies to all selected vehicles:</p>
+<pre><code>
+Enable ABS on all vehicles with moderate intervention.
+Add light TCS for wet conditions.
+</code></pre>
+<pre><code>
+Increase engine power by 20% across all vehicles.
+Stiffen suspension for better track handling.
+</code></pre>
+<h3 id='section-14'>Processing Flow</h3>
+<ol>
+<li>A single AI generation creates the configuration</li>
+<li>The same changes apply to each vehicle</li>
+<li>Before/after state is captured per-vehicle</li>
+<li>Changes are applied sequentially</li>
+<li>Summary shows results for all vehicles</li>
+</ol>
+<h3 id='section-15'>Considerations for Batch Customization</h3>
+<p><strong>Percentage vs. Absolute Changes</strong></p>
+<ul>
+<li>&quot;Increase power by 20%&quot; scales with each vehicle's current power</li>
+<li>&quot;Set power to 300hp&quot; makes all vehicles identical</li>
+</ul>
+<p><strong>Vehicle Differences</strong></p>
+<p>Each vehicle's current state is captured independently, so percentage-based changes produce proportionally different results.</p>
+<p><strong>Undo Behavior</strong></p>
+<p>Batch customization creates grouped undo entries. A single Undo reverts all vehicles.</p>
+<h2 id='section-16'>Batch Limitations</h2>
+<h3 id='section-17'>Available Panels</h3>
+<p>Batch operations are only available in:</p>
+<ul>
+<li><strong>Vehicle Creation</strong> - Multiple raw models</li>
+<li><strong>Vehicle Customization</strong> - Multiple RCCP vehicles</li>
+</ul>
+<p>Other panels (Behaviors, Wheels, Audio, Lights, Damage, Diagnostics) require single selection. This ensures focused, component-specific configuration.</p>
+<h3 id='section-18'>Selection Limits</h3>
+<p>There's no hard limit on batch size, but consider:</p>
+<ul>
+<li>Processing time increases linearly</li>
+<li>Editor may slow with many complex operations</li>
+<li>8-12 vehicles is a practical maximum for comfortable workflow</li>
+</ul>
+<h3 id='section-19'>Post-Creation Handling</h3>
+<p>For batch creation:</p>
+<ul>
+<li>Wheel assignment wizard appears for the first vehicle</li>
+<li>Option to skip/apply same assignments to remaining vehicles</li>
+<li>Body colliders can be added per-vehicle or skipped</li>
+</ul>
+<h2 id='section-20'>Best Practices</h2>
+<h3 id='section-21'>Prepare Models First</h3>
+<p>Before batch creation:</p>
+<ol>
+<li>Ensure all models meet requirements</li>
+<li>Standardize naming conventions</li>
+<li>Check scale and orientation</li>
+<li>Organize in hierarchy for easy selection</li>
+</ol>
+<h3 id='section-22'>Use Consistent Naming</h3>
+<p>Name your models predictably:</p>
+<pre><code>
+Vehicle_Sedan_01
+Vehicle_Sedan_02
+Vehicle_SUV_01
+Vehicle_SUV_02
+</code></pre>
+<p>This makes selection and tracking easier.</p>
+<h3 id='section-23'>Test with Small Batches</h3>
+<p>Before processing many vehicles:</p>
+<ol>
+<li>Test with 2-3 vehicles first</li>
+<li>Verify results match expectations</li>
+<li>Adjust description if needed</li>
+<li>Then process the full batch</li>
+</ol>
+<h3 id='section-24'>Document Your Batch Prompts</h3>
+<p>Save successful batch descriptions for:</p>
+<ul>
+<li>Reproducing configurations later</li>
+<li>Sharing with team members</li>
+<li>Creating documentation</li>
+</ul>
+<h3 id='section-25'>Plan for Individual Tuning</h3>
+<p>Batch operations create a baseline. Plan to:</p>
+<ul>
+<li>Customize individual vehicles afterward</li>
+<li>Use specialized panels for vehicle-specific tuning</li>
+<li>Iterate based on playtesting</li>
+</ul>
+<h2 id='section-26'>Use Cases</h2>
+<h3 id='section-27'>Racing Game Fleet</h3>
+<p><strong>Scenario:</strong> Create 12 different race cars with consistent performance.</p>
+<ol>
+<li>Import 12 car models</li>
+<li>Select all in Hierarchy</li>
+<li>Batch create with:</li>
+</ol>
+<p>   ```</p>
+<p>   High-performance race cars with 400hp engines, rear-wheel drive,</p>
+<p>   sequential gearbox, stiff racing suspension, and minimal assists.</p>
+<p>   ```</p>
+<ol>
+<li>Individual tune each car for variety</li>
+</ol>
+<h3 id='section-28'>City Traffic Vehicles</h3>
+<p><strong>Scenario:</strong> Populate a city scene with diverse traffic.</p>
+<ol>
+<li>Select 8 civilian vehicle models</li>
+<li>Batch create with:</li>
+</ol>
+<p>   ```</p>
+<p>   Standard civilian vehicles with moderate power, automatic transmission,</p>
+<p>   front-wheel drive, comfortable suspension, and full stability systems.</p>
+<p>   ```</p>
+<ol>
+<li>The AI NPC system can use these consistently-configured vehicles</li>
+</ol>
+<h3 id='section-29'>Vehicle Variants</h3>
+<p><strong>Scenario:</strong> Create sport, touring, and economy variants of one car.</p>
+<ol>
+<li>Duplicate the base model 3 times</li>
+<li>Batch create with base config</li>
+<li>Individually customize each for its purpose:</li>
+</ol>
+<ul>
+<li>Sport: More power, stiffer suspension</li>
+<li>Touring: Comfort-focused, quiet</li>
+<li>Economy: Lower power, efficient</li>
+</ul>
+<h3 id='section-30'>Rebalancing Update</h3>
+<p><strong>Scenario:</strong> Adjust all player vehicles after testing feedback.</p>
+<ol>
+<li>Select all RCCP vehicles in the game</li>
+<li>Batch customize:</li>
+</ol>
+<p>   ```</p>
+<p>   Reduce overall grip by 10% for more challenging handling.</p>
+<p>   Increase ABS intervention slightly for better brake feel.</p>
+<p>   ```</p>
+<ol>
+<li>All vehicles get consistent adjustments</li>
+</ol>
+<h2 id='section-31'>Troubleshooting</h2>
+<h3 id='section-32'>&quot;No valid models selected&quot;</h3>
+<p>Ensure your selection includes:</p>
+<ul>
+<li>Scene objects (not Project assets)</li>
+<li>Root GameObjects (not child components)</li>
+<li>Raw models (for creation) or RCCP vehicles (for customization)</li>
+</ul>
+<h3 id='section-33'>Some vehicles not processing</h3>
+<p>Check individual vehicles for:</p>
+<ul>
+<li>Disabled GameObjects</li>
+<li>Missing required components</li>
+<li>Eligibility failures</li>
+</ul>
+<h3 id='section-34'>Inconsistent results</h3>
+<p>Batch operations apply identical configuration. Different results usually mean:</p>
+<ul>
+<li>Vehicle geometry differences affect physics</li>
+<li>Existing configurations varied before batch customization</li>
+</ul>
+<h3 id='section-35'>Editor slowdown</h3>
+<p>For large batches:</p>
+<ul>
+<li>Close unnecessary editor windows</li>
+<li>Ensure adequate system resources</li>
+<li>Consider processing in smaller batches</li>
+</ul>
+</div></body></html>

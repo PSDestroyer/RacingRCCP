@@ -1,0 +1,319 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>06_WindowOverview</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Window Overview</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Window Overview</a></li>
+<li style='margin-left:20px'><a href='#section-1'>Window Layout</a></li>
+<li style='margin-left:20px'><a href='#section-2'>Window Modes</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Utility Mode (Default)</a></li>
+<li style='margin-left:40px'><a href='#section-4'>Dockable Mode</a></li>
+<li style='margin-left:20px'><a href='#section-5'>Sidebar</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Panel Tabs</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Additional Sidebar Items</a></li>
+<li style='margin-left:20px'><a href='#section-8'>Context Bar</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Vehicle Selection Display</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Usage Display</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Model Indicator</a></li>
+<li style='margin-left:20px'><a href='#section-12'>Main Workflow Area</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Step 1: Select Target</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Step 2: Describe What You Want</a></li>
+<li style='margin-left:40px'><a href='#section-15'>Step 3: Review and Apply</a></li>
+<li style='margin-left:20px'><a href='#section-16'>Status Bar</a></li>
+<li style='margin-left:20px'><a href='#section-17'>Keyboard Shortcuts</a></li>
+<li style='margin-left:20px'><a href='#section-18'>Panel-Specific UI Elements</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Vehicle Creation</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Lights Panel</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Damage Panel</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Diagnostics Panel</a></li>
+<li style='margin-left:20px'><a href='#section-23'>Animations</a></li>
+<li style='margin-left:20px'><a href='#section-24'>Visual Indicators</a></li>
+<li style='margin-left:40px'><a href='#section-25'>Colors</a></li>
+<li style='margin-left:40px'><a href='#section-26'>Status Icons</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Progress Indicators</a></li>
+<li style='margin-left:20px'><a href='#section-28'>Responsive Behavior</a></li>
+<li style='margin-left:20px'><a href='#section-29'>Tips for Effective Use</a></li>
+<li style='margin-left:40px'><a href='#section-30'>Organize Your Layout (Dockable Mode)</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Use Keyboard Navigation</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Expand/Collapse Strategically</a></li>
+<li style='margin-left:40px'><a href='#section-33'>Watch the Context Bar</a></li>
+<li style='margin-left:40px'><a href='#section-34'>Check Status Messages</a></li>
+</ul></div>
+<p>This document provides a comprehensive tour of the RCCP AI Assistant window, explaining each section and how to navigate the interface effectively.</p>
+<h2 id='section-1'>Window Layout</h2>
+<p>The AI Assistant window is divided into distinct areas:</p>
+<pre><code>
++------------------+----------------------------------------+
+|                  |           CONTEXT BAR                  |
+|                  +----------------------------------------+
+|                  |                                        |
+|     SIDEBAR      |          MAIN WORKFLOW AREA            |
+|                  |                                        |
+|   (Panel Tabs)   |    Step 1 -&gt; Step 2 -&gt; Step 3         |
+|                  |                                        |
+|                  |                                        |
++------------------+----------------------------------------+
+|                       STATUS BAR                          |
++-----------------------------------------------------------+
+</code></pre>
+<h2 id='section-2'>Window Modes</h2>
+<p>The assistant offers two window modes, configurable in Settings:</p>
+<h3 id='section-3'>Utility Mode (Default)</h3>
+<ul>
+<li>Fixed size window (800x850 pixels)</li>
+<li>Floats above other windows</li>
+<li>Cannot be docked to the editor layout</li>
+<li>Best for: Quick access, focused work</li>
+</ul>
+<h3 id='section-4'>Dockable Mode</h3>
+<ul>
+<li>Resizable window</li>
+<li>Can be docked alongside other panels</li>
+<li>Integrates with your editor layout</li>
+<li>Best for: Permanent placement, large monitors</li>
+</ul>
+<p>To switch modes:</p>
+<ol>
+<li>Open Settings</li>
+<li>Find UI Settings section</li>
+<li>Toggle &quot;Use Utility Window&quot;</li>
+<li>Click &quot;Restart Window&quot; to apply</li>
+</ol>
+<h2 id='section-5'>Sidebar</h2>
+<p>The sidebar on the left provides navigation and quick access to features.</p>
+<h3 id='section-6'>Panel Tabs</h3>
+<p>Each tab represents a different configuration panel:</p>
+<table>
+<tr><th>Icon</th><th>Panel</th><th>Purpose</th></tr>
+<tr><td>+</td><td>Vehicle Creation</td><td>Convert 3D models to RCCP vehicles</td></tr>
+<tr><td>Edit</td><td>Vehicle Customization</td><td>Modify existing RCCP vehicles</td></tr>
+<tr><td>Tune</td><td>Behaviors</td><td>Driving styles, stability systems</td></tr>
+<tr><td>Wheel</td><td>Wheels</td><td>Tires, suspension, alignment</td></tr>
+<tr><td>Sound</td><td>Audio</td><td>Engine sound configuration</td></tr>
+<tr><td>Light</td><td>Lights</td><td>Vehicle lighting setup</td></tr>
+<tr><td>Impact</td><td>Damage</td><td>Deformation, detachable parts</td></tr>
+<tr><td>Check</td><td>Diagnostics</td><td>Local validation (no AI)</td></tr>
+</table>
+<p>Click a tab to switch panels. The selected panel is highlighted.</p>
+<h3 id='section-7'>Additional Sidebar Items</h3>
+<p>Below the panel tabs:</p>
+<p><strong>Prompt History</strong></p>
+<p>Access your complete prompt history. Search, filter, and re-apply previous configurations.</p>
+<p><strong>Settings</strong></p>
+<p>Open the settings panel to configure API access, UI preferences, and developer options.</p>
+<h2 id='section-8'>Context Bar</h2>
+<p>The context bar appears at the top of the main area, providing essential information at a glance.</p>
+<h3 id='section-9'>Vehicle Selection Display</h3>
+<p>Shows your currently selected vehicle:</p>
+<ul>
+<li><strong>Name:</strong> GameObject name from hierarchy</li>
+<li><strong>Type:</strong> &quot;Raw Model&quot; or &quot;RCCP Vehicle&quot;</li>
+<li><strong>Status indicators:</strong> Warnings or issues</li>
+</ul>
+<h3 id='section-10'>Usage Display</h3>
+<p>Shows your current API usage status:</p>
+<ul>
+<li><strong>Setup Phase:</strong> &quot;Setup: X/100 remaining&quot;</li>
+<li><strong>Free Phase:</strong> &quot;Daily: X/10 remaining | Resets in Xh Xm&quot;</li>
+<li><strong>Own Key:</strong> &quot;Using your API key (unlimited)&quot;</li>
+</ul>
+<h3 id='section-11'>Model Indicator</h3>
+<p>When relevant, shows which Claude model will be used for the next request.</p>
+<h2 id='section-12'>Main Workflow Area</h2>
+<p>The central area displays the three-step workflow for the current panel.</p>
+<h3 id='section-13'>Step 1: Select Target</h3>
+<p>This step shows information about your selection:</p>
+<p><strong>For Vehicle Creation:</strong></p>
+<ul>
+<li>Mesh analysis summary</li>
+<li>Eligibility checks (scale, orientation, wheels)</li>
+<li>Size warnings if applicable</li>
+<li>Multi-selection count for batch operations</li>
+</ul>
+<p><strong>For Customization Panels:</strong></p>
+<ul>
+<li>Current vehicle information</li>
+<li>Component presence indicators</li>
+<li>Current configuration snapshot</li>
+</ul>
+<h3 id='section-14'>Step 2: Describe What You Want</h3>
+<p>The input area for your natural language prompt:</p>
+<p><strong>Mode Toggle (Configure / Ask)</strong></p>
+<p>At the top of the input area, two buttons let you switch interaction modes:</p>
+<table>
+<tr><th>Mode</th><th>Button Color</th><th>Purpose</th></tr>
+<tr><td>Configure</td><td>Orange</td><td>AI returns settings to review and apply</td></tr>
+<tr><td>Ask</td><td>Blue</td><td>AI returns explanations (no changes)</td></tr>
+</table>
+<p>A hint below the buttons confirms the current mode:</p>
+<ul>
+<li>Configure: &quot;Returns settings you can review and apply&quot;</li>
+<li>Ask: &quot;Returns advice only (no changes)&quot;</li>
+</ul>
+<p>Use Configure mode for making changes, Ask mode for questions. See the Ask Mode documentation for details.</p>
+<p><strong>Text Input Field</strong></p>
+<p>A multi-line text area where you type your description. Supports:</p>
+<ul>
+<li>Multiple lines (Shift+Enter for new lines when Enter sends)</li>
+<li>Up to 1000 characters (configurable)</li>
+</ul>
+<p><strong>Quick Prompts</strong></p>
+<p>Clickable buttons with common requests. Each panel has its own set of quick prompts relevant to that panel's purpose.</p>
+<p><strong>Character Counter</strong></p>
+<p>Shows current length vs maximum allowed.</p>
+<p><strong>Generate Button</strong></p>
+<p>Click to send your prompt to the AI. The button text changes based on mode:</p>
+<ul>
+<li>Configure mode: &quot;Generate&quot;</li>
+<li>Ask mode: &quot;Ask&quot;</li>
+</ul>
+<p>Disabled when:</p>
+<ul>
+<li>No text entered</li>
+<li>Invalid selection</li>
+<li>Currently processing</li>
+<li>Rate limit reached</li>
+</ul>
+<h3 id='section-15'>Step 3: Review and Apply</h3>
+<p>After generating, this step shows the proposed changes.</p>
+<p><strong>Note:</strong> In Ask mode, Step 3 displays a text response instead of the structured review panel. There are no apply buttons because Ask mode doesn't make changes. See the Ask Mode documentation for details.</p>
+<p><strong>Configure Mode Response:</strong></p>
+<p><strong>Change Summary</strong></p>
+<p>A structured view of proposed modifications organized by component:</p>
+<ul>
+<li>Component group headers (collapsible)</li>
+<li>Property names with before/after values</li>
+<li>Visual indicators for changes</li>
+</ul>
+<p><strong>Selective Apply Toggles</strong></p>
+<p>Toggle switches for each component group. Enable/disable which groups to apply.</p>
+<p><strong>Action Buttons</strong></p>
+<ul>
+<li><strong>Apply All:</strong> Apply everything in the response</li>
+<li><strong>Apply Selected:</strong> Apply only toggled groups</li>
+<li><strong>Discard:</strong> Clear the response without applying</li>
+</ul>
+<p><strong>Additional Actions</strong></p>
+<ul>
+<li>Copy JSON to clipboard</li>
+<li>View raw response (developer mode)</li>
+</ul>
+<p><strong>Ask Mode Response:</strong></p>
+<p>In Ask mode, the response area shows a plain text explanation instead of structured changes. A &quot;Clear&quot; button dismisses the response when you're done reading.</p>
+<h2 id='section-16'>Status Bar</h2>
+<p>The bottom bar shows:</p>
+<p><strong>Status Messages</strong></p>
+<p>Feedback about the last operation:</p>
+<ul>
+<li>Success messages (green)</li>
+<li>Warnings (yellow)</li>
+<li>Errors (red)</li>
+<li>Processing status</li>
+</ul>
+<p><strong>Branding</strong></p>
+<p>&quot;RCCP AI Assistant&quot; identifier.</p>
+<p>Messages auto-fade after a few seconds to reduce visual clutter.</p>
+<h2 id='section-17'>Keyboard Shortcuts</h2>
+<p>When enabled in settings:</p>
+<table>
+<tr><th>Shortcut</th><th>Action</th></tr>
+<tr><td>Enter</td><td>Generate (when sendOnEnter enabled)</td></tr>
+<tr><td>Ctrl+Enter</td><td>Generate (when sendOnEnter disabled)</td></tr>
+<tr><td>Shift+Enter</td><td>New line in text field</td></tr>
+<tr><td>Escape</td><td>Close current overlay (settings, history)</td></tr>
+</table>
+<h2 id='section-18'>Panel-Specific UI Elements</h2>
+<p>Different panels may show additional UI elements:</p>
+<h3 id='section-19'>Vehicle Creation</h3>
+<ul>
+<li>Eligibility status with expand/collapse</li>
+<li>Wheel candidate visualization</li>
+<li>Post-creation wizard (after applying)</li>
+</ul>
+<h3 id='section-20'>Lights Panel</h3>
+<ul>
+<li>Vision detection button</li>
+<li>Light preview with position markers</li>
+</ul>
+<h3 id='section-21'>Damage Panel</h3>
+<ul>
+<li>Part detection visualization</li>
+<li>Strength/mass indicators</li>
+</ul>
+<h3 id='section-22'>Diagnostics Panel</h3>
+<ul>
+<li>Run Diagnostics button (replaces Generate)</li>
+<li>Results list with severity filters</li>
+<li>No AI response area (local only)</li>
+</ul>
+<h2 id='section-23'>Animations</h2>
+<p>The UI includes smooth animations for:</p>
+<ul>
+<li>Panel transitions when switching tabs</li>
+<li>Response appearance when AI returns</li>
+<li>Status message fade-out</li>
+<li>Success flash on apply</li>
+<li>Processing pulse indicator</li>
+</ul>
+<p>Animations can be disabled or speed-adjusted in Settings &gt; Animation Settings.</p>
+<h2 id='section-24'>Visual Indicators</h2>
+<h3 id='section-25'>Colors</h3>
+<p>The UI uses consistent colors for status:</p>
+<ul>
+<li><strong>Blue/Cyan:</strong> Primary accent, active selections</li>
+<li><strong>Green:</strong> Success, valid, enabled</li>
+<li><strong>Yellow/Orange:</strong> Warning, caution</li>
+<li><strong>Red:</strong> Error, invalid, disabled</li>
+</ul>
+<h3 id='section-26'>Status Icons</h3>
+<table>
+<tr><th>Icon</th><th>Meaning</th></tr>
+<tr><td>Check</td><td>Valid, passed, applied</td></tr>
+<tr><td>Warning</td><td>Potential issue, review needed</td></tr>
+<tr><td>X/Cross</td><td>Invalid, failed, error</td></tr>
+<tr><td>Spinner</td><td>Processing, loading</td></tr>
+</table>
+<h3 id='section-27'>Progress Indicators</h3>
+<ul>
+<li>Linear progress bars for usage limits</li>
+<li>Pulsing effect during AI requests</li>
+<li>Animated transitions between states</li>
+</ul>
+<h2 id='section-28'>Responsive Behavior</h2>
+<p>The window adapts to different scenarios:</p>
+<p><strong>No Selection</strong></p>
+<p>Step 1 prompts you to select a vehicle or model.</p>
+<p><strong>Invalid Selection</strong></p>
+<p>Shows what's wrong and what to select instead.</p>
+<p><strong>Processing</strong></p>
+<p>Disables inputs, shows progress indicator, prevents duplicate requests.</p>
+<p><strong>Error State</strong></p>
+<p>Shows error message with recovery suggestions.</p>
+<h2 id='section-29'>Tips for Effective Use</h2>
+<h3 id='section-30'>Organize Your Layout (Dockable Mode)</h3>
+<p>Dock the AI Assistant next to your Scene view for easy selection and configuration.</p>
+<h3 id='section-31'>Use Keyboard Navigation</h3>
+<p>Learn the shortcuts for faster workflow. Enable sendOnEnter for rapid iteration.</p>
+<h3 id='section-32'>Expand/Collapse Strategically</h3>
+<p>Keep frequently-used sections expanded, collapse others to reduce scrolling.</p>
+<h3 id='section-33'>Watch the Context Bar</h3>
+<p>The context bar gives instant feedback on selection validity and usage status.</p>
+<h3 id='section-34'>Check Status Messages</h3>
+<p>Status messages provide important feedback - don't dismiss them too quickly.</p>
+</div></body></html>

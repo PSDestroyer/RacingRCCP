@@ -1,0 +1,304 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>Wheels</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Wheels Panel</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Wheels Panel</a></li>
+<li style='margin-left:20px'><a href='#section-1'>What This Panel Configures</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Tire Friction</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Wheel Alignment</a></li>
+<li style='margin-left:40px'><a href='#section-4'>Per-Axle Configuration</a></li>
+<li style='margin-left:20px'><a href='#section-5'>Common Configurations</a></li>
+<li style='margin-left:40px'><a href='#section-6'>High-Grip Track Setup</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Drift Setup</a></li>
+<li style='margin-left:40px'><a href='#section-8'>Comfortable Daily Driver</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Off-Road Configuration</a></li>
+<li style='margin-left:20px'><a href='#section-10'>Understanding Friction Curves</a></li>
+<li style='margin-left:40px'><a href='#section-11'>The Friction Model</a></li>
+<li style='margin-left:40px'><a href='#section-12'>Stiffness</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Balancing Front vs Rear</a></li>
+<li style='margin-left:20px'><a href='#section-14'>Alignment Explained</a></li>
+<li style='margin-left:40px'><a href='#section-15'>Camber</a></li>
+<li style='margin-left:40px'><a href='#section-16'>Caster</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Toe</a></li>
+<li style='margin-left:20px'><a href='#section-18'>Prompt Examples</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Performance Upgrade</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Wet Weather Setup</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Drift Tuning</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Handling Balance</a></li>
+<li style='margin-left:20px'><a href='#section-23'>Tips for This Panel</a></li>
+<li style='margin-left:40px'><a href='#section-24'>Understand the Baseline</a></li>
+<li style='margin-left:40px'><a href='#section-25'>Change One Thing at a Time</a></li>
+<li style='margin-left:40px'><a href='#section-26'>Match Front and Rear</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Consider the Use Case</a></li>
+<li style='margin-left:40px'><a href='#section-28'>Test Extensively</a></li>
+<li style='margin-left:40px'><a href='#section-29'>Suspension Settings</a></li>
+</ul></div>
+<p>The Wheels panel handles tire friction, wheel dimensions, and alignment. These settings fundamentally affect how the vehicle grips the road and corners.</p>
+<p><strong>Important:</strong> Suspension settings (spring, damper, travel distance) are configured in the <strong>Vehicle Customization panel</strong>, not the Wheels panel. See the &quot;Suspension Settings&quot; section below for details.</p>
+<h2 id='section-1'>What This Panel Configures</h2>
+<h3 id='section-2'>Tire Friction</h3>
+<p>The grip characteristics of the tires:</p>
+<p><strong>Forward Friction</strong></p>
+<p>Grip along the direction of wheel rotation (acceleration/braking):</p>
+<ul>
+<li>Stiffness: How quickly grip builds up</li>
+<li>Extremum slip/value: Peak grip point</li>
+<li>Asymptote slip/value: Sliding grip</li>
+</ul>
+<p><strong>Sideways Friction</strong></p>
+<p>Grip perpendicular to wheel rotation (cornering):</p>
+<ul>
+<li>Same parameters as forward friction</li>
+<li>Typically different values for realistic behavior</li>
+</ul>
+<p><strong>Grip Multipliers</strong></p>
+<p>Overall grip scaling factors for different conditions:</p>
+<ul>
+<li>Dry grip multiplier</li>
+<li>Wet grip multiplier</li>
+<li>Surface-specific multipliers</li>
+</ul>
+<h3 id='section-3'>Wheel Alignment</h3>
+<p>The geometry of how wheels are mounted:</p>
+<p><strong>Camber</strong></p>
+<p>Wheel tilt when viewed from front:</p>
+<ul>
+<li>Negative camber: Top of wheel tilts inward</li>
+<li>Improves cornering grip</li>
+<li>Reduces straight-line grip</li>
+</ul>
+<p><strong>Caster</strong></p>
+<p>Steering axis tilt when viewed from side:</p>
+<ul>
+<li>Affects steering feel and self-centering</li>
+<li>Higher caster = more stable, heavier steering</li>
+</ul>
+<p><strong>Toe</strong></p>
+<p>Wheel angle when viewed from above:</p>
+<ul>
+<li>Toe-in: Wheels point slightly inward</li>
+<li>Toe-out: Wheels point slightly outward</li>
+<li>Affects stability and turn-in response</li>
+</ul>
+<h3 id='section-4'>Per-Axle Configuration</h3>
+<p>Settings can differ between front and rear axles:</p>
+<ul>
+<li>Different friction for front vs rear balance</li>
+<li>Different wheel widths (staggered setup)</li>
+<li>Different alignment for specific behaviors</li>
+</ul>
+<h2 id='section-5'>Common Configurations</h2>
+<h3 id='section-6'>High-Grip Track Setup</h3>
+<pre><code>
+Configure for maximum track grip:
+- High sideways friction stiffness for quick response
+- Forward friction optimized for late braking
+- 2-3 degrees negative front camber
+- Wide tires for maximum contact patch
+- High grip multiplier (1.5+)
+</code></pre>
+<h3 id='section-7'>Drift Setup</h3>
+<pre><code>
+Set up for drifting:
+- Slightly reduced rear sideways friction (about 85% of front)
+- Lower rear grip multiplier (0.9)
+- Slightly higher front grip for steering control (1.1)
+- Negative front camber for grip during drift
+- Wider rear tires for smoky slides
+</code></pre>
+<h3 id='section-8'>Comfortable Daily Driver</h3>
+<pre><code>
+Configure for comfort:
+- Balanced friction front to rear
+- Standard wheel width
+- Minimal alignment adjustments (near zero)
+- Normal grip multiplier (1.0)
+</code></pre>
+<h3 id='section-9'>Off-Road Configuration</h3>
+<pre><code>
+Set up for off-road:
+- Reduced overall grip for realistic loose surfaces
+- Conservative alignment for predictability
+- Lower friction values for dirt/gravel
+</code></pre>
+<h2 id='section-10'>Understanding Friction Curves</h2>
+<h3 id='section-11'>The Friction Model</h3>
+<p>RCCP uses a friction curve with key points:</p>
+<ol>
+<li><strong>Extremum Point:</strong> Peak grip before sliding begins</li>
+</ol>
+<ul>
+<li>Slip value: How much wheel slip at peak</li>
+<li>Force value: Maximum grip force available</li>
+</ul>
+<ol>
+<li><strong>Asymptote Point:</strong> Sustained sliding grip</li>
+</ol>
+<ul>
+<li>Slip value: Full sliding slip amount</li>
+<li>Force value: Grip while sliding</li>
+</ul>
+<h3 id='section-12'>Stiffness</h3>
+<p>How quickly grip builds as slip increases:</p>
+<ul>
+<li>High stiffness: Grip comes on suddenly (responsive)</li>
+<li>Low stiffness: Grip builds gradually (forgiving)</li>
+</ul>
+<h3 id='section-13'>Balancing Front vs Rear</h3>
+<p><strong>More rear grip than front:</strong></p>
+<ul>
+<li>Understeer tendency</li>
+<li>Stable, safe feeling</li>
+<li>Good for novice-friendly vehicles</li>
+</ul>
+<p><strong>More front grip than rear:</strong></p>
+<ul>
+<li>Oversteer tendency</li>
+<li>Rear steps out in corners</li>
+<li>Good for drift or sporty feel</li>
+</ul>
+<p><strong>Balanced grip:</strong></p>
+<ul>
+<li>Neutral handling</li>
+<li>Professional driving feel</li>
+<li>Requires skill to maximize</li>
+</ul>
+<h2 id='section-14'>Alignment Explained</h2>
+<h3 id='section-15'>Camber</h3>
+<p><strong>Negative Camber (common):</strong></p>
+<ul>
+<li>Tops of wheels lean inward</li>
+<li>Optimizes tire contact patch in corners</li>
+<li>Reduces straight-line grip slightly</li>
+<li>Race cars: 2-4 degrees</li>
+<li>Street cars: 0.5-1.5 degrees</li>
+</ul>
+<p><strong>Zero Camber:</strong></p>
+<ul>
+<li>Wheels perfectly vertical</li>
+<li>Maximum straight-line grip</li>
+<li>Reduced cornering grip</li>
+</ul>
+<p><strong>Positive Camber (rare):</strong></p>
+<ul>
+<li>Tops of wheels lean outward</li>
+<li>Poor grip characteristics</li>
+<li>Generally not used</li>
+</ul>
+<h3 id='section-16'>Caster</h3>
+<p><strong>More Caster:</strong></p>
+<ul>
+<li>Stronger self-centering</li>
+<li>More stable at speed</li>
+<li>Heavier steering feel</li>
+<li>Better straight-line stability</li>
+</ul>
+<p><strong>Less Caster:</strong></p>
+<ul>
+<li>Lighter steering</li>
+<li>Less self-centering</li>
+<li>Quicker turn-in</li>
+</ul>
+<h3 id='section-17'>Toe</h3>
+<p><strong>Toe-In (front wheels point inward):</strong></p>
+<ul>
+<li>Straight-line stability</li>
+<li>Reduced turn-in response</li>
+<li>Common for rear axle</li>
+</ul>
+<p><strong>Toe-Out (front wheels point outward):</strong></p>
+<ul>
+<li>Quicker turn-in</li>
+<li>Less stable on straights</li>
+<li>Common for front axle in race setups</li>
+</ul>
+<p><strong>Zero Toe:</strong></p>
+<ul>
+<li>Neutral handling</li>
+<li>Default starting point</li>
+</ul>
+<h2 id='section-18'>Prompt Examples</h2>
+<h3 id='section-19'>Performance Upgrade</h3>
+<pre><code>
+Increase overall grip by 15% for track use. Add 2 degrees
+negative front camber. Wider tires for better contact patch.
+</code></pre>
+<h3 id='section-20'>Wet Weather Setup</h3>
+<pre><code>
+Reduce grip multiplier for wet conditions simulation.
+Reduce friction stiffness for more gradual grip buildup.
+Lower extremumValue and asymptoteValue for slippery feel.
+</code></pre>
+<h3 id='section-21'>Drift Tuning</h3>
+<pre><code>
+Set up for drifting. Slightly higher front grip (1.1) for steering
+control. Lower rear grip (0.9) for controllable slides.
+Wider rear tires for more smoke.
+</code></pre>
+<h3 id='section-22'>Handling Balance</h3>
+<pre><code>
+The car understeers too much. Reduce rear grip relative
+to front. Add negative camber to front axle.
+</code></pre>
+<h2 id='section-23'>Tips for This Panel</h2>
+<h3 id='section-24'>Understand the Baseline</h3>
+<p>Before changing values, understand what the current setup does. Test drive first.</p>
+<h3 id='section-25'>Change One Thing at a Time</h3>
+<p>Grip and alignment interact. Changing everything at once makes it hard to identify effects.</p>
+<h3 id='section-26'>Match Front and Rear</h3>
+<p>Unless you want specific handling bias, keep front and rear grip characteristics related.</p>
+<h3 id='section-27'>Consider the Use Case</h3>
+<p>Track setups differ wildly from comfort setups. Know your goal.</p>
+<h3 id='section-28'>Test Extensively</h3>
+<p>Tire settings affect handling significantly. Test in various scenarios: acceleration, braking, cornering.</p>
+<h3 id='section-29'>Suspension Settings</h3>
+<p>Suspension tuning is handled in the <strong>Vehicle Customization panel</strong>, not the Wheels panel. This separation exists because:</p>
+<p><strong>In Wheels Panel:</strong></p>
+<ul>
+<li>Tire friction and grip</li>
+<li>Wheel alignment (camber, caster, toe)</li>
+<li>Wheel dimensions and sizing</li>
+</ul>
+<p><strong>In Vehicle Customization Panel:</strong></p>
+<ul>
+<li>Spring stiffness (how firm the ride)</li>
+<li>Damper rates (how quickly suspension settles)</li>
+<li>Suspension travel distance</li>
+<li>Anti-roll bar effectiveness</li>
+</ul>
+<p>To tune suspension:</p>
+<ol>
+<li>Select your vehicle</li>
+<li>Switch to the Vehicle Customization panel</li>
+<li>Describe the suspension changes you want</li>
+</ol>
+<p>Example suspension prompts for Customization panel:</p>
+<pre><code>
+Stiffen the suspension for better cornering with less body roll.
+</code></pre>
+<pre><code>
+Soften the suspension for a comfortable ride quality.
+Set spring rate to 35000 and damper to 3500.
+</code></pre>
+<pre><code>
+Increase suspension travel for off-road capability.
+</code></pre>
+<p>This separation allows the Wheels panel to focus on tire behavior while the Customization panel handles chassis dynamics.</p>
+</div></body></html>

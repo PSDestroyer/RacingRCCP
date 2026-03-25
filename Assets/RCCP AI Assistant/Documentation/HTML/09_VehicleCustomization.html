@@ -1,0 +1,327 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>09_VehicleCustomization</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Vehicle Customization</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Vehicle Customization</a></li>
+<li style='margin-left:20px'><a href='#section-1'>Prerequisites</a></li>
+<li style='margin-left:40px'><a href='#section-2'>What You Need</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Recognizing RCCP Vehicles</a></li>
+<li style='margin-left:20px'><a href='#section-4'>Workflow</a></li>
+<li style='margin-left:40px'><a href='#section-5'>Step 1: Select Target Vehicle</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Step 2: Describe Your Changes</a></li>
+<li style='margin-left:40px'><a href='#section-7'>Step 3: Review Changes</a></li>
+<li style='margin-left:40px'><a href='#section-8'>Step 4: Apply Changes</a></li>
+<li style='margin-left:20px'><a href='#section-9'>What Can Be Customized</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Performance</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Handling</a></li>
+<li style='margin-left:40px'><a href='#section-12'>Stability Systems</a></li>
+<li style='margin-left:40px'><a href='#section-13'>Other Aspects</a></li>
+<li style='margin-left:20px'><a href='#section-14'>Customization vs. Specialized Panels</a></li>
+<li style='margin-left:40px'><a href='#section-15'>When to Use Vehicle Customization</a></li>
+<li style='margin-left:40px'><a href='#section-16'>When to Use Specialized Panels</a></li>
+<li style='margin-left:20px'><a href='#section-17'>State Snapshot System</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Before State</a></li>
+<li style='margin-left:40px'><a href='#section-19'>After State</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Comparison View</a></li>
+<li style='margin-left:40px'><a href='#section-21'>Undo Safety</a></li>
+<li style='margin-left:20px'><a href='#section-22'>Tips for Effective Customization</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Be Specific About Direction</a></li>
+<li style='margin-left:40px'><a href='#section-24'>Describe the Problem</a></li>
+<li style='margin-left:40px'><a href='#section-25'>Reference Behavior</a></li>
+<li style='margin-left:40px'><a href='#section-26'>Iterate Gradually</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Use Test Drives</a></li>
+<li style='margin-left:40px'><a href='#section-28'>Combine with Manual Tuning</a></li>
+<li style='margin-left:20px'><a href='#section-29'>Common Customization Scenarios</a></li>
+<li style='margin-left:40px'><a href='#section-30'>Making a Vehicle Faster</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Improving Stability</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Creating a Drift Setup</a></li>
+<li style='margin-left:40px'><a href='#section-33'>Comfort Tuning</a></li>
+<li style='margin-left:40px'><a href='#section-34'>Track Preparation</a></li>
+<li style='margin-left:20px'><a href='#section-35'>Troubleshooting</a></li>
+<li style='margin-left:40px'><a href='#section-36'>Changes Don't Feel Different</a></li>
+<li style='margin-left:40px'><a href='#section-37'>Vehicle Behaves Erratically</a></li>
+<li style='margin-left:40px'><a href='#section-38'>AI Misunderstands Intent</a></li>
+<li style='margin-left:40px'><a href='#section-39'>Can't Undo Changes</a></li>
+<li style='margin-left:40px'><a href='#section-40'>Some Properties Not Changed</a></li>
+</ul></div>
+<p>The Vehicle Customization panel allows you to modify existing RCCP vehicles using natural language descriptions. Unlike Vehicle Creation which starts from raw models, customization works with vehicles that already have RCCP components.</p>
+<h2 id='section-1'>Prerequisites</h2>
+<h3 id='section-2'>What You Need</h3>
+<p><strong>An Existing RCCP Vehicle</strong></p>
+<p>The selected GameObject must have an RCCP_CarController component. This can be:</p>
+<ul>
+<li>A vehicle created through the AI Assistant</li>
+<li>A vehicle from RCCP demo scenes</li>
+<li>A manually configured RCCP vehicle</li>
+<li>A vehicle prefab instantiated in the scene</li>
+</ul>
+<p><strong>Scene Object</strong></p>
+<p>The vehicle must be in the scene hierarchy, not just a prefab in the Project window.</p>
+<p><strong>Active State</strong></p>
+<p>The vehicle's GameObject should be active (not disabled).</p>
+<h3 id='section-3'>Recognizing RCCP Vehicles</h3>
+<p>When you select a valid RCCP vehicle, the assistant shows:</p>
+<ul>
+<li>Vehicle name with RCCP indicator</li>
+<li>Currently attached components</li>
+<li>Configuration summary</li>
+</ul>
+<p>If you select something that's not an RCCP vehicle, the assistant prompts you to select a valid target.</p>
+<h2 id='section-4'>Workflow</h2>
+<h3 id='section-5'>Step 1: Select Target Vehicle</h3>
+<ol>
+<li>In the Hierarchy, select your RCCP vehicle</li>
+<li>The AI Assistant recognizes it and shows vehicle info</li>
+<li>Current configuration is captured for comparison</li>
+</ol>
+<p>The assistant displays:</p>
+<ul>
+<li>Vehicle name</li>
+<li>Component list</li>
+<li>Key current values (power, drivetrain, etc.)</li>
+</ul>
+<h3 id='section-6'>Step 2: Describe Your Changes</h3>
+<p>Write a natural language description of what you want to change.</p>
+<p><strong>Tip:</strong> If you're unsure what to change, switch to <strong>Ask Mode</strong> first. Click the &quot;Ask&quot; button at the top of the prompt area to ask questions like &quot;What might cause understeer?&quot; or &quot;What power level is appropriate for this vehicle?&quot; Then switch back to Configure mode to make changes. See the Ask Mode documentation for details.</p>
+<p><strong>Good customization prompts include:</strong></p>
+<ul>
+<li>What aspect to change (power, handling, stability, etc.)</li>
+<li>Direction of change (increase, decrease, enable, disable)</li>
+<li>Magnitude if relevant (small adjustment vs major change)</li>
+<li>Context or goal (why you want this change)</li>
+</ul>
+<p><strong>Examples:</strong></p>
+<p>Increasing Power:</p>
+<pre><code>
+Increase engine power to 350hp and raise the rev limit to 7500 RPM.
+Adjust torque curve for more low-end pull.
+</code></pre>
+<p>Improving Handling:</p>
+<pre><code>
+Make the steering more responsive at low speeds but more stable
+at highway speeds. Reduce body roll in corners.
+</code></pre>
+<p>Adjusting Stability:</p>
+<pre><code>
+Enable ABS with moderate intervention. Add light ESP that allows
+some slip before correction. Keep TCS off for manual control.
+</code></pre>
+<p>Changing Drivetrain:</p>
+<pre><code>
+Convert to all-wheel drive with 40/60 front/rear torque split.
+Adjust the differential for better corner exit traction.
+</code></pre>
+<h3 id='section-7'>Step 3: Review Changes</h3>
+<p>The AI generates a response showing proposed modifications.</p>
+<p><strong>Before/After Comparison</strong></p>
+<p>For each changed property, you see:</p>
+<ul>
+<li>Property name</li>
+<li>Current value (before)</li>
+<li>Proposed value (after)</li>
+</ul>
+<p><strong>Component Organization</strong></p>
+<p>Changes are grouped by component:</p>
+<ul>
+<li>Engine changes</li>
+<li>Gearbox changes</li>
+<li>Stability changes</li>
+<li>etc.</li>
+</ul>
+<p><strong>Selective Toggles</strong></p>
+<p>Each component group has a toggle to include/exclude it from the apply operation.</p>
+<h3 id='section-8'>Step 4: Apply Changes</h3>
+<p>Choose how to apply:</p>
+<p><strong>Apply All</strong></p>
+<p>Applies every change in the response.</p>
+<p><strong>Apply Selected</strong></p>
+<p>Only applies changes from enabled component groups.</p>
+<p><strong>Discard</strong></p>
+<p>Clears the response without making changes.</p>
+<p>After applying:</p>
+<ul>
+<li>Changes are made to the vehicle</li>
+<li>Undo is available (Ctrl+Z)</li>
+<li>Status message confirms success</li>
+</ul>
+<h2 id='section-9'>What Can Be Customized</h2>
+<h3 id='section-10'>Performance</h3>
+<p><strong>Engine</strong></p>
+<ul>
+<li>Maximum power (horsepower/kW)</li>
+<li>Maximum torque</li>
+<li>RPM range (idle to redline)</li>
+<li>Torque curves</li>
+<li>Engine inertia</li>
+</ul>
+<p><strong>Transmission</strong></p>
+<ul>
+<li>Gearbox type (auto/manual)</li>
+<li>Number of gears</li>
+<li>Gear ratios</li>
+<li>Shift timing</li>
+<li>Clutch behavior</li>
+</ul>
+<p><strong>Drivetrain</strong></p>
+<ul>
+<li>Drive type (FWD/RWD/AWD)</li>
+<li>Torque distribution</li>
+<li>Differential settings</li>
+<li>Final drive ratio</li>
+</ul>
+<h3 id='section-11'>Handling</h3>
+<p><strong>Steering</strong></p>
+<ul>
+<li>Steering angle limits</li>
+<li>Speed-sensitive steering curves</li>
+<li>Counter-steer assistance</li>
+<li>Steering response</li>
+</ul>
+<p><strong>Suspension</strong></p>
+<ul>
+<li>Spring stiffness</li>
+<li>Damper rates</li>
+<li>Suspension travel</li>
+<li>Anti-roll bar effectiveness</li>
+</ul>
+<p><strong>Weight Distribution</strong></p>
+<ul>
+<li>Center of mass position</li>
+<li>Vehicle mass</li>
+<li>Inertia settings</li>
+</ul>
+<h3 id='section-12'>Stability Systems</h3>
+<p><strong>ABS (Anti-lock Braking)</strong></p>
+<ul>
+<li>Enable/disable</li>
+<li>Intervention level</li>
+<li>Sensitivity</li>
+</ul>
+<p><strong>ESP (Electronic Stability Program)</strong></p>
+<ul>
+<li>Enable/disable</li>
+<li>Correction strength</li>
+<li>Activation threshold</li>
+</ul>
+<p><strong>TCS (Traction Control)</strong></p>
+<ul>
+<li>Enable/disable</li>
+<li>Slip limit</li>
+<li>Power reduction rate</li>
+</ul>
+<h3 id='section-13'>Other Aspects</h3>
+<p><strong>Tires</strong></p>
+<ul>
+<li>Friction coefficients</li>
+<li>Grip multipliers</li>
+<li>Slip characteristics</li>
+</ul>
+<p><strong>Brakes</strong></p>
+<ul>
+<li>Brake force</li>
+<li>Brake bias (front/rear)</li>
+</ul>
+<p>For specialized aspects (audio, lights, damage), use the dedicated panels for more focused control.</p>
+<h2 id='section-14'>Customization vs. Specialized Panels</h2>
+<h3 id='section-15'>When to Use Vehicle Customization</h3>
+<p>Use this panel for:</p>
+<ul>
+<li>Broad changes across multiple components</li>
+<li>Performance tuning (power, handling)</li>
+<li>General driving feel adjustments</li>
+<li>When you're not sure which specific component to modify</li>
+</ul>
+<h3 id='section-16'>When to Use Specialized Panels</h3>
+<p>Use dedicated panels for:</p>
+<ul>
+<li><strong>Behaviors</strong> - Detailed stability and driving style presets</li>
+<li><strong>Wheels</strong> - Precise tire and suspension tuning</li>
+<li><strong>Audio</strong> - Engine sound configuration</li>
+<li><strong>Lights</strong> - Vehicle lighting setup</li>
+<li><strong>Damage</strong> - Deformation and detachable parts</li>
+</ul>
+<p>Specialized panels have:</p>
+<ul>
+<li>Focused context for that domain</li>
+<li>More relevant quick prompts</li>
+<li>Optimized AI prompts for specific changes</li>
+</ul>
+<h2 id='section-17'>State Snapshot System</h2>
+<p>The customization panel captures your vehicle's state before generating changes.</p>
+<h3 id='section-18'>Before State</h3>
+<p>When you click Generate, the current values of all customizable properties are recorded.</p>
+<h3 id='section-19'>After State</h3>
+<p>The AI response proposes new values.</p>
+<h3 id='section-20'>Comparison View</h3>
+<p>You see both states side-by-side, making it easy to understand what will change.</p>
+<h3 id='section-21'>Undo Safety</h3>
+<p>If applied changes don't work as expected, Unity's Undo system restores the before state.</p>
+<h2 id='section-22'>Tips for Effective Customization</h2>
+<h3 id='section-23'>Be Specific About Direction</h3>
+<p>Say &quot;increase power by 50hp&quot; rather than just &quot;more power.&quot;</p>
+<h3 id='section-24'>Describe the Problem</h3>
+<p>Instead of guessing a solution, describe what's wrong: &quot;The car understeers too much in tight corners.&quot;</p>
+<h3 id='section-25'>Reference Behavior</h3>
+<p>Describe how you want it to feel: &quot;Like a go-kart with quick turn-in.&quot;</p>
+<h3 id='section-26'>Iterate Gradually</h3>
+<p>Make smaller changes and test. Large changes can have unexpected interactions.</p>
+<h3 id='section-27'>Use Test Drives</h3>
+<p>After each change, test in Play mode. Real driving feel is the ultimate validator.</p>
+<h3 id='section-28'>Combine with Manual Tuning</h3>
+<p>Use AI for initial changes, then fine-tune manually in inspectors for precision.</p>
+<h2 id='section-29'>Common Customization Scenarios</h2>
+<h3 id='section-30'>Making a Vehicle Faster</h3>
+<pre><code>
+Increase engine power to 400hp, add a 6th gear for higher top speed,
+and reduce vehicle mass by 100kg for better acceleration.
+</code></pre>
+<h3 id='section-31'>Improving Stability</h3>
+<pre><code>
+Lower the center of mass, stiffen the suspension, and enable ESP
+with moderate intervention. The car should resist spinning out.
+</code></pre>
+<h3 id='section-32'>Creating a Drift Setup</h3>
+<pre><code>
+Disable TCS and ESP. Set front grip to 1.1 and rear grip to 0.9
+for controllable slides. Increase steering angle and enable
+counter-steer assistance.
+</code></pre>
+<h3 id='section-33'>Comfort Tuning</h3>
+<pre><code>
+Soften the suspension significantly, reduce steering response for
+less twitchiness, and smooth out the throttle response curve.
+</code></pre>
+<h3 id='section-34'>Track Preparation</h3>
+<pre><code>
+Stiffen suspension, lower ride height, increase downforce effect,
+enable aggressive ABS, and sharpen throttle response.
+</code></pre>
+<h2 id='section-35'>Troubleshooting</h2>
+<h3 id='section-36'>Changes Don't Feel Different</h3>
+<p>Some changes have subtle effects. Compare before/after values and test in appropriate conditions.</p>
+<h3 id='section-37'>Vehicle Behaves Erratically</h3>
+<p>Aggressive changes can interact unpredictably. Undo and try smaller adjustments.</p>
+<h3 id='section-38'>AI Misunderstands Intent</h3>
+<p>Rephrase your prompt more specifically. Mention exact components or values if needed.</p>
+<h3 id='section-39'>Can't Undo Changes</h3>
+<p>Unity's undo stack may fill up. Save your scene before major customization sessions.</p>
+<h3 id='section-40'>Some Properties Not Changed</h3>
+<p>The AI focuses on properties relevant to your description. For complete overhauls, make multiple requests or use specialized panels.</p>
+</div></body></html>

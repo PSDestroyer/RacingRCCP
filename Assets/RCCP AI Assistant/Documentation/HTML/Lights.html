@@ -1,0 +1,411 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>Lights</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Lights Panel</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Lights Panel</a></li>
+<li style='margin-left:20px'><a href='#section-1'>What This Panel Configures</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Light Types</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Light Properties</a></li>
+<li style='margin-left:40px'><a href='#section-4'>Lens Flares</a></li>
+<li style='margin-left:40px'><a href='#section-5'>Breakable Lights</a></li>
+<li style='margin-left:20px'><a href='#section-6'>Vision-Based Light Detection</a></li>
+<li style='margin-left:40px'><a href='#section-7'>What It Is</a></li>
+<li style='margin-left:40px'><a href='#section-8'>How It Works</a></li>
+<li style='margin-left:40px'><a href='#section-9'>What Gets Detected</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Using Vision Detection</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Cost Considerations</a></li>
+<li style='margin-left:40px'><a href='#section-12'>Preview and Adjustment</a></li>
+<li style='margin-left:20px'><a href='#section-13'>Batch Light Detection</a></li>
+<li style='margin-left:40px'><a href='#section-14'>When to Use Batch Mode</a></li>
+<li style='margin-left:40px'><a href='#section-15'>How to Select Multiple Vehicles</a></li>
+<li style='margin-left:40px'><a href='#section-16'>Batch Detection Workflow</a></li>
+<li style='margin-left:40px'><a href='#section-17'>How Batch Apply Works</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Vision Detection in Batch Mode</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Batch Limitations</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Undo Support</a></li>
+<li style='margin-left:20px'><a href='#section-21'>Manual Light Configuration</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Without Vision Detection</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Refining Detected Positions</a></li>
+<li style='margin-left:40px'><a href='#section-24'>Complete Manual Setup</a></li>
+<li style='margin-left:20px'><a href='#section-25'>Common Configurations</a></li>
+<li style='margin-left:40px'><a href='#section-26'>Standard Passenger Car</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Sports Car</a></li>
+<li style='margin-left:40px'><a href='#section-28'>Classic Car</a></li>
+<li style='margin-left:40px'><a href='#section-29'>Emergency Vehicle</a></li>
+<li style='margin-left:20px'><a href='#section-30'>Light Properties Detail</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Intensity Guidelines</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Range Guidelines</a></li>
+<li style='margin-left:40px'><a href='#section-33'>Spot Angle Guidelines</a></li>
+<li style='margin-left:20px'><a href='#section-34'>Damage Integration</a></li>
+<li style='margin-left:40px'><a href='#section-35'>Breakable Lights</a></li>
+<li style='margin-left:40px'><a href='#section-36'>Damage Response</a></li>
+<li style='margin-left:20px'><a href='#section-37'>Prompt Examples</a></li>
+<li style='margin-left:40px'><a href='#section-38'>Brightness Adjustment</a></li>
+<li style='margin-left:40px'><a href='#section-39'>Color Customization</a></li>
+<li style='margin-left:40px'><a href='#section-40'>Flare Configuration</a></li>
+<li style='margin-left:40px'><a href='#section-41'>Position Refinement</a></li>
+<li style='margin-left:20px'><a href='#section-42'>Tips for This Panel</a></li>
+<li style='margin-left:40px'><a href='#section-43'>Use Vision Detection First</a></li>
+<li style='margin-left:40px'><a href='#section-44'>Test at Night</a></li>
+<li style='margin-left:40px'><a href='#section-45'>Match the Vehicle Style</a></li>
+<li style='margin-left:40px'><a href='#section-46'>Consider Performance</a></li>
+<li style='margin-left:40px'><a href='#section-47'>Integrate with Damage</a></li>
+<li style='margin-left:40px'><a href='#section-48'>Preview Before Applying</a></li>
+</ul></div>
+<p>The Lights panel configures vehicle lighting including headlights, taillights, brake lights, reverse lights, and indicators. A unique feature of this panel is vision-based light detection, which uses AI to automatically identify light positions from your vehicle's appearance.</p>
+<h2 id='section-1'>What This Panel Configures</h2>
+<h3 id='section-2'>Light Types</h3>
+<p>RCCP vehicles support multiple light types:</p>
+<p><strong>Headlights</strong></p>
+<p>Front-facing lights for illumination:</p>
+<ul>
+<li>Low beam and high beam</li>
+<li>Intensity and range settings</li>
+<li>Color configuration (typically white)</li>
+</ul>
+<p><strong>Taillights</strong></p>
+<p>Rear-facing lights for visibility:</p>
+<ul>
+<li>Always on when headlights are active</li>
+<li>Lower intensity than headlights</li>
+<li>Red color</li>
+</ul>
+<p><strong>Brake Lights</strong></p>
+<p>Activated when braking:</p>
+<ul>
+<li>Higher intensity than taillights</li>
+<li>Same or different light sources</li>
+<li>Red color</li>
+</ul>
+<p><strong>Reverse Lights</strong></p>
+<p>Activated when in reverse gear:</p>
+<ul>
+<li>White color</li>
+<li>Illuminates behind vehicle</li>
+<li>Lower intensity than headlights</li>
+</ul>
+<p><strong>Indicators (Turn Signals)</strong></p>
+<p>Directional signals for turning:</p>
+<ul>
+<li>Left and right pairs</li>
+<li>Front and rear positions</li>
+<li>Amber/orange color</li>
+<li>Blinking behavior</li>
+</ul>
+<h3 id='section-3'>Light Properties</h3>
+<p>Each light has configurable properties:</p>
+<p><strong>Intensity</strong></p>
+<p>How bright the light appears:</p>
+<ul>
+<li>Higher values = brighter</li>
+<li>Affects both visual and illumination</li>
+</ul>
+<p><strong>Range</strong></p>
+<p>How far the light reaches:</p>
+<ul>
+<li>Important for headlights</li>
+<li>Affects actual scene illumination</li>
+</ul>
+<p><strong>Spot Angle</strong></p>
+<p>The cone width for spot lights:</p>
+<ul>
+<li>Narrow = focused beam</li>
+<li>Wide = spread illumination</li>
+</ul>
+<p><strong>Color</strong></p>
+<p>The light's color:</p>
+<ul>
+<li>Headlights: White (or slight tint)</li>
+<li>Taillights/Brake: Red</li>
+<li>Indicators: Amber/Orange</li>
+<li>Reverse: White</li>
+</ul>
+<h3 id='section-4'>Lens Flares</h3>
+<p>Visual effects for light sources:</p>
+<p><strong>Flare Intensity</strong></p>
+<p>How prominent the flare effect is.</p>
+<p><strong>Flare Size</strong></p>
+<p>How large the flare appears.</p>
+<p><strong>Enable/Disable</strong></p>
+<p>Toggle flares per light or globally.</p>
+<h3 id='section-5'>Breakable Lights</h3>
+<p>Integration with the damage system:</p>
+<p><strong>Breakable</strong></p>
+<p>Whether this light can be damaged.</p>
+<p><strong>Break Force</strong></p>
+<p>How much impact force breaks the light.</p>
+<p><strong>Broken State</strong></p>
+<p>Light turns off when broken.</p>
+<h2 id='section-6'>Vision-Based Light Detection</h2>
+<h3 id='section-7'>What It Is</h3>
+<p>The Lights panel includes a unique AI feature that analyzes screenshots of your vehicle to automatically detect light positions. Instead of manually placing each light, the AI identifies where headlights, taillights, and other lights should go based on the vehicle's visual appearance.</p>
+<h3 id='section-8'>How It Works</h3>
+<ol>
+<li>Click <strong>Detect Lights</strong> button</li>
+<li>The assistant captures screenshots of your vehicle from multiple angles</li>
+<li>Screenshots are sent to Claude's vision model</li>
+<li>The AI analyzes the images and identifies light locations</li>
+<li>Detected positions are returned as world coordinates</li>
+<li>Preview shows proposed light positions on the vehicle</li>
+</ol>
+<h3 id='section-9'>What Gets Detected</h3>
+<p>The vision system can identify:</p>
+<ul>
+<li>Headlight positions (left and right)</li>
+<li>Taillight positions (left and right)</li>
+<li>Additional lights if visible</li>
+<li>Approximate light shapes and directions</li>
+</ul>
+<h3 id='section-10'>Using Vision Detection</h3>
+<ol>
+<li>Select your RCCP vehicle in the scene</li>
+<li>Ensure the vehicle is visible (not occluded)</li>
+<li>Click <strong>Detect Lights</strong></li>
+<li>Wait for processing (uses vision model)</li>
+<li>Review the preview with light markers</li>
+<li>Adjust positions if needed</li>
+<li>Apply the configuration</li>
+</ol>
+<h3 id='section-11'>Cost Considerations</h3>
+<p>Vision-based detection uses Claude's vision model:</p>
+<ul>
+<li>Approximately 10x the cost of text requests</li>
+<li>Uses one of your daily requests (if on free tier)</li>
+<li>Consider using for initial setup, then manual adjustment</li>
+</ul>
+<h3 id='section-12'>Preview and Adjustment</h3>
+<p>After detection, a preview shows:</p>
+<ul>
+<li>Markers at detected light positions</li>
+<li>Color coding by light type</li>
+<li>Handles for manual position adjustment</li>
+</ul>
+<p>You can:</p>
+<ul>
+<li>Accept all positions</li>
+<li>Adjust individual lights</li>
+<li>Re-detect with different angles</li>
+<li>Discard and configure manually</li>
+</ul>
+<h2 id='section-13'>Batch Light Detection</h2>
+<p>The Lights panel supports batch operations for configuring multiple vehicles at once.</p>
+<h3 id='section-14'>When to Use Batch Mode</h3>
+<p>Batch light detection is useful when:</p>
+<ul>
+<li>Setting up a fleet of similar vehicles</li>
+<li>Applying consistent lighting across vehicle variants</li>
+<li>Initial setup of multiple vehicles in a project</li>
+<li>Standardizing light configurations across a roster</li>
+</ul>
+<h3 id='section-15'>How to Select Multiple Vehicles</h3>
+<ol>
+<li>In the Hierarchy window, hold <strong>Ctrl</strong> (Windows) or <strong>Cmd</strong> (Mac)</li>
+<li>Click each RCCP vehicle you want to include</li>
+<li>Or use <strong>Shift+Click</strong> to select a range of vehicles</li>
+</ol>
+<p>The Lights panel shows:</p>
+<ul>
+<li>&quot;X vehicles selected&quot; indicator</li>
+<li>List of selected vehicle names</li>
+<li>Batch mode UI</li>
+</ul>
+<h3 id='section-16'>Batch Detection Workflow</h3>
+<ol>
+<li>Select multiple RCCP vehicles in the scene</li>
+<li>Switch to the Lights panel</li>
+<li>Write a description of the lighting setup you want</li>
+<li>Click <strong>Generate</strong> to create the configuration</li>
+<li>The same lighting configuration applies to all vehicles</li>
+<li>Review the proposed changes</li>
+<li>Click <strong>Apply</strong> to configure all vehicles</li>
+</ol>
+<h3 id='section-17'>How Batch Apply Works</h3>
+<p>When you apply in batch mode:</p>
+<ol>
+<li>Each vehicle is processed sequentially</li>
+<li>Light positions are calculated relative to each vehicle's bounds</li>
+<li>The same light types and properties are applied</li>
+<li>Progress is shown during processing</li>
+<li>A summary reports successes and any failures</li>
+</ol>
+<h3 id='section-18'>Vision Detection in Batch Mode</h3>
+<p>If using vision-based detection with multiple vehicles:</p>
+<ul>
+<li>Each vehicle is screenshotted individually</li>
+<li>Light positions are detected per-vehicle</li>
+<li>Results may vary based on each vehicle's appearance</li>
+<li>Processing takes longer with more vehicles</li>
+</ul>
+<p><strong>Tip:</strong> For consistent results across similar vehicles, consider detecting lights on one vehicle, then using a text prompt to apply the same configuration to others.</p>
+<h3 id='section-19'>Batch Limitations</h3>
+<p><strong>Same Configuration</strong></p>
+<p>All vehicles receive the same light types and properties. Individual customization requires single-vehicle mode.</p>
+<p><strong>Processing Time</strong></p>
+<p>Batch operations take longer. Allow time for all vehicles to process.</p>
+<p><strong>Vision Cost</strong></p>
+<p>Vision detection for each vehicle uses API quota. Consider using text prompts for batch operations to reduce costs.</p>
+<h3 id='section-20'>Undo Support</h3>
+<p>Batch light operations create a single undo group. One <strong>Ctrl+Z</strong> reverts all vehicles to their previous state.</p>
+<h2 id='section-21'>Manual Light Configuration</h2>
+<h3 id='section-22'>Without Vision Detection</h3>
+<p>You can configure lights manually through prompts:</p>
+<pre><code>
+Set up headlights at the front corners of the vehicle.
+Position taillights at the rear lower corners.
+Add brake lights above the taillights.
+Configure indicators at all four corners.
+</code></pre>
+<p>The AI will generate reasonable positions based on typical vehicle layouts and your description.</p>
+<h3 id='section-23'>Refining Detected Positions</h3>
+<p>After vision detection, refine with prompts:</p>
+<pre><code>
+Move the right headlight 10cm to the left.
+Raise the taillights by 5cm.
+Increase headlight intensity to 2.0.
+</code></pre>
+<h3 id='section-24'>Complete Manual Setup</h3>
+<p>For full control:</p>
+<pre><code>
+Create headlights:
+- Position: front of vehicle, 40cm from center on each side
+- Height: 70cm from ground
+- Intensity: 2.0, range: 50m
+- Spot angle: 60 degrees, white color
+
+Create taillights:
+- Position: rear of vehicle, 50cm from center on each side
+- Height: 60cm from ground
+- Intensity: 1.0, range: 10m
+- Red color
+</code></pre>
+<h2 id='section-25'>Common Configurations</h2>
+<h3 id='section-26'>Standard Passenger Car</h3>
+<pre><code>
+Configure standard automotive lighting:
+- Dual headlights with high/low beam
+- Combined taillights and brake lights
+- Reverse lights below taillights
+- Indicators at all four corners
+- Enable lens flares for realism
+- Make all lights breakable for damage integration
+</code></pre>
+<h3 id='section-27'>Sports Car</h3>
+<pre><code>
+Set up aggressive sports car lighting:
+- Thin, wide headlights with high intensity
+- LED-style taillights
+- Strong brake lights
+- Flush-mounted indicators
+- Minimal flares for modern look
+</code></pre>
+<h3 id='section-28'>Classic Car</h3>
+<pre><code>
+Configure classic car lighting:
+- Round headlights with visible bulb
+- Small round taillights
+- Separate brake lights
+- Large visible indicators
+- Prominent lens flares
+</code></pre>
+<h3 id='section-29'>Emergency Vehicle</h3>
+<pre><code>
+Set up emergency vehicle lighting:
+- Standard headlights and taillights
+- Add roof-mounted light bar
+- Alternating flash pattern for roof lights
+- High intensity for all warning lights
+</code></pre>
+<h2 id='section-30'>Light Properties Detail</h2>
+<h3 id='section-31'>Intensity Guidelines</h3>
+<table>
+<tr><th>Light Type</th><th>Typical Intensity</th></tr>
+<tr><td>Headlights (low beam)</td><td>1.5 - 2.0</td></tr>
+<tr><td>Headlights (high beam)</td><td>2.5 - 3.5</td></tr>
+<tr><td>Taillights</td><td>0.5 - 1.0</td></tr>
+<tr><td>Brake lights</td><td>1.5 - 2.0</td></tr>
+<tr><td>Reverse lights</td><td>1.0 - 1.5</td></tr>
+<tr><td>Indicators</td><td>1.0 - 1.5</td></tr>
+</table>
+<h3 id='section-32'>Range Guidelines</h3>
+<table>
+<tr><th>Light Type</th><th>Typical Range</th></tr>
+<tr><td>Headlights</td><td>30 - 60 meters</td></tr>
+<tr><td>Taillights</td><td>5 - 15 meters</td></tr>
+<tr><td>Brake lights</td><td>10 - 20 meters</td></tr>
+<tr><td>Reverse lights</td><td>5 - 10 meters</td></tr>
+<tr><td>Indicators</td><td>5 - 10 meters</td></tr>
+</table>
+<h3 id='section-33'>Spot Angle Guidelines</h3>
+<table>
+<tr><th>Light Type</th><th>Typical Angle</th></tr>
+<tr><td>Headlights</td><td>50 - 70 degrees</td></tr>
+<tr><td>Taillights</td><td>90 - 120 degrees</td></tr>
+<tr><td>All others</td><td>90 - 180 degrees</td></tr>
+</table>
+<h2 id='section-34'>Damage Integration</h2>
+<h3 id='section-35'>Breakable Lights</h3>
+<p>When integrated with the damage system:</p>
+<pre><code>
+Make headlights breakable with 500N impact force.
+Taillights should break at 300N.
+Broken lights turn off and show damage material.
+</code></pre>
+<h3 id='section-36'>Damage Response</h3>
+<p>Configure how lights respond to damage:</p>
+<ul>
+<li>Break force threshold</li>
+<li>Visual change when broken</li>
+<li>Whether they can be repaired</li>
+</ul>
+<h2 id='section-37'>Prompt Examples</h2>
+<h3 id='section-38'>Brightness Adjustment</h3>
+<pre><code>
+Increase headlight brightness for better night visibility.
+Set intensity to 2.5 with range of 50 meters.
+</code></pre>
+<h3 id='section-39'>Color Customization</h3>
+<pre><code>
+Add a slight blue tint to the headlights for modern look.
+Keep taillights pure red.
+</code></pre>
+<h3 id='section-40'>Flare Configuration</h3>
+<pre><code>
+Enable subtle lens flares on all lights.
+Headlight flares should be larger than taillight flares.
+</code></pre>
+<h3 id='section-41'>Position Refinement</h3>
+<pre><code>
+The left headlight is too far inward.
+Move it 15cm toward the left edge of the vehicle.
+</code></pre>
+<h2 id='section-42'>Tips for This Panel</h2>
+<h3 id='section-43'>Use Vision Detection First</h3>
+<p>For new vehicles, let the AI detect initial positions, then refine manually.</p>
+<h3 id='section-44'>Test at Night</h3>
+<p>Switch to a dark scene to properly evaluate light appearance and intensity.</p>
+<h3 id='section-45'>Match the Vehicle Style</h3>
+<p>Classic cars have different light styles than modern cars. Match the era.</p>
+<h3 id='section-46'>Consider Performance</h3>
+<p>Too many lights or very high ranges can impact performance. Balance as needed.</p>
+<h3 id='section-47'>Integrate with Damage</h3>
+<p>For full realism, configure light damage alongside the Damage panel settings.</p>
+<h3 id='section-48'>Preview Before Applying</h3>
+<p>Use the position preview to verify lights are where you want them before committing.</p>
+</div></body></html>

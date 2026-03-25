@@ -1,0 +1,378 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>Damage</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>Damage Panel</h1>
+<div class='toc'><h3>Table of Contents</h3><ul>
+<li style='margin-left:0px'><a href='#section-0'>Damage Panel</a></li>
+<li style='margin-left:20px'><a href='#section-1'>What This Panel Configures</a></li>
+<li style='margin-left:40px'><a href='#section-2'>Mesh Deformation</a></li>
+<li style='margin-left:40px'><a href='#section-3'>Wheel Damage</a></li>
+<li style='margin-left:40px'><a href='#section-4'>Light Damage</a></li>
+<li style='margin-left:40px'><a href='#section-5'>Detachable Parts</a></li>
+<li style='margin-left:40px'><a href='#section-6'>Part Properties</a></li>
+<li style='margin-left:20px'><a href='#section-7'>Common Configurations</a></li>
+<li style='margin-left:40px'><a href='#section-8'>Realistic Damage</a></li>
+<li style='margin-left:40px'><a href='#section-9'>Arcade Damage</a></li>
+<li style='margin-left:40px'><a href='#section-10'>Simulation Damage</a></li>
+<li style='margin-left:40px'><a href='#section-11'>Indestructible Mode</a></li>
+<li style='margin-left:20px'><a href='#section-12'>Understanding Deformation</a></li>
+<li style='margin-left:40px'><a href='#section-13'>How It Works</a></li>
+<li style='margin-left:40px'><a href='#section-14'>Vertex Movement</a></li>
+<li style='margin-left:40px'><a href='#section-15'>Performance Considerations</a></li>
+<li style='margin-left:20px'><a href='#section-16'>Detachable Parts Deep Dive</a></li>
+<li style='margin-left:40px'><a href='#section-17'>Part Detection</a></li>
+<li style='margin-left:40px'><a href='#section-18'>Configuring Parts</a></li>
+<li style='margin-left:40px'><a href='#section-19'>Part Behavior When Detached</a></li>
+<li style='margin-left:40px'><a href='#section-20'>Partial Detachment</a></li>
+<li style='margin-left:20px'><a href='#section-21'>Damage Zones</a></li>
+<li style='margin-left:40px'><a href='#section-22'>Zone Configuration</a></li>
+<li style='margin-left:40px'><a href='#section-23'>Per-Zone Settings</a></li>
+<li style='margin-left:20px'><a href='#section-24'>Wheel Damage Detail</a></li>
+<li style='margin-left:40px'><a href='#section-25'>Detachment</a></li>
+<li style='margin-left:40px'><a href='#section-26'>Deformation</a></li>
+<li style='margin-left:40px'><a href='#section-27'>Tire Damage</a></li>
+<li style='margin-left:20px'><a href='#section-28'>Prompt Examples</a></li>
+<li style='margin-left:40px'><a href='#section-29'>Basic Setup</a></li>
+<li style='margin-left:40px'><a href='#section-30'>Tuning Deformation</a></li>
+<li style='margin-left:40px'><a href='#section-31'>Part Strength Adjustment</a></li>
+<li style='margin-left:40px'><a href='#section-32'>Adding New Detachable Part</a></li>
+<li style='margin-left:40px'><a href='#section-33'>Handling Impact</a></li>
+<li style='margin-left:20px'><a href='#section-34'>Tips for This Panel</a></li>
+<li style='margin-left:40px'><a href='#section-35'>Test with Collisions</a></li>
+<li style='margin-left:40px'><a href='#section-36'>Balance Realism vs Fun</a></li>
+<li style='margin-left:40px'><a href='#section-37'>Consider Reset Mechanics</a></li>
+<li style='margin-left:40px'><a href='#section-38'>Use Appropriate Strengths</a></li>
+<li style='margin-left:40px'><a href='#section-39'>Integrate with Other Systems</a></li>
+<li style='margin-left:40px'><a href='#section-40'>Performance Testing</a></li>
+<li style='margin-left:40px'><a href='#section-41'>Visual Feedback</a></li>
+</ul></div>
+<p>The Damage panel configures vehicle deformation, detachable parts, and collision response. This enables realistic damage simulation where vehicles visually respond to impacts and parts can break off.</p>
+<h2 id='section-1'>What This Panel Configures</h2>
+<h3 id='section-2'>Mesh Deformation</h3>
+<p>How the vehicle body deforms on impact:</p>
+<p><strong>Deformation Radius</strong></p>
+<p>How wide an area is affected by impact:</p>
+<ul>
+<li>Larger radius = more spread deformation</li>
+<li>Smaller radius = localized dents</li>
+</ul>
+<p><strong>Deformation Multiplier</strong></p>
+<p>How much the mesh deforms:</p>
+<ul>
+<li>Higher values = more dramatic deformation</li>
+<li>Lower values = subtle damage</li>
+</ul>
+<p><strong>Deformation Limit</strong></p>
+<p>Maximum deformation allowed:</p>
+<ul>
+<li>Prevents mesh from inverting</li>
+<li>Keeps damage realistic</li>
+</ul>
+<p><strong>Repairability</strong></p>
+<p>Whether deformation can be reset:</p>
+<ul>
+<li>Enable for gameplay repair mechanics</li>
+<li>Disable for permanent damage</li>
+</ul>
+<h3 id='section-3'>Wheel Damage</h3>
+<p>How wheels respond to impacts:</p>
+<p><strong>Wheel Detachment</strong></p>
+<p>Wheels can break off on severe impact:</p>
+<ul>
+<li>Detachment force threshold</li>
+<li>Physics for detached wheels</li>
+<li>Gameplay implications</li>
+</ul>
+<p><strong>Wheel Deformation</strong></p>
+<p>Wheels can bend from impacts:</p>
+<ul>
+<li>Affects handling when damaged</li>
+<li>Visual deformation</li>
+</ul>
+<p><strong>Tire Puncture</strong></p>
+<p>Tires can be damaged:</p>
+<ul>
+<li>Affects grip and handling</li>
+<li>Visual flat tire state</li>
+</ul>
+<h3 id='section-4'>Light Damage</h3>
+<p>Integration with the Lights panel:</p>
+<p><strong>Breakable Lights</strong></p>
+<p>Lights turn off when damaged:</p>
+<ul>
+<li>Per-light configuration</li>
+<li>Break force threshold</li>
+<li>Visual damage state</li>
+</ul>
+<h3 id='section-5'>Detachable Parts</h3>
+<p>Vehicle components that can break off:</p>
+<p><strong>Supported Parts:</strong></p>
+<ul>
+<li>Hood/Bonnet</li>
+<li>Trunk/Boot</li>
+<li>Doors (left/right, front/rear)</li>
+<li>Front bumper</li>
+<li>Rear bumper</li>
+<li>Side mirrors</li>
+<li>Fenders</li>
+<li>Spoilers/Wings</li>
+</ul>
+<h3 id='section-6'>Part Properties</h3>
+<p>Each detachable part has:</p>
+<p><strong>Strength</strong></p>
+<p>How much force breaks the attachment:</p>
+<ul>
+<li>Higher = harder to detach</li>
+<li>Lower = easier to break off</li>
+</ul>
+<p><strong>Mass</strong></p>
+<p>Weight of the detached part:</p>
+<ul>
+<li>Affects physics when detached</li>
+<li>Influences momentum transfer</li>
+</ul>
+<p><strong>Hinge Point</strong></p>
+<p>Where the part attaches:</p>
+<ul>
+<li>Determines swing direction</li>
+<li>Affects detachment animation</li>
+</ul>
+<p><strong>Break Direction</strong></p>
+<p>Which direction detaches the part:</p>
+<ul>
+<li>Front impact vs rear impact</li>
+<li>Side impacts</li>
+</ul>
+<h2 id='section-7'>Common Configurations</h2>
+<h3 id='section-8'>Realistic Damage</h3>
+<pre><code>
+Configure realistic damage simulation:
+- Moderate deformation radius for natural spread
+- Progressive deformation that builds up
+- All body panels detachable with appropriate strength
+- Wheels can detach from severe impacts
+- Lights break on impact
+- Doors require side impact to detach
+- Hood detaches from front impacts
+</code></pre>
+<h3 id='section-9'>Arcade Damage</h3>
+<pre><code>
+Set up arcade-style damage:
+- Minimal mesh deformation (mostly visual, no handling change)
+- Parts detach dramatically on any significant impact
+- Lower strength values for easy detachment
+- Instant repair available
+- Exaggerated visual effects
+</code></pre>
+<h3 id='section-10'>Simulation Damage</h3>
+<pre><code>
+Configure simulation-level damage:
+- Accurate deformation based on impact energy
+- Realistic part strengths based on real vehicle construction
+- Damage affects handling progressively
+- Wheels damage affects alignment
+- Structural damage possible
+- No magical repair
+</code></pre>
+<h3 id='section-11'>Indestructible Mode</h3>
+<pre><code>
+Make the vehicle immune to damage:
+- Disable mesh deformation
+- Disable all part detachment
+- Disable wheel damage
+- Vehicle maintains appearance regardless of impacts
+</code></pre>
+<h2 id='section-12'>Understanding Deformation</h2>
+<h3 id='section-13'>How It Works</h3>
+<p>When an impact occurs:</p>
+<ol>
+<li>Impact point is detected</li>
+<li>Force magnitude is calculated</li>
+<li>Deformation is applied to nearby vertices</li>
+<li>Vertices move inward based on settings</li>
+</ol>
+<h3 id='section-14'>Vertex Movement</h3>
+<p>Vertices within the deformation radius move:</p>
+<ul>
+<li>Most movement at impact point</li>
+<li>Less movement toward edges of radius</li>
+<li>Limited by deformation limit</li>
+</ul>
+<h3 id='section-15'>Performance Considerations</h3>
+<p>Mesh deformation is computationally intensive:</p>
+<ul>
+<li>Lower vertex count = faster deformation</li>
+<li>Large deformation radius = more vertices affected</li>
+<li>Consider LOD integration for distant vehicles</li>
+</ul>
+<h2 id='section-16'>Detachable Parts Deep Dive</h2>
+<h3 id='section-17'>Part Detection</h3>
+<p>RCCP identifies parts based on naming conventions:</p>
+<ul>
+<li>&quot;Hood&quot; or &quot;Bonnet&quot; for front panel</li>
+<li>&quot;Trunk&quot; or &quot;Boot&quot; for rear panel</li>
+<li>&quot;Door_FL&quot; for front left door</li>
+<li>Similar patterns for other parts</li>
+</ul>
+<h3 id='section-18'>Configuring Parts</h3>
+<pre><code>
+Set up detachable hood:
+- Strength: 5000N (medium impact detaches)
+- Mass: 15kg
+- Hinge at rear edge
+- Detaches from front impacts
+- Physics enabled when detached
+</code></pre>
+<h3 id='section-19'>Part Behavior When Detached</h3>
+<p>Detached parts:</p>
+<ul>
+<li>Become separate physics objects</li>
+<li>Can collide with environment</li>
+<li>May bounce or slide</li>
+<li>Eventually despawn or persist</li>
+</ul>
+<h3 id='section-20'>Partial Detachment</h3>
+<p>Some parts support partial detachment:</p>
+<ul>
+<li>Doors swing open before breaking off</li>
+<li>Hood pops up before flying off</li>
+<li>Adds realism to damage progression</li>
+</ul>
+<h2 id='section-21'>Damage Zones</h2>
+<h3 id='section-22'>Zone Configuration</h3>
+<p>Different areas can have different properties:</p>
+<p><strong>Front Zone</strong></p>
+<p>Typically designed for crush zones:</p>
+<ul>
+<li>Higher deformation allowed</li>
+<li>Hood detachment area</li>
+<li>Bumper breakaway</li>
+</ul>
+<p><strong>Side Zones</strong></p>
+<p>Structural areas:</p>
+<ul>
+<li>Lower deformation</li>
+<li>Door hinge points</li>
+<li>Mirror detachment</li>
+</ul>
+<p><strong>Rear Zone</strong></p>
+<p>Trunk area:</p>
+<ul>
+<li>Moderate deformation</li>
+<li>Trunk detachment</li>
+<li>Rear bumper breakaway</li>
+</ul>
+<h3 id='section-23'>Per-Zone Settings</h3>
+<pre><code>
+Configure front zone:
+- Increased deformation multiplier for crush zone
+- Lower strength for bumper detachment
+- Headlight damage zone
+
+Configure side zones:
+- Reduced deformation for structural integrity
+- Door detachment requires strong side impact
+- Mirror breaks easily
+
+Configure rear zone:
+- Moderate deformation
+- Taillight damage zone
+- Trunk detaches from rear impacts
+</code></pre>
+<h2 id='section-24'>Wheel Damage Detail</h2>
+<h3 id='section-25'>Detachment</h3>
+<p>Wheels detach under severe impacts:</p>
+<pre><code>
+Configure wheel detachment:
+- Detachment force: 15000N
+- Detached wheels become physics objects
+- Vehicle becomes undriveable without wheels
+- Visual suspension damage when wheel is gone
+</code></pre>
+<h3 id='section-26'>Deformation</h3>
+<p>Wheels bend from impacts:</p>
+<pre><code>
+Configure wheel deformation:
+- Camber changes from side impacts
+- Toe changes from front impacts
+- Affects handling progressively
+- Visual rim damage
+</code></pre>
+<h3 id='section-27'>Tire Damage</h3>
+<p>Tires can puncture:</p>
+<pre><code>
+Configure tire puncture:
+- Puncture chance from debris
+- Gradual deflation or instant flat
+- Handling degrades with flat tire
+- Visual flat tire model
+</code></pre>
+<h2 id='section-28'>Prompt Examples</h2>
+<h3 id='section-29'>Basic Setup</h3>
+<pre><code>
+Enable damage system with moderate settings:
+- Mesh deforms realistically
+- Major panels (hood, trunk, doors) are detachable
+- Lights break on direct impact
+- Wheels can detach from extreme impacts
+</code></pre>
+<h3 id='section-30'>Tuning Deformation</h3>
+<pre><code>
+The deformation is too extreme. Reduce the deformation multiplier
+by 30% and limit maximum deformation to prevent mesh inversion.
+Keep the radius the same for natural spread.
+</code></pre>
+<h3 id='section-31'>Part Strength Adjustment</h3>
+<pre><code>
+The hood comes off too easily. Increase hood strength to 8000N.
+The doors should require a stronger impact - set to 6000N.
+Mirrors can stay easy to break at 500N.
+</code></pre>
+<h3 id='section-32'>Adding New Detachable Part</h3>
+<pre><code>
+Add the front spoiler as a detachable part:
+- Strength: 2000N (breaks off easily)
+- Mass: 3kg
+- Detaches from front impacts
+- Physics enabled when detached
+</code></pre>
+<h3 id='section-33'>Handling Impact</h3>
+<pre><code>
+Configure how damage affects handling:
+- Front damage causes steering pull
+- Side damage affects tire alignment
+- Suspension damage reduces handling precision
+- Accumulative damage makes vehicle harder to control
+</code></pre>
+<h2 id='section-34'>Tips for This Panel</h2>
+<h3 id='section-35'>Test with Collisions</h3>
+<p>After configuration, deliberately crash the vehicle to see results. Use slow-motion to observe deformation.</p>
+<h3 id='section-36'>Balance Realism vs Fun</h3>
+<p>Too much damage can frustrate players. Find the right balance for your game.</p>
+<h3 id='section-37'>Consider Reset Mechanics</h3>
+<p>If players can repair, configure repairability. If damage is permanent, balance difficulty accordingly.</p>
+<h3 id='section-38'>Use Appropriate Strengths</h3>
+<p>Research real vehicle construction for realistic values. Or tune for gameplay feel.</p>
+<h3 id='section-39'>Integrate with Other Systems</h3>
+<p>Damage affects handling (Behaviors), lights (Lights), and possibly audio. Consider the full picture.</p>
+<h3 id='section-40'>Performance Testing</h3>
+<p>Test damage with multiple vehicles. Heavy deformation can impact performance.</p>
+<h3 id='section-41'>Visual Feedback</h3>
+<p>Consider adding particle effects, sounds, and screen shake for impactful damage feedback.</p>
+</div></body></html>
