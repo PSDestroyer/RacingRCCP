@@ -1,0 +1,322 @@
+﻿<!DOCTYPE html><html><head><meta charset='UTF-8'>
+<title>Mirror_Integration_Guide</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f9f9f9; }
+.content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+h1, h2, h3, h4 { color: #2c3e50; } h1 { border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+a { color: #3498db; text-decoration: none; } a:hover { text-decoration: underline; }
+pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; color: #c7254e; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #3498db; margin: 1em 0; padding: 0.5em 20px; color: #666; background: #f9f9f9; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; }
+ul, ol { margin: 0.5em 0; padding-left: 2em; }
+li { margin: 0.25em 0; }
+.toc { background: #f8f9fa; padding: 15px; border: 1px solid #e9ecef; border-radius: 5px; margin-bottom: 30px; }
+.toc h3 { margin-top: 0; } .toc ul { padding-left: 20px; list-style: none; } .toc li { margin: 0.3em 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+</style></head><body>
+<div class='content'>
+<h1 id='section-0'>RCCP Mirror Networking Integration Guide</h1>
+<p>This guide covers everything you need to set up, configure, and test multiplayer with Realistic Car Controller Pro using Mirror Networking. By the end of this guide, you will have a working multiplayer car game where players can host, join, and drive vehicles together over a network.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href='#prerequisites'>Prerequisites</a></li>
+<li><a href='#installation'>Installation</a></li>
+<li><a href='#setting-up-a-vehicle-for-mirror'>Setting Up a Vehicle for Mirror</a></li>
+<li><a href='#creating-a-multiplayer-scene'>Creating a Multiplayer Scene</a></li>
+<li><a href='#using-the-lobby-system'>Using the Lobby System (RCCP_MirrorManager)</a></li>
+<li><a href='#using-the-simple-demo-setup'>Using the Simple Demo Setup</a></li>
+<li><a href='#how-the-system-works'>How the System Works</a></li>
+<li><a href='#configuration-and-tuning'>Configuration and Tuning</a></li>
+<li><a href='#building-and-testing'>Building and Testing</a></li>
+<li><a href='#faq-and-troubleshooting'>FAQ and Troubleshooting</a></li>
+</ul>
+<hr>
+<h2 id='prerequisites'>Prerequisites</h2>
+<p>Before starting, make sure you have the following:</p>
+<table>
+<tr><th>Requirement</th><th>Details</th></tr>
+<tr><td>Unity Version</td><td>6000.0.49f1 or later</td></tr>
+<tr><td>RCCP</td><td>Realistic Car Controller Pro imported and working</td></tr>
+<tr><td>Mirror</td><td>Mirror Networking package imported from the Asset Store or GitHub</td></tr>
+<tr><td>Transport</td><td>KCP Transport (included with Mirror, recommended for games)</td></tr>
+</table>
+<p>Mirror must be imported before the RCCP Mirror integration package. If Mirror is not present in your project, the integration scripts will not compile.</p>
+<hr>
+<h2 id='installation'>Installation</h2>
+<h3 id='installation-step-1'>Step 1 — Import Mirror</h3>
+<p>Import Mirror Networking into your Unity project from the Asset Store or the official Mirror repository. Confirm it compiles without errors before proceeding.</p>
+<h3 id='installation-step-2'>Step 2 — Import the RCCP Mirror Integration Package</h3>
+<p>Navigate to <code>Assets/Realistic Car Controller Pro/Addons/Installers/</code> in your Project window. Double-click <code>RCCP_MirrorIntegration.unitypackage</code> and import all files.</p>
+<p>After import, the editor will automatically:</p>
+<ol>
+<li>Add the <code>RCCP_MIRROR</code> scripting define symbol to your project</li>
+<li>Display a setup dialog if your project uses URP or HDRP, offering to convert materials</li>
+</ol>
+<p>The integration files are installed to <code>Assets/Realistic Car Controller Pro/Addons/Installed/Mirror/</code>.</p>
+<h3 id='installation-step-3'>Step 3 — Verify</h3>
+<p>After import, check the Console for any compilation errors. If everything is correct, you should see no errors related to Mirror or RCCP<em>MIRROR. A demo scene is included at <code>Addons/Installed/Mirror/Scenes/RCCP</em>Scene<em>Blank</em>Mirror.unity</code> that you can open to verify the setup.</p>
+<hr>
+<h2 id='setting-up-a-vehicle-for-mirror'>Setting Up a Vehicle for Mirror</h2>
+<p>To make any RCCP vehicle work with Mirror networking, you need two components added to the root vehicle GameObject.</p>
+<h3 id='required-components'>Required Components</h3>
+<table>
+<tr><th>Component</th><th>Purpose</th></tr>
+<tr><td>NetworkIdentity</td><td>Mirror's core networking component. Identifies this object on the network.</td></tr>
+<tr><td>RCCP_MirrorSync</td><td>RCCP's synchronization script. Handles replication of vehicle state across clients.</td></tr>
+</table>
+<h3 id='setup-step-by-step'>Step-by-Step</h3>
+<ol>
+<li>Select your vehicle prefab in the Project window (or an instance in the scene).</li>
+<li>The vehicle must already have an <code>RCCP_CarController</code> component on it (standard RCCP setup).</li>
+<li>Add a <code>NetworkIdentity</code> component to the root GameObject (same object as <code>RCCP_CarController</code>).</li>
+<li>Add an <code>RCCP_MirrorSync</code> component to the same root GameObject.</li>
+<li>Save the prefab.</li>
+</ol>
+<p>That is all that is required. RCCP_MirrorSync automatically finds and caches all RCCP subsystems (Engine, Gearbox, Differential, Wheels, Lights, etc.) on Awake.</p>
+<h3 id='reference-prefab'>Reference Prefab</h3>
+<p>A pre-configured vehicle prefab is included at:</p>
+<pre><code>
+Assets/Realistic Car Controller Pro/Addons/Installed/Mirror/Prefabs/
+</code></pre>
+<p>You can duplicate this prefab and swap the 3D model to create additional networked vehicles, or use it as a reference for how the components should be arranged.</p>
+<hr>
+<h2 id='creating-a-multiplayer-scene'>Creating a Multiplayer Scene</h2>
+<p>This section walks you through creating a Mirror multiplayer scene from scratch.</p>
+<h3 id='scene-step-1'>Step 1 — Create a New Scene</h3>
+<p>Create a new Unity scene. Add your environment, ground plane, lighting, and any other static objects you need.</p>
+<h3 id='scene-step-2'>Step 2 — Add RCCP Scene Essentials</h3>
+<p>Add the standard RCCP scene components. You can do this via the RCCP menu:</p>
+<ul>
+<li><code>RCCP_SceneManager</code> — Required for RCCP to function. Manages the active player vehicle and camera.</li>
+<li><code>RCCP_Camera</code> — The player camera that follows the active vehicle.</li>
+<li><code>RCCP_SkidmarksManager</code> — Optional but recommended for tire mark effects.</li>
+</ul>
+<h3 id='scene-step-3'>Step 3 — Add a NetworkManager</h3>
+<p>Create an empty GameObject and name it <code>NetworkManager</code>. Add the following components:</p>
+<table>
+<tr><th>Component</th><th>Configuration</th></tr>
+<tr><td>NetworkManager</td><td>Set <code>Player Prefab</code> to your Mirror-ready vehicle prefab. Set <code>Player Spawn Method</code> to Round Robin or Random.</td></tr>
+<tr><td>KCP Transport</td><td>Default settings work well. Port 7777 is standard.</td></tr>
+<tr><td>NetworkManagerHUD</td><td>Optional. Provides a simple Host/Join UI panel for testing. Remove for production.</td></tr>
+</table>
+<p>The <code>Player Prefab</code> field is the most important setting. This is the vehicle that Mirror will automatically spawn for each player when they connect. It must have <code>NetworkIdentity</code> and <code>RCCP_MirrorSync</code> components.</p>
+<h3 id='scene-step-4'>Step 4 — Add Spawn Points</h3>
+<p>Create empty GameObjects at the positions where you want vehicles to appear. Add the <code>NetworkStartPosition</code> component to each one. Place them with enough spacing so vehicles do not overlap when multiple players connect.</p>
+<p>Mirror's NetworkManager automatically finds all <code>NetworkStartPosition</code> objects in the scene and distributes players across them based on the <code>Player Spawn Method</code> setting:</p>
+<ul>
+<li><strong>Round Robin</strong> — Cycles through spawn points in order (first player gets point 1, second gets point 2, etc.)</li>
+<li><strong>Random</strong> — Picks a random spawn point for each player</li>
+</ul>
+<h3 id='scene-step-5'>Step 5 — Register the Scene in Build Settings</h3>
+<p>Open <code>File &gt; Build Settings</code> and add your scene to the Scenes In Build list. This is required for Mirror to load scenes correctly during networked play.</p>
+<h3 id='scene-step-6'>Step 6 — Register Vehicle Prefabs</h3>
+<p>All vehicle prefabs that may appear in the scene must be known to Mirror. There are two ways to handle this:</p>
+<p><strong>Option A — Inspector (Recommended):</strong> Drag your vehicle prefab into the NetworkManager's <code>Registered Spawnable Prefabs</code> list in the Inspector.</p>
+<p><strong>Option B — Automatic:</strong> RCCP<em>MirrorSync has a static method <code>EnsureSpawnInfrastructure()</code> that automatically registers all vehicles from the RCCP vehicle list with the NetworkManager at runtime. This is called automatically by <code>RCCP</em>MirrorManager.OnStartServer()</code>. If you are using the default NetworkManager instead of RCCP_MirrorManager, call this method manually from your own startup script.</p>
+<h3 id='minimal-scene'>Minimal Scene Hierarchy Example</h3>
+<pre><code>
+Scene
+├── NetworkManager          (NetworkManager, KcpTransport, NetworkManagerHUD)
+├── RCCP_SceneManager       (RCCP_SceneManager)
+├── RCCP_Camera             (RCCP_Camera)
+├── RCCP_SkidmarksManager   (RCCP_SkidmarksManager)
+├── SpawnPoint_1            (NetworkStartPosition)
+├── SpawnPoint_2            (NetworkStartPosition)
+├── SpawnPoint_3            (NetworkStartPosition)
+├── SpawnPoint_4            (NetworkStartPosition)
+├── Environment
+│   ├── Ground
+│   ├── Lighting
+│   └── Props
+</code></pre>
+<hr>
+<h2 id='using-the-lobby-system'>Using the Lobby System</h2>
+<p>RCCP includes <code>RCCP_MirrorManager</code>, a full lobby system with LAN server discovery, server browsing, nicknames, and chat. Use this instead of the default NetworkManager when you want a complete multiplayer menu experience.</p>
+<h3 id='lobby-setup'>Setup</h3>
+<ol>
+<li>Replace the default <code>NetworkManager</code> component with <code>RCCP_MirrorManager</code> on your NetworkManager GameObject.</li>
+<li>Add a <code>NetworkDiscovery</code> component to the same GameObject for LAN server browsing.</li>
+<li>Wire up the UI references in the Inspector (nick panel, room browser, chat panel, etc.).</li>
+<li>Set the <code>Gameplay Scene Name</code> field if you want the host to automatically load a different scene after creating a room.</li>
+</ol>
+<h3 id='lobby-how-it-works'>How It Works</h3>
+<p>RCCP_MirrorManager inherits from Mirror's NetworkManager and adds:</p>
+<ul>
+<li><strong>Nickname entry</strong> — Players enter a name before connecting</li>
+<li><strong>LAN server discovery</strong> — Automatically finds servers on the local network</li>
+<li><strong>Server browser UI</strong> — Lists discovered servers with join buttons</li>
+<li><strong>Host/Join flow</strong> — Create a room (host) or join a discovered server (client)</li>
+<li><strong>Auto playerPrefab</strong> — If no playerPrefab is assigned in the Inspector, it automatically uses the first vehicle from the RCCP vehicle list</li>
+</ul>
+<h3 id='connection-flow'>Connection Flow</h3>
+<p><strong>Hosting:</strong></p>
+<ol>
+<li>Player enters a nickname and clicks Connect</li>
+<li>LAN discovery starts, showing available servers</li>
+<li>Player clicks &quot;Create Room&quot; to host</li>
+<li>Server starts, discovery begins advertising</li>
+<li>If a gameplay scene is configured, the server loads it</li>
+<li>Host's vehicle is auto-spawned via playerPrefab</li>
+</ol>
+<p><strong>Joining:</strong></p>
+<ol>
+<li>Player enters a nickname and clicks Connect</li>
+<li>LAN discovery finds available servers</li>
+<li>Player selects a server from the list and clicks Join</li>
+<li>Client connects to the selected server</li>
+<li>Client's vehicle is auto-spawned via playerPrefab</li>
+</ol>
+<hr>
+<h2 id='using-the-simple-demo-setup'>Using the Simple Demo Setup</h2>
+<p>For quick testing without a lobby system, you can use Mirror's built-in <code>NetworkManagerHUD</code> component. This draws a simple IMGUI panel with Host, Client, and Server buttons.</p>
+<ol>
+<li>Add <code>NetworkManager</code> and <code>KcpTransport</code> to a GameObject</li>
+<li>Add <code>NetworkManagerHUD</code> to the same GameObject</li>
+<li>Set the <code>Player Prefab</code> to your Mirror-ready vehicle prefab</li>
+<li>Add <code>NetworkStartPosition</code> objects for spawn points</li>
+<li>Enter Play mode, click Host, and you are driving</li>
+</ol>
+<p>For a second player, build the project and run the build. Click &quot;Client&quot; and enter the host's IP address (or leave as <code>localhost</code> for same-machine testing).</p>
+<hr>
+<h2 id='how-the-system-works'>How the System Works</h2>
+<h3 id='auto-spawn'>Auto-Spawn on Connect</h3>
+<p>Mirror's NetworkManager has a built-in mechanism for spawning player objects. When a client connects, the server automatically instantiates the <code>playerPrefab</code> and calls <code>AddPlayerForConnection</code>, which:</p>
+<ol>
+<li>Spawns the vehicle on the server</li>
+<li>Replicates it to all clients</li>
+<li>Sets <code>isLocalPlayer = true</code> on the owning client immediately</li>
+<li>Grants client authority over the object</li>
+</ol>
+<p>This means the vehicle appears and is controllable from the very first frame — no manual spawn button needed.</p>
+<h3 id='vehicle-state-sync'>Vehicle State Synchronization (RCCP_MirrorSync)</h3>
+<p>RCCP_MirrorSync is the core networking component. It runs on every networked vehicle and handles two roles depending on ownership.</p>
+<p><strong>On the owner's machine (IsMine = true):</strong></p>
+<ul>
+<li>Normal RCCP input and physics run locally</li>
+<li>30 times per second (configurable), the full vehicle state is packed and sent to the server via a Mirror Command</li>
+<li>State includes: throttle, brake, steering, handbrake, boost, clutch, engine RPM, gear state, differential outputs, wheel RPMs, light states, position, rotation, velocity, and angular velocity</li>
+</ul>
+<p><strong>On remote machines (IsMine = false):</strong></p>
+<ul>
+<li>Local RCCP input is disabled via the override system</li>
+<li>Received network state is applied to all RCCP subsystems (inputs, engine, gearbox, clutch, differentials, lights)</li>
+<li>Position and rotation are interpolated with lag compensation and optional extrapolation</li>
+<li>Wheel RPM correction components are added to keep wheel visuals accurate</li>
+</ul>
+<h3 id='ownership-detection'>Ownership Detection (IsMine Property)</h3>
+<p>The <code>IsMine</code> property on RCCP_MirrorSync determines whether the local client owns a vehicle. It checks in order:</p>
+<ol>
+<li><code>isLocalPlayer</code> — Set by Mirror when the vehicle is the client's player object (most reliable)</li>
+<li><code>isOwned</code> — Mirror's general ownership flag</li>
+<li>Host-mode fallback — Server-side check for host-owned vehicles</li>
+</ol>
+<p>If <code>IsMine</code> is true, the vehicle runs local physics and sends state. If false, the vehicle receives and applies remote state.</p>
+<h3 id='network-data-flow'>Network Data Flow</h3>
+<pre><code>
+Owner Client                    Server                     Remote Clients
+     |                            |                              |
+     |-- CmdSendVehicleState ----&gt;|                              |
+     |                            |-- RpcReceiveVehicleState ---&gt;|
+     |                            |                              |
+     |-- TransformFallback ------&gt;|                              |
+     |                            |-- RpcTransformFallback -----&gt;|
+</code></pre>
+<p>The owner sends vehicle state via a Command (client to server). The server validates it and relays to all other clients via ClientRpc. A parallel transform fallback channel handles edge cases in host mode.</p>
+<h3 id='lag-compensation'>Lag Compensation and Interpolation</h3>
+<p>Remote vehicles do not run physics locally. Instead, RCCP_MirrorSync uses a multi-layered approach to keep them visually smooth:</p>
+<ol>
+<li><strong>Lag compensation</strong> — When a network update arrives, the position is projected forward by the estimated network lag to compensate for transmission delay</li>
+<li><strong>Interpolation</strong> — The vehicle smoothly moves from its current position toward the target using configurable lerp speeds</li>
+<li><strong>Extrapolation</strong> — Between network updates, the vehicle continues moving along its last known velocity to prevent stuttering</li>
+<li><strong>Teleportation</strong> — If the distance between current and target positions exceeds a threshold (default 4m), the vehicle teleports instantly to avoid rubberbanding</li>
+</ol>
+<h3 id='wheel-rpm-correction'>Wheel RPM Correction</h3>
+<p>Remote vehicle wheels need special handling because their physics simulation runs independently on each client. RCCP_WheelRPMCorrectionMirror is automatically added to each wheel on remote vehicles. It applies corrective motor torque to make wheel rotation match the owner's actual RPM values, keeping wheel spin visuals accurate across the network.</p>
+<hr>
+<h2 id='configuration-and-tuning'>Configuration and Tuning</h2>
+<h3 id='mirrorsync-settings'>RCCP_MirrorSync Inspector Settings</h3>
+<table>
+<tr><th>Setting</th><th>Default</th><th>Description</th></tr>
+<tr><td>Teleport Distance Threshold</td><td>4</td><td>Meters. If a remote vehicle is farther than this from its target, it teleports instead of interpolating. Lower values make corrections snappier but more visually jarring.</td></tr>
+<tr><td>Lag Compensation Time</td><td>0.05</td><td>Seconds. Additional forward prediction applied to compensate for network delay. Increase for high-latency connections.</td></tr>
+<tr><td>Position Interpolation Speed</td><td>10</td><td>Multiplier for position lerp. Higher values make remote vehicles snap to targets faster.</td></tr>
+<tr><td>Rotation Interpolation Speed</td><td>10</td><td>Multiplier for rotation slerp. Higher values reduce rotational lag.</td></tr>
+<tr><td>Use Extrapolation</td><td>true</td><td>When enabled, remote vehicles continue moving along their velocity between updates. Disable if you see vehicles overshooting.</td></tr>
+<tr><td>Max Extrapolation Time</td><td>0.1</td><td>Seconds. Maximum time the system will predict ahead. Prevents runaway extrapolation during packet loss.</td></tr>
+<tr><td>Use Velocity Smoothing</td><td>true</td><td>Smoothly transitions between velocity values instead of snapping.</td></tr>
+<tr><td>Velocity Dampening</td><td>0.8</td><td>Damping factor for velocity interpolation. Lower values are smoother but less responsive.</td></tr>
+<tr><td>Send Rate</td><td>30</td><td>Updates per second sent from owner to server. Higher values improve accuracy but use more bandwidth. 20-30 is recommended for most games.</td></tr>
+</table>
+<h3 id='bandwidth-estimation'>Bandwidth Estimation</h3>
+<p>Each vehicle sends approximately 600 bytes per update. At the default 30 Hz send rate:</p>
+<table>
+<tr><th>Players</th><th>Bandwidth per Client (approximate)</th></tr>
+<tr><td>2</td><td>~18 KB/s</td></tr>
+<tr><td>4</td><td>~54 KB/s</td></tr>
+<tr><td>8</td><td>~126 KB/s</td></tr>
+<tr><td>16</td><td>~270 KB/s</td></tr>
+</table>
+<p>To reduce bandwidth for larger player counts, lower the <code>Send Rate</code> to 20 or even 15. The interpolation system smooths out the lower update frequency.</p>
+<hr>
+<h2 id='building-and-testing'>Building and Testing</h2>
+<h3 id='testing-single-machine'>Testing on a Single Machine</h3>
+<ol>
+<li>Open your Mirror scene and enter Play mode — click Host</li>
+<li>Build the project (<code>File &gt; Build and Run</code>)</li>
+<li>In the built application, click Client and connect to <code>localhost</code></li>
+<li>Both instances should show two vehicles driving independently</li>
+</ol>
+<h3 id='testing-local-network'>Testing on a Local Network</h3>
+<ol>
+<li>Build the project and copy the build to a second machine on the same network</li>
+<li>On machine A, run the game and click Host</li>
+<li>On machine B, run the game and click Client, entering machine A's local IP address</li>
+<li>If using RCCP_MirrorManager, the LAN discovery should find the host automatically</li>
+</ol>
+<h3 id='testing-parrelsync'>Testing with ParrelSync (Recommended)</h3>
+<p>ParrelSync is a free Unity editor extension that creates linked clones of your project, allowing you to test multiplayer entirely within the Unity Editor without building.</p>
+<ol>
+<li>Import ParrelSync from the Asset Store or GitHub</li>
+<li>Open <code>ParrelSync &gt; Clones Manager</code> and create a clone</li>
+<li>Open the clone project in a second Unity Editor instance</li>
+<li>Run the main project as Host and the clone as Client</li>
+</ol>
+<h3 id='build-checklist'>Common Build Checklist</h3>
+<ul>
+<li>All multiplayer scenes are added to Build Settings</li>
+<li>Vehicle prefabs are registered with NetworkManager (either via Inspector or EnsureSpawnInfrastructure)</li>
+<li>NetworkStartPosition objects are placed in the scene</li>
+<li>KCP Transport port (default 7777) is not blocked by firewall</li>
+</ul>
+<hr>
+<h2 id='faq-and-troubleshooting'>FAQ and Troubleshooting</h2>
+<h3 id='faq-cannot-control'>The vehicle spawns but I cannot control it</h3>
+<p>This usually means <code>IsMine</code> is returning false. Check that:</p>
+<ul>
+<li>The vehicle prefab has both <code>NetworkIdentity</code> and <code>RCCP_MirrorSync</code> components</li>
+<li>The prefab is assigned as the <code>Player Prefab</code> on the NetworkManager</li>
+<li>You are connecting as a client (not just starting the server without a client)</li>
+</ul>
+<h3 id='faq-jittery'>Remote vehicles are jittery or stuttering</h3>
+<p>Increase <code>Position Interpolation Speed</code> and <code>Rotation Interpolation Speed</code> on RCCP_MirrorSync. If the vehicles are teleporting frequently, increase <code>Teleport Distance Threshold</code>. For high-latency connections, increase <code>Lag Compensation Time</code> slightly.</p>
+<h3 id='faq-wheels'>Remote vehicle wheels are not spinning correctly</h3>
+<p>RCCP<em>WheelRPMCorrectionMirror should be added automatically to remote vehicles. If wheels still look wrong, check that <code>RCCP</em>MirrorSync</code> is on the root vehicle object (same level as <code>RCCP_CarController</code>), not on a child object.</p>
+<h3 id='faq-replacing-prefab'>&quot;Replacing existing prefab with assetId&quot; warning</h3>
+<p>This warning appears when the same prefab is registered with Mirror twice — once as <code>playerPrefab</code> (auto-registered by Mirror) and again in the <code>spawnPrefabs</code> list. It is harmless. To silence it, remove the playerPrefab from the <code>Registered Spawnable Prefabs</code> list since Mirror registers it automatically.</p>
+<h3 id='faq-no-transport'>&quot;No Transport assigned to Network Manager&quot; warning</h3>
+<p>Mirror found a KCP Transport on the same GameObject but it was not explicitly assigned to the Transport field. Drag the KCP Transport component into the NetworkManager's Transport slot in the Inspector to silence this.</p>
+<h3 id='faq-same-position'>All players spawn at the same position</h3>
+<p>Add <code>NetworkStartPosition</code> components to empty GameObjects in your scene. Place them at different positions. Set <code>Player Spawn Method</code> on the NetworkManager to Round Robin or Random.</p>
+<h3 id='faq-builds'>Vehicles work in editor but not in builds</h3>
+<p>Make sure the scene is added to <code>File &gt; Build Settings</code>. Also verify that vehicle prefabs are in a Resources folder or are referenced by a scene/component so Unity includes them in the build.</p>
+<h3 id='faq-switch-vehicles'>Can I switch vehicles during a session?</h3>
+<p>Vehicle switching is not currently supported in Mirror sessions. The vehicle assigned as <code>playerPrefab</code> is spawned automatically when a player connects, and each player uses that vehicle for the duration of the session.</p>
+<h3 id='faq-different-vehicles'>How do I use different vehicles for different players?</h3>
+<p>Override <code>OnServerAddPlayer</code> in a custom NetworkManager subclass. In that method, you can instantiate any vehicle prefab based on player preferences and call <code>NetworkServer.AddPlayerForConnection</code> with the custom vehicle instead of the default playerPrefab.</p>
+<h3 id='faq-synced-data'>What data is synchronized over the network?</h3>
+<p>RCCP_MirrorSync synchronizes: throttle, brake, steering, handbrake, boost/NOS, clutch inputs, engine RPM, engine running state, gear state, differential outputs, wheel RPMs, all light states (headlights, indicators), and full transform (position, rotation, velocity, angular velocity).</p>
+<h3 id='faq-not-synced'>What is NOT synchronized?</h3>
+<p>Damage state, audio, visual effects (skidmarks, exhaust), and suspension visuals are not explicitly synchronized. These are driven locally by the synchronized inputs and physics state, so they approximate the owner's state but may differ slightly on remote clients.</p>
+</div></body></html>
