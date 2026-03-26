@@ -8,7 +8,9 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Jeep_BodyStripLine
-  m_Shader: {fileID: 4800000, guid: a7fa474a1f444d644b43ae3655d9e268, type: 3}
+  m_Shader: {fileID: 4800000, guid: 5a69ebd10345a504ea026c90c0e2c978, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -17,9 +19,14 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _BaseTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BumpMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -92,8 +99,21 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaCutoff: 0.5
     - _BaseMetallic: 0.75
     - _BaseOcclusion: 1
     - _BaseSmoothness: 1
@@ -107,6 +127,7 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _EnvironmentReflections: 1
     - _FlakesIntensity: 0.9
     - _FlakesPower: 6
     - _FlakesRimPower: 0.7
@@ -120,6 +141,9 @@ Material:
     - _NormalMapIntensity: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _ReceiveShadows: 1
     - _RimPower: 10
     - _SmoothnessIntensity: 0.95
     - _SmoothnessTextureChannel: 0
@@ -140,3 +164,4 @@ Material:
     - _RimColor: {r: 1, g: 0.7416966, b: 0, a: 1}
     - _SpecColor: {r: 0.503, g: 0.503, b: 0.503, a: 1}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
