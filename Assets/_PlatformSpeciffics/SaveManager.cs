@@ -180,7 +180,7 @@ namespace HalvaStudio.Save
             {
                 carDetails = new Dictionary<string, CarSpecs>
                 {
-                    { "RS6", new CarSpecs(true, 220, 240, true, 0, 60, 1, 2000) }
+                    { "CTR", new CarSpecs(true, 220, 240, true, 0, 60, 1, 2000) }
                 };
             }
             public class CarSpecs
