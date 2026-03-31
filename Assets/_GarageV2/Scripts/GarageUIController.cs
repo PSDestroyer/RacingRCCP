@@ -29,7 +29,7 @@ public class GarageUIController : MonoBehaviour
 
     [Header("Navigation")]
     [SerializeField] private Button back;
-    [SerializeField] private PlayerInput playerInput;
+    // [SerializeField] private PlayerInput playerInput;
 
     private readonly Dictionary<UIPanelType, UIPanel> panels = new();
     private readonly Stack<UIPanelType> history = new();
@@ -67,22 +67,13 @@ public class GarageUIController : MonoBehaviour
 
     private void OnEnable()
     {
-        if (playerInput != null)
-        {
-            InputAction cancelAction = playerInput.actions["Cancel"];
-            if (cancelAction != null)
-                cancelAction.performed += BackCtx;
-        }
+        InputManager.Instance.playerInput.actions["Cancel"].performed += BackCtx;
+        
     }
 
     private void OnDisable()
     {
-        if (playerInput != null)
-        {
-            InputAction cancelAction = playerInput.actions["Cancel"];
-            if (cancelAction != null)
-                cancelAction.performed -= BackCtx;
-        }
+        InputManager.Instance.playerInput.actions["Cancel"].performed -= BackCtx;
     }
 
     private void Start()

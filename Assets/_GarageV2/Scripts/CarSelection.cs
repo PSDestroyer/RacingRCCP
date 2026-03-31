@@ -10,7 +10,6 @@ using UnityEngine.InputSystem;
 
 public class CarSelection : MonoBehaviour
 {
-    public PlayerInput playerInput;
   [SerializeField] public Transform spawnCarPoint;
   [SerializeField] private Transform spawninPanel;
   [SerializeField] private CarButton uiPrefab;
@@ -24,6 +23,7 @@ public class CarSelection : MonoBehaviour
     public GarageUIController CanvasManager;
     private bool litenered;
     public SoundManager SM;
+    public YesNo yesNo;
     [Header("--Stats--")] public Slider PowerSlider;
     public TMP_Text PowerText;
     public Slider SpeedSlider;
@@ -131,24 +131,41 @@ public class CarSelection : MonoBehaviour
         }
         else
         {
-            if (GlobalCarData._carlists[indexcar].price <= SaveManager.Instance.saveData.money)
-            {
-                SaveManager.Instance.saveData.money -= GlobalCarData._carlists[indexcar].price;
-                SaveManager.Instance.SaveCar(GlobalCarData._carlists[indexcar].carName,true, GlobalCarData._carlists[indexcar].power,GlobalCarData._carlists[indexcar].speed,GlobalCarData._carlists[indexcar].turbo,GlobalCarData._carlists[indexcar].color,GlobalCarData._carlists[indexcar].steerAngle,GlobalCarData._carlists[indexcar].traction,GlobalCarData._carlists[indexcar].brake);
-                
-                selecttext.text = "select";
-                SaveManager.Instance.saveData.currentCar = indexcar;
-                SaveManager.Instance.Save();
-                Debug.Log("bought");
-            }
-            else
-            {
-                Debug.Log("dont have enought Money");
-            }
+            BuyCar();
         }
-        SM.PlayButtonClick();
     }
+    public async void BuyCar()
+    {
+        RemoveEvents();
+        bool result = await yesNo.ShowYesNoPanelAsync("Buy?");
 
+        if (result)
+        {
+            if (GlobalCarData._carlists[indexcar].price <= SaveManager.Instance.saveData.money)
+                {
+                    SaveManager.Instance.saveData.money -= GlobalCarData._carlists[indexcar].price;
+                    SaveManager.Instance.SaveCar(GlobalCarData._carlists[indexcar].carName,true, GlobalCarData._carlists[indexcar].power,GlobalCarData._carlists[indexcar].speed,GlobalCarData._carlists[indexcar].turbo,GlobalCarData._carlists[indexcar].color,GlobalCarData._carlists[indexcar].steerAngle,GlobalCarData._carlists[indexcar].traction,GlobalCarData._carlists[indexcar].brake);
+                
+                    selecttext.text = "select";
+                    SaveManager.Instance.saveData.currentCar = indexcar;
+                    SaveManager.Instance.Save();
+                    Debug.Log("bought");
+                }
+                else
+                {
+                    yesNo.Notify("No have Enought Money");
+                    Debug.Log("dont have enought Money");
+                }
+                SM.PlayButtonClick();
+            Debug.Log("YES");
+        }
+        else
+        {
+            Debug.Log("NO");
+        }
+        SetEvents();
+
+    }
 
     public void ScrollToSelectedButton(Button selectedButton)
     {
@@ -333,7 +350,7 @@ public class CarSelection : MonoBehaviour
 
   private void SetEvents()
   {
-      playerInput.actions["Navigate"].performed += Navigations;
+      InputManager.Instance.playerInput.actions["Navigate"].performed += Navigations;
       selectbut.Select();
       // playerInput.actions["Submit"].performed += SelectOrBuyCtx;
   }
@@ -344,7 +361,7 @@ public class CarSelection : MonoBehaviour
   }
   private void RemoveEvents()
   {
-      playerInput.actions["Navigate"].performed -= Navigations;
+      InputManager.Instance.playerInput.actions["Navigate"].performed -= Navigations;
       // playerInput.actions["Submit"].performed -= SelectOrBuyCtx;
   }
 }
