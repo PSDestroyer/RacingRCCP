@@ -7,9 +7,14 @@
 //
 //----------------------------------------------
 
+using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using HalvaStudio.Save;
+using TMPro;
+using UnityEngine.Localization.Settings;
+using UnityEngine.UI;
 
 /// <summary>
 /// UI change wheel button.
@@ -21,9 +26,24 @@ public class RCCP_UI_Wheel : RCCP_UIComponent {
     /// Index of the target wheel. 
     /// </summary>
     [Min(0)] public int wheelIndex = 0;
+    [Min(0)] public int price = 50;
+    [SerializeField] private YesNo _yesNo;
+    [SerializeField] private TMP_Text priceText;
+    [SerializeField] private MoneyManager _moneyManager;
+
+    private void Start()
+    {
+        priceText.text = price + "<sprite index=1>";
+    }
 
     public void OnClick() {
 
+        YesNo();
+
+    }
+
+    public async void YesNo()
+    {
         //  Finding the player vehicle.
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
 
@@ -38,8 +58,43 @@ public class RCCP_UI_Wheel : RCCP_UIComponent {
         if (!playerVehicle.Customizer.WheelManager)
             return;
 
-        playerVehicle.Customizer.WheelManager.UpdateWheel(wheelIndex);
+        if (playerVehicle.Customizer.WheelManager.wheelIndex != wheelIndex)
+        {
+            var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "BuyYes/No");
 
+            bool result = await _yesNo.ShowYesNoPanelAsync(buystring.Result + "?");
+
+            if (result)
+            {
+                if (SaveManager.Instance.saveData.money >= price)
+                {
+                    _moneyManager.MoneyToTake(price);
+                    SoundManager.Instance.PlayButtonClick();
+                    playerVehicle.Customizer.WheelManager.UpdateWheel(wheelIndex);
+                }
+                else
+                {
+                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "No money");
+                    _yesNo.Notify(operation.Result);
+                    SoundManager.Instance.PlayButtonError();
+                    Debug.Log("dont have enought Money");
+                }
+
+                GetComponent<Button>().Select();
+
+            }
+            else
+            {
+                GetComponent<Button>().Select();
+                SoundManager.Instance.PlayButtonClick();
+            }
+        }
+        else
+        {
+            var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "This item bought");
+            _yesNo.Notify(operation.Result);
+            SoundManager.Instance.PlayButtonClick();
+
+        }
     }
-
 }

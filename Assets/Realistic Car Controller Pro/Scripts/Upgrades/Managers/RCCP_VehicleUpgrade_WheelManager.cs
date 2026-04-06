@@ -72,28 +72,47 @@ public class RCCP_VehicleUpgrade_WheelManager : RCCP_UpgradeComponent, IRCCP_Upg
     /// Initializing the wheel manager.
     /// </summary>
     public void Initialize() {
+        
+        
+        Debug.Log($"[WheelManager] Initialize, Loadout.wheel = {Loadout.wheel}");
 
-        // Store the default wheel reference
         GameObject defaultWheel = DefaultWheelObj;
 
         if (defaultWheel != null)
             defaultWheel.SetActive(false);
 
-        // Store default wheel index as -1 (indicating default wheels)
         defaultWheelIndex = -1;
-
-        // If last selected wheel found, change the wheel
         wheelIndex = Loadout.wheel;
 
         if (wheelIndex != -1) {
-
+            Debug.Log($"[WheelManager] Initialize -> ChangeWheels({wheelIndex})");
             ChangeWheels(RCCPChangableWheels.wheels[wheelIndex].wheel, true);
-
         } else {
-
+            Debug.Log("[WheelManager] Initialize -> Restore()");
             Restore();
-
         }
+
+        // // Store the default wheel reference
+        // GameObject defaultWheel = DefaultWheelObj;
+        //
+        // if (defaultWheel != null)
+        //     defaultWheel.SetActive(false);
+        //
+        // // Store default wheel index as -1 (indicating default wheels)
+        // defaultWheelIndex = -1;
+        //
+        // // If last selected wheel found, change the wheel
+        // wheelIndex = Loadout.wheel;
+        //
+        // if (wheelIndex != -1) {
+        //
+        //     ChangeWheels(RCCPChangableWheels.wheels[wheelIndex].wheel, true);
+        //
+        // } else {
+        //
+        //     Restore();
+        //
+        // }
 
     }
 
@@ -187,59 +206,49 @@ public class RCCP_VehicleUpgrade_WheelManager : RCCP_UpgradeComponent, IRCCP_Upg
     /// <param name="applyRadius">Apply wheel radius based on wheel bounds.</param>
     public void ChangeWheels(GameObject wheel, bool applyRadius) {
 
-        // Return if no wheel or wheel is deactivated
-        if (!wheel || (wheel && !wheel.activeSelf))
+        if (!wheel || !wheel.activeSelf)
             return;
 
-        // Return if no any wheelcolliders found
-        if (CarController.AllWheelColliders == null)
+        if (CarController.AllWheelColliders == null || CarController.AllWheelColliders.Length < 1)
             return;
 
-        // Return if no any wheelcolliders found
-        if (CarController.AllWheelColliders.Length < 1)
-            return;
-
-        // Clean up previously instantiated wheels
         CleanupInstantiatedWheels();
 
-        // Looping all wheelcolliders
         for (int i = 0; i < CarController.AllWheelColliders.Length; i++) {
 
             RCCP_WheelCollider wheelCollider = CarController.AllWheelColliders[i];
 
-            if (wheelCollider != null && wheelCollider.wheelModel != null) {
+            if (wheelCollider == null || wheelCollider.wheelModel == null)
+                continue;
 
-                // Disabling all child models of the wheel
-                Transform[] childTransforms = wheelCollider.wheelModel.GetComponentsInChildren<Transform>();
+            // Hide default wheel visuals on the root + children
+            var renderers = wheelCollider.wheelModel.GetComponentsInChildren<Renderer>(true);
 
-                foreach (Transform t in childTransforms) {
-
-                    if (t != null && t != wheelCollider.wheelModel)
-                        t.gameObject.SetActive(false);
-
-                }
-
-                // Instantiating new wheel model
-                GameObject newWheel = Instantiate(wheel, wheelCollider.transform.position, wheelCollider.transform.rotation, wheelCollider.wheelModel);
-                newWheel.transform.localPosition = Vector3.zero;
-                newWheel.transform.localRotation = Quaternion.identity;
-                newWheel.SetActive(true);
-
-                // Add to tracked list for cleanup
-                instantiatedWheels.Add(newWheel);
-
-                // If wheel is at right side, multiply scale X by -1 for symmetry
-                if (wheelCollider.transform.localPosition.x > 0f)
-                    newWheel.transform.localScale = new Vector3(newWheel.transform.localScale.x * -1f, newWheel.transform.localScale.y, newWheel.transform.localScale.z);
-
-                // If apply radius is set to true, calculate the radius
-                if (applyRadius)
-                    wheelCollider.WheelCollider.radius = RCCP_GetBounds.MaxBoundsExtent(wheel.transform);
-
+            foreach (var r in renderers) {
+                r.enabled = false;
             }
 
-        }
+            GameObject newWheel = Instantiate(
+                wheel,
+                wheelCollider.transform.position,
+                wheelCollider.transform.rotation,
+                wheelCollider.wheelModel
+            );
 
+            newWheel.transform.localPosition = Vector3.zero;
+            newWheel.transform.localRotation = Quaternion.identity;
+            newWheel.SetActive(true);
+
+            instantiatedWheels.Add(newWheel);
+
+            if (wheelCollider.transform.localPosition.x > 0f) {
+                Vector3 s = newWheel.transform.localScale;
+                newWheel.transform.localScale = new Vector3(-Mathf.Abs(s.x), s.y, s.z);
+            }
+
+            if (applyRadius)
+                wheelCollider.WheelCollider.radius = RCCP_GetBounds.MaxBoundsExtent(wheel.transform);
+        }
     }
 
     /// <summary>
@@ -263,39 +272,27 @@ public class RCCP_VehicleUpgrade_WheelManager : RCCP_UpgradeComponent, IRCCP_Upg
     /// </summary>
     public void Restore() {
 
-        // Set wheel index back to default
         wheelIndex = defaultWheelIndex;
 
-        // Clean up any instantiated wheels
         CleanupInstantiatedWheels();
 
-        // Return if no wheel colliders
         if (CarController.AllWheelColliders == null || CarController.AllWheelColliders.Length < 1)
             return;
 
-        // Restore all wheel models to their original state
         for (int i = 0; i < CarController.AllWheelColliders.Length; i++) {
 
             RCCP_WheelCollider wheelCollider = CarController.AllWheelColliders[i];
 
-            if (wheelCollider != null && wheelCollider.wheelModel != null) {
+            if (wheelCollider == null || wheelCollider.wheelModel == null)
+                continue;
 
-                // Re-enable all original child models
-                Transform[] childTransforms = wheelCollider.wheelModel.GetComponentsInChildren<Transform>(true);
+            var renderers = wheelCollider.wheelModel.GetComponentsInChildren<Renderer>(true);
 
-                foreach (Transform t in childTransforms) {
-
-                    if (t != null)
-                        t.gameObject.SetActive(true);
-
-                }
-
+            foreach (var r in renderers) {
+                r.enabled = true;
             }
-
         }
-
     }
-
     /// <summary>
     /// Clean up when component is destroyed.
     /// </summary>

@@ -11,7 +11,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using HalvaStudio.Save;
 using TMPro;
+using UnityEngine.Localization.Settings;
 
 /// <summary>
 /// UI upgrade button.
@@ -30,6 +32,11 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
     /// </summary>
     public TMP_Text levelText;
     public TMP_Text UpgText;
+    
+    [Min(0)] public int price = 50;
+    [SerializeField] private YesNo _yesNo;
+    [SerializeField] private TMP_Text priceText;
+    [SerializeField] private MoneyManager _moneyManager;
 
     private void OnEnable() {
 
@@ -68,10 +75,15 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
         }
 
         UpgText.text = upgradeClass.ToString();
-
+        priceText.text = price + "<sprite index=1>";
     }
 
-    public void OnClick() {
+    public void OnClick()
+    {
+        YesNo();
+    }
+
+    public void Buy() {
 
         //  Finding the player vehicle.
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
@@ -125,5 +137,94 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
         }
 
     }
+    public async void YesNo()
+    {
+        //  Finding the player vehicle.
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
 
-}
+        //  If no player vehicle found, return.
+        if (!playerVehicle)
+            return;
+
+        //  If player vehicle doesn't have the customizer component, return.
+        if (!playerVehicle.Customizer)
+            return;
+
+        if (!playerVehicle.Customizer.WheelManager)
+            return;
+
+        switch (upgradeClass) {
+
+            case UpgradeClass.Engine:
+                if (playerVehicle.Customizer.UpgradeManager.EngineLevel >= 5)
+                {
+                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "MaxLevelUpgrade");
+                    _yesNo.Notify(operation.Result);
+                    SoundManager.Instance.PlayButtonClick();
+                    return;
+                }
+
+                break;
+            case UpgradeClass.Handling:
+                if(playerVehicle.Customizer.UpgradeManager.HandlingLevel >= 5)
+                {
+                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "MaxLevelUpgrade");
+                    _yesNo.Notify(operation.Result);
+                    SoundManager.Instance.PlayButtonClick();
+                    return;
+                }
+                break;
+            case UpgradeClass.Brake:
+                if(playerVehicle.Customizer.UpgradeManager.BrakeLevel >= 5)
+                {
+                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "MaxLevelUpgrade");
+                    _yesNo.Notify(operation.Result);
+                    SoundManager.Instance.PlayButtonClick();
+                    return;
+                }
+                break;
+            case UpgradeClass.Speed:
+                if(playerVehicle.Customizer.UpgradeManager.SpeedLevel >= 5)
+                {
+                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "MaxLevelUpgrade");
+                    _yesNo.Notify(operation.Result);
+                    SoundManager.Instance.PlayButtonClick();
+                    return;
+                }
+                break;
+
+        }
+       
+            var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "BuyYes/No");
+
+            bool result = await _yesNo.ShowYesNoPanelAsync(buystring.Result + "?");
+
+            if (result)
+            {
+                if (SaveManager.Instance.saveData.money >= price)
+                {
+                    _moneyManager.MoneyToTake(price);
+                    SoundManager.Instance.PlayButtonClick();
+                    Buy();
+                }
+                else
+                {
+                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "No money");
+                    _yesNo.Notify(operation.Result);
+                    SoundManager.Instance.PlayButtonError();
+                    Debug.Log("dont have enought Money");
+                }
+
+                GetComponent<Button>().Select();
+
+            }
+            else
+            {
+                GetComponent<Button>().Select();
+                SoundManager.Instance.PlayButtonClick();
+            }
+        }
+    
+    }
+
+
