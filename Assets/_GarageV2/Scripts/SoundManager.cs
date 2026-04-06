@@ -11,8 +11,8 @@ public class SoundManager : MonoBehaviour
 
     [Header("UI Sounds")]
     [SerializeField] private AudioClip buttonClickClip;
-    [SerializeField] private AudioClip buttonHoverClip;
-    [SerializeField] private AudioClip backClip;
+    [SerializeField] private AudioClip buttonErrorClip;
+    [SerializeField] private AudioClip NewCarClip;
 
     private void Awake()
     {
@@ -46,6 +46,7 @@ public class SoundManager : MonoBehaviour
 
         // if (sfxSource != null)
             // sfxSource.volume = sfxFinal;
+            
     }
 
     public void PlayMusic(AudioClip clip, bool loop = true)
@@ -83,13 +84,13 @@ public class SoundManager : MonoBehaviour
         PlaySfx(buttonClickClip);
     }
 
-    public void PlayButtonHover()
+    public void PlayButtonError()
     {
-        PlaySfx(buttonHoverClip);
+        PlaySfx(buttonErrorClip);
     }
 
-    public void PlayBack()
+    public void PlayNewCarClip()
     {
-        PlaySfx(backClip);
+        PlaySfx(NewCarClip);
     }
 }

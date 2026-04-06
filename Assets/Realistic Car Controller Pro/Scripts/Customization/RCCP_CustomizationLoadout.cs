@@ -17,8 +17,38 @@ using System.Collections.Generic;
 [System.Serializable]
 public class RCCP_CustomizationLoadout : IRCCP_LoadoutComponent {
 
-    public Color paint = new Color(1f, 1f, 1f, 0f);
+    [System.Serializable]
+    public struct SerializableColor
+    {
+        public float r;
+        public float g;
+        public float b;
+        public float a;
 
+        public SerializableColor(float r, float g, float b, float a)
+        {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+        }
+
+        public SerializableColor(Color color)
+        {
+            r = color.r;
+            g = color.g;
+            b = color.b;
+            a = color.a;
+        }
+
+        public Color ToColor()
+        {
+            return new Color(r, g, b, a);
+        }
+    }
+
+    public SerializableColor paint = new SerializableColor(1f, 1f, 1f, 0f);
+    
     [Min(-1)] public int spoiler = -1;
     [Min(-1)] public int siren = -1;
     [Min(-1)] public int wheel = -1;
@@ -59,7 +89,7 @@ public class RCCP_CustomizationLoadout : IRCCP_LoadoutComponent {
             case RCCP_VehicleUpgrade_PaintManager:
 
                 RCCP_VehicleUpgrade_PaintManager paintComponent = (RCCP_VehicleUpgrade_PaintManager)component;
-                paint = paintComponent.color;
+                paint = new SerializableColor(paintComponent.color);
                 break;
 
             case RCCP_VehicleUpgrade_SpoilerManager:

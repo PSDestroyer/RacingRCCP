@@ -71,7 +71,7 @@ public class RCCP_ColorPickerBySliders : RCCP_UIComponent {
                 if (!playerVehicle.Customizer.CustomizationManager)
                     return;
 
-                color = playerVehicle.Customizer.CustomizationManager.customizationData.headlightColor;
+                color = playerVehicle.Customizer.CustomizationManager.customizationData.headlightColor.ToColor();
                 break;
 
             case ColorType.WheelSmoke:
@@ -80,7 +80,7 @@ public class RCCP_ColorPickerBySliders : RCCP_UIComponent {
                 if (!playerVehicle.Customizer.CustomizationManager)
                     return;
 
-                color = playerVehicle.Customizer.CustomizationManager.customizationData.wheelSmokeColor;
+                color = playerVehicle.Customizer.CustomizationManager.customizationData.wheelSmokeColor.ToColor();
                 break;
 
         }

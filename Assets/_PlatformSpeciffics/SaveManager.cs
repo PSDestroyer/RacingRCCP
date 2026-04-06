@@ -165,24 +165,26 @@ namespace HalvaStudio.Save
             public int currentLevel;
             public int MaxLevel;
             public int GiftCount;
-            // public List<int> giftColected;
-            // public List<int> missionStars;
             public float averagRating;
             public int[] rating;
-    
-         
-            
-            
-            
-            public Dictionary<string, CarSpecs> carDetails = new Dictionary<string, CarSpecs>(); // Initialize dictionary
-            
+
+            public Dictionary<string, CarSpecs> carDetails = new Dictionary<string, CarSpecs>();
+
+            // NOU
+            // public RCCP_CustomizationLoadout customizationLoadout;
+            public Dictionary<string, RCCP_CustomizationLoadout> customizationLoadouts 
+                = new Dictionary<string, RCCP_CustomizationLoadout>();
             public SaveData()
             {
                 carDetails = new Dictionary<string, CarSpecs>
                 {
                     { "CTR", new CarSpecs(true, 220, 240, true, 0, 60, 1, 2000) }
                 };
+
+                customizationLoadouts = new Dictionary<string, RCCP_CustomizationLoadout>();
+
             }
+
             public class CarSpecs
             {
                 public bool isBought;
@@ -194,7 +196,7 @@ namespace HalvaStudio.Save
                 public int traction;
                 public int brake;
 
-                public CarSpecs(bool isBought, int power,int TopSpeed, bool turbo, int color, int steerAngle, int traction,int brake)
+                public CarSpecs(bool isBought, int power, int TopSpeed, bool turbo, int color, int steerAngle, int traction, int brake)
                 {
                     this.isBought = isBought;
                     this.power = power;
@@ -209,7 +211,51 @@ namespace HalvaStudio.Save
         }
 
         #region Custom Methods
+        public void SaveCustomizationLoadout(string saveKey, RCCP_CustomizationLoadout loadout, bool autoSaveToDisk = true)
+        {
+            if (saveData == null)
+                saveData = new SaveData();
 
+            if (saveData.customizationLoadouts == null)
+                saveData.customizationLoadouts = new Dictionary<string, RCCP_CustomizationLoadout>();
+
+            if (loadout == null)
+                loadout = new RCCP_CustomizationLoadout();
+
+            saveData.customizationLoadouts[saveKey] = loadout;
+
+            if (autoSaveToDisk)
+                Save();
+        }
+
+        public RCCP_CustomizationLoadout LoadCustomizationLoadout(string saveKey)
+        {
+            if (saveData == null)
+                saveData = new SaveData();
+
+            if (saveData.customizationLoadouts == null)
+                saveData.customizationLoadouts = new Dictionary<string, RCCP_CustomizationLoadout>();
+
+            if (saveData.customizationLoadouts.TryGetValue(saveKey, out RCCP_CustomizationLoadout loadout) && loadout != null)
+                return loadout;
+
+            return new RCCP_CustomizationLoadout();
+        }
+
+        public void DeleteCustomizationLoadout(string saveKey, bool autoSaveToDisk = true)
+        {
+            if (saveData == null)
+                saveData = new SaveData();
+
+            if (saveData.customizationLoadouts == null)
+                saveData.customizationLoadouts = new Dictionary<string, RCCP_CustomizationLoadout>();
+
+            if (saveData.customizationLoadouts.ContainsKey(saveKey))
+                saveData.customizationLoadouts.Remove(saveKey);
+
+            if (autoSaveToDisk)
+                Save();
+        }
         public void SaveCar(string carName, bool isBought, int power,int TopSpeed, bool turbo, int tireFriction, int steerAngle,int traction,int brake)
         {
             if (saveData.carDetails == null)

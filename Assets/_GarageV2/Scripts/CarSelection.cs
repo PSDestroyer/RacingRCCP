@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.InputSystem;
+using UnityEngine.Localization.Settings;
 
 public class CarSelection : MonoBehaviour
 {
@@ -16,12 +17,13 @@ public class CarSelection : MonoBehaviour
   [SerializeField] private Button selectbut;
     [SerializeField] private TextMeshProUGUI selecttext;
     [SerializeField] private TextMeshProUGUI selecttextJP;
-  // [SerializeField] private MoneyManager moneyManager;
+  [SerializeField] private MoneyManager moneyManager;
   [SerializeField] public GameObject player;
   private static int indexcar;
   private GameObject PlayerCar1;
     public GarageUIController CanvasManager;
     private bool litenered;
+    public PlayerInput playerInput;
     public SoundManager SM;
     public YesNo yesNo;
     [Header("--Stats--")] public Slider PowerSlider;
@@ -109,15 +111,20 @@ public class CarSelection : MonoBehaviour
     UpdateCurrentCar();
         if (SaveManager.Instance.IsCarBought(GlobalCarData._carlists[indexcar].carName))
         {
-            selecttext.text = "select";
-            selecttextJP.text = "select";
+            var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Select");
+
+            selecttext.text = operation.Result;
+            selecttextJP.text = operation.Result;
             
             SaveManager.Instance.saveData.currentCar = indexcar;
         }
         else
         {
-            selecttext.text = /*"<color=#DFA93B>*/"buy "+GlobalCarData._carlists[id].price+"<sprite index=0>";
-            selecttextJP.text = /*"<color=#DFA93B>*/"buy "+GlobalCarData._carlists[id].price+"<sprite index=0>";
+            var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","BuyYes/No");
+
+            selecttext.text = "<color=#DFA93B> "+buystring.Result + " "+GlobalCarData._carlists[id].price+"<sprite index=0>";
+            selecttextJP.text = "<color=#DFA93B> "+buystring.Result +GlobalCarData._carlists[id].price+"<sprite index=0>";
+
         }
         selectbut.Select();
 
@@ -137,30 +144,37 @@ public class CarSelection : MonoBehaviour
     public async void BuyCar()
     {
         RemoveEvents();
-        bool result = await yesNo.ShowYesNoPanelAsync("Buy?");
+        var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","BuyYes/No");
+
+        bool result = await yesNo.ShowYesNoPanelAsync(buystring.Result+"?");
 
         if (result)
         {
             if (GlobalCarData._carlists[indexcar].price <= SaveManager.Instance.saveData.money)
                 {
-                    SaveManager.Instance.saveData.money -= GlobalCarData._carlists[indexcar].price;
+                    moneyManager.MoneyToTake( GlobalCarData._carlists[indexcar].price);
                     SaveManager.Instance.SaveCar(GlobalCarData._carlists[indexcar].carName,true, GlobalCarData._carlists[indexcar].power,GlobalCarData._carlists[indexcar].speed,GlobalCarData._carlists[indexcar].turbo,GlobalCarData._carlists[indexcar].color,GlobalCarData._carlists[indexcar].steerAngle,GlobalCarData._carlists[indexcar].traction,GlobalCarData._carlists[indexcar].brake);
-                
-                    selecttext.text = "select";
+                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Select");
+
+                    selecttext.text = operation.Result;
                     SaveManager.Instance.saveData.currentCar = indexcar;
                     SaveManager.Instance.Save();
+                    SM.PlayNewCarClip();
                     Debug.Log("bought");
                 }
                 else
                 {
-                    yesNo.Notify("No have Enought Money");
+                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","No money");
+                    yesNo.Notify(operation.Result);
+                    SM.PlayButtonError();
                     Debug.Log("dont have enought Money");
                 }
-                SM.PlayButtonClick();
+                
             Debug.Log("YES");
         }
         else
         {
+            SM.PlayButtonClick();
             Debug.Log("NO");
         }
         SetEvents();
@@ -350,7 +364,7 @@ public class CarSelection : MonoBehaviour
 
   private void SetEvents()
   {
-      InputManager.Instance.playerInput.actions["Navigate"].performed += Navigations;
+      playerInput.actions["Navigate"].performed += Navigations;
       selectbut.Select();
       // playerInput.actions["Submit"].performed += SelectOrBuyCtx;
   }
@@ -361,7 +375,7 @@ public class CarSelection : MonoBehaviour
   }
   private void RemoveEvents()
   {
-      InputManager.Instance.playerInput.actions["Navigate"].performed -= Navigations;
+      playerInput.actions["Navigate"].performed -= Navigations;
       // playerInput.actions["Submit"].performed -= SelectOrBuyCtx;
   }
 }

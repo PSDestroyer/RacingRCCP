@@ -22,6 +22,7 @@ public class GarageUIController : MonoBehaviour
         public UIPanel panel;
     }
 
+    public PlayerInput playerInput;
     [Header("Panels")]
     [SerializeField] private CarSelection carSelection;
     [SerializeField] private List<PanelEntry> panelEntries;
@@ -67,13 +68,13 @@ public class GarageUIController : MonoBehaviour
 
     private void OnEnable()
     {
-        InputManager.Instance.playerInput.actions["Cancel"].performed += BackCtx;
+        playerInput.actions["Cancel"].performed += BackCtx;
         
     }
 
     private void OnDisable()
     {
-        InputManager.Instance.playerInput.actions["Cancel"].performed -= BackCtx;
+        playerInput.actions["Cancel"].performed -= BackCtx;
     }
 
     private void Start()
@@ -105,7 +106,7 @@ public class GarageUIController : MonoBehaviour
             if (addToHistory)
                 history.Push(currentPanel);
         }
-
+    
         currentPanel = newPanel;
         hasCurrentPanel = true;
 
@@ -118,7 +119,7 @@ public class GarageUIController : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(null);
             EventSystem.current.SetSelectedGameObject(selected);
         }
-
+        SoundManager.Instance.PlayButtonClick();
         isTransitioning = false;
     }
 

@@ -47,13 +47,13 @@ public class RCCP_CustomizationData {
     public bool NOS;
     public bool revLimiter;
     public bool automaticTransmission;
-
-    public Color headlightColor = Color.white;
-    public Color wheelSmokeColor = Color.white;
+    
+    public RCCP_CustomizationLoadout.SerializableColor headlightColor;
+    public RCCP_CustomizationLoadout.SerializableColor wheelSmokeColor;
 
     public RCCP_CustomizationData() { }
 
-    public RCCP_CustomizationData(bool initialized, float suspensionDistanceFront, float suspensionDistanceRear, float suspensionSpringForceFront, float suspensionSpringForceRear, float suspensionDamperFront, float suspensionDamperRear, float suspensionTargetFront, float suspensionTargetRear, float cambersFront, float cambersRear, float gearShiftingThreshold, float clutchThreshold, bool counterSteering, bool steeringLimiter, bool ABS, bool ESP, bool TCS, bool SH, bool NOS, bool revLimiter, bool automaticTransmission, Color headlightColor, Color wheelSmokeColor) {
+    public RCCP_CustomizationData(bool initialized, float suspensionDistanceFront, float suspensionDistanceRear, float suspensionSpringForceFront, float suspensionSpringForceRear, float suspensionDamperFront, float suspensionDamperRear, float suspensionTargetFront, float suspensionTargetRear, float cambersFront, float cambersRear, float gearShiftingThreshold, float clutchThreshold, bool counterSteering, bool steeringLimiter, bool ABS, bool ESP, bool TCS, bool SH, bool NOS, bool revLimiter, bool automaticTransmission, RCCP_CustomizationLoadout.SerializableColor headlightColor, RCCP_CustomizationLoadout.SerializableColor wheelSmokeColor) {
 
         this.initialized = initialized;
         this.suspensionDistanceFront = suspensionDistanceFront;

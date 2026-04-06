@@ -46,7 +46,7 @@ public class RCCP_VehicleUpgrade_PaintManager : RCCP_UpgradeComponent, IRCCP_Upg
             return;
 
         //  Loadout color.
-        color = Loadout.paint;
+        Color color = Loadout.paint.ToColor();
 
         //  Getting last saved color for this vehicle.
         if (color != new Color(1f, 1f, 1f, 0f))
@@ -98,8 +98,10 @@ public class RCCP_VehicleUpgrade_PaintManager : RCCP_UpgradeComponent, IRCCP_Upg
         }
 
         //  Painting spoilers.
-        if (CarController.Customizer.SpoilerManager != null && Loadout.paint != new Color(1f, 1f, 1f, 0f))
-            CarController.Customizer.SpoilerManager.Paint(Loadout.paint);
+        Color loadoutColor = Loadout.paint.ToColor();
+
+        if (CarController.Customizer.SpoilerManager != null && loadoutColor != new Color(1f, 1f, 1f, 0f))
+            CarController.Customizer.SpoilerManager.Paint(loadoutColor);
 
         //  Refreshing the loadout.
         Refresh(this);
@@ -136,9 +138,10 @@ public class RCCP_VehicleUpgrade_PaintManager : RCCP_UpgradeComponent, IRCCP_Upg
         }
 
         //  Painting spoilers.
-        if (CarController.Customizer.SpoilerManager != null && Loadout.paint != new Color(1f, 1f, 1f, 0f))
-            CarController.Customizer.SpoilerManager.Paint(Loadout.paint);
+        Color loadoutColor = Loadout.paint.ToColor();
 
+        if (CarController.Customizer.SpoilerManager != null && loadoutColor != new Color(1f, 1f, 1f, 0f))
+            CarController.Customizer.SpoilerManager.Paint(loadoutColor);
     }
 
     private void Reset() {
@@ -164,8 +167,8 @@ public class RCCP_VehicleUpgrade_PaintManager : RCCP_UpgradeComponent, IRCCP_Upg
     public void Restore() {
 
         //  Loadout color.
-        color = Loadout.paint;
-
+        color = Loadout.paint.ToColor();
+        
         if (defaultColors != null) {
 
             if (defaultColors.Count >= 1) {

@@ -15,6 +15,7 @@ public class YesNo : MonoBehaviour
     [SerializeField] private Button NoButton;
     [SerializeField] private TMP_Text InfoText;
     private TaskCompletionSource<bool> tcs;
+    public PlayerInput playerInput;
 
     [Header("Notification")] 
     [SerializeField]private GameObject NotifiPanelObject;
@@ -33,7 +34,7 @@ public class YesNo : MonoBehaviour
     
     public async Task<bool> ShowYesNoPanelAsync(string Text)
     {       
-        InputManager.Instance.playerInput.actions["Cancel"].performed += ClosePanelCTX;
+        playerInput.actions["Cancel"].performed += ClosePanelCTX;
 
         InfoText.text = Text;
         tcs = new TaskCompletionSource<bool>();
@@ -49,7 +50,7 @@ public class YesNo : MonoBehaviour
 
     public void ClosePanel()
     {
-        InputManager.Instance.playerInput.actions["Cancel"].performed -= ClosePanelCTX;
+        playerInput.actions["Cancel"].performed -= ClosePanelCTX;
         YesNoPanelObject.SetActive(false);
         tcs = null;
     }

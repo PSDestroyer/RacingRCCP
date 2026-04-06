@@ -69,7 +69,7 @@ public class RCCP_VehicleUpgrade_CustomizationManager : RCCP_UpgradeComponent, I
             if (CarController.Lights) {
 
                 if (CarController.Lights.Headlights != null && CarController.Lights.Headlights.Length >= 1 && CarController.Lights.Headlights[0] != null)
-                    customizationDataDefault.headlightColor = CarController.Lights.Headlights[0].GetLightColor();
+                    customizationDataDefault.headlightColor = new RCCP_CustomizationLoadout.SerializableColor(CarController.Lights.Headlights[0].GetLightColor());
 
             }
 
@@ -80,7 +80,7 @@ public class RCCP_VehicleUpgrade_CustomizationManager : RCCP_UpgradeComponent, I
                     for (int i = 0; i < CarController.Particles.wheelParticles.Length; i++) {
 
                         ParticleSystem.MainModule psmain = CarController.Particles.wheelParticles[i].allWheelParticles[0].WheelParticles.main;
-                        customizationDataDefault.wheelSmokeColor = psmain.startColor.color;
+                        customizationDataDefault.wheelSmokeColor = new RCCP_CustomizationLoadout.SerializableColor(psmain.startColor.color);
 
                     }
 
@@ -124,7 +124,7 @@ public class RCCP_VehicleUpgrade_CustomizationManager : RCCP_UpgradeComponent, I
             if (CarController.Lights) {
 
                 if (CarController.Lights.Headlights != null && CarController.Lights.Headlights.Length >= 1 && CarController.Lights.Headlights[0] != null)
-                    customizationData.headlightColor = CarController.Lights.Headlights[0].GetLightColor();
+                    customizationData.headlightColor = new RCCP_CustomizationLoadout.SerializableColor(CarController.Lights.Headlights[0].GetLightColor());
 
             }
 
@@ -135,7 +135,7 @@ public class RCCP_VehicleUpgrade_CustomizationManager : RCCP_UpgradeComponent, I
                     for (int i = 0; i < CarController.Particles.wheelParticles.Length; i++) {
 
                         ParticleSystem.MainModule psmain = CarController.Particles.wheelParticles[i].allWheelParticles[0].WheelParticles.main;
-                        customizationData.wheelSmokeColor = psmain.startColor.color;
+                        customizationData.wheelSmokeColor = new RCCP_CustomizationLoadout.SerializableColor(psmain.startColor.color);
 
                     }
 
@@ -148,8 +148,8 @@ public class RCCP_VehicleUpgrade_CustomizationManager : RCCP_UpgradeComponent, I
         }
 
         //  Apply customization data to the vehicle.
-        SetHeadlightsColor(customizationData.headlightColor);
-        SetSmokeColor(customizationData.wheelSmokeColor);
+        SetHeadlightsColor(customizationData.headlightColor.ToColor());
+        SetSmokeColor(customizationData.wheelSmokeColor.ToColor());
         SetFrontCambers(customizationData.cambersFront);
         SetRearCambers(customizationData.cambersRear);
         SetFrontSuspensionsTargetPos(customizationData.suspensionTargetFront);
@@ -191,7 +191,7 @@ public class RCCP_VehicleUpgrade_CustomizationManager : RCCP_UpgradeComponent, I
 
         }
 
-        customizationData.wheelSmokeColor = color;
+        customizationData.wheelSmokeColor = new RCCP_CustomizationLoadout.SerializableColor(color);;
 
         Refresh(this);
 
@@ -226,7 +226,7 @@ public class RCCP_VehicleUpgrade_CustomizationManager : RCCP_UpgradeComponent, I
 
         }
 
-        customizationData.headlightColor = color;
+        customizationData.headlightColor = new RCCP_CustomizationLoadout.SerializableColor(color);;
 
         Refresh(this);
 
@@ -544,8 +544,8 @@ public class RCCP_VehicleUpgrade_CustomizationManager : RCCP_UpgradeComponent, I
             return;
 
         //  Apply customization data to the vehicle.
-        SetHeadlightsColor(customizationDataDefault.headlightColor);
-        SetSmokeColor(customizationDataDefault.wheelSmokeColor);
+        SetHeadlightsColor(customizationDataDefault.headlightColor.ToColor());
+        SetSmokeColor(customizationDataDefault.wheelSmokeColor.ToColor());
         SetFrontCambers(customizationDataDefault.cambersFront);
         SetRearCambers(customizationDataDefault.cambersRear);
         SetFrontSuspensionsTargetPos(customizationDataDefault.suspensionTargetFront);
@@ -588,7 +588,8 @@ public class RCCP_VehicleUpgrade_CustomizationManager : RCCP_UpgradeComponent, I
                 if (CarController.Lights.Headlights[0] != null) {
 
                     for (int i = 0; i < CarController.Lights.Headlights.Length; i++)
-                        customizationData.headlightColor = CarController.Lights.Headlights[i].GetLightColor();
+                    customizationData.headlightColor = new RCCP_CustomizationLoadout.SerializableColor(CarController.Lights.Headlights[i].GetLightColor());
+
 
                 }
 
@@ -601,7 +602,7 @@ public class RCCP_VehicleUpgrade_CustomizationManager : RCCP_UpgradeComponent, I
                     for (int i = 0; i < CarController.Particles.wheelParticles.Length; i++) {
 
                         ParticleSystem.MainModule psmain = CarController.Particles.wheelParticles[i].allWheelParticles[0].WheelParticles.main;
-                        customizationData.wheelSmokeColor = psmain.startColor.color;
+                        customizationData.wheelSmokeColor = new RCCP_CustomizationLoadout.SerializableColor(psmain.startColor.color);
 
                     }
 

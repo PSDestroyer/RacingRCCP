@@ -16,6 +16,7 @@ public class CarSO : ScriptableObject
     [SerializeField] private int _topSpeed;
     [SerializeField] private int _steerAngle;
     [SerializeField] private int _traction;
+    [Min(2000f),Tooltip("BrakePower")]
     [SerializeField] private int _brake;
     [SerializeField] private bool _turbo;
     

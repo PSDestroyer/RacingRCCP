@@ -74,7 +74,60 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
             neons.SetActive(false);
 
     }
+    private void OnEnable()
+    {
+        RefreshButtons();
+    }
 
+    private void RefreshButtons()
+    {
+        if (!RCCPSceneManager)
+        {
+            Debug.LogWarning("RCCPSceneManager missing");
+            return;
+        }
+
+        var vehicle = RCCPSceneManager.activePlayerVehicle;
+
+        if (!vehicle)
+        {
+            Debug.LogWarning("No active vehicle for customization panel");
+            return;
+        }
+
+        if (!vehicle.Customizer)
+        {
+            Debug.LogWarning("Active vehicle has no Customizer");
+            return;
+        }
+
+        var customizer = vehicle.Customizer;
+
+        if (paintsButton)
+            paintsButton.interactable = customizer.PaintManager != null;
+
+        if (wheelsButton)
+            wheelsButton.interactable = customizer.WheelManager != null;
+
+        if (customizationButton)
+            customizationButton.interactable = customizer.CustomizationManager != null;
+
+        if (upgradesButton)
+            upgradesButton.interactable = customizer.UpgradeManager != null;
+
+        if (spoilersButton)
+            spoilersButton.interactable = customizer.SpoilerManager != null;
+
+        if (sirensButton)
+            sirensButton.interactable = customizer.SirenManager != null;
+
+        if (decalsButton)
+            decalsButton.interactable = customizer.DecalManager != null;
+
+        if (neonsButton)
+            neonsButton.interactable = customizer.NeonManager != null;
+    }
+/*
     private void Update() {
 
         if (paintsButton)
@@ -112,7 +165,7 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
 
         if (paintsButton)
             paintsButton.interactable = RCCPSceneManager.activePlayerVehicle.Customizer.PaintManager;
-
+     
         if (wheelsButton)
             wheelsButton.interactable = RCCPSceneManager.activePlayerVehicle.Customizer.WheelManager;
 
@@ -135,5 +188,5 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
             neonsButton.interactable = RCCPSceneManager.activePlayerVehicle.Customizer.NeonManager;
 
     }
-
+*/
 }

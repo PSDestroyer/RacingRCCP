@@ -308,67 +308,62 @@ public class RCCP_Customizer : RCCP_Component {
     /// <summary>
     /// Saves the current loadout to PlayerPrefs (JSON).
     /// </summary>
-    public void Save() {
-
+    public void Save()
+    {
         if (loadout == null)
             loadout = new RCCP_CustomizationLoadout();
 
-        PlayerPrefs.SetString(saveFileName, JsonUtility.ToJson(loadout));
-
+        HalvaStudio.Save.SaveManager.Instance.SaveCustomizationLoadout(saveFileName, loadout);
     }
 
     /// <summary>
     /// Loads the previously saved loadout from PlayerPrefs (JSON).
     /// </summary>
-    public void Load() {
-
-        if (PlayerPrefs.HasKey(saveFileName))
-            loadout = (RCCP_CustomizationLoadout)JsonUtility.FromJson(PlayerPrefs.GetString(saveFileName), typeof(RCCP_CustomizationLoadout));
-
+    public void Load()
+    {
+        loadout = HalvaStudio.Save.SaveManager.Instance.LoadCustomizationLoadout(saveFileName);
     }
 
     /// <summary>
     /// Deletes the last saved loadout and restores vehicle upgrades to default.
     /// </summary>
-    public void Delete() {
-
-        if (PlayerPrefs.HasKey(saveFileName))
-            PlayerPrefs.DeleteKey(saveFileName);
+    public void Delete()
+    {
+        HalvaStudio.Save.SaveManager.Instance.DeleteCustomizationLoadout(saveFileName);
 
         loadout = new RCCP_CustomizationLoadout();
 
-        //  Restore paint manager
+        // Restore paint manager
         if (PaintManager)
             PaintManager.Restore();
 
-        //  Restore wheel manager
+        // Restore wheel manager
         if (WheelManager)
             WheelManager.Restore();
 
-        //  Restore upgrade manager
+        // Restore upgrade manager
         if (UpgradeManager)
             UpgradeManager.Restore();
 
-        //  Restore spoiler manager
+        // Restore spoiler manager
         if (SpoilerManager)
             SpoilerManager.Restore();
 
-        //  Restore siren manager
+        // Restore siren manager
         if (SirenManager)
             SirenManager.Restore();
 
-        //  Restore customization manager
+        // Restore customization manager
         if (CustomizationManager)
             CustomizationManager.Restore();
 
-        //  Restore decal manager
+        // Restore decal manager
         if (DecalManager)
             DecalManager.Restore();
 
-        //  Restore neon manager
+        // Restore neon manager
         if (NeonManager)
             NeonManager.Restore();
-
     }
 
     /// <summary>

@@ -62,8 +62,10 @@ public class RCCP_VehicleUpgrade_SpoilerManager : RCCP_UpgradeComponent, IRCCP_U
             spoilers[spoilerIndex].gameObject.SetActive(true);
 
         //  Getting saved color of the spoiler.
-        if (Loadout.paint != new Color(1f, 1f, 1f, 0f))
-            Paint(Loadout.paint);
+        Color loadoutColor = Loadout.paint.ToColor();
+
+        if (loadoutColor.a > 0.001f)
+            Paint(loadoutColor);
 
     }
 
@@ -145,8 +147,10 @@ public class RCCP_VehicleUpgrade_SpoilerManager : RCCP_UpgradeComponent, IRCCP_U
         if (spoilerIndex != -1 && spoilers[spoilerIndex] != null)
             spoilers[spoilerIndex].gameObject.SetActive(true);
 
-        if (spoilerIndex != -1 && Loadout.paint != new Color(1f, 1f, 1f, 0f) && spoilers[spoilerIndex].bodyRenderer != null)
-            Paint(Loadout.paint);
+        Color loadoutColor = Loadout.paint.ToColor();
+
+        if (spoilerIndex != -1 && loadoutColor.a > 0.001f && spoilers[spoilerIndex].bodyRenderer != null)
+            Paint(loadoutColor);
 
         //  Refreshing the loadout.
         Refresh(this);
@@ -189,9 +193,10 @@ public class RCCP_VehicleUpgrade_SpoilerManager : RCCP_UpgradeComponent, IRCCP_U
         if (spoilers[spoilerIndex] != null)
             spoilers[spoilerIndex].gameObject.SetActive(true);
 
-        if (Loadout.paint != new Color(1f, 1f, 1f, 0f) && spoilers[spoilerIndex].bodyRenderer != null)
-            Paint(Loadout.paint);
+        Color loadoutColor = Loadout.paint.ToColor();
 
+        if (loadoutColor.a > 0.001f && spoilers[spoilerIndex].bodyRenderer != null)
+            Paint(loadoutColor);
     }
 
     /// <summary>
