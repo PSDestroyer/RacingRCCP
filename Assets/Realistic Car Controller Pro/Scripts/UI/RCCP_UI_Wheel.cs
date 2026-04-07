@@ -13,6 +13,7 @@ using System.Collections;
 using System.Collections.Generic;
 using HalvaStudio.Save;
 using TMPro;
+using UnityEngine.EventSystems;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
@@ -20,7 +21,7 @@ using UnityEngine.UI;
 /// UI change wheel button.
 /// </summary>
 [AddComponentMenu("BoneCracker Games/Realistic Car Controller Pro/UI/Modification/RCCP UI Wheel Button")]
-public class RCCP_UI_Wheel : RCCP_UIComponent {
+public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
 
     /// <summary>
     /// Index of the target wheel. 
@@ -31,9 +32,20 @@ public class RCCP_UI_Wheel : RCCP_UIComponent {
     [SerializeField] private TMP_Text priceText;
     [SerializeField] private MoneyManager _moneyManager;
 
+    public void OnSelect(BaseEventData baseEventData)
+    {
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
+        playerVehicle.Customizer.WheelManager.UpdateWheelWithoutSave(wheelIndex);
+
+    }
     private void Start()
     {
         priceText.text = price + "<sprite index=1>";
+    }
+    private void OnDisable()
+    {
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
+        playerVehicle.Customizer.WheelManager.Initialize();
     }
 
     public void OnClick() {

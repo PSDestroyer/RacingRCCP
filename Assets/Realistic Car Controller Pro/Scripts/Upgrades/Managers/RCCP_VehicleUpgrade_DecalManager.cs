@@ -223,25 +223,25 @@ public class RCCP_VehicleUpgrade_DecalManager : RCCP_UpgradeComponent, IRCCP_Upg
             case 0:
                 decalFront.gameObject.SetActive(true);
                 decalFront.SetDecal(material);
-                index_decalFront = FindMaterialIndex(material);
+                // index_decalFront = FindMaterialIndex(material);
                 break;
 
             case 1:
                 decalBack.gameObject.SetActive(true);
                 decalBack.SetDecal(material);
-                index_decalBack = FindMaterialIndex(material);
+                // index_decalBack = FindMaterialIndex(material);
                 break;
 
             case 2:
                 decalLeft.gameObject.SetActive(true);
                 decalLeft.SetDecal(material);
-                index_decalLeft = FindMaterialIndex(material);
+                // index_decalLeft = FindMaterialIndex(material);
                 break;
 
             case 3:
                 decalRight.gameObject.SetActive(true);
                 decalRight.SetDecal(material);
-                index_decalRight = FindMaterialIndex(material);
+                // index_decalRight = FindMaterialIndex(material);
                 break;
 
         }
@@ -275,7 +275,7 @@ public class RCCP_VehicleUpgrade_DecalManager : RCCP_UpgradeComponent, IRCCP_Upg
     /// </summary>
     /// <param name="_material"></param>
     /// <returns></returns>
-    private int FindMaterialIndex(Material _material) {
+    public int FindMaterialIndex(Material _material) {
 
         int index = -1;
 

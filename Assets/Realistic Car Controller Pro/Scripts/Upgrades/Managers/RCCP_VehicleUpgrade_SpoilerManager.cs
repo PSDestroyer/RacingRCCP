@@ -175,7 +175,7 @@ public class RCCP_VehicleUpgrade_SpoilerManager : RCCP_UpgradeComponent, IRCCP_U
             return;
 
         //  Index of the spoiler.
-        spoilerIndex = index;
+        // spoilerIndex = index;
 
         //  Disabling all spoilers.
         for (int i = 0; i < spoilers.Length; i++) {
@@ -186,16 +186,16 @@ public class RCCP_VehicleUpgrade_SpoilerManager : RCCP_UpgradeComponent, IRCCP_U
         }
 
         //  If spoiler index is -1, return.
-        if (spoilerIndex == -1)
+        if (index == -1)
             return;
 
         //  If index is not -1, enable the corresponding spoiler.
-        if (spoilers[spoilerIndex] != null)
-            spoilers[spoilerIndex].gameObject.SetActive(true);
+        if (spoilers[index] != null)
+            spoilers[index].gameObject.SetActive(true);
 
         Color loadoutColor = Loadout.paint.ToColor();
 
-        if (loadoutColor.a > 0.001f && spoilers[spoilerIndex].bodyRenderer != null)
+        if (loadoutColor.a > 0.001f && spoilers[index].bodyRenderer != null)
             Paint(loadoutColor);
     }
 

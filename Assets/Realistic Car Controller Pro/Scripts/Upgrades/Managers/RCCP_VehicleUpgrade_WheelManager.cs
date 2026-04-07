@@ -168,10 +168,10 @@ public class RCCP_VehicleUpgrade_WheelManager : RCCP_UpgradeComponent, IRCCP_Upg
     public void UpdateWheelWithoutSave(int index) {
 
         // Setting wheel index
-        wheelIndex = index;
+        // wheelIndex = index;
 
         // Return if wheel index is not set
-        if (wheelIndex == -1) {
+        if (index == -1) {
 
             Restore();
             return;
@@ -179,23 +179,23 @@ public class RCCP_VehicleUpgrade_WheelManager : RCCP_UpgradeComponent, IRCCP_Upg
         }
 
         // Validate wheel index
-        if (RCCPChangableWheels.wheels == null || wheelIndex >= RCCPChangableWheels.wheels.Length) {
+        if (RCCPChangableWheels.wheels == null || index >= RCCPChangableWheels.wheels.Length) {
 
-            Debug.LogError("RCCP_ChangableWheels doesn't have wheelIndex " + wheelIndex.ToString());
+            Debug.LogError("RCCP_ChangableWheels doesn't have wheelIndex " + index.ToString());
             return;
 
         }
 
         // Check if wheel exists at index
-        if (RCCPChangableWheels.wheels[wheelIndex] == null || RCCPChangableWheels.wheels[wheelIndex].wheel == null) {
+        if (RCCPChangableWheels.wheels[index] == null || RCCPChangableWheels.wheels[index].wheel == null) {
 
-            Debug.LogError("RCCP_ChangableWheels wheel at index " + wheelIndex.ToString() + " is null");
+            Debug.LogError("RCCP_ChangableWheels wheel at index " + index.ToString() + " is null");
             return;
 
         }
 
         // Changing the wheels
-        ChangeWheels(RCCPChangableWheels.wheels[wheelIndex].wheel, true);
+        ChangeWheels(RCCPChangableWheels.wheels[index].wheel, true);
 
     }
 

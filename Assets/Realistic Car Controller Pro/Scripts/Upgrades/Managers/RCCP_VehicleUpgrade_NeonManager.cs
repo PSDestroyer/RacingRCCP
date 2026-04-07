@@ -154,7 +154,7 @@ public class RCCP_VehicleUpgrade_NeonManager : RCCP_UpgradeComponent, IRCCP_Upgr
         Neon.SetNeonMaterial(material);
 
         //  Finding index.
-        index = FindMaterialIndex(material);
+        // index = FindMaterialIndex(material);
 
     }
 
@@ -180,7 +180,7 @@ public class RCCP_VehicleUpgrade_NeonManager : RCCP_UpgradeComponent, IRCCP_Upgr
     /// </summary>
     /// <param name="_material"></param>
     /// <returns></returns>
-    private int FindMaterialIndex(Material _material) {
+    public int FindMaterialIndex(Material _material) {
 
         int index = -1;
 
