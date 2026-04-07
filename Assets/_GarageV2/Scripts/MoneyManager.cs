@@ -15,6 +15,7 @@ public class MoneyManager : MonoBehaviour
     [Header("UI")]
     public TextMeshProUGUI fuelText;
     public TextMeshProUGUI moneyText;
+    public TextMeshProUGUI accname;
 
     [Header("Money")]
     public int money;
@@ -23,9 +24,15 @@ public class MoneyManager : MonoBehaviour
     {
         LoadData();
         RefreshFuelState();
+        SetUpNik();
         UpdateText();
     }
 
+    public void SetUpNik()
+    {
+        if (accname != null)
+            accname.text = SaveManager.Instance.saveData.PlayerName;
+    }
     public void MoneyToTake(int totake)
     {
         if (totake < 0)
