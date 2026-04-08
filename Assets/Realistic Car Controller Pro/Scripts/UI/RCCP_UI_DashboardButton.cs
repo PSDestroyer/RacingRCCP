@@ -16,7 +16,7 @@ using System.Collections.Generic;
 /// UI dashboard buttons for mobile / desktop.
 /// </summary>
 [AddComponentMenu("BoneCracker Games/Realistic Car Controller Pro/UI/RCCP UI Dashboard Button")]
-public class RCCP_UI_DashboardButton : RCCP_UIComponent, IPointerClickHandler {
+public class RCCP_UI_DashboardButton : RCCP_UIComponent, ISubmitHandler {
 
     /// <summary>
     /// Button types.
@@ -42,7 +42,7 @@ public class RCCP_UI_DashboardButton : RCCP_UIComponent, IPointerClickHandler {
 
     }
 
-    public void OnPointerClick(PointerEventData eventData) {
+    public void OnSubmit(BaseEventData eventData) {
 
         switch (buttonType) {
 

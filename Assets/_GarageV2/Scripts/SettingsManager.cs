@@ -24,7 +24,7 @@ public class SettingsManager : MonoBehaviour
 
     private void OnDisable()
     {
-        RCCP_SceneManager.Instance.activePlayerVehicle.SetCanControl(true);
+        RCCP_SceneManager.Instance.activePlayerVehicle.SetCanControl(false);
         RCCP_SceneManager.Instance.activePlayerVehicle.GetComponent<Rigidbody>().isKinematic = false;
         SaveManager.Instance.Save();
     }
