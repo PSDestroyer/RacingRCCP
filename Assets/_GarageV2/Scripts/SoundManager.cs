@@ -42,6 +42,8 @@ public class SoundManager : MonoBehaviour
         //     audio.audioMixer = vehicleMixer;
         //     audio.Reload();
         // }
+        
+        
         SetVehicleVolume(SaveManager.Instance.saveData.VehicleLevel);
         SetSfxVolume(SaveManager.Instance.saveData.soundLevel);
         SetMusicVolume(SaveManager.Instance.saveData.musicLevel);
@@ -55,7 +57,6 @@ public class SoundManager : MonoBehaviour
         bool ok = audioMixer.SetFloat("VehicleVolume", db);
         bool ok1 = audioMixer.SetFloat("volume", db);
         SaveManager.Instance.saveData.VehicleLevel = value;
-        SaveManager.Instance.Save();
 
         // Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");
     }
@@ -65,9 +66,8 @@ public class SoundManager : MonoBehaviour
 
         float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
 
-        bool ok = audioMixer.SetFloat("SfxVolume", db);
+        bool ok = GlobalaudioMixer.SetFloat("SfxVolume", db);
         SaveManager.Instance.saveData.soundLevel = value;
-        SaveManager.Instance.Save();
 
         // Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");
     }
@@ -77,9 +77,8 @@ public class SoundManager : MonoBehaviour
 
         float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
 
-        bool ok = audioMixer.SetFloat("SfxVolume", db);
+        bool ok = GlobalaudioMixer.SetFloat("MusicVolume", db);
         SaveManager.Instance.saveData.musicLevel = value;
-        SaveManager.Instance.Save();
 
         // Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");
     }

@@ -270,6 +270,7 @@ public class CarSelection : MonoBehaviour
       if(player!=null) Destroy(player.gameObject);
       player = Instantiate(Resources.Load<GameObject>(GlobalCarData._carlists[indexcar].carPrefabLocation), spawnCarPoint);
       player.GetComponent<RCCP_CarController>().canControl = false;
+      player.GetComponent<RCCP_CarController>().engineRunning = false;
 
       // player.GetComponent<Rigidbody>().isKinematic = true;
       // foreach (var mirror in player.GetComponentsInChildren<RCC_Mirror>())
@@ -313,6 +314,8 @@ public class CarSelection : MonoBehaviour
           player = Instantiate(Resources.Load<GameObject>(GlobalCarData._carlists[savedCarIndex].carPrefabLocation), spawnCarPoint);
 
            player.GetComponent<RCCP_CarController>().canControl = false;
+           player.GetComponent<RCCP_CarController>().engineRunning = false;
+
           // var rb = player.GetComponent<Rigidbody>();
           // if (rb != null) rb.isKinematic = true;
       }
