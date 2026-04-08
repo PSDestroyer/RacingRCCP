@@ -157,7 +157,7 @@ namespace HalvaStudio.Save
             [Header("Settings")]
             public int lookSensitivity;
             public string difficulty;
-            public float soundLevel = 0.7f;
+            public float soundLevel = 0.0f;
             public float musicLevel = 0.4f;
             public bool vibrationsState = true;
             public bool indicatorState;

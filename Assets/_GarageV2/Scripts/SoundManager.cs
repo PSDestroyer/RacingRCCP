@@ -1,5 +1,6 @@
 using HalvaStudio.Save;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class SoundManager : MonoBehaviour
 {
@@ -8,7 +9,8 @@ public class SoundManager : MonoBehaviour
     [Header("Audio Sources")]
     [SerializeField] private AudioSource musicSource;
     [SerializeField] private AudioSource sfxSource;
-
+    public AudioMixerGroup vehicleMixer;
+    [SerializeField] private AudioMixer audioMixer;
     [Header("UI Sounds")]
     [SerializeField] private AudioClip buttonClickClip;
     [SerializeField] private AudioClip buttonErrorClip;
@@ -29,8 +31,26 @@ public class SoundManager : MonoBehaviour
     private void Start()
     {
         
-    }
+        RCCP_Audio audio = FindAnyObjectByType<RCCP_Audio>();
 
+        if (audio != null)
+        {
+            audio.audioMixer = vehicleMixer;
+            audio.Reload();
+        }
+        SetVehicleVolume(SaveManager.Instance.saveData.soundLevel);
+    }
+    public void SetVehicleVolume(float value)
+    {
+        value = Mathf.Clamp01(value);
+
+        float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
+
+        bool ok = audioMixer.SetFloat("VehicleVolume", db);
+        bool ok1 = audioMixer.SetFloat("volume", db);
+        Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");
+    }
+    
     private void OnDestroy()
     {
       
@@ -38,14 +58,6 @@ public class SoundManager : MonoBehaviour
 
     private void ApplySettings()
     {
-        // float musicFinal = data.musicEnabled ? data.masterVolume * data.musicVolume : 0f;
-        // float sfxFinal = data.sfxEnabled ? data.masterVolume * data.sfxVolume : 0f;
-
-        // if (musicSource != null)
-            // musicSource.volume = musicFinal;
-
-        // if (sfxSource != null)
-            // sfxSource.volume = sfxFinal;
             
     }
 

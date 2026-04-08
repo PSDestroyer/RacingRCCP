@@ -9,7 +9,7 @@ public enum UIPanelType
     MainHub,
     Shop,
     Upgrade,
-    Customize,
+    Play,
     Settings
 }
 

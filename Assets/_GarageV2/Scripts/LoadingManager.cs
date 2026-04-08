@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class LoadingManager : MonoBehaviour
+public class LoadingManager : Singleton<LoadingManager>
 {
     public static LoadingManager Instance { get; private set; }
 
