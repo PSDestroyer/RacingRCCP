@@ -11,6 +11,10 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioSource sfxSource;
     public AudioMixerGroup vehicleMixer;
     [SerializeField] private AudioMixer audioMixer;
+    [SerializeField] private AudioMixer GlobalaudioMixer;
+    public AudioMixerGroup sfxMixerGroup;
+    public AudioMixerGroup musicMixerGroup;
+
     [Header("UI Sounds")]
     [SerializeField] private AudioClip buttonClickClip;
     [SerializeField] private AudioClip buttonErrorClip;
@@ -31,14 +35,16 @@ public class SoundManager : MonoBehaviour
     private void Start()
     {
         
-        RCCP_Audio audio = FindAnyObjectByType<RCCP_Audio>();
-
-        if (audio != null)
-        {
-            audio.audioMixer = vehicleMixer;
-            audio.Reload();
-        }
-        SetVehicleVolume(SaveManager.Instance.saveData.soundLevel);
+        // RCCP_Audio audio = FindAnyObjectByType<RCCP_Audio>();
+        //
+        // if (audio != null)
+        // {
+        //     audio.audioMixer = vehicleMixer;
+        //     audio.Reload();
+        // }
+        SetVehicleVolume(SaveManager.Instance.saveData.VehicleLevel);
+        SetSfxVolume(SaveManager.Instance.saveData.soundLevel);
+        SetMusicVolume(SaveManager.Instance.saveData.musicLevel);
     }
     public void SetVehicleVolume(float value)
     {
@@ -48,9 +54,35 @@ public class SoundManager : MonoBehaviour
 
         bool ok = audioMixer.SetFloat("VehicleVolume", db);
         bool ok1 = audioMixer.SetFloat("volume", db);
-        Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");
+        SaveManager.Instance.saveData.VehicleLevel = value;
+        SaveManager.Instance.Save();
+
+        // Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");
     }
-    
+    public void SetSfxVolume(float value)
+    {
+        value = Mathf.Clamp01(value);
+
+        float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
+
+        bool ok = audioMixer.SetFloat("SfxVolume", db);
+        SaveManager.Instance.saveData.soundLevel = value;
+        SaveManager.Instance.Save();
+
+        // Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");
+    }
+    public void SetMusicVolume(float value)
+    {
+        value = Mathf.Clamp01(value);
+
+        float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
+
+        bool ok = audioMixer.SetFloat("SfxVolume", db);
+        SaveManager.Instance.saveData.musicLevel = value;
+        SaveManager.Instance.Save();
+
+        // Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");
+    }
     private void OnDestroy()
     {
       
