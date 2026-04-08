@@ -15,8 +15,17 @@ public class SettingsManager : MonoBehaviour
         music.value = SaveManager.Instance.saveData.musicLevel;
     }
 
+    private void OnEnable()
+    {
+        RCCP_SceneManager.Instance.activePlayerVehicle.SetCanControl(true);
+        RCCP_SceneManager.Instance.activePlayerVehicle.GetComponent<Rigidbody>().isKinematic = true;
+
+    }
+
     private void OnDisable()
     {
+        RCCP_SceneManager.Instance.activePlayerVehicle.SetCanControl(true);
+        RCCP_SceneManager.Instance.activePlayerVehicle.GetComponent<Rigidbody>().isKinematic = false;
         SaveManager.Instance.Save();
     }
 

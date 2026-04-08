@@ -159,7 +159,7 @@ public class RCCP_UI_DashboardButton : RCCP_UIComponent, IPointerClickHandler {
 
         if (!RCCPSceneManager.activePlayerVehicle)
             return;
-        Debug.LogError(buttonType);
+        // Debug.LogError(buttonType);
 
         switch (buttonType) {
 
