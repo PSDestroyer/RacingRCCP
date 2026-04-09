@@ -32,6 +32,7 @@ public class RCCP_UI_Spoiler : RCCP_UIComponent , ISelectHandler{
     [SerializeField] private YesNo _yesNo;
     [SerializeField] private TMP_Text priceText;
     [SerializeField] private MoneyManager _moneyManager;
+    [SerializeField] private List<RCCP_UI_Spoiler> Comp = new List<RCCP_UI_Spoiler>();
 
     public void OnSelect(BaseEventData baseEventData)
     {
@@ -53,8 +54,33 @@ public class RCCP_UI_Spoiler : RCCP_UIComponent , ISelectHandler{
     }
     private void Start()
     {
-        priceText.text = price + "<sprite index=1>";
+        Initialize();
     }
+
+    public void Refresh()
+    {
+        foreach (var VARIABLE in Comp)
+        {
+            VARIABLE.Initialize();
+        }
+    }
+
+    private void Initialize()
+    {
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
+        if (playerVehicle.Customizer.SpoilerManager.spoilerIndex != index)
+        {
+            priceText.text = price + "<sprite index=1>";
+        }
+        else
+        {
+            var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
+            priceText.text = Purch.ToString();
+        }
+
+
+    }
+
     public async void YesNo()
     {
         //  Finding the player vehicle.
@@ -84,6 +110,7 @@ public class RCCP_UI_Spoiler : RCCP_UIComponent , ISelectHandler{
                     _moneyManager.MoneyToTake(price);
                     SoundManager.Instance.PlayButtonClick();
                     playerVehicle.Customizer.SpoilerManager.Upgrade(index);
+                    Refresh();
                 }
                 else
                 {

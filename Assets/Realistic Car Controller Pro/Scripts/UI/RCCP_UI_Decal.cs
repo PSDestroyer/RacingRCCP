@@ -35,6 +35,7 @@ public class RCCP_UI_Decal : RCCP_UIComponent ,ISelectHandler{
     [SerializeField] private YesNo _yesNo;
     [SerializeField] private TMP_Text priceText;
     [SerializeField] private MoneyManager _moneyManager;
+    [SerializeField] private List<RCCP_UI_Decal> Comp = new List<RCCP_UI_Decal>();
 
     
     public void OnSelect(BaseEventData baseEventData)
@@ -45,7 +46,60 @@ public class RCCP_UI_Decal : RCCP_UIComponent ,ISelectHandler{
     }
     private void Start()
     {
+        Initialize();
+    }
+
+    public void Refresh()
+    {
+        foreach (var VARIABLE in Comp)
+        {
+            VARIABLE.Initialize();
+        }
+    }
+    private void Initialize() 
+    {
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
         priceText.text = price + "<sprite index=1>";
+        
+        switch (location) {
+
+                case 0:
+                    if (playerVehicle.Customizer.DecalManager.FindMaterialIndex(material) ==
+                        playerVehicle.Customizer.DecalManager.index_decalFront)
+                    {
+                        var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
+                        priceText.text = Purch.ToString();
+                    }
+                    break;
+
+                case 1:
+                    if (playerVehicle.Customizer.DecalManager.FindMaterialIndex(material) ==
+                        playerVehicle.Customizer.DecalManager.index_decalBack)
+                    {
+                        var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
+                        priceText.text = Purch.ToString();
+                    }
+                    break;
+
+                case 2:
+                    if (playerVehicle.Customizer.DecalManager.FindMaterialIndex(material) ==
+                        playerVehicle.Customizer.DecalManager.index_decalLeft)
+                    {
+                        var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
+                        priceText.text = Purch.ToString();
+                    }
+                    break;
+
+                case 3:
+                    if (playerVehicle.Customizer.DecalManager.FindMaterialIndex(material) ==
+                        playerVehicle.Customizer.DecalManager.index_decalRight)
+                    {
+                        var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
+                        priceText.text = Purch.ToString();
+                    }
+                    break;
+
+            }
     }
     private void OnDisable()
     {
@@ -54,9 +108,7 @@ public class RCCP_UI_Decal : RCCP_UIComponent ,ISelectHandler{
     }
     
     public void Upgrade() {
-
-        
-     YesNo();
+        YesNo();
     
         }
     
@@ -86,10 +138,6 @@ public class RCCP_UI_Decal : RCCP_UIComponent ,ISelectHandler{
                         SoundManager.Instance.PlayButtonClick();
                         return;
                     }
-                    
-                    
-                    
-                   
                     break;
 
                 case 1:
@@ -137,6 +185,7 @@ public class RCCP_UI_Decal : RCCP_UIComponent ,ISelectHandler{
                         _moneyManager.MoneyToTake(price);
                         SoundManager.Instance.PlayButtonClick();
                         playerVehicle.Customizer.DecalManager.Upgrade(location, material);
+                        Refresh();
                     }
                     else
                     {

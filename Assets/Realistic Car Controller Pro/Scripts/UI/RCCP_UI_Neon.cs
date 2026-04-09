@@ -31,16 +31,40 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
     [SerializeField] private YesNo _yesNo;
     [SerializeField] private TMP_Text priceText;
     [SerializeField] private MoneyManager _moneyManager;
-    
+    [SerializeField] private List<RCCP_UI_Neon> _neons = new List<RCCP_UI_Neon>();
     public void OnSelect(BaseEventData baseEventData)
     {
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
         playerVehicle.Customizer.NeonManager.UpgradeWithoutSave(material);
 
     }
+
     private void Start()
     {
-        priceText.text = price + "<sprite index=1>";
+        Initialize();
+    }
+
+    public void Refresh()
+    {
+        foreach (var VARIABLE in _neons)
+        {
+            VARIABLE.Initialize();
+        }
+    }
+    private void Initialize() 
+    {
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
+
+        if (playerVehicle.Customizer.NeonManager.FindMaterialIndex(material) !=
+            playerVehicle.Customizer.NeonManager.index)
+        {
+            priceText.text = price + "<sprite index=1>";
+        }
+        else
+        {
+            var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
+            priceText.text = Purch.ToString();
+        }
     }
     private void OnDisable()
     {
@@ -82,6 +106,9 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
                     _moneyManager.MoneyToTake(price);
                     SoundManager.Instance.PlayButtonClick();
                     playerVehicle.Customizer.NeonManager.Upgrade(material);
+                    var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
+                    priceText.text = Purch.ToString();
+                    Refresh();
                 }
                 else
                 {
