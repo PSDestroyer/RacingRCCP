@@ -1,13 +1,20 @@
 using System;
 using HalvaStudio.Save;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GamePlayManager : MonoBehaviour
 {
     [NonSerialized]public GameObject player;
     public RCCP_CarController CarController;
     public Transform SpawnPoint;
+    public RaceType RaceType;
     
+    
+    
+    [Header("Drifting Settings")]
     public bool driftingNow = false;
     public float totalDriftPoints = 0f;      //  Total drift points.
     public float currentDriftPoints = 0f;  
@@ -20,22 +27,21 @@ public class GamePlayManager : MonoBehaviour
     public float totalDriftTime = 0f;     //  Total drifting time.
     public float totalDriftDistance = 0f;     //  Total drifting time.
     public bool canScore = true;        //  Can score now?
-
     private Vector3 lastPosition;
-    
-    
-    [Header("Drifting Settings")]
     public int driftPointsMP = 200;       //	Drift points multiplier.
     public int driftCoinsMP = 10;       //	Drift coins multiplier.
     public float driftTime = 1f;        //	Timer for resetting the drift.
     public float driftSpeed = 25f;        //	Speed limit for drift score.
     public bool resetDriftPointsAfterCollision = true;      //	Resets current drift score on collisions.
     public float minimumCollision = 5f;     //	Minimum collision limit for resetting the drift score.
-    
     private bool driftInterruptedByCollision = false;
     private float driftInterruptTimer = 0f;
     [SerializeField] private float driftInterruptDuration = 0.5f;
-    
+
+    [Header("Drifting UI")] 
+    public Slider DriftTimeSlider;
+    public TMP_Text scoreText;
+    public TMP_Text TotalScoreText;
     //  When player achieved a score.
     // public delegate void onDriftScoreAchieved(BD_PlayerManager Player);
     // public static event onDriftScoreAchieved OnDriftScoreAchieved;
@@ -43,6 +49,9 @@ public class GamePlayManager : MonoBehaviour
     {
         InstancePlayer();
         SetUpRaceStyle(1);
+        scoreText.gameObject.SetActive(false);
+        DriftTimeSlider.value = totalDriftTime;
+        
     }
     
     private void OnEnable()
@@ -75,6 +84,9 @@ public class GamePlayManager : MonoBehaviour
 
    private void Update() {
 
+       if (RaceType == RaceType.DriftScore)
+       {
+             
         // If can control of the vehicle is disabled, return.
         if (!CarController.canControl) {
         
@@ -118,24 +130,32 @@ public class GamePlayManager : MonoBehaviour
 
             //  Increasing total drifting time.
             totalDriftTime += Time.deltaTime;
-
+           
             //  If drifting time is high enough, increase the score.
             if (totalDriftTime >= driftTime) {
-
+                if (scoreText != null)
+                {
+                    scoreText.text = currentDriftPoints.ToString("N1");
+                }
                 currentDriftPoints += (driftPointsMP * currentMP) * Time.deltaTime;
                 currentDriftCoins += (driftCoinsMP / currentMP) * Time.deltaTime;
-
+                if (!scoreText.gameObject.activeSelf&&currentDriftCoins>1)
+                {
+                    scoreText.gameObject.SetActive(true);
+                }
             }
 
             totalDriftDistance += distance;
 
         } else {
 
-    Debug.LogError(CarController.Damage);
             totalDriftTime -= Time.deltaTime;
 
         }
-
+        if (DriftTimeSlider != null)
+        {
+            DriftTimeSlider.value = totalDriftTime;
+        }
         //  Clamping the drifting time.
         totalDriftTime = Mathf.Clamp(totalDriftTime, 0f, driftTime + 1.5f);
 
@@ -144,19 +164,21 @@ public class GamePlayManager : MonoBehaviour
 
             totalDriftPoints += currentDriftPoints;
             totalDriftCoins += currentDriftCoins;
-
+            if (scoreText.gameObject.activeSelf)
+            {
+                scoreText.gameObject.SetActive(false);
+            }
             // if (OnDriftScoreAchieved != null)
                 // OnDriftScoreAchieved(this);
-
+                TotalScoreText.text = totalDriftPoints.ToString("N1");
             currentDriftPoints = 0;
             currentDriftCoins = 0;
 
         }
-
-        
-
         lastPosition = transform.position;
-
+ 
+       }
+    
     }
    
    private void OnCarCollision(RCCP_CarController car, Collision collision)
