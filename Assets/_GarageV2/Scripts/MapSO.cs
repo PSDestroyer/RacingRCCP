@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 public enum RaceType
 {
-    DriftMax, DriftScore, FreeDrift
+    Racing, DriftScore, FreeDrift
 }
 //Se adauga in create menu ca sa poti crea mai usor SO.
 [CreateAssetMenu(fileName = "MapSO_", menuName = "SO/Map")]
