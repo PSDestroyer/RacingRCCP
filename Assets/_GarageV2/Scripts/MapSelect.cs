@@ -1,0 +1,208 @@
+using System;
+using System.Collections.Generic;
+using HalvaStudio.Save;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class MapSelect : MonoBehaviour
+{
+    [Serializable]
+    public class MissionData
+    {
+        public string missionName;
+        public Sprite missionImage;
+        public MapSO mapSo;
+    }
+
+    [Serializable]
+    public class TrackData
+    {
+        public string trackName;
+        public Sprite trackImage;
+        public int trackMapId = -1;
+        public List<MissionData> missions = new List<MissionData>(4);
+    }
+
+    [Serializable]
+    public class MapData
+    {
+        public string mapName;
+        public List<TrackData> tracks = new List<TrackData>(4);
+    }
+
+    public List<MapData> maps = new List<MapData>(4);
+    public GameObject MapPanel;
+    public GameObject TrackPanel;
+    public GameObject MissionPanel;
+    public GameObject PlayPanel;
+
+    public TrackPanel trackPanelController;
+    public MissionPanel missionPanelController;
+
+    private int selectedMapIndex = -1;
+    private int selectedTrackIndex = -1;
+    private int selectedMissionIndex = -1;
+
+    private void Start()
+    {
+        ResetPanels();
+    }
+
+    private void OnEnable()
+    {
+        ResetPanels();
+    }
+
+    public void SelectMap(int mapIndex)
+    {
+        if (mapIndex < 0 || mapIndex >= maps.Count)
+            return;
+
+        selectedMapIndex = mapIndex;
+        selectedTrackIndex = -1;
+        selectedMissionIndex = -1;
+
+        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
+        {
+            SaveManager.Instance.saveData.selectedMapName = maps[mapIndex].mapName;
+            SaveManager.Instance.saveData.selectedMapIndex = mapIndex;
+            SaveManager.Instance.saveData.selectedTrackIndex = -1;
+            SaveManager.Instance.saveData.selectedMissionIndex = -1;
+            SaveManager.Instance.saveData.currentMissionMapId = -1;
+            SaveManager.Instance.saveData.currentMissionRaceType = -1;
+            SaveManager.Instance.Save();
+        }
+
+        if (TrackPanel != null)
+            TrackPanel.SetActive(true);
+
+        if (MissionPanel != null)
+            MissionPanel.SetActive(false);
+
+        if (PlayPanel != null)
+            PlayPanel.SetActive(false);
+
+        if (trackPanelController != null)
+            trackPanelController.ShowTracks(this, maps[mapIndex].tracks);
+
+        PlayClick();
+    }
+
+    public void SelectTrack(int trackIndex)
+    {
+        if (selectedMapIndex < 0 || selectedMapIndex >= maps.Count)
+            return;
+
+        List<TrackData> tracks = maps[selectedMapIndex].tracks;
+
+        if (trackIndex < 0 || trackIndex >= tracks.Count)
+            return;
+
+        selectedTrackIndex = trackIndex;
+        selectedMissionIndex = -1;
+
+        TrackData selectedTrack = tracks[trackIndex];
+        GlobalCarData.thismap = GlobalCarData.GetMapById(selectedTrack.trackMapId);
+
+        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
+        {
+            SaveManager.Instance.saveData.selectedTrackIndex = trackIndex;
+            SaveManager.Instance.saveData.selectedMissionIndex = -1;
+            SaveManager.Instance.saveData.currentMap = selectedTrack.trackMapId;
+            SaveManager.Instance.saveData.currentMissionMapId = selectedTrack.trackMapId;
+            SaveManager.Instance.saveData.currentMissionRaceType = -1;
+            SaveManager.Instance.Save();
+        }
+
+        if (MissionPanel != null)
+            MissionPanel.SetActive(true);
+
+        if (PlayPanel != null)
+            PlayPanel.SetActive(false);
+
+        if (missionPanelController != null)
+            missionPanelController.ShowMissions(this, selectedTrack.missions);
+
+        PlayClick();
+    }
+
+    public void SelectMission(int missionIndex)
+    {
+        if (selectedMapIndex < 0 || selectedMapIndex >= maps.Count)
+            return;
+
+        if (selectedTrackIndex < 0 || selectedTrackIndex >= maps[selectedMapIndex].tracks.Count)
+            return;
+
+        List<MissionData> missions = maps[selectedMapIndex].tracks[selectedTrackIndex].missions;
+
+        if (missionIndex < 0 || missionIndex >= missions.Count)
+            return;
+
+        MissionData mission = missions[missionIndex];
+
+        if (mission == null || mission.mapSo == null)
+            return;
+        SetUpRaceStyle((int)mission.mapSo.raceType);
+        
+        selectedMissionIndex = missionIndex;
+        GlobalCarData.thismap = mission.mapSo;
+
+        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
+        {
+            SaveManager.Instance.saveData.selectedMissionIndex = missionIndex;
+            SaveManager.Instance.saveData.currentMap = mission.mapSo.id;
+            SaveManager.Instance.saveData.currentMissionMapId = mission.mapSo.id;
+            SaveManager.Instance.saveData.currentMissionRaceType = (int)mission.mapSo.raceType;
+            SaveManager.Instance.Save();
+
+            
+            
+            if (!string.IsNullOrWhiteSpace(SaveManager.Instance.saveData.selectedMapName) && LoadingManager.Instance != null)
+            {
+                LoadingManager.Instance.LoadScene(SaveManager.Instance.saveData.selectedMapName);
+                PlayClick();
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(SaveManager.Instance.saveData.selectedMapName))
+            {
+                SceneManager.LoadScene(SaveManager.Instance.saveData.selectedMapName);
+                PlayClick();
+                return;
+            }
+        }
+
+    }
+    public void SetUpRaceStyle(int type)
+    {
+        // 0  = Balanced
+        // 1  = Drift
+        // 2  = Race
+        // 3  = Arcade
+        RCCP_Settings.Instance.behaviorSelectedIndex = type;
+        // Debug.Log(RCCP_Settings.Instance.behaviorTypes[type].behaviorName.ToString()); // Test Debug style
+    }
+    
+
+    private void ResetPanels()
+    {
+        if (MapPanel != null)
+            MapPanel.SetActive(true);
+
+        if (TrackPanel != null)
+            TrackPanel.SetActive(false);
+
+        if (MissionPanel != null)
+            MissionPanel.SetActive(false);
+
+        if (PlayPanel != null)
+            PlayPanel.SetActive(false);
+    }
+
+    private void PlayClick()
+    {
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayButtonClick();
+    }
+}

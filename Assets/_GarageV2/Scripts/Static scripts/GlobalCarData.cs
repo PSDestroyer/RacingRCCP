@@ -24,4 +24,12 @@ public static class GlobalCarData
         _currentCar = _carlists.Find(e => e.id == PlayerPrefs.GetInt(SaveKeys.CurrentCar,0));
         
     }
+
+    public static MapSO GetMapById(int id)
+    {
+        if (_maplists == null || _maplists.Count == 0)
+            return null;
+
+        return _maplists.Find(map => map != null && map.id == id);
+    }
 }

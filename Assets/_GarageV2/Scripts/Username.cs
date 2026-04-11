@@ -20,8 +20,13 @@ public class Username : MonoBehaviour
         // inputF.Select();
         inputF.onSubmit.AddListener(deselecUI);
         // StartPlay.onClick.AddListener(() => LoadMenu());
-        _playerInput.actions["Submit"].performed += SelectInput;
-        _playerInput.actions["Cancel"].performed += LoadMenuCTX;
+        InputAction submitAction = GetAction("Submit");
+        if (submitAction != null)
+            submitAction.performed += SelectInput;
+
+        InputAction cancelAction = GetAction("Cancel");
+        if (cancelAction != null)
+            cancelAction.performed += LoadMenuCTX;
     }
 
     private void deselecUI(string arg0)
@@ -39,9 +44,14 @@ public class Username : MonoBehaviour
         SaveManager.Instance.saveData.PlayerName = inputF.text;
         SaveManager.Instance.Save();
         StartCoroutine(LoadGame());
-        
-        _playerInput.actions["Submit"].performed -= SelectInput;
-        _playerInput.actions["Pause"].performed -= LoadMenuCTX;
+
+        InputAction submitAction = GetAction("Submit");
+        if (submitAction != null)
+            submitAction.performed -= SelectInput;
+
+        InputAction cancelAction = GetAction("Cancel");
+        if (cancelAction != null)
+            cancelAction.performed -= LoadMenuCTX;
     }
 
     IEnumerator LoadGame()
@@ -57,5 +67,16 @@ public class Username : MonoBehaviour
       
         LoadingManager.Instance.LoadScene("Menu");
         
+    }
+
+    private InputAction GetAction(string actionName)
+    {
+        if (_playerInput == null)
+            _playerInput = GetComponent<PlayerInput>();
+
+        if (_playerInput == null || _playerInput.actions == null)
+            return null;
+
+        return _playerInput.actions[actionName];
     }
 }

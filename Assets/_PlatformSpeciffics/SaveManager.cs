@@ -149,6 +149,13 @@ namespace HalvaStudio.Save
             public int money;
             public int exp;
             public int currentCar;
+            public string selectedMapName = string.Empty;
+            public int selectedMapIndex = -1;
+            public int selectedTrackIndex = -1;
+            public int selectedMissionIndex = -1;
+            public int currentMap = -1;
+            public int currentMissionMapId = -1;
+            public int currentMissionRaceType = -1;
             public int currentRaceTime;
             public int currentRaceLap;
             public int currentRaceTarget;

@@ -288,15 +288,27 @@ public class GamePlayManager : MonoBehaviour
 
     private void ApplyCurrentMapSettings()
     {
+        if (GlobalCarData.thismap == null && SaveManager.Instance != null && SaveManager.Instance.saveData != null)
+        {
+            int missionMapId = SaveManager.Instance.saveData.currentMissionMapId >= 0
+                ? SaveManager.Instance.saveData.currentMissionMapId
+                : SaveManager.Instance.saveData.currentMap;
+
+            GlobalCarData.thismap = GlobalCarData.GetMapById(missionMapId);
+        }
+
         if (!useCurrentMapModeSettings || GlobalCarData.thismap == null)
             return;
 
         MapSO currentMap = GlobalCarData.thismap;
 
+        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null && SaveManager.Instance.saveData.currentMissionRaceType >= 0)
+            RaceType = (RaceType)SaveManager.Instance.saveData.currentMissionRaceType;
+        else
+            RaceType = currentMap.raceType;
+
         if (currentMap.raceLaps > 0)
             totalRaceLaps = currentMap.raceLaps;
-        else if (currentMap.lap > 0)
-            totalRaceLaps = currentMap.lap;
 
         if (currentMap.opponentCount > 0)
             opponentCount = currentMap.opponentCount;
@@ -309,8 +321,6 @@ public class GamePlayManager : MonoBehaviour
 
         if (currentMap.driftBronzeTarget > 0)
             bronzeTargetScore = currentMap.driftBronzeTarget;
-        else if (currentMap.target > 0)
-            bronzeTargetScore = currentMap.target;
 
         if (currentMap.driftSilverMultiplier > 0f)
             silverTargetMultiplier = currentMap.driftSilverMultiplier;
@@ -329,13 +339,9 @@ public class GamePlayManager : MonoBehaviour
 
         if (currentMap.targetDriftScore > 0)
             targetDriftScore = currentMap.targetDriftScore;
-        else if (currentMap.target > 0)
-            targetDriftScore = currentMap.target;
 
         if (currentMap.targetDriftTimeLimit > 0)
             targetDriftTimeLimit = currentMap.targetDriftTimeLimit;
-        else if (currentMap.time > 0)
-            targetDriftTimeLimit = currentMap.time;
     }
 
 
@@ -353,7 +359,9 @@ public class GamePlayManager : MonoBehaviour
         // 1  = Drift
         // 2  = Race
         // 3  = Arcade
-        RCCP_Settings.Instance.behaviorSelectedIndex = type;
+        // RCCP_Settings.Instance.behaviorSelectedIndex = type;
+        RCCP_SceneManager.Instance.SetBehavior(type);
+
         // Debug.Log(RCCP_Settings.Instance.behaviorTypes[type].behaviorName.ToString()); // Test Debug style
     }
 
@@ -1082,9 +1090,6 @@ public class GamePlayManager : MonoBehaviour
        {
            if (GlobalCarData.thismap.driftBronzeTarget > 0)
                return GlobalCarData.thismap.driftBronzeTarget;
-
-           if (GlobalCarData.thismap.target > 0)
-               return GlobalCarData.thismap.target;
        }
 
        return bronzeTargetScore;
@@ -1176,9 +1181,6 @@ public class GamePlayManager : MonoBehaviour
        {
            if (GlobalCarData.thismap.targetDriftScore > 0)
                return GlobalCarData.thismap.targetDriftScore;
-
-           if (GlobalCarData.thismap.target > 0)
-               return GlobalCarData.thismap.target;
        }
 
        return targetDriftScore;
@@ -1190,9 +1192,6 @@ public class GamePlayManager : MonoBehaviour
        {
            if (GlobalCarData.thismap.targetDriftTimeLimit > 0)
                return GlobalCarData.thismap.targetDriftTimeLimit;
-
-           if (GlobalCarData.thismap.time > 0)
-               return GlobalCarData.thismap.time;
        }
 
        return targetDriftTimeLimit;
@@ -1249,6 +1248,8 @@ public class GamePlayManager : MonoBehaviour
        if (missionResultsShown)
            return;
 
+        CommitPendingDriftScore();
+
        missionSucceeded = success;
        missionResultsShown = true;
        driftModeFinished = true;
@@ -1288,10 +1289,49 @@ public class GamePlayManager : MonoBehaviour
        missionFinalExpTotal = missionStartingExpTotal + missionExpEarned;
        missionFinalLevel = missionStartingLevel + levelUps;
 
+       SaveMissionResultSnapshot();
        SaveManager.Instance.saveData.exp = missionFinalExpTotal;
        SaveManager.Instance.saveData.currentLevel = missionFinalLevel;
        AddMoneyToPlayer(missionRewardEarned + missionLevelRewardEarned);
        SaveManager.Instance.Save();
+   }
+
+   private void CommitPendingDriftScore()
+   {
+       if (!IsDriftScoringMode())
+           return;
+
+       if (RaceType == RaceType.DriftScore || RaceType == RaceType.TargetDrift)
+       {
+           if (currentDriftPoints > 0f)
+               totalDriftPoints += currentDriftPoints;
+
+           if (currentDriftCoins > 0f)
+               totalDriftCoins += currentDriftCoins;
+       }
+
+       currentDriftPoints = 0f;
+       currentDriftCoins = 0f;
+       totalDriftTime = 0f;
+       currentDriftComboTime = 0f;
+       currentMP = RaceType == RaceType.ComboMaster ? currentMP : 1f;
+       lastDisplayedComboMultiplier = RaceType == RaceType.ComboMaster ? currentMP : 0f;
+       UpdateDriftUI();
+   }
+
+   private void SaveMissionResultSnapshot()
+   {
+       if (SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+           return;
+
+       SaveManager.SaveData saveData = SaveManager.Instance.saveData;
+
+       saveData.currentRaceTime = Mathf.Max(0, Mathf.RoundToInt(GetMissionElapsedTime()));
+       saveData.currentRaceLap = IsRaceMode() ? Mathf.Max(0, playerRacer.completedLaps) : 0;
+       saveData.currentRaceTarget = IsRaceMode()
+           ? Mathf.Max(1, GetPlayerRacePosition())
+           : Mathf.Max(0, Mathf.RoundToInt(currentDriftDisplayedScore));
+       saveData.currentRacePay = Mathf.Max(0, missionRewardEarned + missionLevelRewardEarned);
    }
 
    private void ShowFinishSummaryScreen()

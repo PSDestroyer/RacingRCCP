@@ -68,13 +68,16 @@ public class GarageUIController : MonoBehaviour
 
     private void OnEnable()
     {
-        playerInput.actions["Cancel"].performed += BackCtx;
-        
+        InputAction cancelAction = GetAction("Cancel");
+        if (cancelAction != null)
+            cancelAction.performed += BackCtx;
     }
 
     private void OnDisable()
     {
-        playerInput.actions["Cancel"].performed -= BackCtx;
+        InputAction cancelAction = GetAction("Cancel");
+        if (cancelAction != null)
+            cancelAction.performed -= BackCtx;
     }
 
     private void Start()
@@ -164,5 +167,16 @@ public class GarageUIController : MonoBehaviour
         carSelection.loadmaincar();
         bool showBackButton = hasCurrentPanel && currentPanel != UIPanelType.MainHub;
         back.gameObject.SetActive(showBackButton);
+    }
+
+    private InputAction GetAction(string actionName)
+    {
+        if (playerInput == null && InputManager.Instance != null)
+            playerInput = InputManager.Instance.GetPlayerInput();
+
+        if (playerInput == null || playerInput.actions == null)
+            return null;
+
+        return playerInput.actions[actionName];
     }
 }

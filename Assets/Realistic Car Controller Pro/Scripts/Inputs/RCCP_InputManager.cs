@@ -252,6 +252,13 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// </summary>
     private void Awake() {
 
+        if (Instance != this) {
+
+            Destroy(gameObject);
+            return;
+
+        }
+
         // Let the base singleton class handle the instance management
         // Only initialize if this is the valid instance
         if (Instance == this) {
