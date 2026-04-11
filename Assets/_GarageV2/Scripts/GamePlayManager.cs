@@ -95,7 +95,7 @@ public class GamePlayManager : MonoBehaviour
     public float currentDriftCoins = 0f;        //  Current drift coins.
     public float totalDriftCoins = 0f;        //  Total drift coins.
     [Space()]
-    public int currentMP = 1;       //  Current drift multiplier.
+    public float currentMP = 1f;       //  Current drift multiplier.
     [Space()]
     public float totalDriftTime = 0f;     //  Total drifting time.
     public float currentDriftComboTime = 0f;     //  Continuous drift time used for combo progression.
@@ -104,8 +104,10 @@ public class GamePlayManager : MonoBehaviour
     private Vector3 lastPosition;
     public int driftPointsMP = 200;       //	Drift points multiplier.
     public int driftCoinsMP = 10;       //	Drift coins multiplier.
-    public int maxDriftComboMultiplier = 5;
+    public float maxDriftComboMultiplier = 5f;
     public float comboStepDuration = 1.5f;
+    public float comboStepValue = 0.5f;
+    public float comboStartDelay = 2.5f;
     public float driftTime = 1f;        //	Timer for resetting the drift.
     public float driftSpeed = 25f;        //	Speed limit for drift score.
     public bool resetDriftPointsAfterCollision = true;      //	Resets current drift score on collisions.
@@ -122,20 +124,38 @@ public class GamePlayManager : MonoBehaviour
     public TMP_Text DriftMedalText;
     public TMP_Text DriftTargetText;
     public TMP_Text DriftComboText;
+    public TMP_Text DriftModeText;
+    public TMP_Text DriftTimerText;
     public Image BronzeMedalImage;
     public Image SilverMedalImage;
     public Image GoldMedalImage;
     [Range(0f, 1f)] public float lockedMedalAlpha = 0.35f;
     [Range(0f, 1f)] public float unlockedMedalAlpha = 1f;
+    public float comboPulseDuration = 0.18f;
+    public float comboPulseScale = 0.2f;
 
     [Header("Drift Targets")]
     public bool useCurrentMapDriftTarget = true;
     public float bronzeTargetScore = 5000f;
     public float silverTargetMultiplier = 1.5f;
     public float goldTargetMultiplier = 2f;
+    public float bronzeComboTarget = 2f;
+    public float silverComboTarget = 3.5f;
+    public float goldComboTarget = 5f;
+    public bool useCurrentMapTargetDriftSettings = true;
+    public float targetDriftScore = 50000f;
+    public float targetDriftTimeLimit = 60f;
+    public float targetDriftWarningThreshold = 10f;
+    public Color targetDriftTimerNormalColor = Color.white;
+    public Color targetDriftTimerWarningColor = Color.red;
+    public float targetDriftPulseSpeed = 7f;
+    public float targetDriftPulseScale = 0.18f;
 
     private bool driftModeFinished = false;
     private float currentDriftDisplayedScore = 0f;
+    private float lastDisplayedComboMultiplier = 0f;
+    private Coroutine driftComboAnimationCoroutine;
+    private float targetDriftTimeRemaining = 0f;
     //  When player achieved a score.
     // public delegate void onDriftScoreAchieved(BD_PlayerManager Player);
     // public static event onDriftScoreAchieved OnDriftScoreAchieved;
@@ -164,11 +184,19 @@ public class GamePlayManager : MonoBehaviour
 
     private void InitializeDriftMode()
     {
-        if (RaceType != RaceType.DriftScore)
+        if (!IsDriftScoringMode())
             return;
 
         driftModeFinished = false;
-        currentMP = 1;
+        currentMP = 1f;
+        totalDriftPoints = 0f;
+        currentDriftPoints = 0f;
+        currentDriftCoins = 0f;
+        currentDriftComboTime = 0f;
+        totalDriftTime = 0f;
+        targetDriftTimeRemaining = GetTargetDriftTimeLimit();
+        lastDisplayedComboMultiplier = 0f;
+        canScore = true;
         UpdateDriftUI();
     }
     
@@ -212,6 +240,8 @@ public class GamePlayManager : MonoBehaviour
                 return 2;
             case RaceType.FreeDrift:
             case RaceType.DriftScore:
+            case RaceType.TargetDrift:
+            case RaceType.ComboMaster:
                 return 1;
             default:
                 return 0;
@@ -472,9 +502,11 @@ public class GamePlayManager : MonoBehaviour
 
    private void Update() {
 
-       switch (RaceType)
-       {
+        switch (RaceType)
+        {
            case RaceType.DriftScore:
+           case RaceType.TargetDrift:
+           case RaceType.ComboMaster:
                UpdateDriftMode();
                break;
 
@@ -495,6 +527,11 @@ public class GamePlayManager : MonoBehaviour
    {
        UpdateDriftUI();
 
+       if (!IsDriftScoringMode())
+           return;
+
+       UpdateTargetDriftTimer();
+
        // If can control of the vehicle is disabled, return.
        if (!CarController.canControl) {
 
@@ -503,9 +540,10 @@ public class GamePlayManager : MonoBehaviour
            currentDriftComboTime = 0f;
            currentDriftPoints = 0;
            currentDriftCoins = 0;
-           currentMP = 1;
+           currentMP = 1f;
            driftInterruptedByCollision = false;
            driftInterruptTimer = 0f;
+           lastDisplayedComboMultiplier = 0f;
 
            return;
 
@@ -574,8 +612,17 @@ public class GamePlayManager : MonoBehaviour
        //  If current drifting is over, add current score to the total score.
        if (currentDriftPoints > 0 && totalDriftTime < driftTime) {
 
-           totalDriftPoints += currentDriftPoints;
-           totalDriftCoins += currentDriftCoins;
+           if (RaceType == RaceType.DriftScore)
+           {
+               totalDriftPoints += currentDriftPoints;
+               totalDriftCoins += currentDriftCoins;
+           }
+           else if (RaceType == RaceType.ComboMaster)
+           {
+               if (raceStateText != null && !driftModeFinished)
+                   raceStateText.text = "Combo Lost";
+           }
+
            if (scoreText != null && scoreText.gameObject.activeSelf)
            {
                scoreText.gameObject.SetActive(false);
@@ -586,8 +633,9 @@ public class GamePlayManager : MonoBehaviour
                TotalScoreText.text = totalDriftPoints.ToString("N1");
            currentDriftPoints = 0;
            currentDriftCoins = 0;
-           currentMP = 1;
+           currentMP = 1f;
            currentDriftComboTime = 0f;
+           lastDisplayedComboMultiplier = 0f;
 
        }
        lastPosition = transform.position;
@@ -715,34 +763,66 @@ public class GamePlayManager : MonoBehaviour
 
    private void UpdateDriftUI()
    {
-       currentDriftDisplayedScore = totalDriftPoints + currentDriftPoints;
+       currentDriftDisplayedScore = RaceType == RaceType.ComboMaster ? currentMP : totalDriftPoints + currentDriftPoints;
 
        if (TotalScoreText != null)
-           TotalScoreText.text = currentDriftDisplayedScore.ToString("N0");
+           TotalScoreText.text = RaceType == RaceType.ComboMaster ? $"x{currentDriftDisplayedScore:0.0}" : currentDriftDisplayedScore.ToString("N0");
 
        if (DriftComboText != null)
-           DriftComboText.text = $"x{Mathf.Max(1, currentMP)}";
+           UpdateDriftComboText();
 
        if (DriftTargetText != null)
-           DriftTargetText.text =
-               $"Bronze  {GetBronzeTarget():N0}\n" +
-               $"Silver  {GetSilverTarget():N0}\n" +
-               $"Gold    {GetGoldTarget():N0}";
+           DriftTargetText.text = GetDriftTargetText();
 
        if (DriftProgressSlider != null)
-           DriftProgressSlider.value = Mathf.Clamp01(currentDriftDisplayedScore / Mathf.Max(1f, GetGoldTarget()));
+       {
+           float progressTarget = RaceType == RaceType.TargetDrift ? GetTargetDriftScore() : GetGoldTarget();
+           DriftProgressSlider.value = Mathf.Clamp01(currentDriftDisplayedScore / Mathf.Max(1f, progressTarget));
+       }
 
        if (DriftMedalText != null)
            DriftMedalText.text = GetCurrentDriftMedalText();
+
+       if (DriftModeText != null)
+       {
+           if (RaceType == RaceType.ComboMaster)
+               DriftModeText.text = "Combo Master";
+           else if (RaceType == RaceType.TargetDrift)
+               DriftModeText.text = "Target Drift";
+           else if (RaceType == RaceType.DriftScore)
+               DriftModeText.text = "Drift Score";
+       }
+
+       if (DriftTimerText != null)
+       {
+           bool showTargetTimer = RaceType == RaceType.TargetDrift && !driftModeFinished;
+           DriftTimerText.gameObject.SetActive(showTargetTimer);
+
+           if (showTargetTimer)
+           {
+               int totalSeconds = Mathf.CeilToInt(Mathf.Max(0f, targetDriftTimeRemaining));
+               int minutes = totalSeconds / 60;
+               int seconds = totalSeconds % 60;
+               DriftTimerText.text = $"{minutes:00}:{seconds:00}";
+               UpdateTargetDriftTimerUI();
+           }
+           else
+           {
+               DriftTimerText.color = targetDriftTimerNormalColor;
+               DriftTimerText.rectTransform.localScale = Vector3.one;
+           }
+       }
 
        UpdateDriftMedalImages();
    }
 
    private void UpdateDriftMedalImages()
    {
-       SetMedalImageState(BronzeMedalImage, currentDriftDisplayedScore >= GetBronzeTarget());
-       SetMedalImageState(SilverMedalImage, currentDriftDisplayedScore >= GetSilverTarget());
-       SetMedalImageState(GoldMedalImage, currentDriftDisplayedScore >= GetGoldTarget());
+       bool targetDriftUnlocked = RaceType == RaceType.TargetDrift && currentDriftDisplayedScore >= GetTargetDriftScore();
+
+       SetMedalImageState(BronzeMedalImage, RaceType == RaceType.TargetDrift ? targetDriftUnlocked : currentDriftDisplayedScore >= GetBronzeTarget());
+       SetMedalImageState(SilverMedalImage, RaceType == RaceType.TargetDrift ? targetDriftUnlocked : currentDriftDisplayedScore >= GetSilverTarget());
+       SetMedalImageState(GoldMedalImage, RaceType == RaceType.TargetDrift ? targetDriftUnlocked : currentDriftDisplayedScore >= GetGoldTarget());
    }
 
    private void SetMedalImageState(Image medalImage, bool unlocked)
@@ -757,8 +837,22 @@ public class GamePlayManager : MonoBehaviour
 
    private void CheckDriftTargets()
    {
-       if (RaceType != RaceType.DriftScore || driftModeFinished)
+       if (!IsDriftScoringMode() || driftModeFinished)
            return;
+
+       if (RaceType == RaceType.TargetDrift)
+       {
+           if (currentDriftDisplayedScore >= GetTargetDriftScore())
+           {
+               driftModeFinished = true;
+               canScore = false;
+
+               if (raceStateText != null)
+                   raceStateText.text = "Finish";
+           }
+
+           return;
+       }
 
        if (currentDriftDisplayedScore >= GetGoldTarget())
        {
@@ -780,17 +874,79 @@ public class GamePlayManager : MonoBehaviour
        }
    }
 
-   private int GetCurrentDriftComboMultiplier()
+   private float GetCurrentDriftComboMultiplier()
    {
        if (comboStepDuration <= 0f)
-           return 1;
+           return 1f;
 
-       int combo = 1 + Mathf.FloorToInt(Mathf.Max(0f, currentDriftComboTime - driftTime) / comboStepDuration);
-       return Mathf.Clamp(combo, 1, Mathf.Max(1, maxDriftComboMultiplier));
+       if (currentDriftComboTime < comboStartDelay)
+           return 1f;
+
+       float comboSteps = 1f + Mathf.Floor(Mathf.Max(0f, currentDriftComboTime - comboStartDelay) / comboStepDuration);
+       float combo = 1f + (comboSteps * Mathf.Max(0.5f, comboStepValue));
+       return Mathf.Clamp(combo, 1f, Mathf.Max(1f, maxDriftComboMultiplier));
+   }
+
+   private void UpdateDriftComboText()
+   {
+       if (DriftComboText == null)
+           return;
+
+       bool comboVisible = currentDriftComboTime >= comboStartDelay && currentMP > 1f;
+       DriftComboText.gameObject.SetActive(comboVisible);
+
+       if (!comboVisible)
+       {
+           DriftComboText.rectTransform.localScale = Vector3.one;
+           lastDisplayedComboMultiplier = 0f;
+           return;
+       }
+
+       DriftComboText.text = $"x{currentMP:0.0}";
+
+       if (Mathf.Abs(lastDisplayedComboMultiplier - currentMP) > 0.01f)
+       {
+           lastDisplayedComboMultiplier = currentMP;
+
+           if (driftComboAnimationCoroutine != null)
+               StopCoroutine(driftComboAnimationCoroutine);
+
+           driftComboAnimationCoroutine = StartCoroutine(AnimateDriftComboChange());
+       }
+   }
+
+   private IEnumerator AnimateDriftComboChange()
+   {
+       if (DriftComboText == null)
+           yield break;
+
+       Vector3 baseScale = Vector3.one;
+       Vector3 targetScale = Vector3.one * (1f + comboPulseScale);
+       float duration = Mathf.Max(0.01f, comboPulseDuration);
+
+       for (float time = 0f; time < duration; time += Time.unscaledDeltaTime)
+       {
+           float t = time / duration;
+           DriftComboText.rectTransform.localScale = Vector3.Lerp(baseScale, targetScale, t);
+           yield return null;
+       }
+
+       for (float time = 0f; time < duration; time += Time.unscaledDeltaTime)
+       {
+           float t = time / duration;
+           DriftComboText.rectTransform.localScale = Vector3.Lerp(targetScale, baseScale, t);
+           yield return null;
+       }
+
+       DriftComboText.rectTransform.localScale = baseScale;
+       driftComboAnimationCoroutine = null;
    }
 
    private float GetBronzeTarget()
    {
+       if (RaceType == RaceType.ComboMaster)
+           return bronzeComboTarget;
+
        if (useCurrentMapDriftTarget && GlobalCarData.thismap != null && GlobalCarData.thismap.target > 0)
            return GlobalCarData.thismap.target;
 
@@ -809,6 +965,9 @@ public class GamePlayManager : MonoBehaviour
 
    private string GetCurrentDriftMedalText()
    {
+       if (RaceType == RaceType.TargetDrift)
+           return currentDriftDisplayedScore >= GetTargetDriftScore() ? "Target Reached" : "Reach Target";
+
        if (currentDriftDisplayedScore >= GetGoldTarget())
            return "Gold";
 
@@ -818,7 +977,80 @@ public class GamePlayManager : MonoBehaviour
        if (currentDriftDisplayedScore >= GetBronzeTarget())
            return "Bronze";
 
-       return "No Medal";
+       return RaceType == RaceType.ComboMaster ? "No Combo Medal" : "No Medal";
+   }
+
+   private string GetDriftTargetText()
+   {
+       if (RaceType == RaceType.ComboMaster)
+       {
+           return $"Bronze  x{GetBronzeTarget():0.0}\n" +
+                  $"Silver  x{GetSilverTarget():0.0}\n" +
+                  $"Gold    x{GetGoldTarget():0.0}";
+       }
+
+       if (RaceType == RaceType.TargetDrift)
+       {
+           return $"Target  {GetTargetDriftScore():N0}\n" +
+                  $"Time    {GetTargetDriftTimeLimit():0}s";
+       }
+
+       return $"Bronze  {GetBronzeTarget():N0}\n" +
+              $"Silver  {GetSilverTarget():N0}\n" +
+              $"Gold    {GetGoldTarget():N0}";
+   }
+
+   private void UpdateTargetDriftTimer()
+   {
+       if (RaceType != RaceType.TargetDrift || driftModeFinished)
+           return;
+
+       targetDriftTimeRemaining -= Time.deltaTime;
+
+       if (targetDriftTimeRemaining > 0f)
+           return;
+
+       targetDriftTimeRemaining = 0f;
+       driftModeFinished = true;
+       canScore = false;
+
+       if (raceStateText != null)
+           raceStateText.text = currentDriftDisplayedScore >= GetTargetDriftScore() ? "Finish" : "Failed";
+   }
+
+   private void UpdateTargetDriftTimerUI()
+   {
+       if (DriftTimerText == null)
+           return;
+
+       bool isWarning = targetDriftTimeRemaining <= targetDriftWarningThreshold;
+       DriftTimerText.color = isWarning ? targetDriftTimerWarningColor : targetDriftTimerNormalColor;
+
+       if (isWarning)
+       {
+           float pulse = 1f + Mathf.Sin(Time.unscaledTime * targetDriftPulseSpeed) * targetDriftPulseScale;
+           DriftTimerText.rectTransform.localScale = Vector3.one * pulse;
+       }
+       else
+       {
+           DriftTimerText.rectTransform.localScale = Vector3.one;
+       }
+   }
+
+   private float GetTargetDriftScore()
+   {
+       if (useCurrentMapTargetDriftSettings && GlobalCarData.thismap != null && GlobalCarData.thismap.target > 0)
+           return GlobalCarData.thismap.target;
+
+       return targetDriftScore;
+   }
+
+   private float GetTargetDriftTimeLimit()
+   {
+       if (useCurrentMapTargetDriftSettings && GlobalCarData.thismap != null && GlobalCarData.thismap.time > 0)
+           return GlobalCarData.thismap.time;
+
+       return targetDriftTimeLimit;
    }
 
    private void UpdateEliminationTimerUI()
@@ -1216,6 +1448,11 @@ public class GamePlayManager : MonoBehaviour
        return RaceType == RaceType.Racing || RaceType == RaceType.Elimination || RaceType == RaceType.NoBrakeChallenge;
    }
 
+   private bool IsDriftScoringMode()
+   {
+       return RaceType == RaceType.DriftScore || RaceType == RaceType.TargetDrift || RaceType == RaceType.ComboMaster;
+   }
+
    private void ApplyPlayerBrakeRestrictions()
    {
        if (RaceType != RaceType.NoBrakeChallenge || CarController == null || !raceStarted || playerRacer.finished)
@@ -1282,7 +1519,7 @@ public class GamePlayManager : MonoBehaviour
        {
            currentDriftPoints = 0;
            currentDriftCoins = 0;
-           currentMP = 1;
+           currentMP = 1f;
        }
    }
 

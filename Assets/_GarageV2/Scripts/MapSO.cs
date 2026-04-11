@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 public enum RaceType
 {
-    Racing, Elimination, NoBrakeChallenge, DriftScore, FreeDrift
+    Racing, Elimination, NoBrakeChallenge, DriftScore, TargetDrift, ComboMaster, FreeDrift
 }
 //Se adauga in create menu ca sa poti crea mai usor SO.
 [CreateAssetMenu(fileName = "MapSO_", menuName = "SO/Map")]
