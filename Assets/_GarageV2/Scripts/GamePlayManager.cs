@@ -4,6 +4,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -29,6 +30,7 @@ public class GamePlayManager : MonoBehaviour
     public RaceType RaceType;
 
     [Header("Racing Settings")]
+    public bool useCurrentMapModeSettings = true;
     public RCCP_AIWaypointsContainer raceWaypoints;
     public RaceRacer[] aiRacers;
     public int totalRaceLaps = 3;
@@ -54,6 +56,40 @@ public class GamePlayManager : MonoBehaviour
     public float positionChangeFadeDuration = 0.2f;
     [Range(0f, 1f)] public float positionChangeMinAlpha = 0.25f;
     public Color playerLeaderboardColor = new Color(1f, 0.85f, 0.2f, 1f);
+
+    [Header("Finish Summary UI")]
+    public GameObject finishSummaryScreen;
+    public TMP_Text finishTitleText;
+    public TMP_Text finishModeText;
+    public TMP_Text finishPositionText;
+    public TMP_Text finishRewardText;
+    public TMP_Text finishTimeText;
+    public TMP_Text finishLeaderboardText;
+    public GameObject finishSummaryContinueButton;
+    public bool showFinishLeaderboard = true;
+    public float finishSummaryValueDuration = 0.45f;
+    public float finishSummaryStepDelay = 0.12f;
+
+    [Header("Finish EXP UI")]
+    public GameObject finishExpScreen;
+    public TMP_Text expLevelText;
+    public TMP_Text expTotalText;
+    public TMP_Text expGainText;
+    public TMP_Text expLevelRewardText;
+    public Slider expProgressSlider;
+    public GameObject finishExpContinueButton;
+    public float expAnimationDuration = 1.5f;
+    public float expSliderPulseDuration = 0.2f;
+    public float expSliderPulseScale = 0.12f;
+    public float expRewardPulseDuration = 0.22f;
+    public float expRewardPulseScale = 0.22f;
+    public int expPerLevel = 10000;
+    public int missionCompletionExp = 2500;
+    public int firstPlaceExpBonus = 2500;
+    public int secondPlaceExpBonus = 1500;
+    public int thirdPlaceExpBonus = 750;
+    public int participationExp = 500;
+    public int levelUpMoneyReward = 1000;
 
     [Header("No Brake Challenge")]
     [Range(0f, 1f)] public float brakeEffectiveness = 0f;
@@ -86,6 +122,22 @@ public class GamePlayManager : MonoBehaviour
     private float eliminationTimer = 0f;
     private string lastRacePositionText = string.Empty;
     private Coroutine racePositionAnimationCoroutine;
+    private float raceElapsedTime = 0f;
+    private float driftElapsedTime = 0f;
+    private bool missionResultsShown = false;
+    private bool missionRewardsApplied = false;
+    private bool missionSucceeded = false;
+    private int missionRewardEarned = 0;
+    private int missionExpEarned = 0;
+    private int missionLevelRewardEarned = 0;
+    private int missionStartingExpTotal = 0;
+    private int missionFinalExpTotal = 0;
+    private int missionStartingLevel = 1;
+    private int missionFinalLevel = 1;
+    private Coroutine expAnimationCoroutine;
+    private Coroutine expRewardAnimationCoroutine;
+    private Coroutine expSliderAnimationCoroutine;
+    private Coroutine finishSummaryAnimationCoroutine;
 
     [Header("Drifting Settings")]
     public bool driftingNow = false;
@@ -162,7 +214,20 @@ public class GamePlayManager : MonoBehaviour
     private void Start()
     {
         InstancePlayer();
+        ApplyCurrentMapSettings();
         SetUpRaceStyle(GetDrivingStyleIndex());
+
+        if (finishSummaryScreen != null)
+            finishSummaryScreen.SetActive(false);
+
+        if (finishExpScreen != null)
+            finishExpScreen.SetActive(false);
+
+        if (finishSummaryContinueButton != null)
+            finishSummaryContinueButton.SetActive(false);
+
+        if (finishExpContinueButton != null)
+            finishExpContinueButton.SetActive(false);
 
         if (scoreText != null)
             scoreText.gameObject.SetActive(false);
@@ -195,6 +260,17 @@ public class GamePlayManager : MonoBehaviour
         currentDriftComboTime = 0f;
         totalDriftTime = 0f;
         targetDriftTimeRemaining = GetTargetDriftTimeLimit();
+        driftElapsedTime = 0f;
+        missionResultsShown = false;
+        missionRewardsApplied = false;
+        missionSucceeded = false;
+        missionRewardEarned = 0;
+        missionExpEarned = 0;
+        missionLevelRewardEarned = 0;
+        missionStartingExpTotal = 0;
+        missionFinalExpTotal = 0;
+        missionStartingLevel = Mathf.Max(1, SaveManager.Instance != null && SaveManager.Instance.saveData != null ? SaveManager.Instance.saveData.currentLevel : 1);
+        missionFinalLevel = missionStartingLevel;
         lastDisplayedComboMultiplier = 0f;
         canScore = true;
         UpdateDriftUI();
@@ -208,6 +284,58 @@ public class GamePlayManager : MonoBehaviour
     private void OnDisable()
     {
         RCCP_Events.OnRCCPCollision -= OnCarCollision;
+    }
+
+    private void ApplyCurrentMapSettings()
+    {
+        if (!useCurrentMapModeSettings || GlobalCarData.thismap == null)
+            return;
+
+        MapSO currentMap = GlobalCarData.thismap;
+
+        if (currentMap.raceLaps > 0)
+            totalRaceLaps = currentMap.raceLaps;
+        else if (currentMap.lap > 0)
+            totalRaceLaps = currentMap.lap;
+
+        if (currentMap.opponentCount > 0)
+            opponentCount = currentMap.opponentCount;
+
+        if (currentMap.eliminationInterval > 0f)
+            eliminationInterval = currentMap.eliminationInterval;
+
+        brakeEffectiveness = Mathf.Clamp01(currentMap.brakeEffectiveness);
+        handbrakeEffectiveness = Mathf.Clamp01(currentMap.handbrakeEffectiveness);
+
+        if (currentMap.driftBronzeTarget > 0)
+            bronzeTargetScore = currentMap.driftBronzeTarget;
+        else if (currentMap.target > 0)
+            bronzeTargetScore = currentMap.target;
+
+        if (currentMap.driftSilverMultiplier > 0f)
+            silverTargetMultiplier = currentMap.driftSilverMultiplier;
+
+        if (currentMap.driftGoldMultiplier > 0f)
+            goldTargetMultiplier = currentMap.driftGoldMultiplier;
+
+        if (currentMap.comboBronzeTarget > 0f)
+            bronzeComboTarget = currentMap.comboBronzeTarget;
+
+        if (currentMap.comboSilverTarget > 0f)
+            silverComboTarget = currentMap.comboSilverTarget;
+
+        if (currentMap.comboGoldTarget > 0f)
+            goldComboTarget = currentMap.comboGoldTarget;
+
+        if (currentMap.targetDriftScore > 0)
+            targetDriftScore = currentMap.targetDriftScore;
+        else if (currentMap.target > 0)
+            targetDriftScore = currentMap.target;
+
+        if (currentMap.targetDriftTimeLimit > 0)
+            targetDriftTimeLimit = currentMap.targetDriftTimeLimit;
+        else if (currentMap.time > 0)
+            targetDriftTimeLimit = currentMap.time;
     }
 
 
@@ -303,6 +431,17 @@ public class GamePlayManager : MonoBehaviour
         }
 
         eliminationTimer = eliminationInterval;
+        raceElapsedTime = 0f;
+        missionResultsShown = false;
+        missionRewardsApplied = false;
+        missionSucceeded = false;
+        missionRewardEarned = 0;
+        missionExpEarned = 0;
+        missionLevelRewardEarned = 0;
+        missionStartingExpTotal = 0;
+        missionFinalExpTotal = 0;
+        missionStartingLevel = Mathf.Max(1, SaveManager.Instance != null && SaveManager.Instance.saveData != null ? SaveManager.Instance.saveData.currentLevel : 1);
+        missionFinalLevel = missionStartingLevel;
         SpawnCheckpointVisuals();
         UpdateRaceUI();
     }
@@ -525,6 +664,9 @@ public class GamePlayManager : MonoBehaviour
 
    private void UpdateDriftMode()
    {
+       if (!missionResultsShown)
+           driftElapsedTime += Time.deltaTime;
+
        UpdateDriftUI();
 
        if (!IsDriftScoringMode())
@@ -654,6 +796,9 @@ public class GamePlayManager : MonoBehaviour
            return;
        }
 
+       if (!missionResultsShown)
+           raceElapsedTime += Time.deltaTime;
+
        ApplyPlayerBrakeRestrictions();
        UpdatePlayerRaceProgress();
        UpdateAIRaceProgress();
@@ -689,9 +834,7 @@ public class GamePlayManager : MonoBehaviour
            if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge) && playerRacer.completedLaps >= totalRaceLaps)
            {
                playerRacer.finished = true;
-
-               if (raceStateText != null)
-                   raceStateText.text = "Finish";
+               CompleteRaceMission(true, "Finish");
            }
        }
    }
@@ -843,25 +986,13 @@ public class GamePlayManager : MonoBehaviour
        if (RaceType == RaceType.TargetDrift)
        {
            if (currentDriftDisplayedScore >= GetTargetDriftScore())
-           {
-               driftModeFinished = true;
-               canScore = false;
-
-               if (raceStateText != null)
-                   raceStateText.text = "Finish";
-           }
+               CompleteDriftMission(true, "Finish");
 
            return;
        }
 
        if (currentDriftDisplayedScore >= GetGoldTarget())
-       {
-           driftModeFinished = true;
-           canScore = false;
-
-           if (raceStateText != null)
-               raceStateText.text = "Finish";
-       }
+           CompleteDriftMission(true, "Finish");
        else if (currentDriftDisplayedScore >= GetSilverTarget())
        {
            if (raceStateText != null)
@@ -947,8 +1078,14 @@ public class GamePlayManager : MonoBehaviour
        if (RaceType == RaceType.ComboMaster)
            return bronzeComboTarget;
 
-       if (useCurrentMapDriftTarget && GlobalCarData.thismap != null && GlobalCarData.thismap.target > 0)
-           return GlobalCarData.thismap.target;
+       if (useCurrentMapDriftTarget && GlobalCarData.thismap != null)
+       {
+           if (GlobalCarData.thismap.driftBronzeTarget > 0)
+               return GlobalCarData.thismap.driftBronzeTarget;
+
+           if (GlobalCarData.thismap.target > 0)
+               return GlobalCarData.thismap.target;
+       }
 
        return bronzeTargetScore;
    }
@@ -1011,11 +1148,7 @@ public class GamePlayManager : MonoBehaviour
            return;
 
        targetDriftTimeRemaining = 0f;
-       driftModeFinished = true;
-       canScore = false;
-
-       if (raceStateText != null)
-           raceStateText.text = currentDriftDisplayedScore >= GetTargetDriftScore() ? "Finish" : "Failed";
+       CompleteDriftMission(currentDriftDisplayedScore >= GetTargetDriftScore(), currentDriftDisplayedScore >= GetTargetDriftScore() ? "Finish" : "Failed");
    }
 
    private void UpdateTargetDriftTimerUI()
@@ -1039,16 +1172,28 @@ public class GamePlayManager : MonoBehaviour
 
    private float GetTargetDriftScore()
    {
-       if (useCurrentMapTargetDriftSettings && GlobalCarData.thismap != null && GlobalCarData.thismap.target > 0)
-           return GlobalCarData.thismap.target;
+       if (useCurrentMapTargetDriftSettings && GlobalCarData.thismap != null)
+       {
+           if (GlobalCarData.thismap.targetDriftScore > 0)
+               return GlobalCarData.thismap.targetDriftScore;
+
+           if (GlobalCarData.thismap.target > 0)
+               return GlobalCarData.thismap.target;
+       }
 
        return targetDriftScore;
    }
 
    private float GetTargetDriftTimeLimit()
    {
-       if (useCurrentMapTargetDriftSettings && GlobalCarData.thismap != null && GlobalCarData.thismap.time > 0)
-           return GlobalCarData.thismap.time;
+       if (useCurrentMapTargetDriftSettings && GlobalCarData.thismap != null)
+       {
+           if (GlobalCarData.thismap.targetDriftTimeLimit > 0)
+               return GlobalCarData.thismap.targetDriftTimeLimit;
+
+           if (GlobalCarData.thismap.time > 0)
+               return GlobalCarData.thismap.time;
+       }
 
        return targetDriftTimeLimit;
    }
@@ -1080,6 +1225,488 @@ public class GamePlayManager : MonoBehaviour
        {
            eliminationTimerText.rectTransform.localScale = Vector3.one;
        }
+   }
+
+   private void CompleteRaceMission(bool success, string stateText)
+   {
+       if (missionResultsShown)
+           return;
+
+       missionSucceeded = success;
+       missionResultsShown = true;
+       raceStarted = false;
+       SetRaceParticipantsControl(false);
+
+       if (raceStateText != null)
+           raceStateText.text = stateText;
+
+       ApplyMissionRewards();
+       ShowFinishSummaryScreen();
+   }
+
+   private void CompleteDriftMission(bool success, string stateText)
+   {
+       if (missionResultsShown)
+           return;
+
+       missionSucceeded = success;
+       missionResultsShown = true;
+       driftModeFinished = true;
+       canScore = false;
+
+       if (CarController != null)
+           CarController.canControl = false;
+
+       if (scoreText != null && scoreText.gameObject.activeSelf)
+           scoreText.gameObject.SetActive(false);
+
+       if (raceStateText != null)
+           raceStateText.text = stateText;
+
+       ApplyMissionRewards();
+       ShowFinishSummaryScreen();
+   }
+
+   private void ApplyMissionRewards()
+   {
+       if (missionRewardsApplied || SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+           return;
+
+       missionRewardsApplied = true;
+
+       int playerPosition = IsRaceMode() ? GetPlayerRacePosition() : 1;
+       missionRewardEarned = missionSucceeded ? GetMissionRewardAmount() : 0;
+       missionExpEarned = GetMissionExpReward(playerPosition, missionSucceeded);
+       missionStartingExpTotal = Mathf.Max(0, SaveManager.Instance.saveData.exp);
+       missionStartingLevel = Mathf.Max(1, SaveManager.Instance.saveData.currentLevel);
+
+       int expRequirement = Mathf.Max(1, expPerLevel);
+       int startLevelProgress = missionStartingExpTotal % expRequirement;
+       int levelUps = (startLevelProgress + missionExpEarned) / expRequirement;
+
+       missionLevelRewardEarned = Mathf.Max(0, levelUps * levelUpMoneyReward);
+       missionFinalExpTotal = missionStartingExpTotal + missionExpEarned;
+       missionFinalLevel = missionStartingLevel + levelUps;
+
+       SaveManager.Instance.saveData.exp = missionFinalExpTotal;
+       SaveManager.Instance.saveData.currentLevel = missionFinalLevel;
+       AddMoneyToPlayer(missionRewardEarned + missionLevelRewardEarned);
+       SaveManager.Instance.Save();
+   }
+
+   private void ShowFinishSummaryScreen()
+   {
+       if (finishSummaryScreen != null)
+           finishSummaryScreen.SetActive(true);
+
+       if (finishExpScreen != null)
+           finishExpScreen.SetActive(false);
+
+       if (finishTitleText != null)
+           finishTitleText.text = missionSucceeded ? "Mission Complete" : "Mission Failed";
+
+       if (finishModeText != null)
+           finishModeText.text = GetRaceModeDisplayName();
+
+       if (finishSummaryContinueButton != null)
+           finishSummaryContinueButton.SetActive(false);
+
+       if (finishSummaryAnimationCoroutine != null)
+           StopCoroutine(finishSummaryAnimationCoroutine);
+
+       finishSummaryAnimationCoroutine = StartCoroutine(AnimateFinishSummaryValues());
+
+       if (finishLeaderboardText != null)
+       {
+           bool shouldShowLeaderboard = showFinishLeaderboard && IsRaceMode();
+           finishLeaderboardText.gameObject.SetActive(shouldShowLeaderboard);
+
+           if (shouldShowLeaderboard)
+               finishLeaderboardText.text = GetFinishLeaderboardText();
+       }
+   }
+
+   public void OpenFinishExpScreen()
+   {
+       if (finishSummaryScreen != null)
+           finishSummaryScreen.SetActive(false);
+
+       if (finishExpScreen != null)
+           finishExpScreen.SetActive(true);
+
+       if (finishExpContinueButton != null)
+           finishExpContinueButton.SetActive(false);
+
+       if (expAnimationCoroutine != null)
+           StopCoroutine(expAnimationCoroutine);
+
+       if (expRewardAnimationCoroutine != null)
+           StopCoroutine(expRewardAnimationCoroutine);
+
+       if (expSliderAnimationCoroutine != null)
+           StopCoroutine(expSliderAnimationCoroutine);
+
+        if (expLevelRewardText != null)
+        {
+            expLevelRewardText.gameObject.SetActive(false);
+            expLevelRewardText.rectTransform.localScale = Vector3.one;
+        }
+
+        if (expProgressSlider != null)
+            expProgressSlider.transform.localScale = Vector3.one;
+
+       expAnimationCoroutine = StartCoroutine(AnimateExpRewardSequence());
+   }
+
+   public void CloseFinishScreens()
+   {
+       if (finishSummaryScreen != null)
+           finishSummaryScreen.SetActive(false);
+
+       if (finishExpScreen != null)
+           finishExpScreen.SetActive(false);
+
+       if (finishSummaryContinueButton != null)
+           finishSummaryContinueButton.SetActive(false);
+
+        if (finishExpContinueButton != null)
+            finishExpContinueButton.SetActive(false);
+
+       if (expProgressSlider != null)
+           expProgressSlider.transform.localScale = Vector3.one;
+
+       if (expLevelRewardText != null)
+           expLevelRewardText.rectTransform.localScale = Vector3.one;
+
+       if (expSliderAnimationCoroutine != null)
+           expSliderAnimationCoroutine = null;
+
+       if (finishSummaryAnimationCoroutine != null)
+           finishSummaryAnimationCoroutine = null;
+   }
+
+   public void ReturnToMenuFromFinish()
+   {
+       if (LoadingManager.Instance != null)
+       {
+           LoadingManager.Instance.LoadScene("Menu");
+           return;
+       }
+
+       SceneManager.LoadScene("Menu");
+   }
+
+   private IEnumerator AnimateExpRewardSequence()
+   {
+       float duration = Mathf.Max(0.1f, expAnimationDuration);
+       int expRequirement = Mathf.Max(1, expPerLevel);
+       int previousDisplayedLevelUps = 0;
+
+       for (float time = 0f; time < duration; time += Time.unscaledDeltaTime)
+       {
+           float t = Mathf.Clamp01(time / duration);
+           int displayedGainedExp = Mathf.RoundToInt(Mathf.Lerp(0f, missionExpEarned, t));
+           int displayedTotalExp = missionStartingExpTotal + displayedGainedExp;
+           int displayedLevelUps = ((missionStartingExpTotal % expRequirement) + displayedGainedExp) / expRequirement;
+           int displayedLevel = missionStartingLevel + displayedLevelUps;
+           int displayedLevelProgress = displayedTotalExp % expRequirement;
+
+           if (displayedLevelUps > previousDisplayedLevelUps)
+           {
+               previousDisplayedLevelUps = displayedLevelUps;
+
+               if (expSliderAnimationCoroutine != null)
+                   StopCoroutine(expSliderAnimationCoroutine);
+
+               expSliderAnimationCoroutine = StartCoroutine(AnimateExpSliderPulse());
+
+               if (expRewardAnimationCoroutine != null)
+                   StopCoroutine(expRewardAnimationCoroutine);
+
+               expRewardAnimationCoroutine = StartCoroutine(AnimateExpRewardReveal());
+           }
+
+           UpdateExpScreenUI(displayedLevel, displayedTotalExp, displayedGainedExp, displayedLevelUps, displayedLevelProgress, expRequirement);
+           yield return null;
+       }
+
+       UpdateExpScreenUI(
+           missionFinalLevel,
+           missionFinalExpTotal,
+           missionExpEarned,
+           Mathf.Max(0, missionFinalLevel - missionStartingLevel),
+           missionFinalExpTotal % expRequirement,
+           expRequirement);
+
+       if (expProgressSlider != null)
+           expProgressSlider.transform.localScale = Vector3.one;
+
+       if (finishExpContinueButton != null)
+           finishExpContinueButton.SetActive(true);
+
+       expAnimationCoroutine = null;
+   }
+
+   private IEnumerator AnimateFinishSummaryValues()
+   {
+       float stepDuration = Mathf.Max(0.05f, finishSummaryValueDuration);
+       float stepDelay = Mathf.Max(0f, finishSummaryStepDelay);
+
+       if (finishRewardText != null)
+       {
+           yield return AnimateSummaryMoney(stepDuration);
+
+           if (stepDelay > 0f)
+               yield return new WaitForSecondsRealtime(stepDelay);
+       }
+
+       if (finishPositionText != null)
+       {
+           yield return AnimateSummaryPrimaryStat(stepDuration);
+
+           if (stepDelay > 0f)
+               yield return new WaitForSecondsRealtime(stepDelay);
+       }
+
+       if (finishTimeText != null)
+           yield return AnimateSummaryTime(stepDuration);
+
+       if (finishSummaryContinueButton != null)
+           finishSummaryContinueButton.SetActive(true);
+
+       finishSummaryAnimationCoroutine = null;
+   }
+
+   private void UpdateExpScreenUI(int displayedLevel, int displayedTotalExp, int displayedGainedExp, int displayedLevelUps, int displayedLevelProgress, int expRequirement)
+   {
+       if (expLevelText != null)
+           expLevelText.text = $"Level {displayedLevel}";
+
+       if (expTotalText != null)
+           expTotalText.text = $"{displayedTotalExp:N0} EXP";
+
+       if (expGainText != null)
+           expGainText.text = $"+{displayedGainedExp:N0} EXP";
+
+       if (expLevelRewardText != null)
+       {
+           int displayedLevelReward = displayedLevelUps * levelUpMoneyReward;
+           expLevelRewardText.gameObject.SetActive(displayedLevelReward > 0);
+
+           if (displayedLevelReward > 0)
+               expLevelRewardText.text = $"Level Up Reward  +{displayedLevelReward:N0}<sprite index=0>";
+       }
+
+       if (expProgressSlider != null)
+           expProgressSlider.value = (float)displayedLevelProgress / expRequirement;
+       
+   }
+
+   private IEnumerator AnimateSummaryMoney(float duration)
+   {
+       for (float time = 0f; time < duration; time += Time.unscaledDeltaTime)
+       {
+           float t = Mathf.Clamp01(time / duration);
+           int displayedValue = Mathf.RoundToInt(Mathf.Lerp(0f, missionRewardEarned, t));
+           finishRewardText.text = $"{displayedValue:N0}<sprite index=0>";
+           yield return null;
+       }
+
+       finishRewardText.text = $"{missionRewardEarned:N0}<sprite index=0>";
+   }
+
+   private IEnumerator AnimateSummaryPrimaryStat(float duration)
+   {
+       for (float time = 0f; time < duration; time += Time.unscaledDeltaTime)
+       {
+           float t = Mathf.Clamp01(time / duration);
+           finishPositionText.text = GetAnimatedFinishPrimaryStatText(t);
+           yield return null;
+       }
+
+       finishPositionText.text = GetFinishPrimaryStatText();
+   }
+
+   private IEnumerator AnimateSummaryTime(float duration)
+   {
+       float missionTime = GetMissionElapsedTime();
+
+       for (float time = 0f; time < duration; time += Time.unscaledDeltaTime)
+       {
+           float t = Mathf.Clamp01(time / duration);
+           float displayedTime = Mathf.Lerp(0f, missionTime, t);
+           finishTimeText.text = FormatRaceTime(displayedTime);
+           yield return null;
+       }
+
+       finishTimeText.text = FormatRaceTime(missionTime);
+   }
+
+   private string GetAnimatedFinishPrimaryStatText(float normalizedTime)
+   {
+       float clampedTime = Mathf.Clamp01(normalizedTime);
+
+       if (IsRaceMode())
+       {
+           int displayedPosition = Mathf.Max(1, Mathf.RoundToInt(Mathf.Lerp(1f, GetPlayerRacePosition(), clampedTime)));
+           return $"Position  {displayedPosition}/{GetTotalRaceParticipantCount()}";
+       }
+
+       if (RaceType == RaceType.ComboMaster)
+       {
+           float displayedCombo = Mathf.Lerp(0f, currentDriftDisplayedScore, clampedTime);
+           return $"Best Combo  x{displayedCombo:0.0}";
+       }
+
+       float displayedScore = Mathf.Lerp(0f, currentDriftDisplayedScore, clampedTime);
+       return $"Score  {displayedScore:N0}";
+   }
+
+   private IEnumerator AnimateExpSliderPulse()
+   {
+       if (expProgressSlider == null)
+           yield break;
+
+       Vector3 baseScale = Vector3.one;
+       Vector3 targetScale = Vector3.one * (1f + expSliderPulseScale);
+       float duration = Mathf.Max(0.01f, expSliderPulseDuration);
+
+       for (float time = 0f; time < duration; time += Time.unscaledDeltaTime)
+       {
+           float t = time / duration;
+           expProgressSlider.transform.localScale = Vector3.Lerp(baseScale, targetScale, t);
+           yield return null;
+       }
+
+       for (float time = 0f; time < duration; time += Time.unscaledDeltaTime)
+       {
+           float t = time / duration;
+           expProgressSlider.transform.localScale = Vector3.Lerp(targetScale, baseScale, t);
+           yield return null;
+       }
+
+       expProgressSlider.transform.localScale = baseScale;
+       expSliderAnimationCoroutine = null;
+   }
+
+   private IEnumerator AnimateExpRewardReveal()
+   {
+       if (expLevelRewardText == null)
+           yield break;
+
+       expLevelRewardText.gameObject.SetActive(true);
+
+       Vector3 baseScale = Vector3.one;
+       Vector3 targetScale = Vector3.one * (1f + expRewardPulseScale);
+       float duration = Mathf.Max(0.01f, expRewardPulseDuration);
+
+       for (float time = 0f; time < duration; time += Time.unscaledDeltaTime)
+       {
+           float t = time / duration;
+           expLevelRewardText.rectTransform.localScale = Vector3.Lerp(baseScale, targetScale, t);
+           yield return null;
+       }
+
+       for (float time = 0f; time < duration; time += Time.unscaledDeltaTime)
+       {
+           float t = time / duration;
+           expLevelRewardText.rectTransform.localScale = Vector3.Lerp(targetScale, baseScale, t);
+           yield return null;
+       }
+
+       expLevelRewardText.rectTransform.localScale = baseScale;
+       expRewardAnimationCoroutine = null;
+   }
+
+   private int GetMissionRewardAmount()
+   {
+       if (GlobalCarData.thismap == null)
+           return 0;
+
+       return Mathf.Max(0, GlobalCarData.thismap.price);
+   }
+
+   private int GetMissionExpReward(int playerPosition, bool success)
+   {
+       int expReward = success ? missionCompletionExp : participationExp;
+
+       switch (playerPosition)
+       {
+           case 1:
+               expReward += firstPlaceExpBonus;
+               break;
+           case 2:
+               expReward += secondPlaceExpBonus;
+               break;
+           case 3:
+               expReward += thirdPlaceExpBonus;
+               break;
+       }
+
+       return Mathf.Max(0, expReward);
+   }
+
+   private float GetMissionElapsedTime()
+   {
+       return IsRaceMode() ? raceElapsedTime : driftElapsedTime;
+   }
+
+   private string GetFinishPrimaryStatText()
+   {
+       if (IsRaceMode())
+           return $"Position  {GetPlayerRacePosition()}/{GetTotalRaceParticipantCount()}";
+
+       if (RaceType == RaceType.ComboMaster)
+           return $"Best Combo  x{currentDriftDisplayedScore:0.0}";
+
+       return $"Score  {currentDriftDisplayedScore:N0}";
+   }
+
+   private void AddMoneyToPlayer(int amount)
+   {
+       if (amount <= 0 || SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+           return;
+
+       MoneyManager moneyManager = FindFirstObjectByType<MoneyManager>(FindObjectsInactive.Include);
+
+       if (moneyManager != null)
+       {
+           moneyManager.MoneyToAdd(amount);
+           return;
+       }
+
+       SaveManager.Instance.saveData.money += amount;
+   }
+
+   private string GetRaceModeDisplayName()
+   {
+       switch (RaceType)
+       {
+           case RaceType.Racing:
+               return "Classic Race";
+           case RaceType.Elimination:
+               return "Elimination";
+           case RaceType.NoBrakeChallenge:
+               return "No Brake Challenge";
+           case RaceType.DriftScore:
+               return "Drift Score";
+           case RaceType.TargetDrift:
+               return "Target Drift";
+           case RaceType.ComboMaster:
+               return "Combo Master";
+           case RaceType.FreeDrift:
+               return "Free Drift";
+           default:
+               return RaceType.ToString();
+       }
+   }
+
+   private string FormatRaceTime(float timeValue)
+   {
+       int totalSeconds = Mathf.Max(0, Mathf.RoundToInt(timeValue));
+       int minutes = totalSeconds / 60;
+       int seconds = totalSeconds % 60;
+       return $"{minutes:00}:{seconds:00}";
    }
 
    private void UpdateRacePositionText()
@@ -1161,6 +1788,32 @@ public class GamePlayManager : MonoBehaviour
        return string.Join("\n", leaderboardLines);
    }
 
+   private string GetFinishLeaderboardText()
+   {
+       List<RaceRacer> rankedRacers = GetRankedRacers(includeEliminated: true);
+
+       if (rankedRacers.Count == 0)
+           return string.Empty;
+
+       List<string> leaderboardLines = new List<string>(rankedRacers.Count);
+
+       for (int i = 0; i < rankedRacers.Count; i++)
+       {
+           RaceRacer racer = rankedRacers[i];
+           string racerName = ReferenceEquals(racer, playerRacer) ? GetPlayerLeaderboardName() : racer.displayName;
+
+           if (ReferenceEquals(racer, playerRacer))
+               racerName = $"<color=#{UnityEngine.ColorUtility.ToHtmlStringRGB(playerLeaderboardColor)}>{racerName}</color>";
+
+           if (racer.eliminated && RaceType == RaceType.Elimination)
+               racerName += "  OUT";
+
+           leaderboardLines.Add($"{i + 1}. {racerName}");
+       }
+
+       return string.Join("\n", leaderboardLines);
+   }
+
    private string GetPlayerLeaderboardName()
    {
        if (SaveManager.Instance == null || SaveManager.Instance.saveData == null)
@@ -1228,8 +1881,55 @@ public class GamePlayManager : MonoBehaviour
 
    private string GetPlayerRacePositionText()
    {
+       return $"{GetPlayerRacePosition()}/{GetActiveRacerCount()}";
+   }
+
+   private List<RaceRacer> GetRankedActiveRacers()
+   {
+       return GetRankedRacers(includeEliminated: false);
+   }
+
+   private List<RaceRacer> GetRankedRacers(bool includeEliminated)
+   {
+       List<RaceRacer> rankedRacers = new List<RaceRacer>();
+
+       for (int i = 0; i < allRacers.Length; i++)
+       {
+           RaceRacer racer = allRacers[i];
+
+           if (racer == null)
+               continue;
+
+           if (!includeEliminated && racer.eliminated)
+               continue;
+
+           rankedRacers.Add(racer);
+       }
+
+       rankedRacers.Sort((a, b) =>
+       {
+           if (ReferenceEquals(a, b))
+               return 0;
+
+           if (a.eliminated != b.eliminated)
+               return a.eliminated ? 1 : -1;
+
+           if (IsRacerAhead(a, b))
+               return -1;
+
+           if (IsRacerAhead(b, a))
+               return 1;
+
+           return 0;
+       });
+
+       return rankedRacers;
+   }
+
+   private int GetPlayerRacePosition()
+   {
        if (allRacers == null || allRacers.Length == 0)
-           return "1/1";
+           return 1;
 
        int position = 1;
 
@@ -1247,38 +1947,23 @@ public class GamePlayManager : MonoBehaviour
                position++;
        }
 
-       return $"{position}/{GetActiveRacerCount()}";
+       return position;
    }
 
-   private List<RaceRacer> GetRankedActiveRacers()
+   private int GetTotalRaceParticipantCount()
    {
-       List<RaceRacer> rankedRacers = new List<RaceRacer>();
+       if (allRacers == null || allRacers.Length == 0)
+           return 1;
+
+       int total = 0;
 
        for (int i = 0; i < allRacers.Length; i++)
        {
-           RaceRacer racer = allRacers[i];
-
-           if (racer == null || racer.eliminated)
-               continue;
-
-           rankedRacers.Add(racer);
+           if (allRacers[i] != null)
+               total++;
        }
 
-       rankedRacers.Sort((a, b) =>
-       {
-           if (ReferenceEquals(a, b))
-               return 0;
-
-           if (IsRacerAhead(a, b))
-               return -1;
-
-           if (IsRacerAhead(b, a))
-               return 1;
-
-           return 0;
-       });
-
-       return rankedRacers;
+       return Mathf.Max(1, total);
    }
 
    private bool IsRacerAheadOfPlayer(RaceRacer otherRacer)
@@ -1378,10 +2063,7 @@ public class GamePlayManager : MonoBehaviour
        if (ReferenceEquals(racer, playerRacer))
        {
            playerRacer.finished = true;
-           SetRaceParticipantsControl(false);
-
-           if (raceStateText != null)
-               raceStateText.text = "Eliminated";
+           CompleteRaceMission(false, "Eliminated");
        }
        else if (raceStateText != null)
        {
@@ -1394,18 +2076,15 @@ public class GamePlayManager : MonoBehaviour
        if (playerRacer.finished)
            return;
 
-       playerRacer.finished = true;
-       SetRaceParticipantsControl(false);
-
        if (!playerRacer.eliminated && GetActiveRacerCount() == 1)
        {
-           if (raceStateText != null)
-               raceStateText.text = "Winner";
+           playerRacer.finished = true;
+           CompleteRaceMission(true, "Winner");
        }
        else
        {
-           if (raceStateText != null)
-               raceStateText.text = "Eliminated";
+           playerRacer.finished = true;
+           CompleteRaceMission(false, "Eliminated");
        }
    }
 

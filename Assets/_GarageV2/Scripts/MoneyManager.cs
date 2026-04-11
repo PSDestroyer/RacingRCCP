@@ -3,6 +3,7 @@ using System.Globalization;
 using HalvaStudio.Save;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MoneyManager : MonoBehaviour
 {
@@ -16,9 +17,17 @@ public class MoneyManager : MonoBehaviour
     public TextMeshProUGUI fuelText;
     public TextMeshProUGUI moneyText;
     public TextMeshProUGUI accname;
+    public TextMeshProUGUI levelText;
+    public TextMeshProUGUI expText;
+    public Slider expProgressSlider;
+
+    [Header("EXP")]
+    public int expPerLevel = 10000;
 
     [Header("Money")]
     public int money;
+    public int exp;
+    public int currentLevel;
 
     private void Start()
     {
@@ -119,6 +128,8 @@ public class MoneyManager : MonoBehaviour
         }
 
         money = Mathf.Max(0, SaveManager.Instance.saveData.money);
+        exp = Mathf.Max(0, SaveManager.Instance.saveData.exp);
+        currentLevel = Mathf.Max(1, SaveManager.Instance.saveData.currentLevel);
 
         // Când vei avea fuel în save:
         // fuel = Mathf.Clamp(SaveManager.Instance.saveData.fuel, 0, maxFuel);
@@ -130,6 +141,8 @@ public class MoneyManager : MonoBehaviour
             return;
 
         SaveManager.Instance.saveData.money = money;
+        SaveManager.Instance.saveData.exp = exp;
+        SaveManager.Instance.saveData.currentLevel = currentLevel;
     }
 
     private void RefreshFuelState()
@@ -156,6 +169,19 @@ public class MoneyManager : MonoBehaviour
 
         if (moneyText != null)
             moneyText.text = money + "<sprite index=0>";
+
+        int safeExpPerLevel = Mathf.Max(1, expPerLevel);
+        currentLevel = Mathf.Max(1, currentLevel);
+        exp = Mathf.Max(0, exp);
+
+        if (levelText != null)
+            levelText.text = $"Level {currentLevel}";
+
+        if (expText != null)
+            expText.text = $"{exp % safeExpPerLevel:N0}/{safeExpPerLevel:N0} EXP";
+
+        if (expProgressSlider != null)
+            expProgressSlider.value = (float)(exp % safeExpPerLevel) / safeExpPerLevel;
 
         if (useFuel && fuelText != null)
             fuelText.text = fuel + "/" + maxFuel;
