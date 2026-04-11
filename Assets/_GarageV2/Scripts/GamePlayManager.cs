@@ -19,6 +19,7 @@ public class GamePlayManager : MonoBehaviour
         [NonSerialized] public int currentWaypointIndex;
         [NonSerialized] public int completedLaps;
         [NonSerialized] public bool finished;
+        [NonSerialized] public bool eliminated;
         [NonSerialized] public float distanceToNextWaypoint;
     }
 
@@ -35,6 +36,28 @@ public class GamePlayManager : MonoBehaviour
     public TMP_Text currentLapText;
     public TMP_Text racePositionText;
     public TMP_Text raceStateText;
+    public TMP_Text eliminationTimerText;
+
+    [Header("Elimination Settings")]
+    public float eliminationInterval = 25f;
+    public float eliminationWarningThreshold = 10f;
+    public float eliminationCriticalThreshold = 3f;
+    public Color eliminationTimerNormalColor = Color.white;
+    public Color eliminationTimerWarningColor = Color.red;
+    public float eliminationPulseSpeed = 6f;
+    public float eliminationPulseScale = 0.15f;
+    public float eliminationCriticalPulseSpeed = 10f;
+    public float eliminationCriticalPulseScale = 0.3f;
+
+    [Header("Race Position UI")]
+    public bool showLiveLeaderboard = false;
+    public float positionChangeFadeDuration = 0.2f;
+    [Range(0f, 1f)] public float positionChangeMinAlpha = 0.25f;
+    public Color playerLeaderboardColor = new Color(1f, 0.85f, 0.2f, 1f);
+
+    [Header("No Brake Challenge")]
+    [Range(0f, 1f)] public float brakeEffectiveness = 0f;
+    [Range(0f, 1f)] public float handbrakeEffectiveness = 0f;
 
     [Header("Race Start")]
     public bool useCountdown = true;
@@ -60,6 +83,9 @@ public class GamePlayManager : MonoBehaviour
     private GameObject[] checkpointVisuals = Array.Empty<GameObject>();
     private readonly List<GameObject> spawnedOpponentObjects = new List<GameObject>();
     private bool raceStarted = false;
+    private float eliminationTimer = 0f;
+    private string lastRacePositionText = string.Empty;
+    private Coroutine racePositionAnimationCoroutine;
 
     [Header("Drifting Settings")]
     public bool driftingNow = false;
@@ -72,11 +98,14 @@ public class GamePlayManager : MonoBehaviour
     public int currentMP = 1;       //  Current drift multiplier.
     [Space()]
     public float totalDriftTime = 0f;     //  Total drifting time.
+    public float currentDriftComboTime = 0f;     //  Continuous drift time used for combo progression.
     public float totalDriftDistance = 0f;     //  Total drifting time.
     public bool canScore = true;        //  Can score now?
     private Vector3 lastPosition;
     public int driftPointsMP = 200;       //	Drift points multiplier.
     public int driftCoinsMP = 10;       //	Drift coins multiplier.
+    public int maxDriftComboMultiplier = 5;
+    public float comboStepDuration = 1.5f;
     public float driftTime = 1f;        //	Timer for resetting the drift.
     public float driftSpeed = 25f;        //	Speed limit for drift score.
     public bool resetDriftPointsAfterCollision = true;      //	Resets current drift score on collisions.
@@ -87,8 +116,26 @@ public class GamePlayManager : MonoBehaviour
 
     [Header("Drifting UI")] 
     public Slider DriftTimeSlider;
+    public Slider DriftProgressSlider;
     public TMP_Text scoreText;
     public TMP_Text TotalScoreText;
+    public TMP_Text DriftMedalText;
+    public TMP_Text DriftTargetText;
+    public TMP_Text DriftComboText;
+    public Image BronzeMedalImage;
+    public Image SilverMedalImage;
+    public Image GoldMedalImage;
+    [Range(0f, 1f)] public float lockedMedalAlpha = 0.35f;
+    [Range(0f, 1f)] public float unlockedMedalAlpha = 1f;
+
+    [Header("Drift Targets")]
+    public bool useCurrentMapDriftTarget = true;
+    public float bronzeTargetScore = 5000f;
+    public float silverTargetMultiplier = 1.5f;
+    public float goldTargetMultiplier = 2f;
+
+    private bool driftModeFinished = false;
+    private float currentDriftDisplayedScore = 0f;
     //  When player achieved a score.
     // public delegate void onDriftScoreAchieved(BD_PlayerManager Player);
     // public static event onDriftScoreAchieved OnDriftScoreAchieved;
@@ -103,14 +150,26 @@ public class GamePlayManager : MonoBehaviour
         if (DriftTimeSlider != null)
             DriftTimeSlider.value = totalDriftTime;
 
-        if (RaceType == RaceType.Racing && autoSpawnOpponents)
+        InitializeDriftMode();
+
+        if (IsRaceMode() && autoSpawnOpponents)
             SpawnAutomaticOpponents();
 
         InitializeRaceMode();
 
-        if (RaceType == RaceType.Racing)
+        if (IsRaceMode())
             BeginRaceStartFlow();
         
+    }
+
+    private void InitializeDriftMode()
+    {
+        if (RaceType != RaceType.DriftScore)
+            return;
+
+        driftModeFinished = false;
+        currentMP = 1;
+        UpdateDriftUI();
     }
     
     private void OnEnable()
@@ -148,6 +207,9 @@ public class GamePlayManager : MonoBehaviour
         {
             case RaceType.Racing:
                 return 2;
+            case RaceType.Elimination:
+            case RaceType.NoBrakeChallenge:
+                return 2;
             case RaceType.FreeDrift:
             case RaceType.DriftScore:
                 return 1;
@@ -158,7 +220,7 @@ public class GamePlayManager : MonoBehaviour
 
     private void InitializeRaceMode()
     {
-        if (RaceType != RaceType.Racing)
+        if (!IsRaceMode())
             return;
 
         if (raceWaypoints == null)
@@ -171,7 +233,8 @@ public class GamePlayManager : MonoBehaviour
             aiDriver = null,
             currentWaypointIndex = GetClosestWaypointIndex(CarController != null ? CarController.transform : null),
             completedLaps = 0,
-            finished = false
+            finished = false,
+            eliminated = false
         };
 
         int aiCount = aiRacers != null ? aiRacers.Length : 0;
@@ -205,9 +268,11 @@ public class GamePlayManager : MonoBehaviour
 
             aiRacer.completedLaps = 0;
             aiRacer.finished = false;
+            aiRacer.eliminated = false;
             allRacers[i + 1] = aiRacer;
         }
 
+        eliminationTimer = eliminationInterval;
         SpawnCheckpointVisuals();
         UpdateRaceUI();
     }
@@ -248,6 +313,7 @@ public class GamePlayManager : MonoBehaviour
     private void StartRaceNow()
     {
         raceStarted = true;
+        eliminationTimer = eliminationInterval;
         SetRaceParticipantsControl(true);
     }
 
@@ -409,11 +475,16 @@ public class GamePlayManager : MonoBehaviour
        switch (RaceType)
        {
            case RaceType.DriftScore:
+               UpdateDriftMode();
+               break;
+
            case RaceType.FreeDrift:
                UpdateDriftMode();
                break;
 
            case RaceType.Racing:
+           case RaceType.Elimination:
+           case RaceType.NoBrakeChallenge:
                UpdateRaceMode();
                break;
        }
@@ -422,11 +493,14 @@ public class GamePlayManager : MonoBehaviour
 
    private void UpdateDriftMode()
    {
+       UpdateDriftUI();
+
        // If can control of the vehicle is disabled, return.
        if (!CarController.canControl) {
 
            driftingNow = false;
            totalDriftTime = 0f;
+           currentDriftComboTime = 0f;
            currentDriftPoints = 0;
            currentDriftCoins = 0;
            currentMP = 1;
@@ -465,12 +539,14 @@ public class GamePlayManager : MonoBehaviour
 
            //  Increasing total drifting time.
            totalDriftTime += Time.deltaTime;
+           currentDriftComboTime += Time.deltaTime;
 
            //  If drifting time is high enough, increase the score.
            if (totalDriftTime >= driftTime) {
+               currentMP = GetCurrentDriftComboMultiplier();
                if (scoreText != null)
                {
-                   scoreText.text = currentDriftPoints.ToString("N1");
+                    scoreText.text = currentDriftPoints.ToString("N1");
                }
                currentDriftPoints += (driftPointsMP * currentMP) * Time.deltaTime;
                currentDriftCoins += (driftCoinsMP / currentMP) * Time.deltaTime;
@@ -485,6 +561,7 @@ public class GamePlayManager : MonoBehaviour
        } else {
 
            totalDriftTime -= Time.deltaTime;
+           currentDriftComboTime = 0f;
 
        }
        if (DriftTimeSlider != null)
@@ -509,9 +586,13 @@ public class GamePlayManager : MonoBehaviour
                TotalScoreText.text = totalDriftPoints.ToString("N1");
            currentDriftPoints = 0;
            currentDriftCoins = 0;
+           currentMP = 1;
+           currentDriftComboTime = 0f;
 
        }
        lastPosition = transform.position;
+
+       CheckDriftTargets();
    }
 
    private void UpdateRaceMode()
@@ -525,14 +606,19 @@ public class GamePlayManager : MonoBehaviour
            return;
        }
 
+       ApplyPlayerBrakeRestrictions();
        UpdatePlayerRaceProgress();
        UpdateAIRaceProgress();
+       UpdateEliminationMode();
        UpdateCheckpointVisuals();
        UpdateRaceUI();
    }
 
    private void UpdatePlayerRaceProgress()
    {
+       if (playerRacer.eliminated)
+           return;
+
        playerRacer.racerTransform = CarController.transform;
 
        if (playerRacer.finished)
@@ -552,7 +638,7 @@ public class GamePlayManager : MonoBehaviour
            playerRacer.currentWaypointIndex = 0;
            playerRacer.completedLaps++;
 
-           if (playerRacer.completedLaps >= totalRaceLaps)
+           if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge) && playerRacer.completedLaps >= totalRaceLaps)
            {
                playerRacer.finished = true;
 
@@ -573,7 +659,7 @@ public class GamePlayManager : MonoBehaviour
        {
            RaceRacer aiRacer = aiRacers[i];
 
-           if (aiRacer == null || aiRacer.racerTransform == null || aiRacer.finished)
+           if (aiRacer == null || aiRacer.racerTransform == null || aiRacer.finished || aiRacer.eliminated)
                continue;
 
            if (aiRacer.aiDriver != null)
@@ -585,7 +671,7 @@ public class GamePlayManager : MonoBehaviour
                {
                    aiRacer.completedLaps++;
 
-                   if (aiRacer.completedLaps >= totalRaceLaps)
+                   if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge) && aiRacer.completedLaps >= totalRaceLaps)
                        aiRacer.finished = true;
                }
            }
@@ -601,12 +687,255 @@ public class GamePlayManager : MonoBehaviour
    {
        if (currentLapText != null)
        {
-           int shownLap = Mathf.Min(playerRacer.completedLaps + 1, totalRaceLaps);
-           currentLapText.text = $"Lap {shownLap}/{totalRaceLaps}";
+           if (RaceType == RaceType.Elimination)
+               currentLapText.text = $"Survivors {GetActiveRacerCount()}/{allRacers.Length}";
+           else if (RaceType == RaceType.NoBrakeChallenge)
+           {
+               int shownLap = Mathf.Min(playerRacer.completedLaps + 1, totalRaceLaps);
+               currentLapText.text = $"No Brake  Lap {shownLap}/{totalRaceLaps}";
+           }
+           else
+           {
+               int shownLap = Mathf.Min(playerRacer.completedLaps + 1, totalRaceLaps);
+               currentLapText.text = $"Lap {shownLap}/{totalRaceLaps}";
+           }
        }
 
        if (racePositionText != null)
-           racePositionText.text = GetPlayerRacePositionText();
+           UpdateRacePositionText();
+
+       if (eliminationTimerText != null)
+       {
+           eliminationTimerText.gameObject.SetActive(RaceType == RaceType.Elimination && raceStarted && !playerRacer.finished);
+
+           if (RaceType == RaceType.Elimination && raceStarted && !playerRacer.finished)
+               UpdateEliminationTimerUI();
+       }
+   }
+
+   private void UpdateDriftUI()
+   {
+       currentDriftDisplayedScore = totalDriftPoints + currentDriftPoints;
+
+       if (TotalScoreText != null)
+           TotalScoreText.text = currentDriftDisplayedScore.ToString("N0");
+
+       if (DriftComboText != null)
+           DriftComboText.text = $"x{Mathf.Max(1, currentMP)}";
+
+       if (DriftTargetText != null)
+           DriftTargetText.text =
+               $"Bronze  {GetBronzeTarget():N0}\n" +
+               $"Silver  {GetSilverTarget():N0}\n" +
+               $"Gold    {GetGoldTarget():N0}";
+
+       if (DriftProgressSlider != null)
+           DriftProgressSlider.value = Mathf.Clamp01(currentDriftDisplayedScore / Mathf.Max(1f, GetGoldTarget()));
+
+       if (DriftMedalText != null)
+           DriftMedalText.text = GetCurrentDriftMedalText();
+
+       UpdateDriftMedalImages();
+   }
+
+   private void UpdateDriftMedalImages()
+   {
+       SetMedalImageState(BronzeMedalImage, currentDriftDisplayedScore >= GetBronzeTarget());
+       SetMedalImageState(SilverMedalImage, currentDriftDisplayedScore >= GetSilverTarget());
+       SetMedalImageState(GoldMedalImage, currentDriftDisplayedScore >= GetGoldTarget());
+   }
+
+   private void SetMedalImageState(Image medalImage, bool unlocked)
+   {
+       if (medalImage == null)
+           return;
+
+       Color color = medalImage.color;
+       color.a = unlocked ? unlockedMedalAlpha : lockedMedalAlpha;
+       medalImage.color = color;
+   }
+
+   private void CheckDriftTargets()
+   {
+       if (RaceType != RaceType.DriftScore || driftModeFinished)
+           return;
+
+       if (currentDriftDisplayedScore >= GetGoldTarget())
+       {
+           driftModeFinished = true;
+           canScore = false;
+
+           if (raceStateText != null)
+               raceStateText.text = "Finish";
+       }
+       else if (currentDriftDisplayedScore >= GetSilverTarget())
+       {
+           if (raceStateText != null)
+               raceStateText.text = "Silver";
+       }
+       else if (currentDriftDisplayedScore >= GetBronzeTarget())
+       {
+           if (raceStateText != null)
+               raceStateText.text = "Bronze";
+       }
+   }
+
+   private int GetCurrentDriftComboMultiplier()
+   {
+       if (comboStepDuration <= 0f)
+           return 1;
+
+       int combo = 1 + Mathf.FloorToInt(Mathf.Max(0f, currentDriftComboTime - driftTime) / comboStepDuration);
+       return Mathf.Clamp(combo, 1, Mathf.Max(1, maxDriftComboMultiplier));
+   }
+
+   private float GetBronzeTarget()
+   {
+       if (useCurrentMapDriftTarget && GlobalCarData.thismap != null && GlobalCarData.thismap.target > 0)
+           return GlobalCarData.thismap.target;
+
+       return bronzeTargetScore;
+   }
+
+   private float GetSilverTarget()
+   {
+       return GetBronzeTarget() * Mathf.Max(1f, silverTargetMultiplier);
+   }
+
+   private float GetGoldTarget()
+   {
+       return GetBronzeTarget() * Mathf.Max(1f, goldTargetMultiplier);
+   }
+
+   private string GetCurrentDriftMedalText()
+   {
+       if (currentDriftDisplayedScore >= GetGoldTarget())
+           return "Gold";
+
+       if (currentDriftDisplayedScore >= GetSilverTarget())
+           return "Silver";
+
+       if (currentDriftDisplayedScore >= GetBronzeTarget())
+           return "Bronze";
+
+       return "No Medal";
+   }
+
+   private void UpdateEliminationTimerUI()
+   {
+       if (eliminationTimerText == null)
+           return;
+
+       float clampedTimer = Mathf.Max(0f, eliminationTimer);
+       int totalSeconds = Mathf.CeilToInt(clampedTimer);
+       int minutes = totalSeconds / 60;
+       int seconds = totalSeconds % 60;
+
+       eliminationTimerText.text = $"{minutes:00}:{seconds:00}";
+
+       bool isWarning = clampedTimer <= eliminationWarningThreshold;
+       bool isCritical = clampedTimer <= eliminationCriticalThreshold;
+       eliminationTimerText.color = isWarning ? eliminationTimerWarningColor : eliminationTimerNormalColor;
+
+       if (isWarning)
+       {
+           float pulseSpeed = isCritical ? eliminationCriticalPulseSpeed : eliminationPulseSpeed;
+           float pulseScale = isCritical ? eliminationCriticalPulseScale : eliminationPulseScale;
+           float pulse = 1f + Mathf.Sin(Time.unscaledTime * pulseSpeed) * pulseScale;
+           eliminationTimerText.rectTransform.localScale = Vector3.one * pulse;
+       }
+       else
+       {
+           eliminationTimerText.rectTransform.localScale = Vector3.one;
+       }
+   }
+
+   private void UpdateRacePositionText()
+   {
+       if (racePositionText == null)
+           return;
+
+       string newPositionText = showLiveLeaderboard ? GetLiveLeaderboardText() : GetPlayerRacePositionText();
+       racePositionText.text = newPositionText;
+
+       if (string.IsNullOrEmpty(lastRacePositionText))
+       {
+           lastRacePositionText = newPositionText;
+           return;
+       }
+
+       if (lastRacePositionText == newPositionText)
+           return;
+
+       lastRacePositionText = newPositionText;
+
+       if (racePositionAnimationCoroutine != null)
+           StopCoroutine(racePositionAnimationCoroutine);
+
+       racePositionAnimationCoroutine = StartCoroutine(AnimateRacePositionChange());
+   }
+
+   private IEnumerator AnimateRacePositionChange()
+   {
+       if (racePositionText == null)
+           yield break;
+
+       Color originalColor = racePositionText.color;
+       float fadeOutDuration = Mathf.Max(0.01f, positionChangeFadeDuration);
+       float fadeInDuration = fadeOutDuration;
+
+       for (float time = 0f; time < fadeOutDuration; time += Time.unscaledDeltaTime)
+       {
+           float t = time / fadeOutDuration;
+           Color color = originalColor;
+           color.a = Mathf.Lerp(1f, positionChangeMinAlpha, t);
+           racePositionText.color = color;
+           yield return null;
+       }
+
+       for (float time = 0f; time < fadeInDuration; time += Time.unscaledDeltaTime)
+       {
+           float t = time / fadeInDuration;
+           Color color = originalColor;
+           color.a = Mathf.Lerp(positionChangeMinAlpha, 1f, t);
+           racePositionText.color = color;
+           yield return null;
+       }
+
+       racePositionText.color = originalColor;
+       racePositionAnimationCoroutine = null;
+   }
+
+   private string GetLiveLeaderboardText()
+   {
+       List<RaceRacer> rankedRacers = GetRankedActiveRacers();
+
+       if (rankedRacers.Count == 0)
+           return string.Empty;
+
+       List<string> leaderboardLines = new List<string>(rankedRacers.Count);
+
+       for (int i = 0; i < rankedRacers.Count; i++)
+       {
+           RaceRacer racer = rankedRacers[i];
+           string racerName = ReferenceEquals(racer, playerRacer) ? GetPlayerLeaderboardName() : racer.displayName;
+
+           if (ReferenceEquals(racer, playerRacer))
+               racerName = $"<color=#{UnityEngine.ColorUtility.ToHtmlStringRGB(playerLeaderboardColor)}>{racerName}</color>";
+
+           leaderboardLines.Add($"{i + 1}. {racerName}");
+       }
+
+       return string.Join("\n", leaderboardLines);
+   }
+
+   private string GetPlayerLeaderboardName()
+   {
+       if (SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+           return "YOU";
+
+       string playerName = SaveManager.Instance.saveData.PlayerName;
+       return string.IsNullOrWhiteSpace(playerName) ? "YOU" : playerName;
    }
 
    private void SpawnCheckpointVisuals()
@@ -679,15 +1008,55 @@ public class GamePlayManager : MonoBehaviour
            if (racer == null || racer == playerRacer)
                continue;
 
+           if (racer.eliminated)
+               continue;
+
            if (IsRacerAheadOfPlayer(racer))
                position++;
        }
 
-       return $"{position}/{allRacers.Length}";
+       return $"{position}/{GetActiveRacerCount()}";
+   }
+
+   private List<RaceRacer> GetRankedActiveRacers()
+   {
+       List<RaceRacer> rankedRacers = new List<RaceRacer>();
+
+       for (int i = 0; i < allRacers.Length; i++)
+       {
+           RaceRacer racer = allRacers[i];
+
+           if (racer == null || racer.eliminated)
+               continue;
+
+           rankedRacers.Add(racer);
+       }
+
+       rankedRacers.Sort((a, b) =>
+       {
+           if (ReferenceEquals(a, b))
+               return 0;
+
+           if (IsRacerAhead(a, b))
+               return -1;
+
+           if (IsRacerAhead(b, a))
+               return 1;
+
+           return 0;
+       });
+
+       return rankedRacers;
    }
 
    private bool IsRacerAheadOfPlayer(RaceRacer otherRacer)
    {
+       if (otherRacer == null || otherRacer.eliminated)
+           return false;
+
+       if (playerRacer.eliminated)
+           return true;
+
        if (otherRacer.completedLaps != playerRacer.completedLaps)
            return otherRacer.completedLaps > playerRacer.completedLaps;
 
@@ -695,6 +1064,173 @@ public class GamePlayManager : MonoBehaviour
            return otherRacer.currentWaypointIndex > playerRacer.currentWaypointIndex;
 
        return otherRacer.distanceToNextWaypoint < playerRacer.distanceToNextWaypoint;
+   }
+
+   private void UpdateEliminationMode()
+   {
+       if (RaceType != RaceType.Elimination || playerRacer.finished)
+           return;
+
+       if (GetActiveRacerCount() <= 1)
+       {
+           ResolveEliminationWinner();
+           return;
+       }
+
+       eliminationTimer -= Time.deltaTime;
+
+       if (eliminationTimer > 0f)
+           return;
+
+       eliminationTimer = eliminationInterval;
+
+       RaceRacer lastRacer = GetLastActiveRacer();
+
+       if (lastRacer != null)
+           EliminateRacer(lastRacer);
+
+       if (GetActiveRacerCount() <= 1)
+           ResolveEliminationWinner();
+   }
+
+   private RaceRacer GetLastActiveRacer()
+   {
+       RaceRacer lastRacer = null;
+
+       for (int i = 0; i < allRacers.Length; i++)
+       {
+           RaceRacer candidate = allRacers[i];
+
+           if (candidate == null || candidate.eliminated || candidate.finished)
+               continue;
+
+           if (lastRacer == null || IsRacerAhead(lastRacer, candidate))
+               lastRacer = candidate;
+       }
+
+       return lastRacer;
+   }
+
+   private bool IsRacerAhead(RaceRacer racerA, RaceRacer racerB)
+   {
+       if (racerA == null || racerA.eliminated)
+           return false;
+
+       if (racerB == null || racerB.eliminated)
+           return true;
+
+       if (racerA.completedLaps != racerB.completedLaps)
+           return racerA.completedLaps > racerB.completedLaps;
+
+       if (racerA.currentWaypointIndex != racerB.currentWaypointIndex)
+           return racerA.currentWaypointIndex > racerB.currentWaypointIndex;
+
+       return racerA.distanceToNextWaypoint < racerB.distanceToNextWaypoint;
+   }
+
+   private void EliminateRacer(RaceRacer racer)
+   {
+       if (racer == null || racer.eliminated)
+           return;
+
+       racer.eliminated = true;
+
+       RCCP_CarController racerCar = GetRacerCarController(racer);
+
+       if (racerCar != null)
+       {
+           racerCar.canControl = false;
+           racerCar.gameObject.SetActive(false);
+       }
+
+       if (ReferenceEquals(racer, playerRacer))
+       {
+           playerRacer.finished = true;
+           SetRaceParticipantsControl(false);
+
+           if (raceStateText != null)
+               raceStateText.text = "Eliminated";
+       }
+       else if (raceStateText != null)
+       {
+           raceStateText.text = $"{racer.displayName} OUT";
+       }
+   }
+
+   private void ResolveEliminationWinner()
+   {
+       if (playerRacer.finished)
+           return;
+
+       playerRacer.finished = true;
+       SetRaceParticipantsControl(false);
+
+       if (!playerRacer.eliminated && GetActiveRacerCount() == 1)
+       {
+           if (raceStateText != null)
+               raceStateText.text = "Winner";
+       }
+       else
+       {
+           if (raceStateText != null)
+               raceStateText.text = "Eliminated";
+       }
+   }
+
+   private RCCP_CarController GetRacerCarController(RaceRacer racer)
+   {
+       if (racer == null)
+           return null;
+
+       if (ReferenceEquals(racer, playerRacer))
+           return CarController;
+
+       if (racer.aiDriver != null && racer.aiDriver.CarController != null)
+           return racer.aiDriver.CarController;
+
+       if (racer.racerTransform != null)
+           return racer.racerTransform.GetComponent<RCCP_CarController>();
+
+       return null;
+   }
+
+   private int GetActiveRacerCount()
+   {
+       int activeCount = 0;
+
+       for (int i = 0; i < allRacers.Length; i++)
+       {
+           RaceRacer racer = allRacers[i];
+
+           if (racer == null || racer.eliminated)
+               continue;
+
+           activeCount++;
+       }
+
+       return activeCount;
+   }
+
+   private bool IsRaceMode()
+   {
+       return RaceType == RaceType.Racing || RaceType == RaceType.Elimination || RaceType == RaceType.NoBrakeChallenge;
+   }
+
+   private void ApplyPlayerBrakeRestrictions()
+   {
+       if (RaceType != RaceType.NoBrakeChallenge || CarController == null || !raceStarted || playerRacer.finished)
+           return;
+
+       if (CarController.Inputs != null)
+       {
+           CarController.Inputs.brakeInput *= brakeEffectiveness;
+           CarController.Inputs.handbrakeInput *= handbrakeEffectiveness;
+       }
+
+       CarController.brakeInput_P *= brakeEffectiveness;
+       CarController.handbrakeInput_P *= handbrakeEffectiveness;
+       CarController.brakeInput_V *= brakeEffectiveness;
+       CarController.handbrakeInput_V *= handbrakeEffectiveness;
    }
 
    private int GetClosestWaypointIndex(Transform targetTransform)
@@ -726,7 +1262,7 @@ public class GamePlayManager : MonoBehaviour
    
    private void OnCarCollision(RCCP_CarController car, Collision collision)
    {
-       if (RaceType == RaceType.Racing)
+       if (IsRaceMode())
            return;
 
        if (car != CarController)
@@ -740,6 +1276,7 @@ public class GamePlayManager : MonoBehaviour
        driftInterruptTimer = driftInterruptDuration;
 
        totalDriftTime = 0f;
+       currentDriftComboTime = 0f;
 
        if (currentDriftPoints > 0)
        {
@@ -751,7 +1288,7 @@ public class GamePlayManager : MonoBehaviour
 
    private void FixedUpdate() {
 
-       if (RaceType == RaceType.Racing)
+       if (IsRaceMode())
            return;
 
        float rearWheelSlipAmountForward = 0f;
