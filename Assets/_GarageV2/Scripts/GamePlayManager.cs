@@ -22,6 +22,7 @@ public class GamePlayManager : MonoBehaviour
         [NonSerialized] public bool finished;
         [NonSerialized] public bool eliminated;
         [NonSerialized] public float distanceToNextWaypoint;
+        [NonSerialized] public int finishOrder;
     }
 
     [NonSerialized]public GameObject player;
@@ -120,6 +121,7 @@ public class GamePlayManager : MonoBehaviour
     private readonly List<GameObject> spawnedOpponentObjects = new List<GameObject>();
     private bool raceStarted = false;
     private float eliminationTimer = 0f;
+    private int raceFinishCounter = 0;
     private string lastRacePositionText = string.Empty;
     private Coroutine racePositionAnimationCoroutine;
     private float raceElapsedTime = 0f;
@@ -413,7 +415,8 @@ public class GamePlayManager : MonoBehaviour
             currentWaypointIndex = GetClosestWaypointIndex(CarController != null ? CarController.transform : null),
             completedLaps = 0,
             finished = false,
-            eliminated = false
+            eliminated = false,
+            finishOrder = 0
         };
 
         int aiCount = aiRacers != null ? aiRacers.Length : 0;
@@ -448,10 +451,12 @@ public class GamePlayManager : MonoBehaviour
             aiRacer.completedLaps = 0;
             aiRacer.finished = false;
             aiRacer.eliminated = false;
+            aiRacer.finishOrder = 0;
             allRacers[i + 1] = aiRacer;
         }
 
         eliminationTimer = eliminationInterval;
+        raceFinishCounter = 0;
         raceElapsedTime = 0f;
         missionResultsShown = false;
         missionRewardsApplied = false;
@@ -583,7 +588,8 @@ public class GamePlayManager : MonoBehaviour
                 aiDriver = aiDriver,
                 currentWaypointIndex = 0,
                 completedLaps = 0,
-                finished = false
+                finished = false,
+                finishOrder = 0
             };
         }
 
@@ -871,7 +877,7 @@ public class GamePlayManager : MonoBehaviour
 
            if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge) && playerRacer.completedLaps >= totalRaceLaps)
            {
-               playerRacer.finished = true;
+               MarkRacerFinished(playerRacer);
                CompleteRaceMission(true, "Finish");
            }
        }
@@ -901,7 +907,7 @@ public class GamePlayManager : MonoBehaviour
                    aiRacer.completedLaps++;
 
                    if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge) && aiRacer.completedLaps >= totalRaceLaps)
-                       aiRacer.finished = true;
+                       MarkRacerFinished(aiRacer);
                }
            }
 
@@ -1254,6 +1260,16 @@ public class GamePlayManager : MonoBehaviour
        {
            eliminationTimerText.rectTransform.localScale = Vector3.one;
        }
+   }
+
+   private void MarkRacerFinished(RaceRacer racer)
+   {
+       if (racer == null || racer.finished)
+           return;
+
+       racer.finished = true;
+       raceFinishCounter++;
+       racer.finishOrder = raceFinishCounter;
    }
 
    private void CompleteRaceMission(bool success, string stateText)
@@ -2044,6 +2060,12 @@ public class GamePlayManager : MonoBehaviour
        if (playerRacer.eliminated)
            return true;
 
+       if (otherRacer.finished != playerRacer.finished)
+           return otherRacer.finished;
+
+        if (otherRacer.finished && playerRacer.finished)
+            return otherRacer.finishOrder > 0 && (playerRacer.finishOrder <= 0 || otherRacer.finishOrder < playerRacer.finishOrder);
+
        if (otherRacer.completedLaps != playerRacer.completedLaps)
            return otherRacer.completedLaps > playerRacer.completedLaps;
 
@@ -2105,6 +2127,20 @@ public class GamePlayManager : MonoBehaviour
 
        if (racerB == null || racerB.eliminated)
            return true;
+
+       if (racerA.finished != racerB.finished)
+           return racerA.finished;
+
+       if (racerA.finished && racerB.finished)
+       {
+           if (racerA.finishOrder <= 0)
+               return false;
+
+           if (racerB.finishOrder <= 0)
+               return true;
+
+           return racerA.finishOrder < racerB.finishOrder;
+       }
 
        if (racerA.completedLaps != racerB.completedLaps)
            return racerA.completedLaps > racerB.completedLaps;
