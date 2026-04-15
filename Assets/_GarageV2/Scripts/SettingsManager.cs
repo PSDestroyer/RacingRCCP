@@ -8,11 +8,19 @@ public class SettingsManager : MonoBehaviour
     public Slider sfx;
     public Slider vehicle;
     public Slider music;
+    public Toggle vibrationToggle;
+    public Toggle easyDriftModeToggle;
     private void Start()
     {
         sfx.value = SaveManager.Instance.saveData.soundLevel;
         vehicle.value = SaveManager.Instance.saveData.VehicleLevel;
         music.value = SaveManager.Instance.saveData.musicLevel;
+
+        if (vibrationToggle != null)
+            vibrationToggle.isOn = SaveManager.Instance.saveData.vibrationsState;
+
+        if (easyDriftModeToggle != null)
+            easyDriftModeToggle.isOn = SaveManager.Instance.saveData.easyDriftMode;
     }
 
     private void OnEnable()
@@ -40,5 +48,21 @@ public class SettingsManager : MonoBehaviour
     public void OnSetMusicVolume(float value)
     {
         SoundManager.Instance.SetMusicVolume(value);
+    }
+
+    public void OnSetVibration(bool value)
+    {
+        if (SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+            return;
+
+        SaveManager.Instance.saveData.vibrationsState = value;
+    }
+
+    public void OnSetEasyDriftMode(bool value)
+    {
+        if (SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+            return;
+
+        SaveManager.Instance.saveData.easyDriftMode = value;
     }
 }

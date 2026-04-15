@@ -6285,6 +6285,8 @@ MonoBehaviour:
   comboStartDelay: 2.5
   driftTime: 1
   driftSpeed: 25
+  driftDirectionChangeGraceDuration: 3
+  driftDirectionChangeSteerThreshold: 0.35
   resetDriftPointsAfterCollision: 1
   minimumCollision: 5
   driftInterruptDuration: 0.5
@@ -6312,7 +6314,7 @@ MonoBehaviour:
   silverComboTarget: 3.5
   goldComboTarget: 5
   useCurrentMapTargetDriftSettings: 1
-  targetDriftScore: 500
+  targetDriftScore: 5000
   targetDriftTimeLimit: 60
   targetDriftWarningThreshold: 10
   targetDriftTimerNormalColor: {r: 1, g: 1, b: 1, a: 1}

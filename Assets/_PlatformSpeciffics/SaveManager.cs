@@ -168,6 +168,7 @@ namespace HalvaStudio.Save
             public float VehicleLevel = 0.7f;
             public float musicLevel = 0.4f;
             public bool vibrationsState = true;
+            public bool easyDriftMode = false;
             public bool indicatorState;
 
             public int currentLevel;

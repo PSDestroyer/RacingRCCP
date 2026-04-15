@@ -162,10 +162,13 @@ public class GamePlayManager : MonoBehaviour
     public float comboStartDelay = 2.5f;
     public float driftTime = 1f;        //	Timer for resetting the drift.
     public float driftSpeed = 25f;        //	Speed limit for drift score.
+    public float driftDirectionChangeGraceDuration = 3f;
+    public float driftDirectionChangeSteerThreshold = 0.35f;
     public bool resetDriftPointsAfterCollision = true;      //	Resets current drift score on collisions.
     public float minimumCollision = 5f;     //	Minimum collision limit for resetting the drift score.
     private bool driftInterruptedByCollision = false;
     private float driftInterruptTimer = 0f;
+    private float driftDirectionChangeGraceTimer = 0f;
     [SerializeField] private float driftInterruptDuration = 0.5f;
 
     [Header("Drifting UI")] 
@@ -215,6 +218,7 @@ public class GamePlayManager : MonoBehaviour
     {
         InstancePlayer();
         ApplyCurrentMapSettings();
+        ApplySavedGameplaySettings();
         SetUpRaceStyle(GetDrivingStyleIndex());
 
         if (finishSummaryScreen != null)
@@ -259,6 +263,7 @@ public class GamePlayManager : MonoBehaviour
         currentDriftCoins = 0f;
         currentDriftComboTime = 0f;
         totalDriftTime = 0f;
+        driftDirectionChangeGraceTimer = 0f;
         targetDriftTimeRemaining = GetTargetDriftTimeLimit();
         driftElapsedTime = 0f;
         missionResultsShown = false;
@@ -342,6 +347,14 @@ public class GamePlayManager : MonoBehaviour
 
         if (currentMap.targetDriftTimeLimit > 0)
             targetDriftTimeLimit = currentMap.targetDriftTimeLimit;
+    }
+
+    private void ApplySavedGameplaySettings()
+    {
+        if (SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+            return;
+
+        resetDriftPointsAfterCollision = !SaveManager.Instance.saveData.easyDriftMode;
     }
 
 
@@ -693,6 +706,7 @@ public class GamePlayManager : MonoBehaviour
            currentMP = 1f;
            driftInterruptedByCollision = false;
            driftInterruptTimer = 0f;
+           driftDirectionChangeGraceTimer = 0f;
            lastDisplayedComboMultiplier = 0f;
 
            return;
@@ -708,22 +722,38 @@ public class GamePlayManager : MonoBehaviour
                driftInterruptedByCollision = false;
            }
        }
-       bool slipDrift = Mathf.Abs(CarController.RearAxle.leftWheelCollider.SidewaysSlip) >= .35f;
+       float leftRearSlip = Mathf.Abs(CarController.RearAxle.leftWheelCollider.SidewaysSlip);
+       float rightRearSlip = Mathf.Abs(CarController.RearAxle.rightWheelCollider.SidewaysSlip);
+       bool slipDrift = Mathf.Max(leftRearSlip, rightRearSlip) >= .35f;
+       float currentSpeedKmh = CarController.Rigid.linearVelocity.magnitude * 3.6f;
+       bool isTryingToSwitchDirection =
+           currentDriftPoints > 0f &&
+           currentSpeedKmh >= driftSpeed &&
+           Mathf.Abs(CarController.steerInput_P) >= driftDirectionChangeSteerThreshold;
+
+       if (slipDrift)
+       {
+           driftDirectionChangeGraceTimer = driftDirectionChangeGraceDuration;
+       }
+       else if (driftDirectionChangeGraceTimer > 0f)
+       {
+           driftDirectionChangeGraceTimer -= Time.deltaTime;
+       }
 
        if (driftInterruptedByCollision)
+       {
            driftingNow = false;
+           driftDirectionChangeGraceTimer = 0f;
+       }
        else
-           driftingNow = slipDrift;
-
-       if (Mathf.Abs(CarController.RearAxle.leftWheelCollider.SidewaysSlip) >= .35f)
-           driftingNow = true;
-       else
-           driftingNow = false;
+       {
+           driftingNow = slipDrift || (isTryingToSwitchDirection && driftDirectionChangeGraceTimer > 0f);
+       }
 
        float distance = Vector3.Distance(lastPosition, transform.position);
 
        //  If canScore is enabled and drifting with above speed limit, calculate the score.
-       if (canScore && (CarController.Rigid.linearVelocity.magnitude * 3.6f) >= driftSpeed && driftingNow) {
+       if (canScore && currentSpeedKmh >= driftSpeed && driftingNow) {
 
            //  Increasing total drifting time.
            totalDriftTime += Time.deltaTime;
@@ -2227,12 +2257,19 @@ public class GamePlayManager : MonoBehaviour
        if (collision.relativeVelocity.magnitude < 2f)
            return;
 
+       if (!resetDriftPointsAfterCollision)
+           return;
+
        driftingNow = false;
        driftInterruptedByCollision = true;
        driftInterruptTimer = driftInterruptDuration;
 
        totalDriftTime = 0f;
        currentDriftComboTime = 0f;
+       driftDirectionChangeGraceTimer = 0f;
+
+       if (!resetDriftPointsAfterCollision)
+           return;
 
        if (currentDriftPoints > 0)
        {
