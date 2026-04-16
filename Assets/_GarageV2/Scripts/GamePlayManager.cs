@@ -1397,6 +1397,9 @@ public class GamePlayManager : MonoBehaviour
        missionFinalExpTotal = missionStartingExpTotal + missionExpEarned;
        missionFinalLevel = missionStartingLevel + levelUps;
 
+       if (missionSucceeded && !string.IsNullOrEmpty(GetMissionMedalTitle()))
+           SaveManager.Instance.CompleteCurrentMissionAndUnlockNext();
+
        SaveMissionResultSnapshot();
        SaveManager.Instance.saveData.exp = missionFinalExpTotal;
        SaveManager.Instance.saveData.currentLevel = missionFinalLevel;

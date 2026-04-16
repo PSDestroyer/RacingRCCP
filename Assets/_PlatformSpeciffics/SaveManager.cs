@@ -156,6 +156,8 @@ namespace HalvaStudio.Save
             public int currentMap = -1;
             public int currentMissionMapId = -1;
             public int currentMissionRaceType = -1;
+            public int currentMapTrackCount = 0;
+            public int currentTrackMissionCount = 0;
             public int currentRaceTime;
             public int currentRaceLap;
             public int currentRaceTarget;
@@ -179,6 +181,9 @@ namespace HalvaStudio.Save
             public int[] rating;
 
             public Dictionary<string, CarSpecs> carDetails = new Dictionary<string, CarSpecs>();
+            public List<string> unlockedTrackKeys = new List<string>();
+            public List<string> unlockedMissionKeys = new List<string>();
+            public List<string> completedMissionKeys = new List<string>();
 
             // NOU
             // public RCCP_CustomizationLoadout customizationLoadout;
@@ -221,6 +226,81 @@ namespace HalvaStudio.Save
         }
 
         #region Custom Methods
+        public void EnsureMissionProgressInitialized()
+        {
+            if (saveData == null)
+                saveData = new SaveData();
+
+            EnsureMissionProgressCollections();
+
+            UnlockTrackInternal(0, 0);
+            UnlockMissionInternal(0, 0, 0);
+        }
+
+        public bool IsTrackUnlocked(int mapIndex, int trackIndex)
+        {
+            EnsureMissionProgressInitialized();
+
+            if (mapIndex == 0 && trackIndex == 0)
+                return true;
+
+            return saveData.unlockedTrackKeys.Contains(GetTrackKey(mapIndex, trackIndex));
+        }
+
+        public bool IsMissionUnlocked(int mapIndex, int trackIndex, int missionIndex)
+        {
+            EnsureMissionProgressInitialized();
+
+            if (mapIndex == 0 && trackIndex == 0 && missionIndex == 0)
+                return true;
+
+            return saveData.unlockedMissionKeys.Contains(GetMissionKey(mapIndex, trackIndex, missionIndex));
+        }
+
+        public bool IsMissionCompleted(int mapIndex, int trackIndex, int missionIndex)
+        {
+            EnsureMissionProgressInitialized();
+            return saveData.completedMissionKeys.Contains(GetMissionKey(mapIndex, trackIndex, missionIndex));
+        }
+
+        public void CompleteCurrentMissionAndUnlockNext()
+        {
+            if (saveData == null)
+                saveData = new SaveData();
+
+            EnsureMissionProgressInitialized();
+
+            int mapIndex = saveData.selectedMapIndex;
+            int trackIndex = saveData.selectedTrackIndex;
+            int missionIndex = saveData.selectedMissionIndex;
+
+            if (mapIndex < 0 || trackIndex < 0 || missionIndex < 0)
+                return;
+
+            string missionKey = GetMissionKey(mapIndex, trackIndex, missionIndex);
+
+            if (!saveData.completedMissionKeys.Contains(missionKey))
+                saveData.completedMissionKeys.Add(missionKey);
+
+            UnlockTrackInternal(mapIndex, trackIndex);
+            UnlockMissionInternal(mapIndex, trackIndex, missionIndex);
+
+            int missionsInTrack = Mathf.Max(0, saveData.currentTrackMissionCount);
+            int tracksInMap = Mathf.Max(0, saveData.currentMapTrackCount);
+
+            if (missionIndex + 1 < missionsInTrack)
+            {
+                UnlockMissionInternal(mapIndex, trackIndex, missionIndex + 1);
+            }
+            else if (trackIndex + 1 < tracksInMap)
+            {
+                UnlockTrackInternal(mapIndex, trackIndex + 1);
+                UnlockMissionInternal(mapIndex, trackIndex + 1, 0);
+            }
+
+            Save();
+        }
+
         public void SaveCustomizationLoadout(string saveKey, RCCP_CustomizationLoadout loadout, bool autoSaveToDisk = true)
         {
             if (saveData == null)
@@ -290,6 +370,46 @@ namespace HalvaStudio.Save
         public bool IsCarBought(string carName)
         {
             return saveData.carDetails != null && saveData.carDetails.ContainsKey(carName) && saveData.carDetails[carName].isBought;
+        }
+
+        private void EnsureMissionProgressCollections()
+        {
+            if (saveData.unlockedTrackKeys == null)
+                saveData.unlockedTrackKeys = new List<string>();
+
+            if (saveData.unlockedMissionKeys == null)
+                saveData.unlockedMissionKeys = new List<string>();
+
+            if (saveData.completedMissionKeys == null)
+                saveData.completedMissionKeys = new List<string>();
+        }
+
+        private void UnlockTrackInternal(int mapIndex, int trackIndex)
+        {
+            string key = GetTrackKey(mapIndex, trackIndex);
+
+            if (!saveData.unlockedTrackKeys.Contains(key))
+                saveData.unlockedTrackKeys.Add(key);
+        }
+
+        private void UnlockMissionInternal(int mapIndex, int trackIndex, int missionIndex)
+        {
+            UnlockTrackInternal(mapIndex, trackIndex);
+
+            string key = GetMissionKey(mapIndex, trackIndex, missionIndex);
+
+            if (!saveData.unlockedMissionKeys.Contains(key))
+                saveData.unlockedMissionKeys.Add(key);
+        }
+
+        private string GetTrackKey(int mapIndex, int trackIndex)
+        {
+            return $"{mapIndex}:{trackIndex}";
+        }
+
+        private string GetMissionKey(int mapIndex, int trackIndex, int missionIndex)
+        {
+            return $"{mapIndex}:{trackIndex}:{missionIndex}";
         }
 
         #endregion

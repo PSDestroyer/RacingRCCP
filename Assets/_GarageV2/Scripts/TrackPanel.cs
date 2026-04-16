@@ -31,9 +31,14 @@ public class TrackPanel : MonoBehaviour
                 continue;
 
             tracksBUttons[i].sprite = tracks[i].trackImage;
+            bool isUnlocked = mapSelect == null || mapSelect.IsTrackUnlocked(GetSelectedMapIndex(), i);
+            Color trackColor = tracksBUttons[i].color;
+            trackColor.a = isUnlocked ? 1f : .35f;
+            tracksBUttons[i].color = trackColor;
 
             if (button != null)
             {
+                button.interactable = isUnlocked;
                 int capturedIndex = i;
                 button.onClick.AddListener(() => SelectTrack(capturedIndex));
             }
@@ -49,5 +54,13 @@ public class TrackPanel : MonoBehaviour
             return;
 
         mapSelect.SelectTrack(index);
+    }
+
+    private int GetSelectedMapIndex()
+    {
+        if (HalvaStudio.Save.SaveManager.Instance == null || HalvaStudio.Save.SaveManager.Instance.saveData == null)
+            return 0;
+
+        return Mathf.Max(0, HalvaStudio.Save.SaveManager.Instance.saveData.selectedMapIndex);
     }
 }

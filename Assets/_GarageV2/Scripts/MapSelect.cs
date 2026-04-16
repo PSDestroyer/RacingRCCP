@@ -45,11 +45,13 @@ public class MapSelect : MonoBehaviour
 
     private void Start()
     {
+        EnsureMissionProgressInitialized();
         ResetPanels();
     }
 
     private void OnEnable()
     {
+        EnsureMissionProgressInitialized();
         ResetPanels();
     }
 
@@ -68,6 +70,8 @@ public class MapSelect : MonoBehaviour
             SaveManager.Instance.saveData.selectedMapIndex = mapIndex;
             SaveManager.Instance.saveData.selectedTrackIndex = -1;
             SaveManager.Instance.saveData.selectedMissionIndex = -1;
+            SaveManager.Instance.saveData.currentMapTrackCount = maps[mapIndex].tracks != null ? maps[mapIndex].tracks.Count : 0;
+            SaveManager.Instance.saveData.currentTrackMissionCount = 0;
             SaveManager.Instance.saveData.currentMissionMapId = -1;
             SaveManager.Instance.saveData.currentMissionRaceType = -1;
             SaveManager.Instance.Save();
@@ -91,6 +95,9 @@ public class MapSelect : MonoBehaviour
         if (trackIndex < 0 || trackIndex >= tracks.Count)
             return;
 
+        if (!IsTrackUnlocked(selectedMapIndex, trackIndex))
+            return;
+
         selectedTrackIndex = trackIndex;
         selectedMissionIndex = -1;
 
@@ -101,6 +108,8 @@ public class MapSelect : MonoBehaviour
         {
             SaveManager.Instance.saveData.selectedTrackIndex = trackIndex;
             SaveManager.Instance.saveData.selectedMissionIndex = -1;
+            SaveManager.Instance.saveData.currentMapTrackCount = tracks.Count;
+            SaveManager.Instance.saveData.currentTrackMissionCount = selectedTrack.missions != null ? selectedTrack.missions.Count : 0;
             SaveManager.Instance.saveData.currentMap = selectedTrack.trackMapId;
             SaveManager.Instance.saveData.currentMissionMapId = selectedTrack.trackMapId;
             SaveManager.Instance.saveData.currentMissionRaceType = -1;
@@ -128,6 +137,9 @@ public class MapSelect : MonoBehaviour
         if (missionIndex < 0 || missionIndex >= missions.Count)
             return;
 
+        if (!IsMissionUnlocked(selectedMapIndex, selectedTrackIndex, missionIndex))
+            return;
+
         MissionData mission = missions[missionIndex];
 
         if (mission == null || mission.mapSo == null)
@@ -140,6 +152,8 @@ public class MapSelect : MonoBehaviour
         if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
         {
             SaveManager.Instance.saveData.selectedMissionIndex = missionIndex;
+            SaveManager.Instance.saveData.currentMapTrackCount = maps[selectedMapIndex].tracks.Count;
+            SaveManager.Instance.saveData.currentTrackMissionCount = missions.Count;
             SaveManager.Instance.saveData.currentMap = mission.mapSo.id;
             SaveManager.Instance.saveData.currentMissionMapId = mission.mapSo.id;
             SaveManager.Instance.saveData.currentMissionRaceType = (int)mission.mapSo.raceType;
@@ -171,6 +185,21 @@ public class MapSelect : MonoBehaviour
         // 3  = Arcade
         RCCP_Settings.Instance.behaviorSelectedIndex = type;
         // Debug.Log(RCCP_Settings.Instance.behaviorTypes[type].behaviorName.ToString()); // Test Debug style
+    }
+
+    public bool IsTrackUnlocked(int mapIndex, int trackIndex)
+    {
+        return SaveManager.Instance == null || SaveManager.Instance.IsTrackUnlocked(mapIndex, trackIndex);
+    }
+
+    public bool IsMissionUnlocked(int mapIndex, int trackIndex, int missionIndex)
+    {
+        return SaveManager.Instance == null || SaveManager.Instance.IsMissionUnlocked(mapIndex, trackIndex, missionIndex);
+    }
+
+    public bool IsMissionCompleted(int mapIndex, int trackIndex, int missionIndex)
+    {
+        return SaveManager.Instance != null && SaveManager.Instance.IsMissionCompleted(mapIndex, trackIndex, missionIndex);
     }
 
     public bool HandleBack()
@@ -262,5 +291,11 @@ public class MapSelect : MonoBehaviour
     {
         if (SoundManager.Instance != null)
             SoundManager.Instance.PlayButtonClick();
+    }
+
+    private void EnsureMissionProgressInitialized()
+    {
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.EnsureMissionProgressInitialized();
     }
 }

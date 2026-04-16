@@ -23,7 +23,9 @@ public class MissionPanel : MonoBehaviour
         for (int i = 0; i < missions.Count; i++)
         {
             var button = Instantiate(MissionButton, MissionContent);
-            button.Configure(mapSelect, i, missions[i]);
+            bool isUnlocked = mapSelect == null || mapSelect.IsMissionUnlocked(GetSelectedMapIndex(), GetSelectedTrackIndex(), i);
+            bool isCompleted = mapSelect != null && mapSelect.IsMissionCompleted(GetSelectedMapIndex(), GetSelectedTrackIndex(), i);
+            button.Configure(mapSelect, i, missions[i], isUnlocked, isCompleted);
             MissionButtons.Add(button);
         }
     }
@@ -37,5 +39,21 @@ public class MissionPanel : MonoBehaviour
         }
 
         MissionButtons.Clear();
+    }
+
+    private int GetSelectedMapIndex()
+    {
+        if (HalvaStudio.Save.SaveManager.Instance == null || HalvaStudio.Save.SaveManager.Instance.saveData == null)
+            return 0;
+
+        return Mathf.Max(0, HalvaStudio.Save.SaveManager.Instance.saveData.selectedMapIndex);
+    }
+
+    private int GetSelectedTrackIndex()
+    {
+        if (HalvaStudio.Save.SaveManager.Instance == null || HalvaStudio.Save.SaveManager.Instance.saveData == null)
+            return 0;
+
+        return Mathf.Max(0, HalvaStudio.Save.SaveManager.Instance.saveData.selectedTrackIndex);
     }
 }
