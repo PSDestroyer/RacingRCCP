@@ -25,6 +25,7 @@ public class GarageUIController : MonoBehaviour
     public PlayerInput playerInput;
     [Header("Panels")]
     [SerializeField] private CarSelection carSelection;
+    [SerializeField] private MapSelect mapSelect;
     [SerializeField] private List<PanelEntry> panelEntries;
     [SerializeField] private UIPanelType startPanel = UIPanelType.MainHub;
 
@@ -41,6 +42,8 @@ public class GarageUIController : MonoBehaviour
 
     private void Awake()
     {
+        EnsureMapSelectReference();
+
         
         panels.Clear();
 
@@ -145,6 +148,11 @@ public class GarageUIController : MonoBehaviour
         if (currentPanel == UIPanelType.MainHub)
             return;
 
+        EnsureMapSelectReference();
+
+        if (currentPanel == UIPanelType.Play && mapSelect != null && mapSelect.HandleBack())
+            return;
+
         if (history.Count == 0)
         {
             OpenPanel(UIPanelType.MainHub, false);
@@ -178,5 +186,34 @@ public class GarageUIController : MonoBehaviour
             return null;
 
         return playerInput.actions[actionName];
+    }
+
+    private void EnsureMapSelectReference()
+    {
+        if (mapSelect != null)
+            return;
+
+#if UNITY_2023_1_OR_NEWER
+        mapSelect = FindFirstObjectByType<MapSelect>(FindObjectsInactive.Include);
+#else
+        mapSelect = GetComponentInChildren<MapSelect>(true);
+
+        if (mapSelect == null)
+        {
+            MapSelect[] mapSelects = Resources.FindObjectsOfTypeAll<MapSelect>();
+
+            for (int i = 0; i < mapSelects.Length; i++)
+            {
+                if (mapSelects[i] == null)
+                    continue;
+
+                if (!mapSelects[i].gameObject.scene.IsValid())
+                    continue;
+
+                mapSelect = mapSelects[i];
+                break;
+            }
+        }
+#endif
     }
 }

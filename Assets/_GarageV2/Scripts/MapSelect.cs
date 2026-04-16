@@ -73,14 +73,7 @@ public class MapSelect : MonoBehaviour
             SaveManager.Instance.Save();
         }
 
-        if (TrackPanel != null)
-            TrackPanel.SetActive(true);
-
-        if (MissionPanel != null)
-            MissionPanel.SetActive(false);
-
-        if (PlayPanel != null)
-            PlayPanel.SetActive(false);
+        ShowTrackStep();
 
         if (trackPanelController != null)
             trackPanelController.ShowTracks(this, maps[mapIndex].tracks);
@@ -114,11 +107,7 @@ public class MapSelect : MonoBehaviour
             SaveManager.Instance.Save();
         }
 
-        if (MissionPanel != null)
-            MissionPanel.SetActive(true);
-
-        if (PlayPanel != null)
-            PlayPanel.SetActive(false);
+        ShowMissionStep();
 
         if (missionPanelController != null)
             missionPanelController.ShowMissions(this, selectedTrack.missions);
@@ -183,7 +172,46 @@ public class MapSelect : MonoBehaviour
         RCCP_Settings.Instance.behaviorSelectedIndex = type;
         // Debug.Log(RCCP_Settings.Instance.behaviorTypes[type].behaviorName.ToString()); // Test Debug style
     }
-    
+
+    public bool HandleBack()
+    {
+        if (MissionPanel != null && MissionPanel.activeSelf)
+        {
+            selectedMissionIndex = -1;
+
+            if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
+            {
+                SaveManager.Instance.saveData.selectedMissionIndex = -1;
+                SaveManager.Instance.saveData.currentMissionRaceType = -1;
+                SaveManager.Instance.Save();
+            }
+
+            ShowTrackStep();
+            PlayClick();
+            return true;
+        }
+
+        if (TrackPanel != null && TrackPanel.activeSelf)
+        {
+            selectedTrackIndex = -1;
+            selectedMissionIndex = -1;
+
+            if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
+            {
+                SaveManager.Instance.saveData.selectedTrackIndex = -1;
+                SaveManager.Instance.saveData.selectedMissionIndex = -1;
+                SaveManager.Instance.saveData.currentMissionMapId = -1;
+                SaveManager.Instance.saveData.currentMissionRaceType = -1;
+                SaveManager.Instance.Save();
+            }
+
+            ResetPanels();
+            PlayClick();
+            return true;
+        }
+
+        return false;
+    }
 
     private void ResetPanels()
     {
@@ -195,6 +223,36 @@ public class MapSelect : MonoBehaviour
 
         if (MissionPanel != null)
             MissionPanel.SetActive(false);
+
+        if (PlayPanel != null)
+            PlayPanel.SetActive(false);
+    }
+
+    private void ShowTrackStep()
+    {
+        if (MapPanel != null)
+            MapPanel.SetActive(false);
+
+        if (TrackPanel != null)
+            TrackPanel.SetActive(true);
+
+        if (MissionPanel != null)
+            MissionPanel.SetActive(false);
+
+        if (PlayPanel != null)
+            PlayPanel.SetActive(false);
+    }
+
+    private void ShowMissionStep()
+    {
+        if (MapPanel != null)
+            MapPanel.SetActive(false);
+
+        if (TrackPanel != null)
+            TrackPanel.SetActive(false);
+
+        if (MissionPanel != null)
+            MissionPanel.SetActive(true);
 
         if (PlayPanel != null)
             PlayPanel.SetActive(false);
