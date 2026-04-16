@@ -53,6 +53,7 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     private const string ACTION_5TH_GEAR = "Gear_5";
     private const string ACTION_6TH_GEAR = "Gear_6";
     private const string ACTION_R_GEAR = "Gear_R";
+    private const string ACTION_PAUSE = "Pause";
 
     // Action Names for Camera Map
     private const string ACTION_MOUSE_INPUT = "MouseInput";
@@ -782,6 +783,12 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
 
     }
 
+    private void Pause_performed(InputAction.CallbackContext ctx) {
+
+        Options();
+
+    }
+
     /// <summary>
     /// Callback for neutral gear input
     /// </summary>
@@ -990,6 +997,7 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
         SubscribeDrivingMapEvents();
         SubscribeCameraMapEvents();
         SubscribeReplayMapEvents();
+        SubscribeSharedEvents();
 
         eventsSubscribed = true;
 
@@ -1003,6 +1011,7 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
         UnsubscribeDrivingMapEvents();
         UnsubscribeCameraMapEvents();
         UnsubscribeReplayMapEvents();
+        UnsubscribeSharedEvents();
 
         eventsSubscribed = false;
 
@@ -1325,6 +1334,68 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
             Debug.LogError($"Failed to unsubscribe from replay map events: {e.Message}");
 
         }
+
+    }
+
+    private void SubscribeSharedEvents() {
+
+        if (eventsSubscribed)
+            return;
+
+        try {
+
+            var pauseAction = FindPauseAction();
+            if (pauseAction != null)
+                pauseAction.performed += Pause_performed;
+
+        } catch (Exception e) {
+
+            Debug.LogError($"Failed to subscribe to shared input events: {e.Message}");
+
+        }
+
+    }
+
+    private void UnsubscribeSharedEvents() {
+
+        if (!eventsSubscribed)
+            return;
+
+        try {
+
+            var pauseAction = FindPauseAction();
+            if (pauseAction != null)
+                pauseAction.performed -= Pause_performed;
+
+        } catch (Exception e) {
+
+            Debug.LogError($"Failed to unsubscribe from shared input events: {e.Message}");
+
+        }
+
+    }
+
+    private InputAction FindPauseAction() {
+
+        if (drivingMap != null) {
+            var pauseAction = drivingMap.FindAction(ACTION_PAUSE);
+            if (pauseAction != null)
+                return pauseAction;
+        }
+
+        if (cameraMap != null) {
+            var pauseAction = cameraMap.FindAction(ACTION_PAUSE);
+            if (pauseAction != null)
+                return pauseAction;
+        }
+
+        if (replayMap != null) {
+            var pauseAction = replayMap.FindAction(ACTION_PAUSE);
+            if (pauseAction != null)
+                return pauseAction;
+        }
+
+        return inputActionsInstance != null ? inputActionsInstance.FindAction(ACTION_PAUSE) : null;
 
     }
 

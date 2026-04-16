@@ -170,6 +170,7 @@ namespace HalvaStudio.Save
             public bool vibrationsState = true;
             public bool easyDriftMode = false;
             public bool indicatorState;
+            public string inputRebindsJson = string.Empty;
 
             public int currentLevel;
             public int MaxLevel;

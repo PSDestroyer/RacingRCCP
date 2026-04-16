@@ -1,4 +1,5 @@
 {
+    "version": 1,
     "name": "RCCP_InputActions",
     "maps": [
         {
@@ -211,6 +212,15 @@
                     "processors": "",
                     "interactions": "Press",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "Pause",
+                    "type": "Button",
+                    "id": "fafe61d4-aa1b-4ab7-952d-9acf401da14e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1203,6 +1213,28 @@
                     "action": "Clutch",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "574a3770-c653-40e6-9d8c-5806324ba00e",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fe4abaf0-46f7-4e6a-aeb5-ff960f5ee1b5",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },
@@ -1242,7 +1274,7 @@
                     "type": "Value",
                     "id": "f533f3d2-f07d-4dc7-b0cb-c4446055fdbf",
                     "expectedControlType": "Vector2",
-                    "processors": "ScaleVector2(x=0.001,y=0.001),InvertVector2",
+                    "processors": "ScaleVector2(x=0.001,y=0.001);InvertVector2",
                     "interactions": "Press",
                     "initialStateCheck": true
                 },

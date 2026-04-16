@@ -52,6 +52,7 @@ public class RCCP_MobileInputs : RCCP_GenericComponent {
     public RCCP_UIController right;
     public RCCP_UIController ebrake;
     public RCCP_UIController nos;
+    public RCCP_UIController pause;
 
     /// <summary>
     /// Steering wheel.
@@ -69,6 +70,7 @@ public class RCCP_MobileInputs : RCCP_GenericComponent {
     [Range(0f, 1f)] public float brakeInput = 0f;
     [Range(0f, 1f)] public float ebrakeInput = 0f;
     [Range(0f, 1f)] public float nosInput = 0f;
+    private bool pausePressedLastFrame = false;
 
     private void Update() {
 
@@ -198,6 +200,13 @@ public class RCCP_MobileInputs : RCCP_GenericComponent {
 
         if (nos)
             nosInput = nos.input;
+
+        bool pausePressedNow = pause && pause.input > .5f;
+
+        if (pausePressedNow && !pausePressedLastFrame && RCCP_InputManager.Instance != null)
+            RCCP_InputManager.Instance.Options();
+
+        pausePressedLastFrame = pausePressedNow;
 
         throttleInput += nosInput;   //  Increasing throttle input with he nos input. But clamping it to 0 - 1 below.
 
