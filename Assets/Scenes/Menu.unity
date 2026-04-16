@@ -45847,7 +45847,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 302766775}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 11
   m_Type: 1
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
@@ -341469,6 +341469,8 @@ MonoBehaviour:
     currentMap: -1
     currentMissionMapId: -1
     currentMissionRaceType: -1
+    currentMapTrackCount: 0
+    currentTrackMissionCount: 0
     currentRaceTime: 0
     currentRaceLap: 0
     currentRaceTarget: 0
@@ -341487,6 +341489,9 @@ MonoBehaviour:
     GiftCount: 0
     averagRating: 0
     rating: 
+    unlockedTrackKeys: []
+    unlockedMissionKeys: []
+    completedMissionKeys: []
   defaultSaveData:
     PlayerName: 
     money: 417
@@ -341499,6 +341504,8 @@ MonoBehaviour:
     currentMap: -1
     currentMissionMapId: -1
     currentMissionRaceType: -1
+    currentMapTrackCount: 0
+    currentTrackMissionCount: 0
     currentRaceTime: 0
     currentRaceLap: 0
     currentRaceTarget: 0
@@ -341517,6 +341524,9 @@ MonoBehaviour:
     GiftCount: 0
     averagRating: 0
     rating: 
+    unlockedTrackKeys: []
+    unlockedMissionKeys: []
+    completedMissionKeys: []
 --- !u!4 &2129346228
 Transform:
   m_ObjectHideFlags: 0
