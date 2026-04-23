@@ -31,6 +31,8 @@ public class MapSelect : MonoBehaviour
     }
 
     public List<MapData> maps = new List<MapData>(4);
+    [Header("Debug")]
+    [SerializeField] private bool unlockAllLevelsForTesting = false;
     public GameObject MapPanel;
     public GameObject TrackPanel;
     public GameObject MissionPanel;
@@ -189,11 +191,17 @@ public class MapSelect : MonoBehaviour
 
     public bool IsTrackUnlocked(int mapIndex, int trackIndex)
     {
+        if (unlockAllLevelsForTesting)
+            return true;
+
         return SaveManager.Instance == null || SaveManager.Instance.IsTrackUnlocked(mapIndex, trackIndex);
     }
 
     public bool IsMissionUnlocked(int mapIndex, int trackIndex, int missionIndex)
     {
+        if (unlockAllLevelsForTesting)
+            return true;
+
         return SaveManager.Instance == null || SaveManager.Instance.IsMissionUnlocked(mapIndex, trackIndex, missionIndex);
     }
 

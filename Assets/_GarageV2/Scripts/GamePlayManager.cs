@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.AI;
 
 public class GamePlayManager : MonoBehaviour
 {
@@ -109,6 +110,9 @@ public class GamePlayManager : MonoBehaviour
     public float spawnRowSpacing = 8f;
     public float spawnColumnSpacing = 4f;
     public int spawnCarsPerRow = 2;
+    public float navMeshSampleDistance = 20f;
+    public bool autoCalculateAINavMeshBaseOffset = true;
+    public float aiNavMeshBaseOffset = 0f;
     
     [Header("Checkpoint Visuals")]
     public GameObject checkpointPrefab;
@@ -586,6 +590,8 @@ public class GamePlayManager : MonoBehaviour
 
             if (raceWaypoints != null)
                 aiDriver.waypointsContainer = raceWaypoints;
+
+            StartCoroutine(AlignAIAgentToNavMeshDeferred(aiDriver));
 
             aiRacers[i] = new RaceRacer
             {
@@ -2412,6 +2418,58 @@ public class GamePlayManager : MonoBehaviour
        }
 
        return closestIndex;
+   }
+
+   private IEnumerator AlignAIAgentToNavMeshDeferred(RCCP_AI aiDriver)
+   {
+       if (aiDriver == null)
+           yield break;
+
+       yield return null;
+       yield return null;
+
+       NavMeshAgent agent = aiDriver.GetComponentInChildren<NavMeshAgent>(true);
+
+       if (agent == null)
+           yield break;
+
+       if (!NavMesh.SamplePosition(aiDriver.transform.position, out NavMeshHit hit, Mathf.Max(1f, navMeshSampleDistance), NavMesh.AllAreas))
+           yield break;
+
+       GameObject agentObject = agent.gameObject;
+       bool wasActive = agentObject.activeSelf;
+       float calculatedBaseOffset = autoCalculateAINavMeshBaseOffset
+           ? Mathf.Max(0f, aiDriver.transform.position.y - hit.position.y)
+           : aiNavMeshBaseOffset;
+       float finalBaseOffset = Mathf.Max(0f, calculatedBaseOffset + aiNavMeshBaseOffset);
+
+       if (!wasActive)
+           agentObject.SetActive(true);
+
+       agent.baseOffset = finalBaseOffset;
+
+       if (agent.enabled)
+           agent.enabled = false;
+
+       agent.transform.position = hit.position;
+
+       if (wasActive)
+       {
+           agentObject.SetActive(false);
+           yield return null;
+           agentObject.SetActive(true);
+       }
+
+       agent.baseOffset = finalBaseOffset;
+       agent.enabled = false;
+       agent.transform.position = hit.position;
+       agent.enabled = true;
+
+       if (agent.isOnNavMesh)
+       {
+           agent.Warp(hit.position);
+           agent.nextPosition = hit.position;
+       }
    }
    
    private void OnCarCollision(RCCP_CarController car, Collision collision)

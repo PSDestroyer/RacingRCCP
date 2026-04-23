@@ -36209,6 +36209,34 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 384478492}
   m_Mesh: {fileID: -1128460211305366682, guid: ef176958a034278499258966dc8f7095, type: 3}
+--- !u!1 &384660134 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1938355733404835880, guid: 57970e7db200045be80bcff5ae181b95, type: 3}
+  m_PrefabInstance: {fileID: 1478337511}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &384660136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 384660134}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &384739295
 GameObject:
   m_ObjectHideFlags: 0
@@ -59148,6 +59176,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1707117432683524461, guid: 61d0e3e0616294807a33b3933f1f8e2b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1855565095}
+    - targetCorrespondingSourceObject: {fileID: 1707117433061413106, guid: 61d0e3e0616294807a33b3933f1f8e2b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1340847002}
+    - targetCorrespondingSourceObject: {fileID: 8310612545835763546, guid: 61d0e3e0616294807a33b3933f1f8e2b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 717372579}
   m_SourcePrefab: {fileID: 100100000, guid: 61d0e3e0616294807a33b3933f1f8e2b, type: 3}
 --- !u!1 &652303055
 GameObject:
@@ -62620,21 +62654,21 @@ MonoBehaviour:
       - missionName: Elim
         missionImage: {fileID: 21300000, guid: b7ff5df73762e9643945895c8f9e6a4c, type: 3}
         mapSo: {fileID: 0}
-  - mapName: Vild
+  - mapName: RT_Track_A
     tracks:
-    - trackName: ad
+    - trackName: RT_Track
       trackImage: {fileID: 21300000, guid: 4cc9112853b0fb942b1a14c4203ffb9f, type: 3}
       trackMapId: 0
       missions:
-      - missionName: sadda
+      - missionName: race
         missionImage: {fileID: 21300000, guid: 6fb6aa9c1837d74449b64dbd63cd5d03, type: 3}
-        mapSo: {fileID: 0}
+        mapSo: {fileID: 11400000, guid: d7bc00795c4194fb4ad22f123311453e, type: 2}
       - missionName: Elim
         missionImage: {fileID: 21300000, guid: 6fb6aa9c1837d74449b64dbd63cd5d03, type: 3}
-        mapSo: {fileID: 0}
+        mapSo: {fileID: 11400000, guid: 637e14bd9dbbe4c3e9f2f5df07afe490, type: 2}
       - missionName: Drift
         missionImage: {fileID: 21300000, guid: 6fb6aa9c1837d74449b64dbd63cd5d03, type: 3}
-        mapSo: {fileID: 0}
+        mapSo: {fileID: 11400000, guid: dc995f8690825441fab5ad24ebbc4466, type: 2}
     - trackName: dasa asa
       trackImage: {fileID: 21300000, guid: 6fb6aa9c1837d74449b64dbd63cd5d03, type: 3}
       trackMapId: 0
@@ -65539,6 +65573,34 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 716376117}
   m_Mesh: {fileID: -7872481857515129476, guid: ef176958a034278499258966dc8f7095, type: 3}
+--- !u!1 &717372577 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8310612545835763546, guid: 61d0e3e0616294807a33b3933f1f8e2b, type: 3}
+  m_PrefabInstance: {fileID: 652245760}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &717372579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 717372577}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &717715291
 GameObject:
   m_ObjectHideFlags: 0
@@ -116156,6 +116218,34 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1184695315}
   m_Mesh: {fileID: 5545011409001114057, guid: ef176958a034278499258966dc8f7095, type: 3}
+--- !u!1 &1186852635 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7917393734475082356, guid: 57970e7db200045be80bcff5ae181b95, type: 3}
+  m_PrefabInstance: {fileID: 1478337511}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1186852637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186852635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &1187789794
 GameObject:
   m_ObjectHideFlags: 0
@@ -129389,6 +129479,34 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1340247299}
   m_Mesh: {fileID: -2309047021954425247, guid: ef176958a034278499258966dc8f7095, type: 3}
+--- !u!1 &1340847000 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1707117433061413106, guid: 61d0e3e0616294807a33b3933f1f8e2b, type: 3}
+  m_PrefabInstance: {fileID: 652245760}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1340847002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340847000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &1341556326
 GameObject:
   m_ObjectHideFlags: 0
@@ -146726,6 +146844,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4139270735254607048, guid: 57970e7db200045be80bcff5ae181b95, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1598232079}
+    - targetCorrespondingSourceObject: {fileID: 1938355733404835880, guid: 57970e7db200045be80bcff5ae181b95, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 384660136}
+    - targetCorrespondingSourceObject: {fileID: 7917393734475082356, guid: 57970e7db200045be80bcff5ae181b95, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1186852637}
   m_SourcePrefab: {fileID: 100100000, guid: 57970e7db200045be80bcff5ae181b95, type: 3}
 --- !u!1 &1478529157
 GameObject:
