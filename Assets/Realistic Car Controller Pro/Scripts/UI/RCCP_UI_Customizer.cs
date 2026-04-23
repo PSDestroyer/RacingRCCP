@@ -7,17 +7,25 @@
 //
 //----------------------------------------------
 
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 
 /// <summary>
 /// RCCP UI Canvas that manages the event systems, panels, gauges, images and texts related to the vehicle and player.
 /// </summary>
 [AddComponentMenu("BoneCracker Games/Realistic Car Controller Pro/UI/RCCP UI Customizer")]
-public class RCCP_UI_Customizer : RCCP_UIComponent {
+public class RCCP_UI_Customizer : RCCP_UIComponent
+{
 
+
+    public EnableCinemachine enableCinemachine;
+    public CinemachineCamera Cinemachine;
+    public CinemachineCamera LastCinemachine;
+    
     [Header("Customization Panels")]
     public GameObject paints;        //  Painting panel.
     public GameObject wheels;        //  Wheels panel.
@@ -77,6 +85,18 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
     private void OnEnable()
     {
         RefreshButtons();
+        if(LastCinemachine != null)
+        enableCinemachine.CameraChange(LastCinemachine);
+
+    }
+
+    public void setUpLastCamera(CinemachineCamera camera)
+    {
+        LastCinemachine = camera;
+    }
+    private void OnDisable()
+    {
+        enableCinemachine.CameraChange(Cinemachine);
     }
 
     private void RefreshButtons()

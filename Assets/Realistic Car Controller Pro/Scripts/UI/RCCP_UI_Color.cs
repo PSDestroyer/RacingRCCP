@@ -49,15 +49,16 @@ public class RCCP_UI_Color : RCCP_UIComponent {
                 break;
 
             case PickedColor.Red:
-                selectedColor = Color.red;
+                selectedColor = new Color(0.75f, 0.05f, 0.05f); // sport red
+
                 break;
 
             case PickedColor.Green:
-                selectedColor = Color.green;
+                selectedColor = new Color(0.0f, 0.3f, 0.1f); // british racing green;
                 break;
 
             case PickedColor.Blue:
-                selectedColor = Color.blue;
+                selectedColor = new Color(0.0f, 0.2f, 0.6f); // deep metallic blue (BMW style);
                 break;
 
             case PickedColor.Black:
@@ -69,15 +70,15 @@ public class RCCP_UI_Color : RCCP_UIComponent {
                 break;
 
             case PickedColor.Cyan:
-                selectedColor = Color.cyan;
+                selectedColor = new Color(0.0f, 0.5f, 0.6f);
                 break;
 
             case PickedColor.Magenta:
-                selectedColor = Color.magenta;
+                selectedColor = new Color(0.4f, 0.1f, 0.5f);
                 break;
 
             case PickedColor.Pink:
-                selectedColor = new Color(1, 0f, .5f);
+                selectedColor = new Color(0.8f, 0.4f, 0.6f); // soft pink (mai realist decât neon)
                 break;
 
         }
