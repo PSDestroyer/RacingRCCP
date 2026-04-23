@@ -56,6 +56,8 @@ public class CarSelection : MonoBehaviour
     private Vector2 targetNormPos;
     private void Start()
   {
+   if (SM == null)
+       SM = SoundManager.Instance;
    GlobalCarData._buttonList.Clear();
    
     for (var i = 0; i < GlobalCarData._carlists.Count; i++)
@@ -159,14 +161,14 @@ public class CarSelection : MonoBehaviour
                     selecttext.text = operation.Result;
                     SaveManager.Instance.saveData.currentCar = indexcar;
                     SaveManager.Instance.Save();
-                    SM.PlayNewCarClip();
+                    PlayNewCarClipSafe();
                     Debug.Log("bought");
                 }
                 else
                 {
                     var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","No money");
                     yesNo.Notify(operation.Result);
-                    SM.PlayButtonError();
+                    PlayButtonErrorSafe();
                     Debug.Log("dont have enought Money");
                 }
                 
@@ -174,7 +176,7 @@ public class CarSelection : MonoBehaviour
         }
         else
         {
-            SM.PlayButtonClick();
+            PlayButtonClickSafe();
             Debug.Log("NO");
         }
         SetEvents();
@@ -266,7 +268,7 @@ public class CarSelection : MonoBehaviour
 
     private void UpdateCurrentCar()
   {    
-      SM.PlayButtonClick();
+      PlayButtonClickSafe();
       if(player!=null) Destroy(player.gameObject);
       player = Instantiate(Resources.Load<GameObject>(GlobalCarData._carlists[indexcar].carPrefabLocation), spawnCarPoint);
       player.GetComponent<RCCP_CarController>().canControl = false;
@@ -359,6 +361,9 @@ public class CarSelection : MonoBehaviour
   }
   private void OnEnable()
   {
+      if (SM == null)
+          SM = SoundManager.Instance;
+
       if (litenered)
       {
           GlobalCarData._buttonList[SaveManager.Instance.saveData.currentCar].onClick.Invoke();
@@ -390,6 +395,38 @@ public class CarSelection : MonoBehaviour
       if (navigateAction != null)
           navigateAction.performed -= Navigations;
       // playerInput.actions["Submit"].performed -= SelectOrBuyCtx;
+  }
+
+  private SoundManager GetSoundManager()
+  {
+      if (SM == null)
+          SM = SoundManager.Instance;
+
+      return SM;
+  }
+
+  private void PlayButtonClickSafe()
+  {
+      SoundManager soundManager = GetSoundManager();
+
+      if (soundManager != null)
+          soundManager.PlayButtonClick();
+  }
+
+  private void PlayButtonErrorSafe()
+  {
+      SoundManager soundManager = GetSoundManager();
+
+      if (soundManager != null)
+          soundManager.PlayButtonError();
+  }
+
+  private void PlayNewCarClipSafe()
+  {
+      SoundManager soundManager = GetSoundManager();
+
+      if (soundManager != null)
+          soundManager.PlayNewCarClip();
   }
 
   private InputAction GetAction(string actionName)

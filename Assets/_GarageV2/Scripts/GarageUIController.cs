@@ -125,7 +125,8 @@ public class GarageUIController : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(null);
             EventSystem.current.SetSelectedGameObject(selected);
         }
-        SoundManager.Instance.PlayButtonClick();
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayButtonClick();
         isTransitioning = false;
     }
 

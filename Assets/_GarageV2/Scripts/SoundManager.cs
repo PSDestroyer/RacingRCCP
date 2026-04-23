@@ -47,9 +47,12 @@ public class SoundManager : MonoBehaviour
         // }
         
         
-        SetVehicleVolume(SaveManager.Instance.saveData.VehicleLevel);
-        SetSfxVolume(SaveManager.Instance.saveData.soundLevel);
-        SetMusicVolume(SaveManager.Instance.saveData.musicLevel);
+        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
+        {
+            SetVehicleVolume(SaveManager.Instance.saveData.VehicleLevel);
+            SetSfxVolume(SaveManager.Instance.saveData.soundLevel);
+            SetMusicVolume(SaveManager.Instance.saveData.musicLevel);
+        }
     }
 
     private void OnEnable()
@@ -69,6 +72,9 @@ public class SoundManager : MonoBehaviour
 
     public void SetVehicleVolume(float value)
     {
+        if (audioMixer == null || SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+            return;
+
         value = Mathf.Clamp01(value);
 
         float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
@@ -81,6 +87,9 @@ public class SoundManager : MonoBehaviour
     }
     public void SetSfxVolume(float value)
     {
+        if (GlobalaudioMixer == null || SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+            return;
+
         value = Mathf.Clamp01(value);
 
         float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
@@ -92,6 +101,9 @@ public class SoundManager : MonoBehaviour
     }
     public void SetMusicVolume(float value)
     {
+        if (GlobalaudioMixer == null || SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+            return;
+
         value = Mathf.Clamp01(value);
 
         float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
@@ -103,7 +115,8 @@ public class SoundManager : MonoBehaviour
     }
     private void OnDestroy()
     {
-      
+        if (Instance == this)
+            Instance = null;
     }
 
     private void ApplySettings()
@@ -144,7 +157,12 @@ public class SoundManager : MonoBehaviour
         if (sfxSource == null || clip == null)
             return;
 
-        sfxSource.PlayOneShot(clip,SaveManager.Instance.saveData.soundLevel);
+        float volume = 1f;
+
+        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
+            volume = SaveManager.Instance.saveData.soundLevel;
+
+        sfxSource.PlayOneShot(clip, volume);
     }
 
     public void PlayButtonClick()
