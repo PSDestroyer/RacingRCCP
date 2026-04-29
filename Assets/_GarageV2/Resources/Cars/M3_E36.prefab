@@ -10196,8 +10196,16 @@ MonoBehaviour:
     NOS: 0
     revLimiter: 0
     automaticTransmission: 0
-    headlightColor: {r: 0, g: 0, b: 0, a: 0}
-    wheelSmokeColor: {r: 0, g: 0, b: 0, a: 0}
+    headlightColor:
+      r: 0
+      g: 0
+      b: 0
+      a: 0
+    wheelSmokeColor:
+      r: 0
+      g: 0
+      b: 0
+      a: 0
   customizationDataDefault:
     initialized: 0
     suspensionDistanceFront: 0
@@ -10221,8 +10229,16 @@ MonoBehaviour:
     NOS: 0
     revLimiter: 0
     automaticTransmission: 0
-    headlightColor: {r: 0, g: 0, b: 0, a: 0}
-    wheelSmokeColor: {r: 0, g: 0, b: 0, a: 0}
+    headlightColor:
+      r: 0
+      g: 0
+      b: 0
+      a: 0
+    wheelSmokeColor:
+      r: 0
+      g: 0
+      b: 0
+      a: 0
 --- !u!1 &234713642369649314
 GameObject:
   m_ObjectHideFlags: 0
@@ -10337,6 +10353,7 @@ GameObject:
   - component: {fileID: 730452378755405077}
   - component: {fileID: 730452378755405076}
   - component: {fileID: 8580565240762381970}
+  - component: {fileID: 2800402643906498049}
   m_Layer: 8
   m_Name: RCCP_Light_Indicator_Left_D
   m_TagString: Untagged
@@ -10585,6 +10602,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &2800402643906498049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452378755405073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &730452378765902143
 GameObject:
   m_ObjectHideFlags: 0
@@ -11638,6 +11678,7 @@ GameObject:
   - component: {fileID: 730452379535917881}
   - component: {fileID: 730452379535917880}
   - component: {fileID: 1048949614676133409}
+  - component: {fileID: 375325813021776124}
   m_Layer: 8
   m_Name: RCCP_Light_Headlight_High_D
   m_TagString: Untagged
@@ -11886,6 +11927,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &375325813021776124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452379535918277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &730452379542181318
 GameObject:
   m_ObjectHideFlags: 0
@@ -11951,6 +12015,7 @@ GameObject:
   - component: {fileID: 730452379720904214}
   - component: {fileID: 730452379720904209}
   - component: {fileID: 4498767978970200908}
+  - component: {fileID: 8904504239359118166}
   m_Layer: 8
   m_Name: RCCP_Light_Indicator_Left_D_D
   m_TagString: Untagged
@@ -12199,6 +12264,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &8904504239359118166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452379720904210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &730452379792445703
 GameObject:
   m_ObjectHideFlags: 0
@@ -12320,6 +12408,7 @@ GameObject:
   - component: {fileID: 730452379820146262}
   - component: {fileID: 730452379820146257}
   - component: {fileID: 5562235544979467867}
+  - component: {fileID: 263261798551291610}
   m_Layer: 8
   m_Name: RCCP_Light_Headlight_Low_D
   m_TagString: Untagged
@@ -12568,6 +12657,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &263261798551291610
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452379820146258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &730452379822335408
 GameObject:
   m_ObjectHideFlags: 0
@@ -12698,6 +12810,7 @@ GameObject:
   - component: {fileID: 730452379844745638}
   - component: {fileID: 730452379844745633}
   - component: {fileID: 7277341238577100135}
+  - component: {fileID: 4169441556639918269}
   m_Layer: 8
   m_Name: RCCP_Light_Taillight_D
   m_TagString: Untagged
@@ -12946,6 +13059,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &4169441556639918269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452379844745634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &730452380046767877
 GameObject:
   m_ObjectHideFlags: 0
@@ -12958,6 +13094,7 @@ GameObject:
   - component: {fileID: 730452380046767993}
   - component: {fileID: 730452380046767992}
   - component: {fileID: 3782141753316529387}
+  - component: {fileID: 8146892020995216168}
   m_Layer: 8
   m_Name: RCCP_Light_Reverselight_D_D
   m_TagString: Untagged
@@ -13206,6 +13343,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &8146892020995216168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452380046767877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &730452380050800680
 GameObject:
   m_ObjectHideFlags: 0
@@ -13218,6 +13378,7 @@ GameObject:
   - component: {fileID: 730452380050800684}
   - component: {fileID: 730452380050800687}
   - component: {fileID: 734655339463064777}
+  - component: {fileID: 2074918574222512971}
   m_Layer: 8
   m_Name: RCCP_Light_Reverselight_D
   m_TagString: Untagged
@@ -13466,6 +13627,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &2074918574222512971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452380050800680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &730452380073065721
 GameObject:
   m_ObjectHideFlags: 0
@@ -13478,6 +13662,7 @@ GameObject:
   - component: {fileID: 730452380073065725}
   - component: {fileID: 730452380073065724}
   - component: {fileID: 7335979699619008416}
+  - component: {fileID: 2131123970407300757}
   m_Layer: 8
   m_Name: RCCP_Light_Headlight_Low_D_D
   m_TagString: Untagged
@@ -13726,6 +13911,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &2131123970407300757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452380073065721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &730452380126387039
 GameObject:
   m_ObjectHideFlags: 0
@@ -13738,6 +13946,7 @@ GameObject:
   - component: {fileID: 730452380126387027}
   - component: {fileID: 730452380126387026}
   - component: {fileID: 7117650252329407302}
+  - component: {fileID: 2849052204304734544}
   m_Layer: 8
   m_Name: RCCP_Light_Headlight_High_D_D
   m_TagString: Untagged
@@ -13986,6 +14195,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &2849052204304734544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452380126387039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &730452380127696337
 GameObject:
   m_ObjectHideFlags: 0
@@ -14282,6 +14514,7 @@ GameObject:
   - component: {fileID: 730452380181621236}
   - component: {fileID: 730452380181621239}
   - component: {fileID: 1762202746398105387}
+  - component: {fileID: 3157481460763227823}
   m_Layer: 8
   m_Name: RCCP_Light_Brakelight_D
   m_TagString: Untagged
@@ -14530,6 +14763,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &3157481460763227823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452380181621232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &730452380595831460
 GameObject:
   m_ObjectHideFlags: 0
@@ -14596,6 +14852,7 @@ GameObject:
   - component: {fileID: 730452380634787781}
   - component: {fileID: 730452380634787780}
   - component: {fileID: 7078346212057161904}
+  - component: {fileID: 3282216446959687659}
   m_Layer: 8
   m_Name: RCCP_Light_Taillight_D_D
   m_TagString: Untagged
@@ -14844,6 +15101,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &3282216446959687659
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452380634787777}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &730452380809769061
 GameObject:
   m_ObjectHideFlags: 0
@@ -14856,6 +15136,7 @@ GameObject:
   - component: {fileID: 730452380809769049}
   - component: {fileID: 730452380809769048}
   - component: {fileID: 717786707930006811}
+  - component: {fileID: 2186687919328703612}
   m_Layer: 8
   m_Name: RCCP_Light_Brakelight_D_D
   m_TagString: Untagged
@@ -15104,6 +15385,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &2186687919328703612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 730452380809769061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &768334401931264825
 GameObject:
   m_ObjectHideFlags: 0
@@ -18561,7 +18865,7 @@ MonoBehaviour:
   completeSetup: 0
   checkedSetup: 0
   paintMaterial: {fileID: 2100000, guid: 083a3a8859d96e84aaa896578f60191b, type: 2}
-  id: _BaseColor
+  id: _Color
 --- !u!1 &6566244947445612325
 GameObject:
   m_ObjectHideFlags: 0
@@ -19098,7 +19402,11 @@ MonoBehaviour:
   autoSave: 1
   initializeMethod: 2
   loadout:
-    paint: {r: 1, g: 1, b: 1, a: 0}
+    paint:
+      r: 1
+      g: 1
+      b: 1
+      a: 0
     spoiler: -1
     siren: -1
     wheel: -1
@@ -19134,8 +19442,16 @@ MonoBehaviour:
       NOS: 0
       revLimiter: 0
       automaticTransmission: 0
-      headlightColor: {r: 0, g: 0, b: 0, a: 0}
-      wheelSmokeColor: {r: 0, g: 0, b: 0, a: 0}
+      headlightColor:
+        r: 0
+        g: 0
+        b: 0
+        a: 0
+      wheelSmokeColor:
+        r: 0
+        g: 0
+        b: 0
+        a: 0
 --- !u!1 &6856648941115346690
 GameObject:
   m_ObjectHideFlags: 0
@@ -20794,6 +21110,7 @@ GameObject:
   - component: {fileID: 9074833066982721709}
   - component: {fileID: 9074833066982721708}
   - component: {fileID: 5340082538426358072}
+  - component: {fileID: 5067161496738464194}
   m_Layer: 8
   m_Name: RCCP_Light_Indicator_Left_D
   m_TagString: Untagged
@@ -21042,6 +21359,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &5067161496738464194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9074833066982721705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &9074833067678184362
 GameObject:
   m_ObjectHideFlags: 0
@@ -21054,6 +21394,7 @@ GameObject:
   - component: {fileID: 9074833067678184366}
   - component: {fileID: 9074833067678184361}
   - component: {fileID: 4965805534085233704}
+  - component: {fileID: 4988041619402286576}
   m_Layer: 8
   m_Name: RCCP_Light_Indicator_Left_D_D
   m_TagString: Untagged
@@ -21302,6 +21643,29 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   lightOverride: {fileID: 0}
+--- !u!114 &4988041619402286576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9074833067678184362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &9074833068168783811
 GameObject:
   m_ObjectHideFlags: 0
