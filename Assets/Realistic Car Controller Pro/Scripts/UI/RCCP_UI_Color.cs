@@ -42,45 +42,43 @@ public class RCCP_UI_Color : RCCP_UIComponent {
         //  Color.
         Color selectedColor = new Color();
 
-        switch (_pickedColor) {
-
+        switch (_pickedColor)
+        {
             case PickedColor.Orange:
-                selectedColor = Color.red + (Color.green / 2f);
+                selectedColor = new Color(1f, 0.55f, 0.1f); // vivid orange
                 break;
 
             case PickedColor.Red:
-                selectedColor = new Color(0.75f, 0.05f, 0.05f); // sport red
-
+                selectedColor = new Color(0.9f, 0.2f, 0.2f); // bright red
                 break;
 
             case PickedColor.Green:
-                selectedColor = new Color(0.0f, 0.3f, 0.1f); // british racing green;
+                selectedColor = new Color(0.1f, 0.7f, 0.3f); // fresh green
                 break;
 
             case PickedColor.Blue:
-                selectedColor = new Color(0.0f, 0.2f, 0.6f); // deep metallic blue (BMW style);
+                selectedColor = new Color(0.1f, 0.4f, 0.9f); // vibrant blue
                 break;
 
             case PickedColor.Black:
-                selectedColor = Color.black;
+                selectedColor = new Color(0.15f, 0.15f, 0.15f); // richer dark
                 break;
 
             case PickedColor.White:
-                selectedColor = Color.white;
+                selectedColor = new Color(1f, 1f, 1f);
                 break;
 
             case PickedColor.Cyan:
-                selectedColor = new Color(0.0f, 0.5f, 0.6f);
+                selectedColor = new Color(0.0f, 0.7f, 0.8f); // punchy cyan
                 break;
 
             case PickedColor.Magenta:
-                selectedColor = new Color(0.4f, 0.1f, 0.5f);
+                selectedColor = new Color(0.7f, 0.2f, 0.8f); // saturated magenta
                 break;
 
             case PickedColor.Pink:
-                selectedColor = new Color(0.8f, 0.4f, 0.6f); // soft pink (mai realist decât neon)
+                selectedColor = new Color(1f, 0.4f, 0.7f); // strong pink
                 break;
-
         }
 
         playerVehicle.Customizer.PaintManager.Paint(selectedColor);

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RCCP_Settings
   m_EditorClassIdentifier: 
   multithreading: 0
-  behaviorSelectedIndex: 0
+  behaviorSelectedIndex: 1
   overrideFPS: 0
   overrideFixedTimeStep: 0
   fixedTimeStep: 0.02
@@ -194,21 +194,21 @@ MonoBehaviour:
     gearShiftingDelayMinimum: 0.15
     gearShiftingDelayMaximum: 0.3
     forwardExtremumSlip_F: 0.4
-    forwardExtremumValue_F: 1
-    forwardAsymptoteSlip_F: 1
-    forwardAsymptoteValue_F: 1
+    forwardExtremumValue_F: 1.05
+    forwardAsymptoteSlip_F: 0.8
+    forwardAsymptoteValue_F: 0.55
     forwardExtremumSlip_R: 0.4
-    forwardExtremumValue_R: 1
-    forwardAsymptoteSlip_R: 1
-    forwardAsymptoteValue_R: 1
-    sidewaysExtremumSlip_F: 0.4
-    sidewaysExtremumValue_F: 1
-    sidewaysAsymptoteSlip_F: 1
-    sidewaysAsymptoteValue_F: 1
-    sidewaysExtremumSlip_R: 0.4
-    sidewaysExtremumValue_R: 1
-    sidewaysAsymptoteSlip_R: 1
-    sidewaysAsymptoteValue_R: 1
+    forwardExtremumValue_R: 1.05
+    forwardAsymptoteSlip_R: 0.8
+    forwardAsymptoteValue_R: 0.55
+    sidewaysExtremumSlip_F: 0.35
+    sidewaysExtremumValue_F: 1.05
+    sidewaysAsymptoteSlip_F: 0.5
+    sidewaysAsymptoteValue_F: 0.8
+    sidewaysExtremumSlip_R: 0.35
+    sidewaysExtremumValue_R: 1.05
+    sidewaysAsymptoteSlip_R: 0.5
+    sidewaysAsymptoteValue_R: 0.8
   - behaviorName: Race
     ABS: 1
     ESP: 1
