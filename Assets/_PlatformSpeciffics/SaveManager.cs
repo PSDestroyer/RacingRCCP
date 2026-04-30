@@ -150,6 +150,7 @@ namespace HalvaStudio.Save
             public int exp;
             public int currentCar;
             public string selectedMapName = string.Empty;
+            public string selectedTrackName = string.Empty;
             public int selectedMapIndex = -1;
             public int selectedTrackIndex = -1;
             public int selectedMissionIndex = -1;

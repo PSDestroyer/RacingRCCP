@@ -69,6 +69,7 @@ public class MapSelect : MonoBehaviour
         if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
         {
             SaveManager.Instance.saveData.selectedMapName = maps[mapIndex].mapName;
+            SaveManager.Instance.saveData.selectedTrackName = string.Empty;
             SaveManager.Instance.saveData.selectedMapIndex = mapIndex;
             SaveManager.Instance.saveData.selectedTrackIndex = -1;
             SaveManager.Instance.saveData.selectedMissionIndex = -1;
@@ -108,6 +109,7 @@ public class MapSelect : MonoBehaviour
 
         if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
         {
+            SaveManager.Instance.saveData.selectedTrackName = selectedTrack.trackName;
             SaveManager.Instance.saveData.selectedTrackIndex = trackIndex;
             SaveManager.Instance.saveData.selectedMissionIndex = -1;
             SaveManager.Instance.saveData.currentMapTrackCount = tracks.Count;
@@ -163,16 +165,16 @@ public class MapSelect : MonoBehaviour
 
             
             
-            if (!string.IsNullOrWhiteSpace(SaveManager.Instance.saveData.selectedMapName) && LoadingManager.Instance != null)
+            if (!string.IsNullOrWhiteSpace(SaveManager.Instance.saveData.selectedTrackName) && LoadingManager.Instance != null)
             {
-                LoadingManager.Instance.LoadScene(SaveManager.Instance.saveData.selectedMapName);
+                LoadingManager.Instance.LoadScene(SaveManager.Instance.saveData.selectedTrackName);
                 PlayClick();
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(SaveManager.Instance.saveData.selectedMapName))
+            if (!string.IsNullOrWhiteSpace(SaveManager.Instance.saveData.selectedTrackName))
             {
-                SceneManager.LoadScene(SaveManager.Instance.saveData.selectedMapName);
+                SceneManager.LoadScene(SaveManager.Instance.saveData.selectedTrackName);
                 PlayClick();
                 return;
             }
@@ -235,6 +237,7 @@ public class MapSelect : MonoBehaviour
 
             if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
             {
+                SaveManager.Instance.saveData.selectedTrackName = string.Empty;
                 SaveManager.Instance.saveData.selectedTrackIndex = -1;
                 SaveManager.Instance.saveData.selectedMissionIndex = -1;
                 SaveManager.Instance.saveData.currentMissionMapId = -1;
