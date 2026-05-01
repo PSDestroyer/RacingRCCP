@@ -3,8 +3,9 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -35,19 +36,26 @@ MonoBehaviour:
   NormalCompression: 2
 --- !u!21 &21944944869371428
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: Barrier_Ver_C_M01_Impostor
-  m_Shader: {fileID: 4800000, guid: 15013651f3df74aeaa45618a52465672, type: 3}
-  m_ShaderKeywords: 
+  m_Shader: {fileID: 4800000, guid: 650dd9526735d5b46b79224bc6e94025, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
+  stringTagMap:
+    RenderType: Opaque
+  disabledShaderPasses:
+  - MOTIONVECTORS
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -55,8 +63,16 @@ Material:
         m_Texture: {fileID: 2800000, guid: 27da6bec0a7fd452c967b0cb868762f3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _BaseMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Emission:
         m_Texture: {fileID: 2800000, guid: 8644232fbc13a486aaea2607eaf235c0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Normals:
@@ -67,26 +83,47 @@ Material:
         m_Texture: {fileID: 2800000, guid: 8b2bd622c49774a299f2dcccab6851e2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
+    - _AddPrecomputedVelocity: 0
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendOp: 0
     - _ClipMask: 0.5
+    - _Cull: 2
+    - _Cutoff: 0.5
     - _DepthSize: 2.6344862
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
     - _Frames: 16
     - _Hemi: 0
     - _Hue: 0
     - _ImpostorSize: 2.6368768
     - _Parallax: 1
+    - _QueueOffset: 0
+    - _SampleGI: 0
     - _ShadowBias: 0.25
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
     - _TextureBias: -1
+    - _ZWrite: 1
     m_Colors:
+    - _BaseColor: {r: 0.5254902, g: 0.42745098, b: 0.31764707, a: 1}
+    - _Color: {r: 0.5254902, g: 0.42745095, b: 0.31764704, a: 1}
     - _HueVariation: {r: 0, g: 0, b: 0, a: 0}
     - _Offset: {r: 0, g: -1.3301361e-15, b: 0.4064001, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!43 &43160897904599622
 Mesh:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: Barrier_Ver_C_M01_Impostor
-  serializedVersion: 8
+  serializedVersion: 11
   m_SubMeshes:
   - serializedVersion: 2
     firstByte: 0
@@ -106,15 +143,17 @@ Mesh:
   m_BindPose: []
   m_BoneNameHashes: 
   m_RootBoneNameHash: 0
+  m_BonesAABB: []
+  m_VariableBoneCountWeights:
+    m_Data: 
   m_MeshCompression: 0
   m_IsReadable: 1
   m_KeepVertices: 1
   m_KeepIndices: 1
   m_IndexFormat: 0
   m_IndexBuffer: 010004000300030002000100010000000400
-  m_Skin: []
   m_VertexData:
-    m_CurrentChannels: 11
+    serializedVersion: 3
     m_VertexCount: 5
     m_Channels:
     - stream: 0
@@ -130,9 +169,33 @@ Mesh:
       format: 0
       dimension: 0
     - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
       offset: 24
       format: 0
       dimension: 2
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
     - stream: 0
       offset: 0
       format: 0
@@ -207,6 +270,14 @@ Mesh:
     m_Center: {x: 0, y: -1.3301361e-15, z: 0.4064001}
     m_Extent: {x: 0.3048, y: 0.4064002, z: 1.2192001}
   m_MeshUsageFlags: 0
+  m_CookingOptions: 30
   m_BakedConvexCollisionMesh: 
   m_BakedTriangleCollisionMesh: 
-  m_MeshOptimized: 0
+  'm_MeshMetrics[0]': 1
+  'm_MeshMetrics[1]': 1
+  m_MeshOptimizationFlags: -1
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
