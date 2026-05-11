@@ -11,6 +11,10 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 /// <summary>
 /// Record / Replay system for saving and playing back vehicle movement and input data.
 /// Allows capturing a sequence of frames (inputs, transforms, velocities) and then replaying them.
@@ -58,6 +62,10 @@ public class RCCP_Recorder : RCCP_Component {
     /// Holds the most recently saved or loaded recorded clip.
     /// </summary>
     public RecordedClip recorded;
+
+    [Header("Editor Export")]
+    public bool saveAsAnimationClip = false;
+    public AnimationClip animationClip;
 
     private List<VehicleInput> Inputs;
     private List<VehicleTransform> Transforms;
@@ -222,7 +230,156 @@ public class RCCP_Recorder : RCCP_Component {
 
         RCCP_Records.Instance.records.Add(recorded);
 
+#if UNITY_EDITOR
+        if (RCCP_Records.Instance)
+            EditorUtility.SetDirty(RCCP_Records.Instance);
+
+        SaveAsAnimationClipIfNeeded();
+        AssetDatabase.SaveAssets();
+#endif
+
     }
+
+#if UNITY_EDITOR
+    private void SaveAsAnimationClipIfNeeded() {
+
+        if (!saveAsAnimationClip || animationClip == null || recorded == null || recorded.transforms == null || recorded.transforms.Length == 0)
+            return;
+
+        RCCP_TimelinePlayback timelinePlayback = CarController.GetComponent<RCCP_TimelinePlayback>();
+
+        if (!timelinePlayback)
+            timelinePlayback = CarController.gameObject.AddComponent<RCCP_TimelinePlayback>();
+
+        animationClip.ClearCurves();
+        animationClip.frameRate = Mathf.Approximately(Time.fixedDeltaTime, 0f) ? 60f : (1f / Time.fixedDeltaTime);
+
+        AnimationCurve posX = new AnimationCurve();
+        AnimationCurve posY = new AnimationCurve();
+        AnimationCurve posZ = new AnimationCurve();
+        AnimationCurve rotX = new AnimationCurve();
+        AnimationCurve rotY = new AnimationCurve();
+        AnimationCurve rotZ = new AnimationCurve();
+        AnimationCurve rotW = new AnimationCurve();
+        AnimationCurve throttle = new AnimationCurve();
+        AnimationCurve brake = new AnimationCurve();
+        AnimationCurve steer = new AnimationCurve();
+        AnimationCurve handbrake = new AnimationCurve();
+        AnimationCurve clutch = new AnimationCurve();
+        AnimationCurve nos = new AnimationCurve();
+        AnimationCurve direction = new AnimationCurve();
+        AnimationCurve currentGear = new AnimationCurve();
+        AnimationCurve gearInput = new AnimationCurve();
+        AnimationCurve gearState = new AnimationCurve();
+        AnimationCurve neutralGear = new AnimationCurve();
+        AnimationCurve lowBeam = new AnimationCurve();
+        AnimationCurve highBeam = new AnimationCurve();
+        AnimationCurve indicatorsLeft = new AnimationCurve();
+        AnimationCurve indicatorsRight = new AnimationCurve();
+        AnimationCurve indicatorsAll = new AnimationCurve();
+        AnimationCurve linearVelocityX = new AnimationCurve();
+        AnimationCurve linearVelocityY = new AnimationCurve();
+        AnimationCurve linearVelocityZ = new AnimationCurve();
+        AnimationCurve angularVelocityX = new AnimationCurve();
+        AnimationCurve angularVelocityY = new AnimationCurve();
+        AnimationCurve angularVelocityZ = new AnimationCurve();
+
+        Transform targetTransform = CarController.transform;
+        Transform parent = targetTransform.parent;
+
+        for (int i = 0; i < recorded.transforms.Length; i++) {
+
+            float time = i * Time.fixedDeltaTime;
+            Vector3 position = recorded.transforms[i].position;
+            Quaternion rotation = recorded.transforms[i].rotation;
+
+            if (parent) {
+                position = parent.InverseTransformPoint(position);
+                rotation = Quaternion.Inverse(parent.rotation) * rotation;
+            }
+
+            posX.AddKey(time, position.x);
+            posY.AddKey(time, position.y);
+            posZ.AddKey(time, position.z);
+            rotX.AddKey(time, rotation.x);
+            rotY.AddKey(time, rotation.y);
+            rotZ.AddKey(time, rotation.z);
+            rotW.AddKey(time, rotation.w);
+
+            if (recorded.inputs != null && i < recorded.inputs.Length) {
+
+                VehicleInput input = recorded.inputs[i];
+
+                throttle.AddKey(time, input.throttleInput);
+                brake.AddKey(time, input.brakeInput);
+                steer.AddKey(time, input.steerInput);
+                handbrake.AddKey(time, input.handbrakeInput);
+                clutch.AddKey(time, input.clutchInput);
+                nos.AddKey(time, input.nosInput);
+                direction.AddKey(time, input.direction);
+                currentGear.AddKey(time, input.currentGear);
+                gearInput.AddKey(time, input.gearInput);
+                gearState.AddKey(time, (float)input.gearState);
+                neutralGear.AddKey(time, input.NGear ? 1f : 0f);
+                lowBeam.AddKey(time, input.lowBeamHeadLightsOn ? 1f : 0f);
+                highBeam.AddKey(time, input.highBeamHeadLightsOn ? 1f : 0f);
+                indicatorsLeft.AddKey(time, input.indicatorsLeft ? 1f : 0f);
+                indicatorsRight.AddKey(time, input.indicatorsRight ? 1f : 0f);
+                indicatorsAll.AddKey(time, input.indicatorsAll ? 1f : 0f);
+
+            }
+
+            if (recorded.rigids != null && i < recorded.rigids.Length) {
+
+                VehicleVelocity rigid = recorded.rigids[i];
+
+                linearVelocityX.AddKey(time, rigid.velocity.x);
+                linearVelocityY.AddKey(time, rigid.velocity.y);
+                linearVelocityZ.AddKey(time, rigid.velocity.z);
+                angularVelocityX.AddKey(time, rigid.angularVelocity.x);
+                angularVelocityY.AddKey(time, rigid.angularVelocity.y);
+                angularVelocityZ.AddKey(time, rigid.angularVelocity.z);
+
+            }
+
+        }
+
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(Transform), "m_LocalPosition.x"), posX);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(Transform), "m_LocalPosition.y"), posY);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(Transform), "m_LocalPosition.z"), posZ);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(Transform), "m_LocalRotation.x"), rotX);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(Transform), "m_LocalRotation.y"), rotY);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(Transform), "m_LocalRotation.z"), rotZ);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(Transform), "m_LocalRotation.w"), rotW);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "throttleInput"), throttle);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "brakeInput"), brake);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "steerInput"), steer);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "handbrakeInput"), handbrake);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "clutchInput"), clutch);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "nosInput"), nos);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "direction"), direction);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "currentGear"), currentGear);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "gearInput"), gearInput);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "gearState"), gearState);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "neutralGear"), neutralGear);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "lowBeamHeadLightsOn"), lowBeam);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "highBeamHeadLightsOn"), highBeam);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "indicatorsLeft"), indicatorsLeft);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "indicatorsRight"), indicatorsRight);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "indicatorsAll"), indicatorsAll);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "linearVelocity.x"), linearVelocityX);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "linearVelocity.y"), linearVelocityY);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "linearVelocity.z"), linearVelocityZ);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "angularVelocity.x"), angularVelocityX);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "angularVelocity.y"), angularVelocityY);
+        AnimationUtility.SetEditorCurve(animationClip, EditorCurveBinding.FloatCurve(string.Empty, typeof(RCCP_TimelinePlayback), "angularVelocity.z"), angularVelocityZ);
+
+        animationClip.EnsureQuaternionContinuity();
+        EditorUtility.SetDirty(animationClip);
+        EditorUtility.SetDirty(timelinePlayback);
+
+    }
+#endif
 
     /// <summary>
     /// Toggle playback of the last recorded clip or stop if already playing.
@@ -232,28 +389,7 @@ public class RCCP_Recorder : RCCP_Component {
         if (recorded == null)
             return;
 
-        // Toggle between playing and stopping.
-        if (mode != RecorderMode.Play)
-            mode = RecorderMode.Play;
-        else
-            mode = RecorderMode.Neutral;
-
-        // If playing, override the vehicle so user input is replaced by recorded data.
-        if (mode == RecorderMode.Play) {
-
-            OverrideVehicle(true);
-            StartCoroutine(Replay());
-
-            if (recorded.transforms.Length > 0)
-                CarController.transform.SetPositionAndRotation(recorded.transforms[0].position, recorded.transforms[0].rotation);
-
-            StartCoroutine(Revel());
-
-        } else {
-
-            OverrideVehicle(false);
-
-        }
+        Play(recorded, 0f);
 
     }
 
@@ -263,12 +399,25 @@ public class RCCP_Recorder : RCCP_Component {
     /// <param name="_recorded">The recorded clip to play.</param>
     public void Play(RecordedClip _recorded) {
 
+        Play(_recorded, 0f);
+
+    }
+
+    /// <summary>
+    /// Plays back a specified clip starting from the given time offset in seconds.
+    /// </summary>
+    /// <param name="_recorded">The recorded clip to play.</param>
+    /// <param name="startTime">Playback start offset in seconds.</param>
+    public void Play(RecordedClip _recorded, float startTime) {
+
         recorded = _recorded;
 
         Debug.Log("Replaying record " + recorded.recordName);
 
         if (recorded == null)
             return;
+
+        int startFrame = GetPlaybackStartFrame(startTime);
 
         if (mode != RecorderMode.Play)
             mode = RecorderMode.Play;
@@ -278,18 +427,31 @@ public class RCCP_Recorder : RCCP_Component {
         if (mode == RecorderMode.Play) {
 
             OverrideVehicle(true);
-            StartCoroutine(Replay());
+            StartCoroutine(Replay(startFrame));
 
-            if (recorded.transforms.Length > 0)
-                CarController.transform.SetPositionAndRotation(recorded.transforms[0].position, recorded.transforms[0].rotation);
+            if (recorded.transforms.Length > startFrame)
+                CarController.transform.SetPositionAndRotation(recorded.transforms[startFrame].position, recorded.transforms[startFrame].rotation);
 
-            StartCoroutine(Revel());
+            StartCoroutine(Revel(startFrame));
 
         } else {
 
             OverrideVehicle(false);
 
         }
+
+    }
+
+    private int GetPlaybackStartFrame(float startTime) {
+
+        if (recorded == null || recorded.transforms == null || recorded.transforms.Length == 0)
+            return 0;
+
+        float safeStartTime = Mathf.Max(0f, startTime);
+        int maxFrame = Mathf.Max(recorded.transforms.Length - 1, 0);
+        int frame = Mathf.RoundToInt(safeStartTime / Mathf.Max(Time.fixedDeltaTime, .0001f));
+
+        return Mathf.Clamp(frame, 0, maxFrame);
 
     }
 
@@ -303,9 +465,9 @@ public class RCCP_Recorder : RCCP_Component {
 
     }
 
-    private IEnumerator Replay() {
+    private IEnumerator Replay(int startFrame) {
 
-        for (int i = 0; i < recorded.inputs.Length && mode == RecorderMode.Play; i++) {
+        for (int i = startFrame; i < recorded.inputs.Length && mode == RecorderMode.Play; i++) {
 
             OverrideVehicle(true);
 
@@ -347,9 +509,9 @@ public class RCCP_Recorder : RCCP_Component {
     /// Applies the recorded velocities to the vehicle’s Rigidbody each physics frame.
     /// </summary>
     /// <returns></returns>
-    private IEnumerator Revel() {
+    private IEnumerator Revel(int startFrame) {
 
-        for (int i = 0; i < recorded.rigids.Length && mode == RecorderMode.Play; i++) {
+        for (int i = startFrame; i < recorded.rigids.Length && mode == RecorderMode.Play; i++) {
 
             CarController.Rigid.linearVelocity = recorded.rigids[i].velocity;
             CarController.Rigid.angularVelocity = recorded.rigids[i].angularVelocity;

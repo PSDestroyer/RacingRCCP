@@ -19,6 +19,8 @@ public class RCCP_RecordsEditor : Editor {
 
     RCCP_Records prop;
     GUISkin skin;
+    static RCCP_Recorder selectedRecorder;
+    static float replayStartTime = 0f;
 
     Color originalGUIColor;
 
@@ -49,6 +51,43 @@ public class RCCP_RecordsEditor : Editor {
 
         EditorGUILayout.BeginVertical(GUI.skin.box);
 
+        GUILayout.Label("Replay Target", EditorStyles.boldLabel);
+
+        selectedRecorder = (RCCP_Recorder)EditorGUILayout.ObjectField(
+            "Recorder",
+            selectedRecorder,
+            typeof(RCCP_Recorder),
+            true
+        );
+
+        replayStartTime = EditorGUILayout.FloatField("Start Time", replayStartTime);
+        replayStartTime = Mathf.Max(0f, replayStartTime);
+
+        using (new EditorGUI.DisabledScope(!Application.isPlaying || selectedRecorder == null)) {
+
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Play Selected Record") && prop.records != null && prop.records.Count > 0)
+                selectedRecorder.Play(prop.records[0], replayStartTime);
+
+            if (GUILayout.Button("Stop Replay"))
+                selectedRecorder.Stop();
+
+            EditorGUILayout.EndHorizontal();
+
+        }
+
+        if (!Application.isPlaying)
+            EditorGUILayout.HelpBox("Record replay buttons are available in Play Mode.", MessageType.Info);
+        else if (selectedRecorder == null)
+            EditorGUILayout.HelpBox("Assign an RCCP_Recorder from the scene to replay a stored record.", MessageType.Info);
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.Space();
+
+        EditorGUILayout.BeginVertical(GUI.skin.box);
+
         GUILayout.Label("Recorded Clips", EditorStyles.boldLabel);
 
         EditorGUILayout.Space();
@@ -62,6 +101,24 @@ public class RCCP_RecordsEditor : Editor {
                 EditorGUILayout.BeginHorizontal(GUI.skin.box);
 
                 EditorGUILayout.LabelField(prop.records[i].recordName);
+
+                using (new EditorGUI.DisabledScope(!Application.isPlaying || selectedRecorder == null)) {
+
+                    if (GUILayout.Button("Play", GUILayout.Width(55f)))
+                        selectedRecorder.Play(prop.records[i], replayStartTime);
+
+                }
+
+                GUI.color = Color.red;
+
+                using (new EditorGUI.DisabledScope(!Application.isPlaying || selectedRecorder == null)) {
+
+                    GUI.color = new Color(1f, .8f, .2f);
+
+                    if (GUILayout.Button("Stop", GUILayout.Width(55f)))
+                        selectedRecorder.Stop();
+
+                }
 
                 GUI.color = Color.red;
 

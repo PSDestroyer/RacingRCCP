@@ -374,6 +374,7 @@ public class GamePlayManager : MonoBehaviour
     {
         player = Instantiate(Resources.Load<GameObject>(GlobalCarData._carlists[SaveManager.Instance.saveData.currentCar].carPrefabLocation), SpawnPoint);
         CarController = player.GetComponent<RCCP_CarController>();
+        EnableLowBeamHeadlights(CarController);
         if (CarController != null)
             RCCP.RegisterPlayerVehicle(CarController);
     }
@@ -622,7 +623,17 @@ public class GamePlayManager : MonoBehaviour
         if (prefabToSpawn == null)
             return null;
 
-        return Instantiate(prefabToSpawn, spawnTransform.position, spawnTransform.rotation);
+        GameObject opponentObject = Instantiate(prefabToSpawn, spawnTransform.position, spawnTransform.rotation);
+        EnableLowBeamHeadlights(opponentObject != null ? opponentObject.GetComponent<RCCP_CarController>() : null);
+        return opponentObject;
+    }
+
+    private void EnableLowBeamHeadlights(RCCP_CarController carController)
+    {
+        if (carController == null || carController.Lights == null)
+            return;
+
+        carController.Lights.lowBeamHeadlights = true;
     }
 
     private GameObject GetOpponentPrefab(int opponentIndex)
