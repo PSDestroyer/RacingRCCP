@@ -4360,8 +4360,8 @@ Transform:
   - {fileID: 3295844701405700346}
   - {fileID: 3295844701722039885}
   - {fileID: 3295844701907495733}
-  - {fileID: 3295844702436831745}
   - {fileID: 8718790674680795415}
+  - {fileID: 3295844702436831745}
   - {fileID: 6876293677048753861}
   - {fileID: 5167493784904069300}
   - {fileID: 7943772527264441926}
@@ -4414,9 +4414,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _poweredAxles: []
-  _brakedAxles: []
-  _steeredAxles: []
-  _handbrakedAxles: []
+  _brakedAxles:
+  - {fileID: 3295844701896990220}
+  - {fileID: 3295844701427401232}
+  _steeredAxles:
+  - {fileID: 3295844701896990220}
+  _handbrakedAxles:
+  - {fileID: 3295844701427401232}
   checkComponents: 0
   canControl: 1
   externalControl: 0
@@ -18307,7 +18311,11 @@ MonoBehaviour:
   autoSave: 1
   initializeMethod: 1
   loadout:
-    paint: {r: 1, g: 1, b: 1, a: 0}
+    paint:
+      r: 1
+      g: 1
+      b: 1
+      a: 0
     spoiler: -1
     siren: -1
     wheel: -1
@@ -18343,8 +18351,16 @@ MonoBehaviour:
       NOS: 0
       revLimiter: 0
       automaticTransmission: 0
-      headlightColor: {r: 0, g: 0, b: 0, a: 0}
-      wheelSmokeColor: {r: 0, g: 0, b: 0, a: 0}
+      headlightColor:
+        r: 0
+        g: 0
+        b: 0
+        a: 0
+      wheelSmokeColor:
+        r: 0
+        g: 0
+        b: 0
+        a: 0
 --- !u!1 &4842246673128182855
 GameObject:
   m_ObjectHideFlags: 0
@@ -18414,8 +18430,16 @@ MonoBehaviour:
     NOS: 0
     revLimiter: 0
     automaticTransmission: 0
-    headlightColor: {r: 0, g: 0, b: 0, a: 0}
-    wheelSmokeColor: {r: 0, g: 0, b: 0, a: 0}
+    headlightColor:
+      r: 0
+      g: 0
+      b: 0
+      a: 0
+    wheelSmokeColor:
+      r: 0
+      g: 0
+      b: 0
+      a: 0
   customizationDataDefault:
     initialized: 0
     suspensionDistanceFront: 0
@@ -18439,8 +18463,16 @@ MonoBehaviour:
     NOS: 0
     revLimiter: 0
     automaticTransmission: 0
-    headlightColor: {r: 0, g: 0, b: 0, a: 0}
-    wheelSmokeColor: {r: 0, g: 0, b: 0, a: 0}
+    headlightColor:
+      r: 0
+      g: 0
+      b: 0
+      a: 0
+    wheelSmokeColor:
+      r: 0
+      g: 0
+      b: 0
+      a: 0
 --- !u!1 &4862852671157350367
 GameObject:
   m_ObjectHideFlags: 0

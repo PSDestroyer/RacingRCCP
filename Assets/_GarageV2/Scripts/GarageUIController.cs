@@ -10,6 +10,7 @@ public enum UIPanelType
     Shop,
     Upgrade,
     Play,
+    CareerMissions,
     Settings
 }
 

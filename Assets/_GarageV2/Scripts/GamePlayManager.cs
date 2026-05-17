@@ -213,9 +213,29 @@ public class GamePlayManager : MonoBehaviour
     // public static event onDriftScoreAchieved OnDriftScoreAchieved;
     private void Start()
     {
-        InstancePlayer();
-        ApplyCurrentMapSettings();
+
+
+        if (SelectedCareerMission.Mission != null)
+        {
+            ApplyMission(SelectedCareerMission.Mission);
+        }
+        else
+        {
+            RaceType = SelectedGameMode.RaceType;
+            ApplyCurrentMapSettings();
+        }
+        Debug.Log("GAMEPLAY selected: " + RaceType);
         SetUpRaceStyle(GetDrivingStyleIndex());
+        
+        InstancePlayer();
+        if (CarController != null)
+        {
+            CarController.useCustomBehavior = true;
+            CarController.customBehaviorIndex = GetDrivingStyleIndex();
+        }
+
+        SetUpRaceStyle(GetDrivingStyleIndex());
+        
 
         if (finishSummaryScreen != null)
             finishSummaryScreen.SetActive(false);
@@ -353,7 +373,11 @@ public class GamePlayManager : MonoBehaviour
         // 1  = Drift
         // 2  = Race
         // 3  = Arcade
+        RCCP_Settings.Instance.overrideBehavior = true;
         RCCP_Settings.Instance.behaviorSelectedIndex = type;
+        RCCP_Events.Event_OnBehaviorChanged();
+        
+        Debug.Log("RCCP behavior index: " + type);
         // Debug.Log(RCCP_Settings.Instance.behaviorTypes[type].behaviorName.ToString()); // Test Debug style
     }
 
@@ -2243,6 +2267,17 @@ public class GamePlayManager : MonoBehaviour
 
        if (Physics.Raycast(wheel.transform.position, -Vector3.up, out hit, 10f))
            transform.position = new Vector3(transform.position.x, hit.point.y + distancePivotBetweenWheel + (wheel.radius) + (wheel.suspensionDistance / 2f), transform.position.z);
+
+   }
+
+   private void ApplyMission(MissionSO mission)
+   {
+       RaceType = mission.raceType;
+
+       totalRaceLaps = mission.laps;
+       opponentCount =  mission.opponentCount;
+       targetDriftScore = mission.targetScore;
+       targetDriftTimeLimit = mission.timeLimit;
 
    }
 }
