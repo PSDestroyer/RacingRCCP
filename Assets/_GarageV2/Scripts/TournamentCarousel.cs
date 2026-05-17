@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using DG.Tweening;
+
 public class TournamentCarousel : MonoBehaviour
 {
     [SerializeField] private CareerUIController careerUIController;
@@ -12,14 +14,19 @@ public class TournamentCarousel : MonoBehaviour
     [SerializeField] private ScrollRect scrollRect;
     [SerializeField] private RectTransform content;
     [SerializeField] private TournamentCard cardPrefab;
+    
+    [Header("Animation")]
+    [SerializeField] private float slideDuration = 0.45f;
 
     private readonly List<TournamentCard> cards = new();
     private int currentIndex;
+    private bool isSliding;
 
     private void Start()
     {
         BuildCards();
-        SnapToIndex(0);
+        SetScrollPosition(0);
+        PlayCardAnimations(0, 1);
     }
 
     private void BuildCards()
@@ -40,35 +47,34 @@ public class TournamentCarousel : MonoBehaviour
 
     public void Next()
     {
-        if (cards.Count == 0)
+        if (cards.Count == 0 || isSliding)
+        {
+            return;
+        }
+
+        if (currentIndex >= cards.Count - 1)
         {
             return;
         }
         
         currentIndex++;
-        if (currentIndex >= cards.Count)
-        {
-            currentIndex = cards.Count - 1;
-        }
-        
-        SnapToIndex(currentIndex);
+        SnapToIndex(currentIndex, 1);
     }
 
     public void Previous()
     {
-        if (cards.Count == 0)
+        if (cards.Count == 0 || isSliding)
+        {
+            return;
+        }
+
+        if (currentIndex <= 0)
         {
             return;
         }
         
         currentIndex--;
-
-        if (currentIndex < 0)
-        {
-            currentIndex = 0;
-        }
-        
-        SnapToIndex(currentIndex);
+        SnapToIndex(currentIndex, -1);
     }
 
     public void SelectCurrentTournament()
@@ -82,15 +88,68 @@ public class TournamentCarousel : MonoBehaviour
         careerUIController.OpenTournament(selectedTournament);
     }
     
-    private void SnapToIndex(int index)
+    private void SnapToIndex(int index, int direction)
+    {
+        if (cards.Count == 0)
+        {
+            return;
+        }
+
+        if (cards.Count <= 1)
+        {
+            SetScrollPosition(0);
+            PlayCardAnimations(0, direction);
+            return;
+        }
+
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+
+        float targetPosition = GetNormalizedPosition(index);
+
+        if (scrollRect != null)
+        {
+            scrollRect.StopMovement();
+        }
+
+        scrollRect.DOKill();
+        PlayCardAnimations(index, direction);
+        isSliding = true;
+
+        scrollRect.DOHorizontalNormalizedPos(targetPosition, slideDuration)
+            .SetEase(Ease.OutCubic)
+            .OnComplete(() => isSliding = false);
+    }
+
+    private void SetScrollPosition(int index)
+    {
+        if (cards.Count == 0)
+        {
+            return;
+        }
+
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+
+        scrollRect.horizontalNormalizedPosition = GetNormalizedPosition(index);
+    }
+
+    private void PlayCardAnimations(int index, int direction)
+    {
+        UIJellySlide[] animations = cards[index].GetComponentsInChildren<UIJellySlide>();
+        foreach (UIJellySlide animation in animations)
+        {
+            animation.PlayIn(direction);
+        }
+    }
+
+    private float GetNormalizedPosition(int index)
     {
         if (cards.Count <= 1)
         {
-            scrollRect.horizontalNormalizedPosition = 0f;
-            return;
+            return 0f;
         }
-        
-        float narmalized = (float)index / (cards.Count - 1);
-        scrollRect.horizontalNormalizedPosition = narmalized;
+
+        return (float)index / (cards.Count - 1);
     }
 }
