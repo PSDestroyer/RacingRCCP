@@ -7,6 +7,8 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 public class GamePlayManager : MonoBehaviour
 {
@@ -213,7 +215,8 @@ public class GamePlayManager : MonoBehaviour
     // public static event onDriftScoreAchieved OnDriftScoreAchieved;
     private void Start()
     {
-
+        Time.timeScale = 1f;
+        ResetRCCPInputForGameplay();
 
         if (SelectedCareerMission.Mission != null)
         {
@@ -230,6 +233,7 @@ public class GamePlayManager : MonoBehaviour
         InstancePlayer();
         if (CarController != null)
         {
+            ResetPlayerVehicleForMission();
             CarController.useCustomBehavior = true;
             CarController.customBehaviorIndex = GetDrivingStyleIndex();
         }
@@ -264,7 +268,120 @@ public class GamePlayManager : MonoBehaviour
 
         if (IsRaceMode())
             BeginRaceStartFlow();
+        else
+            StartCoroutine(EnablePlayerControlNextFrame());
+
+        StartCoroutine(RemoveDuplicateEventSystemsAfterSceneSetup());
         
+    }
+
+    private IEnumerator EnablePlayerControlNextFrame()
+    {
+        yield return null;
+
+        if (CarController == null)
+            yield break;
+
+        ResetRCCPInputForGameplay();
+        ResetPlayerVehicleForMission();
+    }
+
+    private void ResetPlayerVehicleForMission()
+    {
+        if (CarController == null)
+            return;
+
+        CarController.externalControl = false;
+        CarController.SetCanControl(true);
+        CarController.SetEngine(true);
+
+        if (CarController.Inputs != null)
+            CarController.Inputs.DisableOverrideInputs();
+
+        if (CarController.Rigid != null)
+        {
+            CarController.Rigid.isKinematic = false;
+            CarController.Rigid.WakeUp();
+        }
+
+        if (CarController.Gearbox == null)
+            return;
+
+        CarController.Gearbox.forceToNGear = false;
+        CarController.Gearbox.forceToRGear = false;
+        CarController.Gearbox.automaticGearSelector = RCCP_Gearbox.SemiAutomaticDNRPGear.D;
+        CarController.Gearbox.currentGear = 0;
+        if (CarController.Gearbox.currentGearState == null)
+            CarController.Gearbox.currentGearState = new RCCP_Gearbox.CurrentGearState();
+
+        CarController.Gearbox.currentGearState.gearState = RCCP_Gearbox.CurrentGearState.GearState.InForwardGear;
+        CarController.Gearbox.gearInput = 1f;
+    }
+
+    private void ResetRCCPInputForGameplay()
+    {
+        RCCP_InputManager inputManager = RCCP_InputManager.Instance;
+
+        if (inputManager == null)
+            return;
+
+        inputManager.overrideInputs = false;
+
+        if (inputManager.inputActionsInstance == null && RCCP_InputActions.Instance != null)
+            inputManager.inputActionsInstance = RCCP_InputActions.Instance.inputActions;
+
+        InputActionAsset inputActions = inputManager.inputActionsInstance;
+
+        if (inputActions == null)
+            return;
+
+        inputActions.Enable();
+
+        InputActionMap vehicleMap = inputActions.FindActionMap("Vehicle");
+        if (vehicleMap != null)
+            vehicleMap.Enable();
+
+        InputActionMap cameraMap = inputActions.FindActionMap("Camera");
+        if (cameraMap != null)
+            cameraMap.Enable();
+
+        InputActionMap optionalMap = inputActions.FindActionMap("Optional");
+        if (optionalMap != null)
+            optionalMap.Enable();
+    }
+
+    private IEnumerator RemoveDuplicateEventSystemsAfterSceneSetup()
+    {
+        yield return null;
+        yield return null;
+
+        EventSystem[] eventSystems = FindObjectsByType<EventSystem>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        if (eventSystems.Length <= 1)
+            yield break;
+
+        EventSystem sceneEventSystem = null;
+        Scene activeScene = SceneManager.GetActiveScene();
+
+        foreach (EventSystem eventSystem in eventSystems)
+        {
+            if (eventSystem.gameObject.scene == activeScene)
+            {
+                sceneEventSystem = eventSystem;
+                break;
+            }
+        }
+
+        if (sceneEventSystem == null)
+            sceneEventSystem = EventSystem.current;
+
+        foreach (EventSystem eventSystem in eventSystems)
+        {
+            if (eventSystem == sceneEventSystem)
+                continue;
+
+            Destroy(eventSystem.gameObject);
+        }
     }
 
     private void InitializeDriftMode()
@@ -364,7 +481,7 @@ public class GamePlayManager : MonoBehaviour
         player = Instantiate(Resources.Load<GameObject>(GlobalCarData._carlists[SaveManager.Instance.saveData.currentCar].carPrefabLocation), SpawnPoint);
         CarController = player.GetComponent<RCCP_CarController>();
         if (CarController != null)
-            RCCP.RegisterPlayerVehicle(CarController);
+            RCCP.RegisterPlayerVehicle(CarController, true, true);
     }
 
     public void SetUpRaceStyle(int type)
@@ -594,7 +711,7 @@ public class GamePlayManager : MonoBehaviour
             RCCP_SceneManager.Instance.registerLastVehicleAsPlayer = previousRegisterLastVehicleAsPlayer;
 
         if (CarController != null)
-            RCCP.RegisterPlayerVehicle(CarController);
+            RCCP.RegisterPlayerVehicle(CarController, true, true);
     }
 
     private GameObject SpawnOpponentVehicle(int opponentIndex, Transform spawnTransform)
@@ -665,6 +782,8 @@ public class GamePlayManager : MonoBehaviour
 
    private void Update() {
 
+        MaintainPlayerControlForNonRaceMode();
+
         switch (RaceType)
         {
            case RaceType.DriftScore:
@@ -684,6 +803,53 @@ public class GamePlayManager : MonoBehaviour
                break;
        }
 
+    }
+
+    private void MaintainPlayerControlForNonRaceMode()
+    {
+        if (IsRaceMode() || missionResultsShown || CarController == null)
+            return;
+
+        ResetRCCPInputForGameplay();
+
+        if (CarController.externalControl)
+            CarController.externalControl = false;
+
+        if (!CarController.canControl)
+            CarController.SetCanControl(true);
+
+        if (CarController.Inputs != null)
+            CarController.Inputs.DisableOverrideInputs();
+
+        if (CarController.Rigid != null)
+        {
+            if (CarController.Rigid.isKinematic)
+                CarController.Rigid.isKinematic = false;
+
+            if (CarController.Rigid.IsSleeping())
+                CarController.Rigid.WakeUp();
+        }
+
+        if (CarController.Gearbox == null)
+            return;
+
+        if (CarController.Gearbox.forceToNGear)
+            CarController.Gearbox.forceToNGear = false;
+
+        if (CarController.Gearbox.forceToRGear)
+            CarController.Gearbox.forceToRGear = false;
+
+        if (CarController.Gearbox.automaticGearSelector != RCCP_Gearbox.SemiAutomaticDNRPGear.D)
+            CarController.Gearbox.automaticGearSelector = RCCP_Gearbox.SemiAutomaticDNRPGear.D;
+
+        if (CarController.Gearbox.currentGearState == null)
+            CarController.Gearbox.currentGearState = new RCCP_Gearbox.CurrentGearState();
+
+        if (CarController.Gearbox.currentGearState.gearState == RCCP_Gearbox.CurrentGearState.GearState.Neutral ||
+            CarController.Gearbox.currentGearState.gearState == RCCP_Gearbox.CurrentGearState.GearState.Park)
+        {
+            CarController.Gearbox.currentGearState.gearState = RCCP_Gearbox.CurrentGearState.GearState.InForwardGear;
+        }
     }
 
    private void UpdateDriftMode()

@@ -86,9 +86,41 @@ public class LoadingManager : Singleton<LoadingManager>
         }
 
         HideLoadingUI();
+        RemoveDuplicateEventSystems();
 
         AudioListener.pause = false;
         isLoading = false;
+    }
+
+    private void RemoveDuplicateEventSystems()
+    {
+        EventSystem[] eventSystems = FindObjectsByType<EventSystem>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        if (eventSystems.Length <= 1)
+            return;
+
+        Scene activeScene = SceneManager.GetActiveScene();
+        EventSystem current = null;
+
+        foreach (EventSystem eventSystem in eventSystems)
+        {
+            if (eventSystem.gameObject.scene == activeScene)
+            {
+                current = eventSystem;
+                break;
+            }
+        }
+
+        if (current == null)
+            current = EventSystem.current;
+
+        foreach (EventSystem eventSystem in eventSystems)
+        {
+            if (eventSystem == current)
+                continue;
+
+            Destroy(eventSystem.gameObject);
+        }
     }
 
     private void ShowLoadingUI()

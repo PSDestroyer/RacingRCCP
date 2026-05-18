@@ -33,8 +33,9 @@ public class YesNo : MonoBehaviour
 
     
     public async Task<bool> ShowYesNoPanelAsync(string Text)
-    {       
-        playerInput.actions["Cancel"].performed += ClosePanelCTX;
+    {
+        if (playerInput != null && playerInput.actions != null)
+            playerInput.actions["Cancel"].performed += ClosePanelCTX;
 
         InfoText.text = Text;
         tcs = new TaskCompletionSource<bool>();
@@ -50,7 +51,9 @@ public class YesNo : MonoBehaviour
 
     public void ClosePanel()
     {
-        playerInput.actions["Cancel"].performed -= ClosePanelCTX;
+        if (playerInput != null && playerInput.actions != null)
+            playerInput.actions["Cancel"].performed -= ClosePanelCTX;
+
         YesNoPanelObject.SetActive(false);
         tcs = null;
     }

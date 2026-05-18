@@ -20,6 +20,9 @@ public class Username : MonoBehaviour
         // inputF.Select();
         inputF.onSubmit.AddListener(deselecUI);
         // StartPlay.onClick.AddListener(() => LoadMenu());
+        if (_playerInput == null || _playerInput.actions == null)
+            return;
+
         _playerInput.actions["Submit"].performed += SelectInput;
         _playerInput.actions["Cancel"].performed += LoadMenuCTX;
     }
@@ -39,9 +42,12 @@ public class Username : MonoBehaviour
         SaveManager.Instance.saveData.PlayerName = inputF.text;
         SaveManager.Instance.Save();
         StartCoroutine(LoadGame());
-        
+
+        if (_playerInput == null || _playerInput.actions == null)
+            return;
+
         _playerInput.actions["Submit"].performed -= SelectInput;
-        _playerInput.actions["Pause"].performed -= LoadMenuCTX;
+        _playerInput.actions["Cancel"].performed -= LoadMenuCTX;
     }
 
     IEnumerator LoadGame()

@@ -69,12 +69,18 @@ public class GarageUIController : MonoBehaviour
 
     private void OnEnable()
     {
+        if (playerInput == null || playerInput.actions == null)
+            return;
+
         playerInput.actions["Cancel"].performed += BackCtx;
         
     }
 
     private void OnDisable()
     {
+        if (playerInput == null || playerInput.actions == null)
+            return;
+
         playerInput.actions["Cancel"].performed -= BackCtx;
     }
 

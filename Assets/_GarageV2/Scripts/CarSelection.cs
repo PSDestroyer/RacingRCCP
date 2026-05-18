@@ -370,6 +370,9 @@ public class CarSelection : MonoBehaviour
 
   private void SetEvents()
   {
+      if (playerInput == null || playerInput.actions == null)
+          return;
+
       playerInput.actions["Navigate"].performed += Navigations;
       selectbut.Select();
       // playerInput.actions["Submit"].performed += SelectOrBuyCtx;
@@ -381,6 +384,9 @@ public class CarSelection : MonoBehaviour
   }
   private void RemoveEvents()
   {
+      if (playerInput == null || playerInput.actions == null)
+          return;
+
       playerInput.actions["Navigate"].performed -= Navigations;
       // playerInput.actions["Submit"].performed -= SelectOrBuyCtx;
   }
