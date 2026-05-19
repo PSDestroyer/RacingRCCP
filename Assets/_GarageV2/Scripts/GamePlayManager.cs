@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.AI;
 
 public class GamePlayManager : MonoBehaviour
 {
@@ -24,6 +25,8 @@ public class GamePlayManager : MonoBehaviour
         [NonSerialized] public bool finished;
         [NonSerialized] public bool eliminated;
         [NonSerialized] public float distanceToNextWaypoint;
+        [NonSerialized] public int finishPosition;
+        [NonSerialized] public float finishTime;
     }
 
     [NonSerialized]public GameObject player;
@@ -136,6 +139,7 @@ public class GamePlayManager : MonoBehaviour
     private int missionFinalExpTotal = 0;
     private int missionStartingLevel = 1;
     private int missionFinalLevel = 1;
+    private int nextRaceFinishPosition = 1;
     private Coroutine expAnimationCoroutine;
     private Coroutine expRewardAnimationCoroutine;
     private Coroutine expSliderAnimationCoroutine;
@@ -425,6 +429,9 @@ public class GamePlayManager : MonoBehaviour
 
     private void ApplyCurrentMapSettings()
     {
+        if (SelectedCareerMission.Mission != null)
+            return;
+
         if (!useCurrentMapModeSettings || GlobalCarData.thismap == null)
             return;
 
@@ -533,7 +540,9 @@ public class GamePlayManager : MonoBehaviour
             currentWaypointIndex = GetClosestWaypointIndex(CarController != null ? CarController.transform : null),
             completedLaps = 0,
             finished = false,
-            eliminated = false
+            eliminated = false,
+            finishPosition = 0,
+            finishTime = 0f
         };
 
         int aiCount = aiRacers != null ? aiRacers.Length : 0;
@@ -568,11 +577,14 @@ public class GamePlayManager : MonoBehaviour
             aiRacer.completedLaps = 0;
             aiRacer.finished = false;
             aiRacer.eliminated = false;
+            aiRacer.finishPosition = 0;
+            aiRacer.finishTime = 0f;
             allRacers[i + 1] = aiRacer;
         }
 
         eliminationTimer = eliminationInterval;
         raceElapsedTime = 0f;
+        nextRaceFinishPosition = 1;
         missionResultsShown = false;
         missionRewardsApplied = false;
         missionSucceeded = false;
@@ -625,6 +637,7 @@ public class GamePlayManager : MonoBehaviour
         raceStarted = true;
         eliminationTimer = eliminationInterval;
         SetRaceParticipantsControl(true);
+        RefreshOpponentDrivers(true);
     }
 
     private void SetRaceParticipantsControl(bool state)
@@ -703,7 +716,9 @@ public class GamePlayManager : MonoBehaviour
                 aiDriver = aiDriver,
                 currentWaypointIndex = 0,
                 completedLaps = 0,
-                finished = false
+                finished = false,
+                finishPosition = 0,
+                finishTime = 0f
             };
         }
 
@@ -712,6 +727,86 @@ public class GamePlayManager : MonoBehaviour
 
         if (CarController != null)
             RCCP.RegisterPlayerVehicle(CarController, true, true);
+
+        StartCoroutine(RefreshOpponentsAfterSpawn());
+    }
+
+    private IEnumerator RefreshOpponentsAfterSpawn()
+    {
+        yield return null;
+        yield return new WaitForFixedUpdate();
+
+        RefreshOpponentDrivers(raceStarted);
+    }
+
+    private void RefreshOpponentDrivers(bool canControl)
+    {
+        if (aiRacers == null)
+            return;
+
+        for (int i = 0; i < aiRacers.Length; i++)
+        {
+            RaceRacer aiRacer = aiRacers[i];
+
+            if (aiRacer == null || aiRacer.aiDriver == null)
+                continue;
+
+            RCCP_AI aiDriver = aiRacer.aiDriver;
+            aiDriver.enabled = false;
+            aiDriver.behaviour = RCCP_AI.BehaviourType.RaceWaypoints;
+
+            if (raceWaypoints != null)
+                aiDriver.waypointsContainer = raceWaypoints;
+
+            aiDriver.enabled = true;
+            aiDriver.Reload();
+
+            RCCP_CarController aiCarController = aiDriver.CarController;
+
+            if (aiCarController == null && aiRacer.racerTransform != null)
+                aiCarController = aiRacer.racerTransform.GetComponent<RCCP_CarController>();
+
+            if (aiCarController == null)
+                continue;
+
+            aiCarController.externalControl = true;
+            aiCarController.SetCanControl(canControl);
+            aiCarController.SetEngine(true);
+
+            if (aiCarController.Rigid != null)
+                aiCarController.Rigid.WakeUp();
+
+            InitializeOpponentNavMeshAgent(aiDriver, aiCarController);
+        }
+    }
+
+    private void InitializeOpponentNavMeshAgent(RCCP_AI aiDriver, RCCP_CarController aiCarController)
+    {
+        if (aiDriver == null || aiCarController == null)
+            return;
+
+        NavMeshAgent agent = aiDriver.GetComponentInChildren<NavMeshAgent>(true);
+
+        if (agent == null)
+            return;
+
+        if (NavMesh.SamplePosition(aiCarController.transform.position, out NavMeshHit carHit, 12f, NavMesh.AllAreas))
+            agent.Warp(carHit.position);
+
+        if (raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count == 0)
+            return;
+
+        int waypointIndex = Mathf.Clamp(aiDriver.currentWaypointIndex, 0, raceWaypoints.waypoints.Count - 1);
+        RCCP_Waypoint waypoint = raceWaypoints.waypoints[waypointIndex];
+
+        if (waypoint == null)
+            return;
+
+        if (!NavMesh.SamplePosition(waypoint.transform.position, out NavMeshHit waypointHit, 20f, NavMesh.AllAreas))
+            return;
+
+        agent.ResetPath();
+        agent.SetDestination(waypointHit.position);
     }
 
     private GameObject SpawnOpponentVehicle(int opponentIndex, Transform spawnTransform)
@@ -1023,8 +1118,9 @@ public class GamePlayManager : MonoBehaviour
 
            if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge) && playerRacer.completedLaps >= totalRaceLaps)
            {
-               playerRacer.finished = true;
-               CompleteRaceMission(true, "Finish");
+               MarkRacerFinished(playerRacer);
+               int finalPosition = GetPlayerRacePosition();
+               CompleteRaceMission(finalPosition == 1, finalPosition == 1 ? "Winner" : $"Finished {finalPosition}/{GetTotalRaceParticipantCount()}");
            }
        }
    }
@@ -1053,7 +1149,7 @@ public class GamePlayManager : MonoBehaviour
                    aiRacer.completedLaps++;
 
                    if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge) && aiRacer.completedLaps >= totalRaceLaps)
-                       aiRacer.finished = true;
+                       MarkRacerFinished(aiRacer);
                }
            }
 
@@ -1268,6 +1364,11 @@ public class GamePlayManager : MonoBehaviour
        if (RaceType == RaceType.ComboMaster)
            return bronzeComboTarget;
 
+       MissionSO mission = SelectedCareerMission.Mission;
+
+       if (mission != null && mission.targetScore > 0)
+           return mission.targetScore;
+
        if (useCurrentMapDriftTarget && GlobalCarData.thismap != null)
        {
            if (GlobalCarData.thismap.driftBronzeTarget > 0)
@@ -1362,6 +1463,11 @@ public class GamePlayManager : MonoBehaviour
 
    private float GetTargetDriftScore()
    {
+       MissionSO mission = SelectedCareerMission.Mission;
+
+       if (mission != null && mission.targetScore > 0)
+           return mission.targetScore;
+
        if (useCurrentMapTargetDriftSettings && GlobalCarData.thismap != null)
        {
            if (GlobalCarData.thismap.targetDriftScore > 0)
@@ -1376,6 +1482,11 @@ public class GamePlayManager : MonoBehaviour
 
    private float GetTargetDriftTimeLimit()
    {
+       MissionSO mission = SelectedCareerMission.Mission;
+
+       if (mission != null && mission.timeLimit > 0)
+           return mission.timeLimit;
+
        if (useCurrentMapTargetDriftSettings && GlobalCarData.thismap != null)
        {
            if (GlobalCarData.thismap.targetDriftTimeLimit > 0)
@@ -1810,6 +1921,11 @@ public class GamePlayManager : MonoBehaviour
 
    private int GetMissionRewardAmount()
    {
+       MissionSO mission = SelectedCareerMission.Mission;
+
+       if (mission != null)
+           return Mathf.Max(0, mission.rewardMoney);
+
        if (GlobalCarData.thismap == null)
            return 0;
 
@@ -1818,6 +1934,11 @@ public class GamePlayManager : MonoBehaviour
 
    private int GetMissionExpReward(int playerPosition, bool success)
    {
+       MissionSO mission = SelectedCareerMission.Mission;
+
+       if (mission != null)
+           return success ? Mathf.Max(0, mission.rewardExp) : 0;
+
        int expReward = success ? missionCompletionExp : participationExp;
 
        switch (playerPosition)
@@ -2118,6 +2239,9 @@ public class GamePlayManager : MonoBehaviour
 
    private int GetPlayerRacePosition()
    {
+       if (playerRacer != null && playerRacer.finished && playerRacer.finishPosition > 0)
+           return playerRacer.finishPosition;
+
        if (allRacers == null || allRacers.Length == 0)
            return 1;
 
@@ -2140,6 +2264,19 @@ public class GamePlayManager : MonoBehaviour
        return position;
    }
 
+   private void MarkRacerFinished(RaceRacer racer)
+   {
+       if (racer == null || racer.finished)
+           return;
+
+       racer.finished = true;
+
+       if (racer.finishPosition <= 0)
+           racer.finishPosition = nextRaceFinishPosition++;
+
+       racer.finishTime = raceElapsedTime;
+   }
+
    private int GetTotalRaceParticipantCount()
    {
        if (allRacers == null || allRacers.Length == 0)
@@ -2160,6 +2297,9 @@ public class GamePlayManager : MonoBehaviour
    {
        if (otherRacer == null || otherRacer.eliminated)
            return false;
+
+       if (playerRacer.finished && playerRacer.finishPosition > 0)
+           return otherRacer.finished && otherRacer.finishPosition > 0 && otherRacer.finishPosition < playerRacer.finishPosition;
 
        if (playerRacer.eliminated)
            return true;
@@ -2225,6 +2365,14 @@ public class GamePlayManager : MonoBehaviour
 
        if (racerB == null || racerB.eliminated)
            return true;
+
+       if (racerA.finished || racerB.finished)
+       {
+           if (racerA.finished && racerB.finished)
+               return racerA.finishPosition > 0 && (racerB.finishPosition <= 0 || racerA.finishPosition < racerB.finishPosition);
+
+           return racerA.finished;
+       }
 
        if (racerA.completedLaps != racerB.completedLaps)
            return racerA.completedLaps > racerB.completedLaps;
@@ -2438,12 +2586,22 @@ public class GamePlayManager : MonoBehaviour
 
    private void ApplyMission(MissionSO mission)
    {
+       if (mission == null)
+           return;
+
        RaceType = mission.raceType;
 
-       totalRaceLaps = mission.laps;
-       opponentCount =  mission.opponentCount;
-       targetDriftScore = mission.targetScore;
-       targetDriftTimeLimit = mission.timeLimit;
+       if (mission.laps > 0)
+           totalRaceLaps = mission.laps;
+
+       if (mission.opponentCount >= 0)
+           opponentCount = mission.opponentCount;
+
+       if (mission.targetScore > 0)
+           targetDriftScore = mission.targetScore;
+
+       if (mission.timeLimit > 0)
+           targetDriftTimeLimit = mission.timeLimit;
 
    }
 }
