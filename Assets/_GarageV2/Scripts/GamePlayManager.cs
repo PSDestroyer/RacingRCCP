@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.AI;
 
 public class GamePlayManager : MonoBehaviour
 {
@@ -717,13 +718,7 @@ public class GamePlayManager : MonoBehaviour
                 continue;
 
             spawnedOpponentObjects.Add(opponentObject);
-
-            RCCP_AI aiDriver = opponentObject.GetComponent<RCCP_AI>();
-
-            if (aiDriver == null)
-                aiDriver = opponentObject.AddComponent<RCCP_AI>();
-
-            aiDriver.enabled = false;
+            RemoveLegacyOpponentAI(opponentObject);
 
             RCCP_RacingOpponentAI racingAI = opponentObject.GetComponent<RCCP_RacingOpponentAI>();
 
@@ -736,7 +731,7 @@ public class GamePlayManager : MonoBehaviour
             {
                 displayName = $"AI {i + 1}",
                 racerTransform = opponentObject.transform,
-                aiDriver = aiDriver,
+                aiDriver = null,
                 racingAI = racingAI,
                 currentWaypointIndex = 0,
                 completedLaps = 0,
@@ -765,8 +760,7 @@ public class GamePlayManager : MonoBehaviour
 
     private float GetOpponentRacingLineOffset(int opponentIndex)
     {
-        float[] offsets = { -.45f, .45f, 0f, -.25f, .25f };
-        return offsets[Mathf.Abs(opponentIndex) % offsets.Length];
+        return 0f;
     }
 
     private void ConfigureOpponentRacingAI(RCCP_RacingOpponentAI racingAI, int opponentIndex)
@@ -797,9 +791,12 @@ public class GamePlayManager : MonoBehaviour
         racingAI.lookAheadForTargetFactor = .11f;
         racingAI.lookAheadForSpeedOffset = 28f;
         racingAI.lookAheadForSpeedFactor = .18f;
+        racingAI.brakePreviewDistance = 22f;
+        racingAI.brakePreviewFactor = .16f;
         racingAI.minLookAheadDistance = 4f;
         racingAI.maxLookAheadDistance = 16f;
-        racingAI.insideCornerOffset = .8f;
+        racingAI.insideCornerOffset = .45f;
+        racingAI.maxLaneOffsetInCorners = .15f;
         racingAI.steeringSensitivity = 1.55f;
         racingAI.steeringSmoothTime = .12f;
         racingAI.maxSteerChangePerSecond = 6f;
@@ -809,6 +806,7 @@ public class GamePlayManager : MonoBehaviour
         racingAI.obstacleBrake = .3f;
         racingAI.vehicleBrake = .12f;
         racingAI.minimumTrafficSpeedKph = 24f;
+        racingAI.cornerBrakeAggression = 1.45f;
 
         if (mission != null && mission.useMissionAISettings && mission.rubberBandStrength > 0f)
         {
@@ -864,7 +862,7 @@ public class GamePlayManager : MonoBehaviour
                 racingAI.maxSpeedKph = 120f;
                 racingAI.acceleration = .74f;
                 racingAI.mediumCornerSpeedKph = 72f;
-                racingAI.sharpCornerSpeedKph = 34f;
+                racingAI.sharpCornerSpeedKph = 30f;
                 racingAI.wallSlowSpeedKph = 38f;
                 racingAI.behindPlayerSpeedMultiplier = 1.1f;
                 racingAI.aheadPlayerSpeedMultiplier = .92f;
@@ -874,7 +872,7 @@ public class GamePlayManager : MonoBehaviour
                 racingAI.maxSpeedKph = 165f;
                 racingAI.acceleration = .94f;
                 racingAI.mediumCornerSpeedKph = 96f;
-                racingAI.sharpCornerSpeedKph = 46f;
+                racingAI.sharpCornerSpeedKph = 40f;
                 racingAI.wallSlowSpeedKph = 44f;
                 racingAI.behindPlayerSpeedMultiplier = 1.22f;
                 racingAI.aheadPlayerSpeedMultiplier = .95f;
@@ -884,7 +882,7 @@ public class GamePlayManager : MonoBehaviour
                 racingAI.maxSpeedKph = 185f;
                 racingAI.acceleration = 1f;
                 racingAI.mediumCornerSpeedKph = 108f;
-                racingAI.sharpCornerSpeedKph = 52f;
+                racingAI.sharpCornerSpeedKph = 44f;
                 racingAI.wallSlowSpeedKph = 48f;
                 racingAI.behindPlayerSpeedMultiplier = 1.28f;
                 racingAI.aheadPlayerSpeedMultiplier = .97f;
@@ -894,7 +892,7 @@ public class GamePlayManager : MonoBehaviour
                 racingAI.maxSpeedKph = 142f;
                 racingAI.acceleration = .86f;
                 racingAI.mediumCornerSpeedKph = 84f;
-                racingAI.sharpCornerSpeedKph = 40f;
+                racingAI.sharpCornerSpeedKph = 34f;
                 racingAI.wallSlowSpeedKph = 42f;
                 racingAI.behindPlayerSpeedMultiplier = 1.16f;
                 racingAI.aheadPlayerSpeedMultiplier = .94f;
@@ -913,6 +911,9 @@ public class GamePlayManager : MonoBehaviour
 
             if (aiRacer == null || (aiRacer.aiDriver == null && aiRacer.racingAI == null))
                 continue;
+
+            if (aiRacer.racerTransform != null)
+                RemoveLegacyOpponentAI(aiRacer.racerTransform.gameObject);
 
             RCCP_AI aiDriver = aiRacer.aiDriver;
             if (aiDriver != null)
@@ -951,6 +952,24 @@ public class GamePlayManager : MonoBehaviour
             if (aiCarController.Rigid != null)
                 aiCarController.Rigid.WakeUp();
         }
+    }
+
+    private void RemoveLegacyOpponentAI(GameObject opponentObject)
+    {
+        if (opponentObject == null)
+            return;
+
+        RCCP_AI legacyAI = opponentObject.GetComponent<RCCP_AI>();
+        if (legacyAI != null)
+            Destroy(legacyAI);
+
+        NavMeshAgent navMeshAgent = opponentObject.GetComponent<NavMeshAgent>();
+        if (navMeshAgent != null)
+            Destroy(navMeshAgent);
+
+        RCCP_AIDynamicObstacleAvoidance dynamicAvoidance = opponentObject.GetComponent<RCCP_AIDynamicObstacleAvoidance>();
+        if (dynamicAvoidance != null)
+            Destroy(dynamicAvoidance);
     }
 
     private void ConfigureOpponentDamage(RCCP_CarController aiCarController)

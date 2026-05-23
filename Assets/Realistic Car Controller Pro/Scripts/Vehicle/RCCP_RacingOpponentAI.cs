@@ -14,6 +14,8 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     public float progressDistance;
     public float progressResyncInterval = .4f;
     public int routeSearchSamples = 160;
+    public float localProgressSearchDistance = 18f;
+    public int localProgressSearchSamples = 48;
 
     [Header("Look Ahead")]
     public float lookAheadForTargetOffset = 5f;
@@ -22,6 +24,8 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     public float lookAheadForSpeedFactor = .18f;
     public float minLookAheadDistance = 4f;
     public float maxLookAheadDistance = 16f;
+    public float brakePreviewDistance = 18f;
+    public float brakePreviewFactor = .12f;
 
     [Header("Speed")]
     public float maxSpeedKph = 145f;
@@ -33,6 +37,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     public float mediumCornerSpeedKph = 90f;
     public float sharpCornerSpeedKph = 48f;
     public float minimumMoveSpeedKph = 18f;
+    public float cornerBrakeAggression = 1.25f;
 
     [Header("Steering")]
     public float steeringSensitivity = 1.55f;
@@ -124,8 +129,8 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         ReadSensors();
 
         RouteFrame route = GetRouteFrame();
-        float targetSteer = CalculateSteer(route.targetPoint) + sensorSteer;
-        float targetSpeed = CalculateTargetSpeed(route.cornerAngle, Mathf.Abs(targetSteer));
+        float targetSteer = CalculateSteer(route.targetPoint, route.direction, route.cornerAngle) + sensorSteer;
+        float targetSpeed = CalculateTargetSpeed(route.cornerAngle, route.previewCornerAngle, Mathf.Abs(targetSteer));
         targetSpeed = Mathf.Min(targetSpeed, sensorSpeedLimit);
 
         ApplyInputs(targetSteer, targetSpeed);
@@ -165,16 +170,19 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     private void UpdateRouteProgress() {
 
         ArcadeVP.WaypointCircuit.RoutePoint progressPoint = waypointCircuit.GetRoutePoint(progressDistance);
-        Vector3 progressDelta = progressPoint.position - transform.position;
+        Vector3 flatDirection = Flatten(progressPoint.direction).normalized;
+        Vector3 flatDelta = Flatten(transform.position - progressPoint.position);
 
-        if (Vector3.Dot(progressDelta, progressPoint.direction) < 0f)
-            progressDistance += Flatten(progressDelta).magnitude * .5f;
+        if (flatDirection.sqrMagnitude > .001f)
+            progressDistance += Mathf.Max(0f, Vector3.Dot(flatDelta, flatDirection));
 
         resyncTimer -= Time.fixedDeltaTime;
 
         if (resyncTimer <= 0f) {
-            progressDistance = FindClosestDistanceOnCircuit(transform.position);
-            currentWaypointIndex = FindClosestCircuitWaypoint(transform.position);
+            float searchForwardDistance = Mathf.Clamp(car.speed * .02f, 1.5f, 5f);
+            float searchCenter = progressDistance + searchForwardDistance;
+            progressDistance = FindClosestDistanceNear(transform.position, searchCenter, localProgressSearchDistance, localProgressSearchSamples);
+            currentWaypointIndex = FindClosestCircuitWaypoint(waypointCircuit.GetRoutePosition(progressDistance));
             resyncTimer = progressResyncInterval;
         }
 
@@ -189,14 +197,20 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
             maxLookAheadDistance);
 
         ArcadeVP.WaypointCircuit.RoutePoint currentPoint = waypointCircuit.GetRoutePoint(progressDistance);
+        float midLookAhead = Mathf.Lerp(minLookAheadDistance, lookAhead, .5f);
+        ArcadeVP.WaypointCircuit.RoutePoint midPoint = waypointCircuit.GetRoutePoint(progressDistance + midLookAhead);
         ArcadeVP.WaypointCircuit.RoutePoint targetPoint = waypointCircuit.GetRoutePoint(progressDistance + lookAhead);
-        ArcadeVP.WaypointCircuit.RoutePoint speedPoint = waypointCircuit.GetRoutePoint(progressDistance + lookAheadForSpeedOffset + lookAheadForSpeedFactor * speed);
+        float speedPreviewDistance = lookAheadForSpeedOffset + lookAheadForSpeedFactor * speed;
+        float brakePreviewLookAhead = speedPreviewDistance + brakePreviewDistance + brakePreviewFactor * speed;
+        ArcadeVP.WaypointCircuit.RoutePoint speedPoint = waypointCircuit.GetRoutePoint(progressDistance + speedPreviewDistance);
+        ArcadeVP.WaypointCircuit.RoutePoint previewPoint = waypointCircuit.GetRoutePoint(progressDistance + brakePreviewLookAhead);
         float cornerAngle = Vector3.Angle(currentPoint.direction, speedPoint.direction);
+        float previewCornerAngle = Vector3.Angle(currentPoint.direction, previewPoint.direction);
 
         if (cornerAngle >= sharpCornerAngle)
             targetPoint = waypointCircuit.GetRoutePoint(progressDistance + minLookAheadDistance);
         else if (cornerAngle >= mediumCornerAngle)
-            targetPoint = waypointCircuit.GetRoutePoint(progressDistance + Mathf.Lerp(minLookAheadDistance, lookAhead, .55f));
+            targetPoint = waypointCircuit.GetRoutePoint(progressDistance + Mathf.Lerp(minLookAheadDistance, lookAhead, .35f));
 
         Vector3 target = targetPoint.position;
         Vector3 routeRight = new Vector3(targetPoint.direction.z, 0f, -targetPoint.direction.x).normalized;
@@ -205,30 +219,45 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
             float cornerT = Mathf.InverseLerp(mediumCornerAngle, sharpCornerAngle, cornerAngle);
             float laneLimit = Mathf.Lerp(1.1f, maxLaneOffsetInCorners, cornerT);
             float offset = Mathf.Clamp(laneOffset, -laneLimit, laneLimit);
-            offset += GetInsideCornerOffset(currentPoint.direction, speedPoint.direction, routeRight, cornerT);
+            offset += GetCornerLineOffset(currentPoint.direction, midPoint.direction, speedPoint.direction, routeRight, cornerT);
             target += routeRight * offset;
         }
 
-        return new RouteFrame(target, targetPoint.direction, cornerAngle);
+        return new RouteFrame(target, targetPoint.direction, cornerAngle, previewCornerAngle);
 
     }
 
-    private float GetInsideCornerOffset(Vector3 currentDirection, Vector3 futureDirection, Vector3 routeRight, float cornerT) {
+    private float GetCornerLineOffset(Vector3 currentDirection, Vector3 midDirection, Vector3 futureDirection, Vector3 routeRight, float cornerT) {
 
-        if (cornerT <= 0f || futureDirection.sqrMagnitude < .01f)
+        if (cornerT <= 0f || midDirection.sqrMagnitude < .01f || futureDirection.sqrMagnitude < .01f)
             return 0f;
 
-        Vector3 directionDelta = (futureDirection - currentDirection).normalized;
+        Vector3 currentFlat = Flatten(currentDirection).normalized;
+        Vector3 midFlat = Flatten(midDirection).normalized;
+        Vector3 futureFlat = Flatten(futureDirection).normalized;
+
+        float totalAngle = Vector3.Angle(currentFlat, futureFlat);
+
+        if (totalAngle < .1f)
+            return 0f;
+
+        Vector3 directionDelta = (futureFlat - currentFlat).normalized;
         float turnSide = Mathf.Clamp(Vector3.Dot(directionDelta, routeRight), -1f, 1f);
 
         if (Mathf.Abs(turnSide) < .05f)
             return 0f;
 
-        return Mathf.Sign(turnSide) * insideCornerOffset * cornerT;
+        float midAngle = Vector3.Angle(currentFlat, midFlat);
+        float apexBlend = Mathf.Clamp01(midAngle / totalAngle);
+
+        float outsideOffset = -Mathf.Sign(turnSide) * insideCornerOffset * 1.1f * cornerT;
+        float insideOffset = Mathf.Sign(turnSide) * insideCornerOffset * cornerT;
+
+        return Mathf.Lerp(outsideOffset, insideOffset, apexBlend);
 
     }
 
-    private float CalculateSteer(Vector3 targetPoint) {
+    private float CalculateSteer(Vector3 targetPoint, Vector3 targetDirection, float cornerAngle) {
 
         Vector3 localTarget = transform.InverseTransformPoint(targetPoint);
         localTarget.y = 0f;
@@ -236,22 +265,38 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         if (localTarget.sqrMagnitude < .01f)
             return 0f;
 
-        float rawSteer = Mathf.Atan2(localTarget.x, Mathf.Max(1f, localTarget.z)) * steeringSensitivity;
+        Vector3 flatForward = Flatten(transform.forward).normalized;
+        Vector3 flatTargetDirection = Flatten(targetDirection).normalized;
+        float lateralComponent = localTarget.x / Mathf.Max(1f, Mathf.Abs(localTarget.z));
+        float headingComponent = flatTargetDirection.sqrMagnitude > .001f
+            ? Mathf.Clamp(Vector3.SignedAngle(flatForward, flatTargetDirection, Vector3.up) / 45f, -1f, 1f)
+            : 0f;
+        float cornerT = Mathf.InverseLerp(mediumCornerAngle, sharpCornerAngle, cornerAngle);
+        float lateralWeight = Mathf.Lerp(1.15f, 1.35f, cornerT);
+        float headingWeight = Mathf.Lerp(.8f, 1.2f, cornerT);
+
+        float rawSteer = (lateralComponent * lateralWeight + headingComponent * headingWeight) * steeringSensitivity;
         float speedLimit = Mathf.Lerp(1f, highSpeedSteerLimit, Mathf.InverseLerp(80f, 180f, Mathf.Max(0f, car.speed)));
         return Mathf.Clamp(rawSteer, -speedLimit, speedLimit);
 
     }
 
-    private float CalculateTargetSpeed(float cornerAngle, float absSteer) {
+    private float CalculateTargetSpeed(float cornerAngle, float previewCornerAngle, float absSteer) {
 
         float target = maxSpeedKph;
         float angleT = Mathf.InverseLerp(mediumCornerAngle, sharpCornerAngle, cornerAngle);
+        float previewAngleT = Mathf.InverseLerp(mediumCornerAngle, sharpCornerAngle, previewCornerAngle);
 
         if (cornerAngle >= mediumCornerAngle)
             target = Mathf.Lerp(maxSpeedKph, Mathf.Lerp(mediumCornerSpeedKph, sharpCornerSpeedKph, angleT), angleT);
 
         if (cornerAngle >= brakeAngle)
             target = Mathf.Min(target, Mathf.Lerp(mediumCornerSpeedKph, sharpCornerSpeedKph, Mathf.InverseLerp(brakeAngle, sharpCornerAngle, cornerAngle)));
+
+        if (previewCornerAngle >= mediumCornerAngle) {
+            float previewTarget = Mathf.Lerp(maxSpeedKph, Mathf.Lerp(mediumCornerSpeedKph, sharpCornerSpeedKph, previewAngleT), previewAngleT);
+            target = Mathf.Min(target, Mathf.Lerp(maxSpeedKph, previewTarget, Mathf.Clamp01(previewAngleT * cornerBrakeAggression)));
+        }
 
         target *= Mathf.Lerp(1f, .86f, Mathf.Clamp01(absSteer));
         target *= GetRubberBandMultiplier();
@@ -298,7 +343,6 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
             return;
         }
 
-        sensorSteer += side * obstacleSteerStrength * urgency;
         sensorBrake = Mathf.Max(sensorBrake, obstacleBrake * urgency);
         sensorSpeedLimit = Mathf.Min(sensorSpeedLimit, Mathf.Lerp(maxSpeedKph, wallSlowSpeedKph, urgency));
 
@@ -318,7 +362,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
             return;
         }
 
-        sensorSteer -= sensorSide * obstacleSteerStrength * .5f * urgency;
+        sensorSteer -= sensorSide * obstacleSteerStrength * .18f * urgency;
         sensorSpeedLimit = Mathf.Min(sensorSpeedLimit, Mathf.Lerp(maxSpeedKph, wallSlowSpeedKph + 12f, urgency));
 
     }
@@ -420,6 +464,36 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
             bestSqrDistance = sqrDistance;
             bestDistance = distance;
+        }
+
+        return bestDistance;
+
+    }
+
+    private float FindClosestDistanceNear(Vector3 position, float centerDistance, float searchDistance, int samples) {
+
+        if (waypointCircuit == null || waypointCircuit.Length <= 0f)
+            return 0f;
+
+        float length = waypointCircuit.Length;
+        float bestDistance = Mathf.Repeat(centerDistance, length);
+        float bestSqrDistance = float.MaxValue;
+        Vector3 flatPosition = Flatten(position);
+        int safeSamples = Mathf.Max(8, samples);
+        float halfRange = Mathf.Max(minLookAheadDistance, searchDistance) * .5f;
+
+        for (int i = 0; i <= safeSamples; i++) {
+            float t = safeSamples == 0 ? 0f : i / (float)safeSamples;
+            float candidateDistance = centerDistance - halfRange + searchDistance * t;
+            float wrappedDistance = Mathf.Repeat(candidateDistance, length);
+            Vector3 routePosition = Flatten(waypointCircuit.GetRoutePosition(wrappedDistance));
+            float sqrDistance = Vector3.SqrMagnitude(flatPosition - routePosition);
+
+            if (sqrDistance >= bestSqrDistance)
+                continue;
+
+            bestSqrDistance = sqrDistance;
+            bestDistance = wrappedDistance;
         }
 
         return bestDistance;
@@ -559,11 +633,13 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         public readonly Vector3 targetPoint;
         public readonly Vector3 direction;
         public readonly float cornerAngle;
+        public readonly float previewCornerAngle;
 
-        public RouteFrame(Vector3 targetPoint, Vector3 direction, float cornerAngle) {
+        public RouteFrame(Vector3 targetPoint, Vector3 direction, float cornerAngle, float previewCornerAngle) {
             this.targetPoint = targetPoint;
             this.direction = direction;
             this.cornerAngle = cornerAngle;
+            this.previewCornerAngle = previewCornerAngle;
         }
 
     }

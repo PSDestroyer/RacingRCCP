@@ -2153,7 +2153,7 @@ public class RCCP_AI : RCCP_Component {
 #if UNITY_EDITOR
     private void OnDrawGizmos() {
 
-        if (!Application.isPlaying || Agent == null || !Agent.isActiveAndEnabled || CarController == null)
+        if (!enabled || !Application.isPlaying || Agent == null || !Agent.isActiveAndEnabled || CarController == null)
             return;
 
         Vector3 carPos = CarController.transform.position + Vector3.up * 0.25f;
