@@ -9,7 +9,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.AI;
 
 public class GamePlayManager : MonoBehaviour
 {
@@ -19,6 +18,7 @@ public class GamePlayManager : MonoBehaviour
         public string displayName = "Racer";
         public Transform racerTransform;
         public RCCP_AI aiDriver;
+        public RCCP_RacingOpponentAI racingAI;
 
         [NonSerialized] public int currentWaypointIndex;
         [NonSerialized] public int completedLaps;
@@ -37,6 +37,7 @@ public class GamePlayManager : MonoBehaviour
     [Header("Racing Settings")]
     public bool useCurrentMapModeSettings = true;
     public RCCP_AIWaypointsContainer raceWaypoints;
+    public ArcadeVP.WaypointCircuit raceWaypointCircuit;
     public RaceRacer[] aiRacers;
     public int totalRaceLaps = 3;
     public float waypointReachDistance = 20f;
@@ -109,6 +110,12 @@ public class GamePlayManager : MonoBehaviour
     public bool autoSpawnOpponents = true;
     public int opponentCount = 3;
     public bool usePlayerCarForOpponents = true;
+    public RCCP_AIArcadePreset[] opponentAIPresets;
+    public RCCP_AIArcadePreset.Difficulty[] opponentDifficulties = {
+        RCCP_AIArcadePreset.Difficulty.Medium,
+        RCCP_AIArcadePreset.Difficulty.Hard,
+        RCCP_AIArcadePreset.Difficulty.Medium
+    };
     public Transform[] opponentSpawnPoints;
     public float spawnRowSpacing = 8f;
     public float spawnColumnSpacing = 4f;
@@ -144,6 +151,7 @@ public class GamePlayManager : MonoBehaviour
     private Coroutine expRewardAnimationCoroutine;
     private Coroutine expSliderAnimationCoroutine;
     private Coroutine finishSummaryAnimationCoroutine;
+    private ArcadeVP.WaypointCircuit runtimeRaceWaypointCircuit;
 
     [Header("Drifting Settings")]
     public bool driftingNow = false;
@@ -485,7 +493,16 @@ public class GamePlayManager : MonoBehaviour
 
     public void InstancePlayer()
     {
-        player = Instantiate(Resources.Load<GameObject>(GlobalCarData._carlists[SaveManager.Instance.saveData.currentCar].carPrefabLocation), SpawnPoint);
+        string playerPrefabLocation = GlobalCarData._carlists[SaveManager.Instance.saveData.currentCar].carPrefabLocation;
+        GameObject playerPrefab = Resources.Load<GameObject>(playerPrefabLocation);
+
+        if (playerPrefab == null)
+        {
+            Debug.LogError($"Player car prefab not found in Resources: {playerPrefabLocation}");
+            return;
+        }
+
+        player = Instantiate(playerPrefab, SpawnPoint);
         CarController = player.GetComponent<RCCP_CarController>();
         if (CarController != null)
             RCCP.RegisterPlayerVehicle(CarController, true, true);
@@ -561,13 +578,15 @@ public class GamePlayManager : MonoBehaviour
 
             if (aiRacer.aiDriver != null)
             {
+                aiRacer.aiDriver.enabled = false;
                 aiRacer.racerTransform = aiRacer.aiDriver.transform;
-                aiRacer.aiDriver.behaviour = RCCP_AI.BehaviourType.RaceWaypoints;
+            }
 
-                if (raceWaypoints != null)
-                    aiRacer.aiDriver.waypointsContainer = raceWaypoints;
-
-                aiRacer.currentWaypointIndex = aiRacer.aiDriver.currentWaypointIndex;
+            if (aiRacer.racingAI != null)
+            {
+                aiRacer.racerTransform = aiRacer.racingAI.transform;
+                ConfigureOpponentRacingAI(aiRacer.racingAI, i);
+                aiRacer.currentWaypointIndex = aiRacer.racingAI.currentWaypointIndex;
             }
             else
             {
@@ -704,16 +723,21 @@ public class GamePlayManager : MonoBehaviour
             if (aiDriver == null)
                 aiDriver = opponentObject.AddComponent<RCCP_AI>();
 
-            aiDriver.behaviour = RCCP_AI.BehaviourType.RaceWaypoints;
+            aiDriver.enabled = false;
 
-            if (raceWaypoints != null)
-                aiDriver.waypointsContainer = raceWaypoints;
+            RCCP_RacingOpponentAI racingAI = opponentObject.GetComponent<RCCP_RacingOpponentAI>();
+
+            if (racingAI == null)
+                racingAI = opponentObject.AddComponent<RCCP_RacingOpponentAI>();
+
+            ConfigureOpponentRacingAI(racingAI, i);
 
             aiRacers[i] = new RaceRacer
             {
                 displayName = $"AI {i + 1}",
                 racerTransform = opponentObject.transform,
                 aiDriver = aiDriver,
+                racingAI = racingAI,
                 currentWaypointIndex = 0,
                 completedLaps = 0,
                 finished = false,
@@ -739,6 +763,145 @@ public class GamePlayManager : MonoBehaviour
         RefreshOpponentDrivers(raceStarted);
     }
 
+    private float GetOpponentRacingLineOffset(int opponentIndex)
+    {
+        float[] offsets = { -.45f, .45f, 0f, -.25f, .25f };
+        return offsets[Mathf.Abs(opponentIndex) % offsets.Length];
+    }
+
+    private void ConfigureOpponentRacingAI(RCCP_RacingOpponentAI racingAI, int opponentIndex)
+    {
+        if (racingAI == null)
+            return;
+
+        MissionSO mission = SelectedCareerMission.Mission;
+        RCCP_AIArcadePreset.Difficulty difficulty = mission != null && mission.useMissionAISettings
+            ? mission.opponentDifficulty
+            : GetOpponentDifficulty(opponentIndex);
+
+        racingAI.car = racingAI.GetComponent<RCCP_CarController>();
+        racingAI.waypointsContainer = raceWaypoints;
+        racingAI.waypointCircuit = GetRaceWaypointCircuit();
+        racingAI.playerTarget = CarController != null ? CarController.transform : null;
+        racingAI.laneOffset = GetOpponentRacingLineOffset(opponentIndex);
+        racingAI.obstacleLayers = new LayerMask { value = Physics.AllLayers };
+        racingAI.vehicleLayers = new LayerMask { value = Physics.AllLayers };
+
+        RCCP_AIArcadePreset preset = GetRacingAIPreset(mission, opponentIndex);
+
+        if (preset != null)
+            ApplyRacingAIPreset(racingAI, preset);
+
+        ApplyRacingAIDifficulty(racingAI, difficulty);
+        racingAI.lookAheadForTargetOffset = 5f;
+        racingAI.lookAheadForTargetFactor = .11f;
+        racingAI.lookAheadForSpeedOffset = 28f;
+        racingAI.lookAheadForSpeedFactor = .18f;
+        racingAI.minLookAheadDistance = 4f;
+        racingAI.maxLookAheadDistance = 16f;
+        racingAI.insideCornerOffset = .8f;
+        racingAI.steeringSensitivity = 1.55f;
+        racingAI.steeringSmoothTime = .12f;
+        racingAI.maxSteerChangePerSecond = 6f;
+        racingAI.highSpeedSteerLimit = .82f;
+        racingAI.frontSensorDistance = 16f;
+        racingAI.sideSensorDistance = 5f;
+        racingAI.obstacleBrake = .3f;
+        racingAI.vehicleBrake = .12f;
+        racingAI.minimumTrafficSpeedKph = 24f;
+
+        if (mission != null && mission.useMissionAISettings && mission.rubberBandStrength > 0f)
+        {
+            float strength = Mathf.Clamp(mission.rubberBandStrength, 0f, .5f);
+            racingAI.behindPlayerSpeedMultiplier = Mathf.Max(racingAI.behindPlayerSpeedMultiplier, 1f + strength);
+            racingAI.aheadPlayerSpeedMultiplier = Mathf.Min(racingAI.aheadPlayerSpeedMultiplier, 1f - strength * .35f);
+        }
+    }
+
+    private RCCP_AIArcadePreset.Difficulty GetOpponentDifficulty(int opponentIndex)
+    {
+        if (opponentDifficulties == null || opponentDifficulties.Length == 0)
+            return RCCP_AIArcadePreset.Difficulty.Medium;
+
+        return opponentDifficulties[Mathf.Abs(opponentIndex) % opponentDifficulties.Length];
+    }
+
+    private RCCP_AIArcadePreset GetRacingAIPreset(MissionSO mission, int opponentIndex)
+    {
+        if (mission != null && mission.useMissionAISettings && mission.opponentAIPresets != null && mission.opponentAIPresets.Length > 0)
+            return mission.opponentAIPresets[Mathf.Abs(opponentIndex) % mission.opponentAIPresets.Length];
+
+        if (opponentAIPresets != null && opponentAIPresets.Length > 0)
+            return opponentAIPresets[Mathf.Abs(opponentIndex) % opponentAIPresets.Length];
+
+        return null;
+    }
+
+    private void ApplyRacingAIPreset(RCCP_RacingOpponentAI racingAI, RCCP_AIArcadePreset preset)
+    {
+        if (racingAI == null || preset == null)
+            return;
+
+        racingAI.maxSpeedKph = preset.maxSpeedKph;
+        racingAI.acceleration = preset.acceleration;
+        racingAI.steeringSensitivity = preset.steeringSensitivity;
+        racingAI.brakeSensitivity = preset.brakeSensitivity;
+        racingAI.maxLookAheadDistance = Mathf.Min(preset.straightLookAhead, 24f);
+        racingAI.minLookAheadDistance = Mathf.Min(preset.sharpCornerLookAhead, racingAI.maxLookAheadDistance);
+        racingAI.sharpCornerSpeedKph = preset.sharpCornerSpeed;
+        racingAI.frontSensorDistance = Mathf.Max(10f, preset.avoidanceDistance);
+        racingAI.obstacleBrake = Mathf.Clamp01(preset.avoidanceBrake);
+        racingAI.behindPlayerSpeedMultiplier = 1f + preset.rubberBandStrength;
+        racingAI.aheadPlayerSpeedMultiplier = 1f - preset.rubberBandStrength * .35f;
+        racingAI.stuckSeconds = preset.stuckSeconds;
+    }
+
+    private void ApplyRacingAIDifficulty(RCCP_RacingOpponentAI racingAI, RCCP_AIArcadePreset.Difficulty difficulty)
+    {
+        switch (difficulty)
+        {
+            case RCCP_AIArcadePreset.Difficulty.Easy:
+                racingAI.maxSpeedKph = 120f;
+                racingAI.acceleration = .74f;
+                racingAI.mediumCornerSpeedKph = 72f;
+                racingAI.sharpCornerSpeedKph = 34f;
+                racingAI.wallSlowSpeedKph = 38f;
+                racingAI.behindPlayerSpeedMultiplier = 1.1f;
+                racingAI.aheadPlayerSpeedMultiplier = .92f;
+                break;
+
+            case RCCP_AIArcadePreset.Difficulty.Hard:
+                racingAI.maxSpeedKph = 165f;
+                racingAI.acceleration = .94f;
+                racingAI.mediumCornerSpeedKph = 96f;
+                racingAI.sharpCornerSpeedKph = 46f;
+                racingAI.wallSlowSpeedKph = 44f;
+                racingAI.behindPlayerSpeedMultiplier = 1.22f;
+                racingAI.aheadPlayerSpeedMultiplier = .95f;
+                break;
+
+            case RCCP_AIArcadePreset.Difficulty.Expert:
+                racingAI.maxSpeedKph = 185f;
+                racingAI.acceleration = 1f;
+                racingAI.mediumCornerSpeedKph = 108f;
+                racingAI.sharpCornerSpeedKph = 52f;
+                racingAI.wallSlowSpeedKph = 48f;
+                racingAI.behindPlayerSpeedMultiplier = 1.28f;
+                racingAI.aheadPlayerSpeedMultiplier = .97f;
+                break;
+
+            default:
+                racingAI.maxSpeedKph = 142f;
+                racingAI.acceleration = .86f;
+                racingAI.mediumCornerSpeedKph = 84f;
+                racingAI.sharpCornerSpeedKph = 40f;
+                racingAI.wallSlowSpeedKph = 42f;
+                racingAI.behindPlayerSpeedMultiplier = 1.16f;
+                racingAI.aheadPlayerSpeedMultiplier = .94f;
+                break;
+        }
+    }
+
     private void RefreshOpponentDrivers(bool canControl)
     {
         if (aiRacers == null)
@@ -748,20 +911,31 @@ public class GamePlayManager : MonoBehaviour
         {
             RaceRacer aiRacer = aiRacers[i];
 
-            if (aiRacer == null || aiRacer.aiDriver == null)
+            if (aiRacer == null || (aiRacer.aiDriver == null && aiRacer.racingAI == null))
                 continue;
 
             RCCP_AI aiDriver = aiRacer.aiDriver;
-            aiDriver.enabled = false;
-            aiDriver.behaviour = RCCP_AI.BehaviourType.RaceWaypoints;
+            if (aiDriver != null)
+                aiDriver.enabled = false;
 
-            if (raceWaypoints != null)
-                aiDriver.waypointsContainer = raceWaypoints;
+            RCCP_RacingOpponentAI racingAI = aiRacer.racingAI;
 
-            aiDriver.enabled = true;
-            aiDriver.Reload();
+            if (racingAI == null && aiRacer.racerTransform != null)
+                racingAI = aiRacer.racerTransform.GetComponent<RCCP_RacingOpponentAI>();
 
-            RCCP_CarController aiCarController = aiDriver.CarController;
+            if (racingAI == null && aiRacer.racerTransform != null)
+                racingAI = aiRacer.racerTransform.gameObject.AddComponent<RCCP_RacingOpponentAI>();
+
+            aiRacer.racingAI = racingAI;
+
+            if (racingAI != null)
+            {
+                ConfigureOpponentRacingAI(racingAI, i);
+                racingAI.enabled = canControl;
+                racingAI.Reload();
+            }
+
+            RCCP_CarController aiCarController = racingAI != null ? racingAI.car : null;
 
             if (aiCarController == null && aiRacer.racerTransform != null)
                 aiCarController = aiRacer.racerTransform.GetComponent<RCCP_CarController>();
@@ -772,41 +946,60 @@ public class GamePlayManager : MonoBehaviour
             aiCarController.externalControl = true;
             aiCarController.SetCanControl(canControl);
             aiCarController.SetEngine(true);
+            ConfigureOpponentDamage(aiCarController);
 
             if (aiCarController.Rigid != null)
                 aiCarController.Rigid.WakeUp();
-
-            InitializeOpponentNavMeshAgent(aiDriver, aiCarController);
         }
     }
 
-    private void InitializeOpponentNavMeshAgent(RCCP_AI aiDriver, RCCP_CarController aiCarController)
+    private void ConfigureOpponentDamage(RCCP_CarController aiCarController)
     {
-        if (aiDriver == null || aiCarController == null)
+        if (aiCarController == null || aiCarController.Damage == null)
             return;
 
-        NavMeshAgent agent = aiDriver.GetComponentInChildren<NavMeshAgent>(true);
+        aiCarController.Damage.wheelDetachment = false;
+        aiCarController.Damage.partDamage = false;
+        aiCarController.Damage.deformationMultiplier = Mathf.Min(aiCarController.Damage.deformationMultiplier, 0.35f);
+        aiCarController.Damage.wheelDamageMultiplier = Mathf.Min(aiCarController.Damage.wheelDamageMultiplier, 0.25f);
+    }
 
-        if (agent == null)
-            return;
+    private ArcadeVP.WaypointCircuit GetRaceWaypointCircuit()
+    {
+        if (raceWaypointCircuit != null)
+        {
+            raceWaypointCircuit.RebuildRoute();
+            return raceWaypointCircuit;
+        }
 
-        if (NavMesh.SamplePosition(aiCarController.transform.position, out NavMeshHit carHit, 12f, NavMesh.AllAreas))
-            agent.Warp(carHit.position);
+        if (runtimeRaceWaypointCircuit != null)
+            return runtimeRaceWaypointCircuit;
 
-        if (raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count == 0)
-            return;
+        if (raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count < 2)
+            return null;
 
-        int waypointIndex = Mathf.Clamp(aiDriver.currentWaypointIndex, 0, raceWaypoints.waypoints.Count - 1);
-        RCCP_Waypoint waypoint = raceWaypoints.waypoints[waypointIndex];
+        GameObject circuitObject = new GameObject("Runtime_RaceWaypointCircuit");
+        circuitObject.transform.SetParent(transform);
+        runtimeRaceWaypointCircuit = circuitObject.AddComponent<ArcadeVP.WaypointCircuit>();
+        runtimeRaceWaypointCircuit.waypointList.items = new Transform[raceWaypoints.waypoints.Count];
 
-        if (waypoint == null)
-            return;
+        for (int i = 0; i < raceWaypoints.waypoints.Count; i++)
+        {
+            RCCP_Waypoint waypoint = raceWaypoints.waypoints[i];
 
-        if (!NavMesh.SamplePosition(waypoint.transform.position, out NavMeshHit waypointHit, 20f, NavMesh.AllAreas))
-            return;
+            if (waypoint == null)
+                continue;
 
-        agent.ResetPath();
-        agent.SetDestination(waypointHit.position);
+            GameObject waypointObject = new GameObject($"CircuitWaypoint_{i:000}");
+            waypointObject.transform.SetParent(circuitObject.transform);
+            waypointObject.transform.SetPositionAndRotation(waypoint.transform.position, waypoint.transform.rotation);
+            runtimeRaceWaypointCircuit.waypointList.items[i] = waypointObject.transform;
+        }
+
+        runtimeRaceWaypointCircuit.RebuildRoute();
+        raceWaypointCircuit = runtimeRaceWaypointCircuit;
+
+        return runtimeRaceWaypointCircuit;
     }
 
     private GameObject SpawnOpponentVehicle(int opponentIndex, Transform spawnTransform)
@@ -817,7 +1010,10 @@ public class GamePlayManager : MonoBehaviour
         GameObject prefabToSpawn = GetOpponentPrefab(opponentIndex);
 
         if (prefabToSpawn == null)
+        {
+            Debug.LogWarning($"Opponent {opponentIndex + 1} was not spawned because its prefab could not be loaded.");
             return null;
+        }
 
         return Instantiate(prefabToSpawn, spawnTransform.position, spawnTransform.rotation);
     }
@@ -834,7 +1030,12 @@ public class GamePlayManager : MonoBehaviour
             chosenCarIndex = (currentCarIndex + opponentIndex + 1) % GlobalCarData._carlists.Count;
 
         string prefabLocation = GlobalCarData._carlists[chosenCarIndex].carPrefabLocation;
-        return Resources.Load<GameObject>(prefabLocation);
+        GameObject prefab = Resources.Load<GameObject>(prefabLocation);
+
+        if (prefab == null)
+            Debug.LogWarning($"Opponent car prefab not found in Resources. Car index: {chosenCarIndex}, path: {prefabLocation}");
+
+        return prefab;
     }
 
     private Transform GetOpponentSpawnTransform(int opponentIndex)
@@ -873,6 +1074,15 @@ public class GamePlayManager : MonoBehaviour
         }
 
         spawnedOpponentObjects.Clear();
+
+        if (runtimeRaceWaypointCircuit != null)
+        {
+            if (ReferenceEquals(raceWaypointCircuit, runtimeRaceWaypointCircuit))
+                raceWaypointCircuit = null;
+
+            Destroy(runtimeRaceWaypointCircuit.gameObject);
+            runtimeRaceWaypointCircuit = null;
+        }
     }
 
    private void Update() {
@@ -1139,10 +1349,10 @@ public class GamePlayManager : MonoBehaviour
            if (aiRacer == null || aiRacer.racerTransform == null || aiRacer.finished || aiRacer.eliminated)
                continue;
 
-           if (aiRacer.aiDriver != null)
+           if (aiRacer.aiDriver != null || aiRacer.racingAI != null)
            {
                int previousIndex = aiRacer.currentWaypointIndex;
-               aiRacer.currentWaypointIndex = aiRacer.aiDriver.currentWaypointIndex;
+               aiRacer.currentWaypointIndex = aiRacer.racingAI != null ? aiRacer.racingAI.currentWaypointIndex : aiRacer.aiDriver.currentWaypointIndex;
 
                if (previousIndex > aiRacer.currentWaypointIndex)
                {
@@ -2433,6 +2643,9 @@ public class GamePlayManager : MonoBehaviour
 
        if (ReferenceEquals(racer, playerRacer))
            return CarController;
+
+       if (racer.racingAI != null && racer.racingAI.car != null)
+           return racer.racingAI.car;
 
        if (racer.aiDriver != null && racer.aiDriver.CarController != null)
            return racer.aiDriver.CarController;

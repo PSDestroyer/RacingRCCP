@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f9e0f487dd34d34a9fc6da2d7a1b8d4, type: 3}
+  m_Name: RCCP_AIArcadePreset
+  m_EditorClassIdentifier: 
+  difficulty: 1
+  maxSpeedKph: 135
+  acceleration: 0.85
+  steeringSensitivity: 1.2
+  brakeSensitivity: 1
+  grip: 1.1
+  straightLookAhead: 28
+  cornerLookAhead: 16
+  sharpCornerLookAhead: 10
+  cornerDetectionDistance: 65
+  cornerBrakingDistance: 38
+  sharpCornerSpeed: 70
+  rubberBandStrength: 0.12
+  mistakeChance: 0.04
+  paceVariation: 0.06
+  avoidanceDistance: 16
+  avoidanceSideOffset: 3
+  avoidanceBrake: 0.35
+  stuckSeconds: 2.5
+  flippedSeconds: 1.5
+  offTrackDistance: 40

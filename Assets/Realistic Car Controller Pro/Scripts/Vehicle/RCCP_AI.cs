@@ -67,6 +67,15 @@ public class RCCP_AI : RCCP_Component {
     [Tooltip("Select the AI behavior mode: FollowWaypoints, RaceWaypoints, FollowTarget, or ChaseTarget.")]
     public BehaviourType behaviour = BehaviourType.RaceWaypoints;
 
+    [Tooltip("Optional arcade AI preset. If assigned, its values are copied to this AI on enable/reload.")]
+    public RCCP_AIArcadePreset arcadePreset;
+
+    [Tooltip("Used when no preset asset is assigned.")]
+    public RCCP_AIArcadePreset.Difficulty arcadeDifficulty = RCCP_AIArcadePreset.Difficulty.Medium;
+
+    [Tooltip("Apply built-in Easy / Medium / Hard / Expert values when no preset asset is assigned.")]
+    public bool useBuiltInDifficulty = true;
+
     [Tooltip("Container holding the list of waypoints for waypoint-based behaviors.")]
     public RCCP_AIWaypointsContainer waypointsContainer;
 
@@ -79,6 +88,24 @@ public class RCCP_AI : RCCP_Component {
 
     [Tooltip("Additional look-ahead distance in meters when racing.")]
     public float raceLookAhead = 36f;
+
+    [Tooltip("Minimum waypoint steps to look ahead while racing.")]
+    public int minRaceLookAheadSteps = 3;
+
+    [Tooltip("Maximum waypoint steps to look ahead while racing.")]
+    public int maxRaceLookAheadSteps = 6;
+
+    [Tooltip("How many km/h add one extra waypoint look-ahead step.")]
+    public float speedPerLookAheadStep = 35f;
+
+    [Tooltip("How many waypoint steps ahead are scanned for corner severity.")]
+    public int cornerScanSteps = 6;
+
+    [Tooltip("Shortest racing target distance in meters.")]
+    public float minRaceTargetDistance = 7f;
+
+    [Tooltip("Longest racing target distance in meters. Keep this short enough so AI doesn't cut across corners.")]
+    public float maxRaceTargetDistance = 28f;
 
     [Header("Driving Settings")]
     [Tooltip("Friction coefficient for safe cornering speed calculation.")]
@@ -96,12 +123,151 @@ public class RCCP_AI : RCCP_Component {
     [Tooltip("Steering sensitivity multiplier.")]
     [Range(0f, 5f)] public float steerSensitivity = 3f;
 
+    [Tooltip("Arcade AI maximum target speed.")]
+    public float arcadeMaxSpeedKph = 135f;
+
+    [Tooltip("How hard the AI applies throttle.")]
+    [Range(0f, 1f)] public float arcadeAcceleration = .85f;
+
+    [Tooltip("How hard the AI applies brake when over target speed.")]
+    [Range(.2f, 3f)] public float brakeSensitivity = 1f;
+
     [Header("Steering Look-ahead")]
     [Tooltip("Minimum look-ahead distance in meters when stationary.")]
     public float minLookAhead = 5f;
 
     [Tooltip("Additional look-ahead per km/h of speed.")]
     public float lookAheadPerKph = .25f;
+
+    [Header("Corner Awareness")]
+    [Tooltip("Corners below this angle keep the normal speed-based look-ahead.")]
+    public float mediumCornerAngleThreshold = 25f;
+
+    [Tooltip("Corners above this angle are treated as sharp corners.")]
+    public float sharpCornerAngleThreshold = 55f;
+
+    [Tooltip("Maximum steering look-ahead while approaching a medium corner.")]
+    public float mediumCornerLookAhead = 14f;
+
+    [Tooltip("Maximum steering look-ahead while approaching a sharp corner.")]
+    public float sharpCornerLookAhead = 7f;
+
+    [Tooltip("Distance ahead of the AI used to scan waypoint direction changes.")]
+    public float cornerDetectionDistance = 70f;
+
+    [Tooltip("Target speed while approaching a sharp corner.")]
+    public float sharpCornerTargetSpeed = 55f;
+
+    [Tooltip("How quickly steering look-ahead transitions between straight and corner values.")]
+    public float lookAheadSmoothSpeed = 8f;
+
+    [Header("Race Intelligence")]
+    [Tooltip("Optional extra inside-corner offset. Keep this off when your waypoints already follow the racing line / apex.")]
+    public bool useApexSteering = false;
+
+    [Tooltip("Maximum inside offset used for apex steering.")]
+    public float apexMaxOffset = 4f;
+
+    [Tooltip("How strongly the AI cuts toward the apex in corners.")]
+    [Range(0f, 1f)] public float apexStrength = .12f;
+
+    [Tooltip("How many waypoint segments behind the current progress can be considered when sampling the racing line.")]
+    public int pathSearchBackSegments = 2;
+
+    [Tooltip("How many waypoint segments ahead of the current progress can be considered when sampling the racing line.")]
+    public int pathSearchForwardSegments = 14;
+
+    [Tooltip("How quickly apex offset blends in and out.")]
+    public float apexOffsetSmoothSpeed = 5f;
+
+    [Tooltip("How quickly steering input follows the desired steering value.")]
+    public float steeringSmoothSpeed = 5f;
+
+    [Tooltip("Maximum steering input change per second. Prevents front wheels from snapping left/right.")]
+    public float steeringMaxChangePerSecond = 2f;
+
+    [Tooltip("Reduces steering when the car already has lateral velocity, preventing left-right weaving.")]
+    [Range(0f, 1f)] public float lateralSteeringDamping = .35f;
+
+    [Tooltip("Maximum steering input allowed at high speed.")]
+    [Range(.2f, 1f)] public float highSpeedSteerLimit = .65f;
+
+    [Tooltip("Distance from a detected corner where AI starts reducing speed.")]
+    public float cornerBrakingDistance = 35f;
+
+    [Tooltip("Player transform used for dynamic race pace. If empty, rubber banding is disabled.")]
+    public Transform playerTarget;
+
+    [Tooltip("Allows AI to subtly speed up behind the player and slow down ahead of the player.")]
+    public bool useRubberBanding = true;
+
+    [Tooltip("Speed multiplier when AI is far behind the player.")]
+    public float behindPlayerSpeedMultiplier = 1.12f;
+
+    [Tooltip("Speed multiplier when AI is far ahead of the player.")]
+    public float aheadPlayerSpeedMultiplier = .9f;
+
+    [Tooltip("Distance difference where rubber banding reaches full strength.")]
+    public float rubberBandFullEffectDistance = 120f;
+
+    [Tooltip("Extra catch-up multiplier applied only when this AI is behind the player.")]
+    public float catchUpAggression = 1.15f;
+
+    [Tooltip("Maximum random pace variation per AI, keeping races less predictable.")]
+    [Range(0f, .2f)] public float paceVariation = .06f;
+
+    [Tooltip("Chance for small temporary driving imperfections.")]
+    [Range(0f, .2f)] public float mistakeChance = .04f;
+
+    [Header("Arcade Avoidance")]
+    public LayerMask avoidanceLayers = ~0;
+    public float avoidanceDistance = 22f;
+    public float avoidanceSideOffset = 2.2f;
+    [Range(0f, 1f)] public float avoidanceBrake = .75f;
+
+    [Tooltip("How many waypoint entries ahead can be used to recover forward progress after collisions.")]
+    public int waypointForwardRecoveryScan = 8;
+
+    [Header("Arcade Racing Line")]
+    [Tooltip("Stable side offset from the waypoint racing line. Use different values per opponent to reduce collisions.")]
+    public float racingLineOffset = 0f;
+
+    [Tooltip("Distance ahead used to calculate the racing line side direction.")]
+    public float racingLineDirectionSample = 12f;
+
+    [Header("Arcade Drift Assist")]
+    [Tooltip("Helps AI hold controllable arcade slides through sharp corners.")]
+    public bool useArcadeDriftAssist = true;
+
+    [Tooltip("Minimum speed before AI is allowed to use drift assist.")]
+    public float driftAssistMinSpeed = 35f;
+
+    [Tooltip("Target side slip angle AI tries to hold while sliding.")]
+    public float targetDriftAngle = 18f;
+
+    [Tooltip("Slip angle where AI starts preventing spin.")]
+    public float spinPreventionAngle = 32f;
+
+    [Tooltip("Minimum throttle while AI is in a controlled slide.")]
+    [Range(0f, 1f)] public float driftThrottle = .55f;
+
+    [Tooltip("Short handbrake input used only to start a slide.")]
+    [Range(0f, 1f)] public float driftEntryHandbrake = .18f;
+
+    [Tooltip("How strongly AI counter-steers while sliding.")]
+    [Range(0f, 1f)] public float driftCounterSteer = .45f;
+
+    [Tooltip("How strongly excessive yaw is damped to prevent spin-outs.")]
+    [Range(0f, 1f)] public float driftYawDamping = .45f;
+
+    [Header("Arcade Recovery")]
+    [Tooltip("If false, recovery will never teleport the AI to waypoints. Recommended for normal racing.")]
+    public bool allowTeleportRecovery = false;
+
+    public float stuckRecoverySeconds = 2.5f;
+    public float flippedRecoverySeconds = 1.5f;
+    public float offTrackRecoveryDistance = 55f;
+    public float offTrackRecoverySeconds = 8f;
 
     [Header("PID Control")]
     [Tooltip("Proportional gain for speed control.")]
@@ -149,6 +315,26 @@ public class RCCP_AI : RCCP_Component {
     private float pidIntegral;
     private float lastSpeedError;
     private float brakeFeedForwardFactor = .25f;
+    private float smoothedSteeringLookAhead;
+    private float currentCornerAngle;
+    private float currentCornerDistance = float.MaxValue;
+    private float currentCornerSign;
+    private Vector3 currentCornerPoint;
+    private int currentRaceLookAheadSteps = 3;
+    private float smoothedSteerInput;
+    private float aiPaceOffset;
+    private float aiAccelerationMultiplier = 1f;
+    private float aiSteeringMultiplier = 1f;
+    private float aiBrakeMultiplier = 1f;
+    private Vector3 smoothedApexOffset;
+    private float flippedTimer;
+    private float offTrackTimer;
+    private float mistakeTimer;
+    private float mistakeSteerOffset;
+    private float avoidanceSideMemory;
+    private float avoidanceMemoryTimer;
+    private float contactAvoidanceTimer;
+    private float contactAvoidanceSteer;
 
     private float[] defaultSteerSpeedOfAxle;
     private bool[] defaultInputStates;
@@ -175,6 +361,9 @@ public class RCCP_AI : RCCP_Component {
 
         if (CarController != null)
             CarController.externalControl = true;
+
+        ApplyArcadePreset();
+        RollArcadeVariation();
 
         // Find waypoints container if not assigned
         if (waypointsContainer == null)
@@ -327,25 +516,35 @@ public class RCCP_AI : RCCP_Component {
         switch (behaviour) {
 
             case BehaviourType.FollowWaypoints:
+                if (!IsAgentReady())
+                    return;
+
                 UpdateWaypointDestination(false);
                 break;
 
             case BehaviourType.RaceWaypoints:
-                UpdateWaypointDestination(true);
+                UpdateRaceWaypointProgress();
                 break;
 
             case BehaviourType.FollowTarget:
+                if (!IsAgentReady())
+                    return;
+
                 UpdateFollowTargetDestination();
                 break;
 
             case BehaviourType.ChaseTarget:
+                if (!IsAgentReady())
+                    return;
+
                 UpdateChaseTargetDestination();
                 break;
 
         }
 
         // Sync agent position with vehicle
-        Agent.nextPosition = transform.position;
+        if (IsAgentReady())
+            Agent.nextPosition = transform.position;
 
     }
 
@@ -359,18 +558,25 @@ public class RCCP_AI : RCCP_Component {
 
         int count = waypointsContainer.waypoints.Count;
         float threshSqr = waypointReachThreshold * waypointReachThreshold;
+        int safety = 0;
+
+        SynchronizeWaypointProgress();
 
         // Skip waypoints within reach threshold
-        while ((CarController.transform.position - waypointsContainer.waypoints[currentWaypointIndex].transform.position).sqrMagnitude < threshSqr) {
+        while (safety < count && waypointsContainer.waypoints[currentWaypointIndex] != null && (CarController.transform.position - waypointsContainer.waypoints[currentWaypointIndex].transform.position).sqrMagnitude < threshSqr) {
             currentWaypointIndex = (currentWaypointIndex + 1) % count;
+            safety++;
         }
+
+        if (waypointsContainer.waypoints[currentWaypointIndex] == null)
+            return;
 
         if (useRaceLookAhead) {
             // Compute look-ahead point along waypoint path
             Vector3 lookPoint = GetWaypointLookAheadPoint(raceLookAhead);
-            Agent.SetDestination(lookPoint);
+            TrySetAgentDestination(ApplyRacingLineOffset(lookPoint, raceLookAhead));
         } else {
-            Agent.SetDestination(waypointsContainer.waypoints[currentWaypointIndex].transform.position);
+            TrySetAgentDestination(waypointsContainer.waypoints[currentWaypointIndex].transform.position);
         }
 
     }
@@ -385,7 +591,7 @@ public class RCCP_AI : RCCP_Component {
 
         Vector3 desiredPos = target.position - target.forward * followTargetDistance;
         stopNow = Vector3.Distance(desiredPos, CarController.transform.position) < followTargetDistance;
-        Agent.SetDestination(desiredPos);
+        TrySetAgentDestination(desiredPos);
 
     }
 
@@ -409,7 +615,25 @@ public class RCCP_AI : RCCP_Component {
         float predictT = Mathf.Clamp(timeToReach, 0f, chasePredictionTime);
         Vector3 interceptPoint = target.position + targetVel * predictT;
 
-        Agent.SetDestination(interceptPoint);
+        TrySetAgentDestination(interceptPoint);
+
+    }
+
+    private bool IsAgentReady() {
+
+        return Agent != null && Agent.isActiveAndEnabled && Agent.isOnNavMesh;
+
+    }
+
+    private bool TrySetAgentDestination(Vector3 destination) {
+
+        if (!IsAgentReady())
+            return false;
+
+        if (NavMesh.SamplePosition(destination, out NavMeshHit hit, 15f, NavMesh.AllAreas))
+            return Agent.SetDestination(hit.position);
+
+        return false;
 
     }
 
@@ -468,7 +692,7 @@ public class RCCP_AI : RCCP_Component {
         PredictFutureState(0.5f, out Vector3 predPos, out Quaternion predRot, out _, out _);
 
         // Early exit conditions
-        if (!Agent.hasPath || stopNow) {
+        if (stopNow || !HasDrivingPath()) {
             inputs.steerInput = 0f;
             inputs.throttleInput = 0f;
             inputs.brakeInput = maxBrake;
@@ -486,54 +710,35 @@ public class RCCP_AI : RCCP_Component {
 
         // Calculate speed and look-ahead distance
         float speedKph = Mathf.Max(0f, CarController.speed);
-        float steeringLookAhead = Mathf.Max(minLookAhead, lookAheadPerKph * speedKph);
+        float normalSteeringLookAhead = GetArcadeBaseLookAhead(speedKph);
+        float steeringLookAhead = GetCornerAwareSteeringLookAhead(normalSteeringLookAhead);
 
         // Get steering target
         Vector3 lookPt = GetSteeringLookAheadPoint(steeringLookAhead);
         Vector3 localLook = Quaternion.Inverse(predRot) * (lookPt - predPos);
         float rawSteer = Mathf.Atan2(localLook.x, localLook.z);
-        float steer = Mathf.Clamp(rawSteer * steerSensitivity, -1f, 1f);
+        float steer = Mathf.Clamp(rawSteer * steerSensitivity * aiSteeringMultiplier, -1f, 1f);
+        steer += GetMistakeSteerOffset();
 
-        // Calculate safe cornering speed
-        float speedLookAhead = (behaviour == BehaviourType.RaceWaypoints || behaviour == BehaviourType.ChaseTarget)
-            ? raceLookAhead : steeringLookAhead;
-        float minRadius = Mathf.Max(1f, GetTightestRadiusAhead(speedLookAhead));
-        float aLat = roadGrip * 9.81f;
-        float safeSpeedKph = Mathf.Sqrt(aLat * minRadius) * 3.6f;
+        float avoidanceSteer = 0f;
+        float avoidanceBrakeInput = 0f;
+        GetSimpleAvoidanceInputs(out avoidanceSteer, out avoidanceBrakeInput);
+        GetContactAvoidanceInputs(out float contactSteer, out float contactBrake);
+        avoidanceSteer += contactSteer;
+        avoidanceBrakeInput = Mathf.Max(avoidanceBrakeInput, contactBrake);
+        steer = Mathf.Clamp(steer + avoidanceSteer, -1f, 1f);
+        steer = ApplySteeringStability(steer, speedKph);
+
+        float targetSpeedKph = GetArcadeTargetSpeed(speedKph, Mathf.Abs(steer), GetRacePaceMultiplier());
 
         // Cap speed to brake zone target if inside one
         if (currentBrakeZone != null)
-            safeSpeedKph = Mathf.Min(safeSpeedKph, currentBrakeZone.targetSpeed);
+            targetSpeedKph = Mathf.Min(targetSpeedKph, currentBrakeZone.targetSpeed);
 
-        // PID speed control
-        float error = safeSpeedKph - speedKph;
-        pidIntegral += error * Time.fixedDeltaTime;
-        float derivative = (error - lastSpeedError) / Time.fixedDeltaTime;
-        lastSpeedError = error;
-
-        float controlDivisor = Mathf.Lerp(30f, 10f, agressiveness / 3f);
-        float control = kp * error + ki * pidIntegral + kd * derivative;
-        float throttle = Mathf.Clamp01(control / controlDivisor) * maxThrottle;
-        float brakePID = Mathf.Clamp01(-control / controlDivisor) * maxBrake;
-
-        // Feed-forward brake for overspeed
-        float ffBrake = 0f;
-        if (speedKph > safeSpeedKph)
-            ffBrake = Mathf.Clamp01((speedKph - safeSpeedKph) / safeSpeedKph) * brakeFeedForwardFactor;
-
-        // Angle-based brake
-        Vector3 dirLook = lookPt - predPos;
-        float angleToLook = Vector3.Angle(predRot * Vector3.forward, dirLook);
-        float angleBrake = Mathf.Clamp01(angleToLook / Mathf.Lerp(20f, 75f, agressiveness / 3f)) * maxBrake;
-
-        // Combine brakes
-        float finalBrake = Mathf.Max(brakePID, ffBrake, angleBrake);
-
-        // Apply brake/throttle logic
-        if (finalBrake < 0.3f || speedKph < 25f)
-            finalBrake = 0f;
-        if (finalBrake >= 0.3f && speedKph >= 25f)
-            throttle = 0f;
+        float speedError = targetSpeedKph - speedKph;
+        float throttle = speedError > 2f ? maxThrottle * arcadeAcceleration * aiAccelerationMultiplier : 0f;
+        float finalBrake = speedError < -2f ? Mathf.Clamp01((-speedError / 24f) * brakeSensitivity * aiBrakeMultiplier) * maxBrake : 0f;
+        finalBrake = Mathf.Max(finalBrake, avoidanceBrakeInput);
 
         // Override brake dead zone for brake zones
         if (currentBrakeZone != null && speedKph > currentBrakeZone.targetSpeed) {
@@ -542,13 +747,244 @@ public class RCCP_AI : RCCP_Component {
             throttle = 0f;
         }
 
-        float cutThrottle = (speedKph >= 25f) ? finalBrake : 0f;
+        if (finalBrake > .15f)
+            throttle = 0f;
+
+        float handbrake = 0f;
+        ApplyArcadeDriftAssist(speedKph, ref steer, ref throttle, ref finalBrake, ref handbrake);
+
+        float finalSteer = GetSmoothedSteerInput(steer);
 
         // Set final inputs
-        inputs.steerInput = Mathf.Clamp(steer, -1f, 1f);
-        inputs.throttleInput = Mathf.Clamp01(throttle - cutThrottle);
+        inputs.steerInput = Mathf.Clamp(finalSteer, -1f, 1f);
+        inputs.throttleInput = Mathf.Clamp01(throttle);
         inputs.brakeInput = Mathf.Clamp01(finalBrake);
-        inputs.handbrakeInput = 0f;
+        inputs.handbrakeInput = Mathf.Clamp01(handbrake);
+
+    }
+
+    private bool HasDrivingPath() {
+
+        if (behaviour == BehaviourType.RaceWaypoints || behaviour == BehaviourType.FollowWaypoints)
+            return waypointsContainer != null && waypointsContainer.waypoints != null && waypointsContainer.waypoints.Count > 0;
+
+        return IsAgentReady() && Agent.hasPath;
+
+    }
+
+    private float GetArcadeBaseLookAhead(float speedKph) {
+
+        float speedLookAhead = Mathf.Lerp(minLookAhead, raceLookAhead, Mathf.InverseLerp(0f, arcadeMaxSpeedKph, speedKph));
+        return Mathf.Max(minLookAhead, speedLookAhead);
+
+    }
+
+    private float GetArcadeTargetSpeed(float speedKph, float absSteer, float racePaceMultiplier) {
+
+        float targetSpeed = Mathf.Max(10f, arcadeMaxSpeedKph) * Mathf.Max(.65f, racePaceMultiplier);
+        targetSpeed = GetCornerAwareTargetSpeed(targetSpeed, speedKph, racePaceMultiplier);
+        float steeringCut = Mathf.Lerp(1f, .82f, Mathf.Clamp01(absSteer));
+        return targetSpeed * steeringCut;
+
+    }
+
+    private void ApplyArcadeDriftAssist(float speedKph, ref float steer, ref float throttle, ref float brake, ref float handbrake) {
+
+        if (!useArcadeDriftAssist || CarController == null || CarController.Rigid == null)
+            return;
+
+        float cornerFactor = GetCornerProximityFactor(cornerBrakingDistance);
+        float steerDemand = Mathf.Abs(steer);
+
+        if (speedKph < driftAssistMinSpeed || (cornerFactor < .15f && steerDemand < .45f))
+            return;
+
+        Vector3 localVelocity = CarController.transform.InverseTransformDirection(CarController.Rigid.linearVelocity);
+
+        if (Mathf.Abs(localVelocity.z) < 1f)
+            return;
+
+        float slipAngle = Mathf.Atan2(localVelocity.x, Mathf.Abs(localVelocity.z)) * Mathf.Rad2Deg;
+        float absSlip = Mathf.Abs(slipAngle);
+        float desiredSlip = Mathf.Lerp(targetDriftAngle * .65f, targetDriftAngle, Mathf.Max(cornerFactor, steerDemand));
+
+        throttle = Mathf.Max(throttle, driftThrottle);
+
+        if (absSlip < desiredSlip * .55f && steerDemand > .35f) {
+            handbrake = Mathf.Max(handbrake, driftEntryHandbrake * Mathf.Max(cornerFactor, steerDemand));
+            brake = Mathf.Min(brake, .15f);
+        }
+
+        if (absSlip > desiredSlip) {
+            float counterAmount = Mathf.InverseLerp(desiredSlip, spinPreventionAngle, absSlip);
+            float counterSteer = Mathf.Sign(slipAngle) * driftCounterSteer * counterAmount;
+            steer = Mathf.Clamp(Mathf.Lerp(steer, counterSteer, counterAmount), -1f, 1f);
+            handbrake = 0f;
+        }
+
+        if (absSlip > spinPreventionAngle) {
+            float damping = driftYawDamping * Time.fixedDeltaTime * 8f;
+            Vector3 angularVelocity = CarController.Rigid.angularVelocity;
+            angularVelocity.y = Mathf.Lerp(angularVelocity.y, angularVelocity.y * .45f, damping);
+            CarController.Rigid.angularVelocity = angularVelocity;
+            brake = Mathf.Min(brake, .1f);
+            throttle = Mathf.Max(throttle, driftThrottle * .85f);
+        }
+
+    }
+
+    private float GetMistakeSteerOffset() {
+
+        if (mistakeChance <= 0f)
+            return 0f;
+
+        if (mistakeTimer > 0f) {
+            mistakeTimer -= Time.fixedDeltaTime;
+            return mistakeSteerOffset;
+        }
+
+        mistakeSteerOffset = 0f;
+
+        if (Random.value < mistakeChance * Time.fixedDeltaTime) {
+            mistakeTimer = Random.Range(.35f, .9f);
+            mistakeSteerOffset = Random.Range(-.12f, .12f);
+        }
+
+        return mistakeSteerOffset;
+
+    }
+
+    private void GetSimpleAvoidanceInputs(out float steerOffset, out float brakeInput) {
+
+        steerOffset = 0f;
+        brakeInput = 0f;
+
+        if (avoidanceDistance <= 0f || CarController == null)
+            return;
+
+        Vector3 origin = CarController.transform.position + Vector3.up * .8f + CarController.transform.forward * 2f;
+        RaycastHit[] hits = Physics.SphereCastAll(origin, 1.15f, CarController.transform.forward, avoidanceDistance, avoidanceLayers, QueryTriggerInteraction.Ignore);
+
+        if (hits == null || hits.Length == 0)
+            return;
+
+        RaycastHit bestHit = new RaycastHit();
+        float bestDistance = float.MaxValue;
+
+        for (int i = 0; i < hits.Length; i++) {
+            RaycastHit hit = hits[i];
+
+            if (hit.collider == null)
+                continue;
+
+            if (hit.collider.transform.IsChildOf(CarController.transform))
+                continue;
+
+            RCCP_CarController otherVehicle = hit.collider.GetComponentInParent<RCCP_CarController>();
+
+            if (otherVehicle == null)
+                continue;
+
+            if (hit.distance < bestDistance) {
+                bestDistance = hit.distance;
+                bestHit = hit;
+            }
+        }
+
+        if (bestDistance == float.MaxValue)
+            return;
+
+        Vector3 localHit = CarController.transform.InverseTransformPoint(bestHit.point);
+        float side = Mathf.Abs(localHit.x) < .35f ? GetStableAvoidanceSide() : -Mathf.Sign(localHit.x);
+        float urgency = 1f - Mathf.Clamp01(bestDistance / Mathf.Max(1f, avoidanceDistance));
+        steerOffset = side * avoidanceSideOffset * .035f * urgency;
+        brakeInput = avoidanceBrake * Mathf.Lerp(.55f, 1f, urgency);
+
+    }
+
+    private void GetContactAvoidanceInputs(out float steerOffset, out float brakeInput) {
+
+        steerOffset = 0f;
+        brakeInput = 0f;
+
+        if (contactAvoidanceTimer <= 0f)
+            return;
+
+        contactAvoidanceTimer -= Time.fixedDeltaTime;
+        float strength = Mathf.Clamp01(contactAvoidanceTimer / .45f);
+        steerOffset = contactAvoidanceSteer * .12f * strength;
+        brakeInput = Mathf.Lerp(.25f, .85f, strength);
+
+    }
+
+    private float GetStableAvoidanceSide() {
+
+        if (avoidanceMemoryTimer > 0f) {
+            avoidanceMemoryTimer -= Time.fixedDeltaTime;
+
+            if (!Mathf.Approximately(avoidanceSideMemory, 0f))
+                return avoidanceSideMemory;
+        }
+
+        avoidanceSideMemory = ChooseOpenSide();
+        avoidanceMemoryTimer = .75f;
+        return avoidanceSideMemory;
+
+    }
+
+    private Vector3 ApplyRacingLineOffset(Vector3 point, float distance) {
+
+        if (Mathf.Abs(racingLineOffset) < .01f || waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count < 2)
+            return point;
+
+        Vector3 aheadPoint = GetWaypointLookAheadPoint(distance + Mathf.Max(3f, racingLineDirectionSample));
+        Vector3 forward = FlattenDirection(aheadPoint - point);
+
+        if (forward.sqrMagnitude < .01f)
+            forward = FlattenDirection(point - CarController.transform.position);
+
+        if (forward.sqrMagnitude < .01f)
+            return point;
+
+        Vector3 right = new Vector3(forward.z, 0f, -forward.x).normalized;
+        return point + right * racingLineOffset;
+
+    }
+
+    private Vector3 GetRaceWaypointTargetPoint() {
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count == 0)
+            return CarController.transform.position + CarController.transform.forward * Mathf.Max(5f, minLookAhead);
+
+        float speedKph = CarController != null ? Mathf.Max(0f, CarController.speed) : 0f;
+        float speedFactor = Mathf.InverseLerp(0f, Mathf.Max(40f, arcadeMaxSpeedKph), speedKph);
+        float targetDistance = Mathf.Lerp(Mathf.Max(3f, minRaceTargetDistance), Mathf.Max(minRaceTargetDistance, maxRaceTargetDistance), speedFactor);
+
+        if (currentCornerAngle >= sharpCornerAngleThreshold)
+            targetDistance = Mathf.Min(targetDistance, sharpCornerLookAhead);
+        else if (currentCornerAngle >= mediumCornerAngleThreshold)
+            targetDistance = Mathf.Min(targetDistance, mediumCornerLookAhead);
+
+        Vector3 targetPoint = GetWaypointLookAheadPoint(targetDistance);
+        return ApplyRacingLineOffset(targetPoint, targetDistance);
+
+    }
+
+    private float ChooseOpenSide() {
+
+        Vector3 origin = CarController.transform.position + Vector3.up * .8f + CarController.transform.forward * 2f;
+        Vector3 leftOrigin = origin - CarController.transform.right * 1.2f;
+        Vector3 rightOrigin = origin + CarController.transform.right * 1.2f;
+        bool leftBlocked = Physics.SphereCast(leftOrigin, .8f, CarController.transform.forward, out _, avoidanceDistance * .7f, avoidanceLayers, QueryTriggerInteraction.Ignore);
+        bool rightBlocked = Physics.SphereCast(rightOrigin, .8f, CarController.transform.forward, out _, avoidanceDistance * .7f, avoidanceLayers, QueryTriggerInteraction.Ignore);
+
+        if (leftBlocked && !rightBlocked)
+            return 1f;
+
+        if (rightBlocked && !leftBlocked)
+            return -1f;
+
+        return Random.value > .5f ? 1f : -1f;
 
     }
 
@@ -557,10 +993,634 @@ public class RCCP_AI : RCCP_Component {
     /// </summary>
     private Vector3 GetSteeringLookAheadPoint(float distance) {
 
-        if (behaviour == BehaviourType.FollowWaypoints || behaviour == BehaviourType.RaceWaypoints)
-            return GetWaypointLookAheadPoint(distance);
+        if (behaviour == BehaviourType.RaceWaypoints)
+            return GetRaceWaypointTargetPoint();
+
+        if (behaviour == BehaviourType.FollowWaypoints || behaviour == BehaviourType.RaceWaypoints) {
+            Vector3 lookPoint = GetWaypointLookAheadPoint(distance);
+            lookPoint = ApplyRacingLineOffset(lookPoint, distance);
+            return ApplyApexOffset(lookPoint);
+        }
         else
             return GetPathLookAheadPoint(distance);
+
+    }
+
+    private void ApplyArcadePreset() {
+
+        if (arcadePreset == null) {
+            if (useBuiltInDifficulty)
+                ApplyBuiltInDifficulty();
+
+            return;
+        }
+
+        arcadeMaxSpeedKph = arcadePreset.maxSpeedKph;
+        arcadeAcceleration = arcadePreset.acceleration;
+        steerSensitivity = arcadePreset.steeringSensitivity;
+        brakeSensitivity = arcadePreset.brakeSensitivity;
+        roadGrip = arcadePreset.grip;
+        raceLookAhead = arcadePreset.straightLookAhead;
+        mediumCornerLookAhead = arcadePreset.cornerLookAhead;
+        sharpCornerLookAhead = arcadePreset.sharpCornerLookAhead;
+        cornerDetectionDistance = arcadePreset.cornerDetectionDistance;
+        cornerBrakingDistance = arcadePreset.cornerBrakingDistance;
+        sharpCornerTargetSpeed = arcadePreset.sharpCornerSpeed;
+        paceVariation = arcadePreset.paceVariation;
+        mistakeChance = arcadePreset.mistakeChance;
+        avoidanceDistance = arcadePreset.avoidanceDistance;
+        avoidanceSideOffset = Mathf.Min(avoidanceSideOffset, arcadePreset.avoidanceSideOffset);
+        avoidanceBrake = Mathf.Max(avoidanceBrake, arcadePreset.avoidanceBrake);
+        stuckRecoverySeconds = arcadePreset.stuckSeconds;
+        flippedRecoverySeconds = arcadePreset.flippedSeconds;
+        offTrackRecoveryDistance = arcadePreset.offTrackDistance;
+        behindPlayerSpeedMultiplier = 1f + arcadePreset.rubberBandStrength;
+        aheadPlayerSpeedMultiplier = 1f - (arcadePreset.rubberBandStrength * .35f);
+        catchUpAggression = 1f + (arcadePreset.rubberBandStrength * .65f);
+        useApexSteering = false;
+        ApplyArcadePathDefaults();
+        ApplyPresetDifficultyModifier();
+
+    }
+
+    private void ApplyBuiltInDifficulty() {
+
+        switch (arcadeDifficulty) {
+            case RCCP_AIArcadePreset.Difficulty.Easy:
+                ApplyArcadeValues(120f, .72f, 1f, .9f, 1f, .18f, .11f);
+                ApplyCornerPaceValues(48f, 58f, 15f, 8f, 1.05f);
+                break;
+
+            case RCCP_AIArcadePreset.Difficulty.Hard:
+                ApplyArcadeValues(172f, .98f, 1.35f, 1.18f, 1.24f, .34f, .025f);
+                ApplyCornerPaceValues(64f, 50f, 13f, 7f, 1.3f);
+                break;
+
+            case RCCP_AIArcadePreset.Difficulty.Expert:
+                ApplyArcadeValues(205f, 1f, 1.5f, 1.32f, 1.38f, .44f, .01f);
+                ApplyCornerPaceValues(72f, 48f, 12f, 6f, 1.55f);
+                break;
+
+            default:
+                ApplyArcadeValues(142f, .86f, 1.16f, 1f, 1.1f, .25f, .055f);
+                ApplyCornerPaceValues(56f, 54f, 14f, 8f, 1.15f);
+                break;
+        }
+
+    }
+
+    private void ApplyArcadeValues(float speed, float accelerationValue, float steeringValue, float brakeValue, float gripValue, float rubberBandStrength, float mistakes) {
+
+        arcadeMaxSpeedKph = speed;
+        arcadeAcceleration = accelerationValue;
+        steerSensitivity = steeringValue;
+        brakeSensitivity = brakeValue;
+        roadGrip = gripValue;
+        mistakeChance = mistakes;
+        behindPlayerSpeedMultiplier = 1f + rubberBandStrength;
+        aheadPlayerSpeedMultiplier = 1f - (rubberBandStrength * .35f);
+        catchUpAggression = 1f + (rubberBandStrength * .65f);
+        useApexSteering = false;
+        ApplyArcadePathDefaults();
+
+    }
+
+    private void ApplyArcadePathDefaults() {
+
+        if (waypointReachThreshold > 10f)
+            waypointReachThreshold = 10f;
+
+        maxRaceLookAheadSteps = Mathf.Min(maxRaceLookAheadSteps, 6);
+        speedPerLookAheadStep = Mathf.Max(speedPerLookAheadStep, 35f);
+        cornerScanSteps = Mathf.Clamp(cornerScanSteps, 3, 6);
+        maxRaceTargetDistance = Mathf.Min(maxRaceTargetDistance, 28f);
+        minRaceTargetDistance = Mathf.Min(minRaceTargetDistance, maxRaceTargetDistance);
+
+        avoidanceDistance = Mathf.Max(avoidanceDistance, 22f);
+        avoidanceSideOffset = Mathf.Min(avoidanceSideOffset, 2.2f);
+        avoidanceBrake = Mathf.Max(avoidanceBrake, .75f);
+
+    }
+
+    private void ApplyCornerPaceValues(float sharpCornerSpeed, float brakingDistance, float mediumLookAhead, float sharpLookAhead, float catchUpValue) {
+
+        sharpCornerTargetSpeed = sharpCornerSpeed;
+        cornerBrakingDistance = brakingDistance;
+        mediumCornerLookAhead = mediumLookAhead;
+        sharpCornerLookAhead = sharpLookAhead;
+        catchUpAggression = Mathf.Max(catchUpAggression, catchUpValue);
+
+    }
+
+    private void ApplyPresetDifficultyModifier() {
+
+        switch (arcadeDifficulty) {
+            case RCCP_AIArcadePreset.Difficulty.Easy:
+                arcadeMaxSpeedKph *= .9f;
+                arcadeAcceleration *= .9f;
+                sharpCornerTargetSpeed *= .85f;
+                cornerBrakingDistance *= 1.15f;
+                break;
+
+            case RCCP_AIArcadePreset.Difficulty.Hard:
+                arcadeMaxSpeedKph *= 1.14f;
+                arcadeAcceleration = Mathf.Min(1f, arcadeAcceleration * 1.08f);
+                sharpCornerTargetSpeed *= 1.05f;
+                cornerBrakingDistance *= 1.05f;
+                behindPlayerSpeedMultiplier = Mathf.Max(behindPlayerSpeedMultiplier, 1.3f);
+                catchUpAggression = Mathf.Max(catchUpAggression, 1.32f);
+                break;
+
+            case RCCP_AIArcadePreset.Difficulty.Expert:
+                arcadeMaxSpeedKph *= 1.32f;
+                arcadeAcceleration = Mathf.Min(1f, arcadeAcceleration * 1.16f);
+                sharpCornerTargetSpeed *= 1.12f;
+                cornerBrakingDistance *= 1.15f;
+                mediumCornerLookAhead = Mathf.Min(mediumCornerLookAhead, 12f);
+                sharpCornerLookAhead = Mathf.Min(sharpCornerLookAhead, 6f);
+                behindPlayerSpeedMultiplier = Mathf.Max(behindPlayerSpeedMultiplier, 1.44f);
+                aheadPlayerSpeedMultiplier = Mathf.Min(aheadPlayerSpeedMultiplier, .86f);
+                catchUpAggression = Mathf.Max(catchUpAggression, 1.58f);
+                break;
+        }
+
+    }
+
+    private void RollArcadeVariation() {
+
+        aiPaceOffset = Random.Range(-paceVariation, paceVariation);
+        aiAccelerationMultiplier = Random.Range(1f - paceVariation, 1f + paceVariation);
+        aiSteeringMultiplier = Random.Range(1f - paceVariation, 1f + paceVariation);
+        aiBrakeMultiplier = Random.Range(1f - paceVariation, 1f + paceVariation);
+
+    }
+
+    private void SynchronizeWaypointProgress() {
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count == 0)
+            return;
+
+        int count = waypointsContainer.waypoints.Count;
+        int currentIndex = Mathf.Clamp(currentWaypointIndex, 0, count - 1);
+        float bestDistance = float.MaxValue;
+        int bestOffset = 0;
+        int maxScan = Mathf.Clamp(waypointForwardRecoveryScan, 1, count);
+
+        for (int offset = 0; offset <= maxScan; offset++) {
+            int index = (currentIndex + offset) % count;
+            RCCP_Waypoint waypoint = waypointsContainer.waypoints[index];
+
+            if (waypoint == null)
+                continue;
+
+            float distance = Vector3.SqrMagnitude(FlattenPoint(CarController.transform.position) - FlattenPoint(waypoint.transform.position));
+
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestOffset = offset;
+            }
+        }
+
+        if (bestOffset > 0)
+            currentWaypointIndex = (currentIndex + bestOffset) % count;
+
+    }
+
+    private void UpdateRaceWaypointProgress() {
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count == 0)
+            return;
+
+        int count = waypointsContainer.waypoints.Count;
+        float threshold = Mathf.Max(2f, waypointReachThreshold);
+        float threshSqr = threshold * threshold;
+        int safety = 0;
+
+        while (safety < count) {
+            int index = Mathf.Clamp(currentWaypointIndex, 0, count - 1);
+            RCCP_Waypoint waypoint = waypointsContainer.waypoints[index];
+            RCCP_Waypoint nextWaypoint = waypointsContainer.waypoints[(index + 1) % count];
+
+            if (waypoint == null)
+                break;
+
+            Vector3 flatCar = FlattenPoint(CarController.transform.position);
+            Vector3 flatWaypoint = FlattenPoint(waypoint.transform.position);
+            float distanceSqr = Vector3.SqrMagnitude(flatCar - flatWaypoint);
+
+            bool crossedWaypointPlane = false;
+
+            if (nextWaypoint != null) {
+                Vector3 segmentDirection = FlattenDirection(nextWaypoint.transform.position - waypoint.transform.position);
+
+                if (segmentDirection.sqrMagnitude > .01f)
+                    crossedWaypointPlane = Vector3.Dot(flatCar - flatWaypoint, segmentDirection) > 0f;
+            }
+
+            if (distanceSqr > threshSqr && !crossedWaypointPlane)
+                break;
+
+            currentWaypointIndex = (currentWaypointIndex + 1) % count;
+            safety++;
+        }
+
+    }
+
+    /// <summary>
+    /// Smoothes steering to prevent front wheels from snapping when the target point changes quickly.
+    /// </summary>
+    private float GetSmoothedSteerInput(float targetSteer) {
+
+        if (steeringSmoothSpeed <= 0f && steeringMaxChangePerSecond <= 0f) {
+            smoothedSteerInput = targetSteer;
+            return targetSteer;
+        }
+
+        float smoothedTarget = targetSteer;
+
+        if (steeringSmoothSpeed > 0f) {
+            float t = 1f - Mathf.Exp(-steeringSmoothSpeed * Time.fixedDeltaTime);
+            smoothedTarget = Mathf.Lerp(smoothedSteerInput, targetSteer, t);
+        }
+
+        if (steeringMaxChangePerSecond > 0f) {
+            float maxDelta = steeringMaxChangePerSecond * Time.fixedDeltaTime;
+            smoothedSteerInput = Mathf.MoveTowards(smoothedSteerInput, smoothedTarget, maxDelta);
+        } else {
+            smoothedSteerInput = smoothedTarget;
+        }
+
+        return smoothedSteerInput;
+
+    }
+
+    /// <summary>
+    /// Reduces over-correction when the vehicle is already moving sideways or travelling very fast.
+    /// </summary>
+    private float ApplySteeringStability(float targetSteer, float speedKph) {
+
+        float stableSteer = targetSteer;
+
+        if (CarController.Rigid != null && lateralSteeringDamping > 0f) {
+            Vector3 localVelocity = CarController.transform.InverseTransformDirection(CarController.Rigid.linearVelocity);
+            float lateralCorrection = Mathf.Clamp(localVelocity.x / 18f, -1f, 1f) * lateralSteeringDamping;
+            stableSteer -= lateralCorrection;
+        }
+
+        float speedLimit = Mathf.Lerp(1f, highSpeedSteerLimit, Mathf.InverseLerp(50f, 160f, speedKph));
+        float cornerLimit = Mathf.Lerp(1f, .75f, Mathf.InverseLerp(mediumCornerAngleThreshold, sharpCornerAngleThreshold, currentCornerAngle));
+        float finalLimit = Mathf.Clamp01(speedLimit * cornerLimit);
+
+        return Mathf.Clamp(stableSteer, -finalLimit, finalLimit);
+
+    }
+
+    /// <summary>
+    /// Reduces steering look-ahead before sharp waypoint direction changes.
+    /// </summary>
+    private float GetCornerAwareSteeringLookAhead(float normalLookAhead) {
+
+        currentCornerAngle = behaviour == BehaviourType.RaceWaypoints ? GetRaceUpcomingCornerAngle() : GetUpcomingWaypointCornerAngle();
+        currentRaceLookAheadSteps = GetRaceLookAheadSteps(CarController != null ? Mathf.Max(0f, CarController.speed) : 0f);
+
+        float targetLookAhead = normalLookAhead;
+        float cornerFactor = GetCornerProximityFactor(cornerDetectionDistance);
+
+        if (currentCornerAngle >= sharpCornerAngleThreshold) {
+            targetLookAhead = Mathf.Lerp(normalLookAhead, Mathf.Min(normalLookAhead, sharpCornerLookAhead), cornerFactor);
+        } else if (currentCornerAngle >= mediumCornerAngleThreshold) {
+            float t = Mathf.InverseLerp(mediumCornerAngleThreshold, sharpCornerAngleThreshold, currentCornerAngle);
+            float cornerLookAhead = Mathf.Lerp(mediumCornerLookAhead, sharpCornerLookAhead, t);
+            targetLookAhead = Mathf.Lerp(normalLookAhead, Mathf.Min(normalLookAhead, cornerLookAhead), cornerFactor);
+        }
+
+        targetLookAhead = Mathf.Max(minLookAhead, targetLookAhead);
+
+        if (smoothedSteeringLookAhead <= 0f)
+            smoothedSteeringLookAhead = targetLookAhead;
+
+        if (lookAheadSmoothSpeed <= 0f) {
+            smoothedSteeringLookAhead = targetLookAhead;
+        } else {
+            float t = 1f - Mathf.Exp(-lookAheadSmoothSpeed * Time.fixedDeltaTime);
+            smoothedSteeringLookAhead = Mathf.Lerp(smoothedSteeringLookAhead, targetLookAhead, t);
+        }
+
+        return smoothedSteeringLookAhead;
+
+    }
+
+    /// <summary>
+    /// Limits target speed before medium and sharp waypoint corners.
+    /// </summary>
+    private float GetCornerAwareTargetSpeed(float normalTargetSpeed, float currentSpeedKph, float racePaceMultiplier) {
+
+        if (currentCornerAngle < mediumCornerAngleThreshold)
+            return normalTargetSpeed;
+
+        float safeSharpSpeed = Mathf.Max(5f, sharpCornerTargetSpeed);
+        float speedExtraBrakeDistance = Mathf.Max(0f, currentSpeedKph - safeSharpSpeed) * .55f;
+        float activeBrakeDistance = Mathf.Max(cornerBrakingDistance, cornerBrakingDistance + speedExtraBrakeDistance);
+        float cornerFactor = GetCornerProximityFactor(activeBrakeDistance);
+
+        if (cornerFactor <= 0f)
+            return normalTargetSpeed;
+
+        float cornerPaceMultiplier = Mathf.Lerp(1f, Mathf.Max(.8f, racePaceMultiplier), .25f);
+
+        if (currentCornerAngle >= sharpCornerAngleThreshold)
+            return Mathf.Lerp(normalTargetSpeed, Mathf.Min(normalTargetSpeed, safeSharpSpeed * cornerPaceMultiplier), cornerFactor);
+
+        float t = Mathf.InverseLerp(mediumCornerAngleThreshold, sharpCornerAngleThreshold, currentCornerAngle);
+        float mediumTargetSpeed = Mathf.Lerp(normalTargetSpeed, safeSharpSpeed, t);
+        mediumTargetSpeed *= cornerPaceMultiplier;
+        return Mathf.Lerp(normalTargetSpeed, Mathf.Min(normalTargetSpeed, mediumTargetSpeed), cornerFactor);
+
+    }
+
+    private int GetRaceLookAheadSteps(float speedKph) {
+
+        int minSteps = Mathf.Max(1, minRaceLookAheadSteps);
+        int maxSteps = Mathf.Max(minSteps, maxRaceLookAheadSteps);
+        int speedSteps = minSteps + Mathf.FloorToInt(speedKph / Mathf.Max(1f, speedPerLookAheadStep));
+        int steps = Mathf.Clamp(speedSteps, minSteps, maxSteps);
+
+        if (currentCornerAngle >= sharpCornerAngleThreshold)
+            steps = minSteps;
+        else if (currentCornerAngle >= mediumCornerAngleThreshold)
+            steps = Mathf.Min(steps, minSteps + 1);
+
+        return steps;
+
+    }
+
+    private float GetCornerProximityFactor(float activeDistance) {
+
+        if (currentCornerAngle < mediumCornerAngleThreshold || currentCornerDistance == float.MaxValue)
+            return 0f;
+
+        return 1f - Mathf.InverseLerp(0f, Mathf.Max(1f, activeDistance), currentCornerDistance);
+
+    }
+
+    /// <summary>
+    /// Applies a small inside-corner offset so the AI aims closer to the apex instead of the waypoint centerline.
+    /// </summary>
+    private Vector3 ApplyApexOffset(Vector3 lookPoint) {
+
+        if (!useApexSteering || currentCornerAngle < mediumCornerAngleThreshold)
+            return lookPoint + SmoothApexOffset(Vector3.zero);
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count < 3)
+            return lookPoint + SmoothApexOffset(Vector3.zero);
+
+        if (Mathf.Approximately(currentCornerSign, 0f) || currentCornerDistance == float.MaxValue)
+            return lookPoint + SmoothApexOffset(Vector3.zero);
+
+        int count = waypointsContainer.waypoints.Count;
+        int cornerIndex = GetClosestWaypointIndexToPosition(currentCornerPoint);
+
+        if (cornerIndex < 0)
+            return lookPoint + SmoothApexOffset(Vector3.zero);
+
+        RCCP_Waypoint previousWaypoint = waypointsContainer.waypoints[(cornerIndex - 1 + count) % count];
+        RCCP_Waypoint cornerWaypoint = waypointsContainer.waypoints[cornerIndex];
+
+        if (previousWaypoint == null || cornerWaypoint == null)
+            return lookPoint + SmoothApexOffset(Vector3.zero);
+
+        Vector3 incoming = FlattenDirection(cornerWaypoint.transform.position - previousWaypoint.transform.position);
+
+        if (incoming.sqrMagnitude < 0.01f)
+            return lookPoint + SmoothApexOffset(Vector3.zero);
+
+        Vector3 rightOfIncoming = new Vector3(incoming.z, 0f, -incoming.x).normalized;
+        Vector3 inside = rightOfIncoming * currentCornerSign;
+        float cornerFactor = Mathf.InverseLerp(mediumCornerAngleThreshold, sharpCornerAngleThreshold, currentCornerAngle);
+        float distanceToCorner = Vector3.Distance(FlattenPoint(CarController.transform.position), FlattenPoint(currentCornerPoint));
+        float proximityFactor = 1f - Mathf.InverseLerp(0f, Mathf.Max(1f, cornerDetectionDistance), distanceToCorner);
+        float offset = apexMaxOffset * apexStrength * cornerFactor * Mathf.Clamp01(proximityFactor);
+
+        return lookPoint + SmoothApexOffset(inside * offset);
+
+    }
+
+    private Vector3 SmoothApexOffset(Vector3 targetOffset) {
+
+        if (apexOffsetSmoothSpeed <= 0f) {
+            smoothedApexOffset = targetOffset;
+        } else {
+            float t = 1f - Mathf.Exp(-apexOffsetSmoothSpeed * Time.fixedDeltaTime);
+            smoothedApexOffset = Vector3.Lerp(smoothedApexOffset, targetOffset, t);
+        }
+
+        return smoothedApexOffset;
+
+    }
+
+    /// <summary>
+    /// Adjusts AI target speed relative to the player without making the race fully scripted.
+    /// </summary>
+    private float GetRacePaceMultiplier() {
+
+        float multiplier = 1f + aiPaceOffset;
+
+        if (!useRubberBanding || playerTarget == null || waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count < 2)
+            return Mathf.Max(.1f, multiplier);
+
+        float progressDelta = GetTrackProgressDistance(playerTarget.position) - GetTrackProgressDistance(CarController.transform.position);
+        float t = Mathf.Clamp01(Mathf.Abs(progressDelta) / Mathf.Max(1f, rubberBandFullEffectDistance));
+
+        if (progressDelta > 0f) {
+            float behindBoost = Mathf.Max(1f, behindPlayerSpeedMultiplier) * Mathf.Lerp(1f, Mathf.Max(1f, catchUpAggression), t);
+            multiplier *= Mathf.Lerp(1f, behindBoost, t);
+        } else if (progressDelta < 0f) {
+            multiplier *= Mathf.Lerp(1f, Mathf.Min(1f, aheadPlayerSpeedMultiplier), t);
+        }
+
+        return Mathf.Clamp(multiplier, .65f, 1.65f);
+
+    }
+
+    /// <summary>
+    /// Estimates progress along the waypoint loop in meters.
+    /// </summary>
+    private float GetTrackProgressDistance(Vector3 position) {
+
+        int closestIndex = GetClosestWaypointIndexToPosition(position);
+
+        if (closestIndex < 0)
+            return 0f;
+
+        float progress = 0f;
+
+        for (int i = 0; i < closestIndex; i++) {
+            RCCP_Waypoint a = waypointsContainer.waypoints[i];
+            RCCP_Waypoint b = waypointsContainer.waypoints[(i + 1) % waypointsContainer.waypoints.Count];
+
+            if (a == null || b == null)
+                continue;
+
+            progress += Vector3.Distance(FlattenPoint(a.transform.position), FlattenPoint(b.transform.position));
+        }
+
+        RCCP_Waypoint closestWaypoint = waypointsContainer.waypoints[closestIndex];
+
+        if (closestWaypoint != null)
+            progress -= Vector3.Distance(FlattenPoint(position), FlattenPoint(closestWaypoint.transform.position));
+
+        return progress;
+
+    }
+
+    private int GetClosestWaypointIndexToPosition(Vector3 position) {
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count == 0)
+            return -1;
+
+        int closestIndex = -1;
+        float closestDistance = float.MaxValue;
+
+        for (int i = 0; i < waypointsContainer.waypoints.Count; i++) {
+            RCCP_Waypoint waypoint = waypointsContainer.waypoints[i];
+
+            if (waypoint == null)
+                continue;
+
+            float distance = Vector3.SqrMagnitude(FlattenPoint(position) - FlattenPoint(waypoint.transform.position));
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestIndex = i;
+            }
+        }
+
+        return closestIndex;
+
+    }
+
+    private float GetRaceUpcomingCornerAngle() {
+
+        currentCornerDistance = float.MaxValue;
+        currentCornerSign = 0f;
+        currentCornerPoint = Vector3.zero;
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count < 3)
+            return 0f;
+
+        int count = waypointsContainer.waypoints.Count;
+        int startIndex = Mathf.Clamp(currentWaypointIndex, 0, count - 1);
+        int scanSteps = Mathf.Clamp(cornerScanSteps, 2, count - 1);
+        float sharpestAngle = 0f;
+        float travelled = 0f;
+
+        for (int offset = 0; offset < scanSteps; offset++) {
+            RCCP_Waypoint a = waypointsContainer.waypoints[(startIndex + offset) % count];
+            RCCP_Waypoint b = waypointsContainer.waypoints[(startIndex + offset + 1) % count];
+            RCCP_Waypoint c = waypointsContainer.waypoints[(startIndex + offset + 2) % count];
+
+            if (a == null || b == null || c == null)
+                continue;
+
+            Vector3 dirA = FlattenDirection(b.transform.position - a.transform.position);
+            Vector3 dirB = FlattenDirection(c.transform.position - b.transform.position);
+
+            if (dirA.sqrMagnitude < .01f || dirB.sqrMagnitude < .01f)
+                continue;
+
+            if (offset > 0)
+                travelled += Vector3.Distance(FlattenPoint(a.transform.position), FlattenPoint(b.transform.position));
+            else
+                travelled = Vector3.Distance(FlattenPoint(CarController.transform.position), FlattenPoint(b.transform.position));
+
+            float angle = Vector3.Angle(dirA, dirB);
+
+            if (angle > sharpestAngle) {
+                sharpestAngle = angle;
+                currentCornerDistance = travelled;
+                currentCornerPoint = b.transform.position;
+                currentCornerSign = Mathf.Sign(Vector3.Cross(dirA, dirB).y);
+            }
+        }
+
+        return sharpestAngle;
+
+    }
+
+    /// <summary>
+    /// Scans upcoming waypoint direction changes and returns the sharpest corner angle ahead.
+    /// </summary>
+    private float GetUpcomingWaypointCornerAngle() {
+
+        currentCornerDistance = float.MaxValue;
+        currentCornerSign = 0f;
+        currentCornerPoint = Vector3.zero;
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count < 3)
+            return 0f;
+
+        int count = waypointsContainer.waypoints.Count;
+        int index = Mathf.Clamp(currentWaypointIndex, 0, count - 1);
+        RCCP_Waypoint currentWaypoint = waypointsContainer.waypoints[index];
+
+        if (currentWaypoint == null)
+            return 0f;
+
+        Vector3 previousPoint = CarController.transform.position;
+        Vector3 previousDirection = FlattenDirection(currentWaypoint.transform.position - previousPoint);
+
+        if (previousDirection.sqrMagnitude < 0.01f)
+            return 0f;
+
+        float sharpestAngle = 0f;
+        float travelled = 0f;
+        float scanDistance = Mathf.Max(0f, cornerDetectionDistance);
+
+        for (int scanned = 0; scanned < count && travelled <= scanDistance; scanned++) {
+            RCCP_Waypoint cornerWaypoint = waypointsContainer.waypoints[index];
+            RCCP_Waypoint nextWaypoint = waypointsContainer.waypoints[(index + 1) % count];
+
+            if (cornerWaypoint == null || nextWaypoint == null)
+                break;
+
+            Vector3 cornerPoint = cornerWaypoint.transform.position;
+            Vector3 nextPoint = nextWaypoint.transform.position;
+            travelled += Vector3.Distance(FlattenPoint(previousPoint), FlattenPoint(cornerPoint));
+
+            Vector3 nextDirection = FlattenDirection(nextPoint - cornerPoint);
+
+            if (nextDirection.sqrMagnitude >= 0.01f) {
+                float angle = Vector3.Angle(previousDirection, nextDirection);
+
+                if (angle > sharpestAngle) {
+                    sharpestAngle = angle;
+                    currentCornerDistance = travelled;
+                    currentCornerPoint = cornerPoint;
+                    currentCornerSign = Mathf.Sign(Vector3.Cross(previousDirection, nextDirection).y);
+                }
+
+                previousDirection = nextDirection;
+            }
+
+            previousPoint = cornerPoint;
+            index = (index + 1) % count;
+        }
+
+        return sharpestAngle;
+
+    }
+
+    private static Vector3 FlattenPoint(Vector3 point) {
+
+        point.y = 0f;
+        return point;
+
+    }
+
+    private static Vector3 FlattenDirection(Vector3 direction) {
+
+        direction.y = 0f;
+        return direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
 
     }
 
@@ -572,16 +1632,147 @@ public class RCCP_AI : RCCP_Component {
         if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count == 0)
             return CarController.transform.position + CarController.transform.forward * distance;
 
-        float travelled = 0f;
-        int i = currentWaypointIndex;
         int count = waypointsContainer.waypoints.Count;
-        Vector3 last = CarController.transform.position;
 
-        while (travelled < distance) {
-            Vector3 nextPt = waypointsContainer.waypoints[i].transform.position;
+        if (count == 1) {
+            RCCP_Waypoint onlyWaypoint = waypointsContainer.waypoints[0];
+            return onlyWaypoint != null ? onlyWaypoint.transform.position : CarController.transform.position + CarController.transform.forward * distance;
+        }
+
+        int i = Mathf.Clamp(currentWaypointIndex, 0, count - 1);
+        Vector3 last = CarController.transform.position;
+        float travelled = 0f;
+        int safety = 0;
+
+        while (travelled < distance && safety < count + 2) {
+            safety++;
+
+            RCCP_Waypoint waypoint = waypointsContainer.waypoints[i];
+
+            if (waypoint == null)
+                break;
+
+            Vector3 nextPt = waypoint.transform.position;
+            float segmentLength = Vector3.Distance(FlattenPoint(last), FlattenPoint(nextPt));
+
+            if (segmentLength <= 0.01f) {
+                i = (i + 1) % count;
+                continue;
+            }
+
+            if (travelled + segmentLength >= distance)
+                return Vector3.Lerp(last, nextPt, (distance - travelled) / segmentLength);
+
+            travelled += segmentLength;
+            last = nextPt;
+            i = (i + 1) % count;
+        }
+
+        return last;
+
+    }
+
+    private bool TryGetClosestPathSample(Vector3 position, out int segmentIndex, out float segmentT, out Vector3 closestPoint) {
+
+        segmentIndex = -1;
+        segmentT = 0f;
+        closestPoint = position;
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count < 2)
+            return false;
+
+        int count = waypointsContainer.waypoints.Count;
+        int currentSegment = (Mathf.Clamp(currentWaypointIndex, 0, count - 1) - 1 + count) % count;
+        int backSegments = Mathf.Max(0, pathSearchBackSegments);
+        int forwardSegments = Mathf.Max(1, pathSearchForwardSegments);
+        bool searchWholeLoop = count <= backSegments + forwardSegments + 1;
+
+        if (searchWholeLoop) {
+            SearchClosestPathSegments(position, 0, count - 1, true, ref segmentIndex, ref segmentT, ref closestPoint, out _);
+        } else {
+            SearchClosestPathSegments(position, currentSegment - backSegments, currentSegment + forwardSegments, false, ref segmentIndex, ref segmentT, ref closestPoint, out float windowDistance);
+
+            if (segmentIndex < 0 || windowDistance > offTrackRecoveryDistance * offTrackRecoveryDistance)
+                SearchClosestPathSegments(position, 0, count - 1, true, ref segmentIndex, ref segmentT, ref closestPoint, out _);
+        }
+
+        return segmentIndex >= 0;
+
+    }
+
+    private void SearchClosestPathSegments(Vector3 position, int startIndex, int endIndex, bool absoluteIndices, ref int segmentIndex, ref float segmentT, ref Vector3 closestPoint, out float closestDistanceSqr) {
+
+        Vector3 flatPosition = FlattenPoint(position);
+        closestDistanceSqr = float.MaxValue;
+        int count = waypointsContainer.waypoints.Count;
+
+        for (int rawIndex = startIndex; rawIndex <= endIndex; rawIndex++) {
+            int i = absoluteIndices ? rawIndex : WrapIndex(rawIndex, count);
+            RCCP_Waypoint a = waypointsContainer.waypoints[i];
+            RCCP_Waypoint b = waypointsContainer.waypoints[(i + 1) % count];
+
+            if (a == null || b == null)
+                continue;
+
+            Vector3 pointA = FlattenPoint(a.transform.position);
+            Vector3 pointB = FlattenPoint(b.transform.position);
+            Vector3 segment = pointB - pointA;
+            float lengthSqr = segment.sqrMagnitude;
+
+            if (lengthSqr <= 0.0001f)
+                continue;
+
+            float t = Mathf.Clamp01(Vector3.Dot(flatPosition - pointA, segment) / lengthSqr);
+            Vector3 projected = pointA + segment * t;
+            float distanceSqr = Vector3.SqrMagnitude(flatPosition - projected);
+
+            if (distanceSqr < closestDistanceSqr) {
+                closestDistanceSqr = distanceSqr;
+                segmentIndex = i;
+                segmentT = t;
+                closestPoint = projected;
+            }
+        }
+
+    }
+
+    private static int WrapIndex(int index, int count) {
+
+        if (count <= 0)
+            return 0;
+
+        index %= count;
+        return index < 0 ? index + count : index;
+
+    }
+
+    private Vector3 GetPointAheadOnWaypointPath(int segmentIndex, Vector3 startPoint, float distance) {
+
+        int count = waypointsContainer.waypoints.Count;
+        int i = Mathf.Clamp(segmentIndex, 0, count - 1);
+        Vector3 last = FlattenPoint(startPoint);
+        float travelled = 0f;
+        int safety = 0;
+
+        while (travelled < distance && safety < count + 2) {
+            safety++;
+
+            RCCP_Waypoint nextWaypoint = waypointsContainer.waypoints[(i + 1) % count];
+
+            if (nextWaypoint == null)
+                break;
+
+            Vector3 nextPt = FlattenPoint(nextWaypoint.transform.position);
             float seg = Vector3.Distance(last, nextPt);
+
+            if (seg <= 0.01f) {
+                i = (i + 1) % count;
+                continue;
+            }
+
             if (travelled + seg >= distance)
                 return Vector3.Lerp(last, nextPt, (distance - travelled) / seg);
+
             travelled += seg;
             last = nextPt;
             i = (i + 1) % count;
@@ -605,6 +1796,9 @@ public class RCCP_AI : RCCP_Component {
             Vector3 a = Agent.path.corners[i];
             Vector3 b = Agent.path.corners[i + 1];
             float seg = Vector3.Distance(a, b);
+
+            if (seg <= 0.01f)
+                continue;
 
             if (travelled + seg > distance) {
                 float t = (distance - travelled) / seg;
@@ -678,8 +1872,10 @@ public class RCCP_AI : RCCP_Component {
     /// </summary>
     private void HandleStuckVehicle() {
 
-        if (!CarController.canControl || reverseNow) {
+        if (!CarController.canControl) {
             stuckTimer = 0f;
+            flippedTimer = 0f;
+            offTrackTimer = 0f;
             return;
         }
 
@@ -691,9 +1887,35 @@ public class RCCP_AI : RCCP_Component {
         else
             stuckTimer = 0f;
 
-        if (stuckTimer > 2f) {
+        if (Vector3.Dot(CarController.transform.up, Vector3.up) < .25f)
+            flippedTimer += Time.fixedDeltaTime;
+        else
+            flippedTimer = 0f;
+
+        if (IsTooFarFromRacingLine())
+            offTrackTimer += Time.fixedDeltaTime;
+        else
+            offTrackTimer = 0f;
+
+        if (flippedTimer > flippedRecoverySeconds) {
+            stuckTimer = 0f;
+            flippedTimer = 0f;
+            offTrackTimer = 0f;
+            RecoverUprightInPlace();
+            return;
+        }
+
+        if (stuckTimer > stuckRecoverySeconds) {
             stuckTimer = 0f;
             StartCoroutine(RecoverFromStuck());
+            return;
+        }
+
+        if (allowTeleportRecovery && offTrackTimer > offTrackRecoverySeconds) {
+            stuckTimer = 0f;
+            flippedTimer = 0f;
+            offTrackTimer = 0f;
+            TeleportToRacingLine();
         }
 
     }
@@ -702,6 +1924,9 @@ public class RCCP_AI : RCCP_Component {
     /// Reverses briefly to recover from stuck position.
     /// </summary>
     private IEnumerator RecoverFromStuck() {
+
+        if (reverseNow)
+            yield break;
 
         if (CarController.Inputs != null)
             CarController.Inputs.autoReverse = true;
@@ -715,6 +1940,124 @@ public class RCCP_AI : RCCP_Component {
 
         if (CarController.Gearbox != null)
             CarController.Gearbox.ShiftToGear(0);
+
+    }
+
+    private bool IsTooFarFromRacingLine() {
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count == 0)
+            return false;
+
+        float distance = GetDistanceToWaypointPath(CarController.transform.position);
+        return distance > offTrackRecoveryDistance;
+
+    }
+
+    private float GetDistanceToWaypointPath(Vector3 position) {
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count == 0)
+            return 0f;
+
+        int count = waypointsContainer.waypoints.Count;
+
+        if (count == 1) {
+            RCCP_Waypoint onlyWaypoint = waypointsContainer.waypoints[0];
+            return onlyWaypoint != null ? Vector3.Distance(FlattenPoint(position), FlattenPoint(onlyWaypoint.transform.position)) : 0f;
+        }
+
+        Vector3 flatPosition = FlattenPoint(position);
+        float closestDistance = float.MaxValue;
+
+        for (int i = 0; i < count; i++) {
+            RCCP_Waypoint a = waypointsContainer.waypoints[i];
+            RCCP_Waypoint b = waypointsContainer.waypoints[(i + 1) % count];
+
+            if (a == null || b == null)
+                continue;
+
+            Vector3 pointA = FlattenPoint(a.transform.position);
+            Vector3 pointB = FlattenPoint(b.transform.position);
+            Vector3 closestPoint = ClosestPointOnSegment(flatPosition, pointA, pointB);
+            closestDistance = Mathf.Min(closestDistance, Vector3.Distance(flatPosition, closestPoint));
+        }
+
+        return closestDistance == float.MaxValue ? 0f : closestDistance;
+
+    }
+
+    private static Vector3 ClosestPointOnSegment(Vector3 point, Vector3 a, Vector3 b) {
+
+        Vector3 segment = b - a;
+        float lengthSqr = segment.sqrMagnitude;
+
+        if (lengthSqr <= 0.0001f)
+            return a;
+
+        float t = Vector3.Dot(point - a, segment) / lengthSqr;
+        return a + segment * Mathf.Clamp01(t);
+
+    }
+
+    private void RecoverUprightInPlace() {
+
+        if (CarController == null)
+            return;
+
+        Vector3 forward = FlattenDirection(CarController.transform.forward);
+
+        if (forward.sqrMagnitude < .01f)
+            forward = Vector3.forward;
+
+        CarController.transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
+
+        if (CarController.Rigid != null) {
+            CarController.Rigid.angularVelocity = Vector3.zero;
+            CarController.Rigid.linearVelocity *= .25f;
+            CarController.Rigid.WakeUp();
+        }
+
+    }
+
+    private void TeleportToRacingLine() {
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count == 0 || CarController == null)
+            return;
+
+        int count = waypointsContainer.waypoints.Count;
+        int targetIndex = Mathf.Clamp(currentWaypointIndex, 0, count - 1);
+        RCCP_Waypoint targetWaypoint = waypointsContainer.waypoints[targetIndex];
+        RCCP_Waypoint nextWaypoint = waypointsContainer.waypoints[(targetIndex + 1) % count];
+
+        if (targetWaypoint == null)
+            return;
+
+        Vector3 position = targetWaypoint.transform.position + Vector3.up * 1.25f;
+        Quaternion rotation = CarController.transform.rotation;
+
+        if (nextWaypoint != null) {
+            Vector3 direction = FlattenDirection(nextWaypoint.transform.position - targetWaypoint.transform.position);
+
+            if (direction.sqrMagnitude > .01f)
+                rotation = Quaternion.LookRotation(direction, Vector3.up);
+        }
+
+        if (NavMesh.SamplePosition(position, out NavMeshHit navHit, 20f, NavMesh.AllAreas))
+            position = navHit.position + Vector3.up * 1.25f;
+
+        CarController.transform.SetPositionAndRotation(position, rotation);
+
+        if (CarController.Rigid != null) {
+            CarController.Rigid.linearVelocity = Vector3.zero;
+            CarController.Rigid.angularVelocity = Vector3.zero;
+            CarController.Rigid.WakeUp();
+        }
+
+        NavMeshAgent agent = GetComponentInChildren<NavMeshAgent>(true);
+
+        if (agent != null && agent.isActiveAndEnabled && NavMesh.SamplePosition(position, out NavMeshHit agentHit, 20f, NavMesh.AllAreas))
+            agent.Warp(agentHit.position);
+
+        Reload();
 
     }
 
@@ -736,8 +2079,29 @@ public class RCCP_AI : RCCP_Component {
         if (stuckTimer >= 2f)
             return;
 
-        inputs.steerInput += obstacleAvoidance.steerInput * 2f;
+        inputs.steerInput += obstacleAvoidance.steerInput * .5f;
         inputs.steerInput = Mathf.Clamp(inputs.steerInput, -1f, 1f);
+        inputs.brakeInput = Mathf.Max(inputs.brakeInput, obstacleAvoidance.brakeInput * .5f);
+
+    }
+
+    private void OnCollisionStay(Collision collision) {
+
+        if (collision == null || CarController == null)
+            return;
+
+        RCCP_CarController otherVehicle = collision.collider != null ? collision.collider.GetComponentInParent<RCCP_CarController>() : null;
+
+        if (otherVehicle == null || otherVehicle == CarController)
+            return;
+
+        Vector3 otherLocalPosition = CarController.transform.InverseTransformPoint(otherVehicle.transform.position);
+
+        if (otherLocalPosition.z < -2f)
+            return;
+
+        contactAvoidanceTimer = .45f;
+        contactAvoidanceSteer = Mathf.Abs(otherLocalPosition.x) < .35f ? GetStableAvoidanceSide() : -Mathf.Sign(otherLocalPosition.x);
 
     }
 
@@ -750,9 +2114,14 @@ public class RCCP_AI : RCCP_Component {
     /// </summary>
     public void Reload() {
 
+        ApplyArcadePreset();
+        RollArcadeVariation();
         stuckTimer = 0f;
         pidIntegral = 0f;
         lastSpeedError = 0f;
+        smoothedSteeringLookAhead = 0f;
+        smoothedSteerInput = 0f;
+        smoothedApexOffset = Vector3.zero;
         stopNow = false;
         reverseNow = false;
         currentBrakeZone = null;
