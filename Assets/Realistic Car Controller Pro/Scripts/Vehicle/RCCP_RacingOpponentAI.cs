@@ -56,6 +56,12 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     public float aheadPlayerSpeedMultiplier = .94f;
     public float rubberBandFullEffectDistance = 120f;
 
+    [Header("Consistency")]
+    [Range(0f, .2f)] public float paceVariation = .04f;
+    [Range(0f, .2f)] public float mistakeChance = .03f;
+    [Range(0f, .2f)] public float mistakeStrength = .06f;
+    public float mistakeDuration = 1.25f;
+
     [Header("Avoidance")]
     public LayerMask obstacleLayers = ~0;
     public LayerMask vehicleLayers = ~0;
@@ -87,6 +93,11 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     private float sensorBrake;
     private float sensorSpeedLimit;
     private bool trafficBlocked;
+    private float paceMultiplier = 1f;
+    private float mistakeTimer;
+    private float mistakeSpeedMultiplier = 1f;
+    private float mistakeSteerOffset;
+    private float nextMistakeCheckTime;
 
     private void Awake() {
 
@@ -129,6 +140,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         ReadSensors();
 
         RouteFrame route = GetRouteFrame();
+        UpdateDriverConsistency();
         float targetSteer = CalculateSteer(route.targetPoint, route.direction, route.cornerAngle) + sensorSteer;
         float targetSpeed = CalculateTargetSpeed(route.cornerAngle, route.previewCornerAngle, Mathf.Abs(targetSteer));
         targetSpeed = Mathf.Min(targetSpeed, sensorSpeedLimit);
@@ -153,6 +165,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         stuckTimer = 0f;
         reverseTimer = 0f;
         upsideDownTimer = 0f;
+        ResetDriverConsistency();
         inputs.Clear();
 
     }
@@ -299,7 +312,9 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         }
 
         target *= Mathf.Lerp(1f, .86f, Mathf.Clamp01(absSteer));
+        target *= paceMultiplier;
         target *= GetRubberBandMultiplier();
+        target *= mistakeSpeedMultiplier;
         return Mathf.Max(minimumMoveSpeedKph, target);
 
     }
@@ -369,7 +384,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
     private void ApplyInputs(float targetSteer, float targetSpeed) {
 
-        targetSteer = Mathf.Clamp(targetSteer, -1f, 1f);
+        targetSteer = Mathf.Clamp(targetSteer + mistakeSteerOffset, -1f, 1f);
 
         if (reverseTimer > 0f) {
             reverseTimer -= Time.fixedDeltaTime;
@@ -591,6 +606,41 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
             return Mathf.Lerp(1f, behindPlayerSpeedMultiplier, t);
 
         return Mathf.Lerp(1f, aheadPlayerSpeedMultiplier, t);
+
+    }
+
+    private void ResetDriverConsistency() {
+
+        paceMultiplier = 1f + Random.Range(-paceVariation, paceVariation);
+        mistakeTimer = 0f;
+        mistakeSpeedMultiplier = 1f;
+        mistakeSteerOffset = 0f;
+        nextMistakeCheckTime = Time.time + Random.Range(1.5f, 3f);
+
+    }
+
+    private void UpdateDriverConsistency() {
+
+        if (mistakeTimer > 0f) {
+            mistakeTimer -= Time.fixedDeltaTime;
+
+            if (mistakeTimer <= 0f) {
+                mistakeSpeedMultiplier = 1f;
+                mistakeSteerOffset = 0f;
+            }
+        }
+
+        if (mistakeChance <= 0f || Time.time < nextMistakeCheckTime)
+            return;
+
+        nextMistakeCheckTime = Time.time + Random.Range(1.75f, 3.5f);
+
+        if (Random.value > mistakeChance)
+            return;
+
+        mistakeTimer = mistakeDuration * Random.Range(.75f, 1.2f);
+        mistakeSpeedMultiplier = 1f - Random.Range(mistakeStrength * .35f, mistakeStrength);
+        mistakeSteerOffset = Random.Range(-mistakeStrength, mistakeStrength) * .2f;
 
     }
 

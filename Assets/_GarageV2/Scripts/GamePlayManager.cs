@@ -780,6 +780,7 @@ public class GamePlayManager : MonoBehaviour
         racingAI.laneOffset = GetOpponentRacingLineOffset(opponentIndex);
         racingAI.obstacleLayers = new LayerMask { value = Physics.AllLayers };
         racingAI.vehicleLayers = new LayerMask { value = Physics.AllLayers };
+        ApplyBaseRacingAISetup(racingAI);
 
         RCCP_AIArcadePreset preset = GetRacingAIPreset(mission, opponentIndex);
 
@@ -787,6 +788,20 @@ public class GamePlayManager : MonoBehaviour
             ApplyRacingAIPreset(racingAI, preset);
 
         ApplyRacingAIDifficulty(racingAI, difficulty);
+
+        if (mission != null && mission.useMissionAISettings && mission.rubberBandStrength > 0f)
+        {
+            float strength = Mathf.Clamp(mission.rubberBandStrength, 0f, .5f);
+            racingAI.behindPlayerSpeedMultiplier = Mathf.Max(racingAI.behindPlayerSpeedMultiplier, 1f + strength);
+            racingAI.aheadPlayerSpeedMultiplier = Mathf.Min(racingAI.aheadPlayerSpeedMultiplier, 1f - strength * .35f);
+        }
+    }
+
+    private void ApplyBaseRacingAISetup(RCCP_RacingOpponentAI racingAI)
+    {
+        if (racingAI == null)
+            return;
+
         racingAI.lookAheadForTargetOffset = 5f;
         racingAI.lookAheadForTargetFactor = .11f;
         racingAI.lookAheadForSpeedOffset = 28f;
@@ -807,13 +822,10 @@ public class GamePlayManager : MonoBehaviour
         racingAI.vehicleBrake = .12f;
         racingAI.minimumTrafficSpeedKph = 24f;
         racingAI.cornerBrakeAggression = 1.45f;
-
-        if (mission != null && mission.useMissionAISettings && mission.rubberBandStrength > 0f)
-        {
-            float strength = Mathf.Clamp(mission.rubberBandStrength, 0f, .5f);
-            racingAI.behindPlayerSpeedMultiplier = Mathf.Max(racingAI.behindPlayerSpeedMultiplier, 1f + strength);
-            racingAI.aheadPlayerSpeedMultiplier = Mathf.Min(racingAI.aheadPlayerSpeedMultiplier, 1f - strength * .35f);
-        }
+        racingAI.paceVariation = .04f;
+        racingAI.mistakeChance = .03f;
+        racingAI.mistakeStrength = .06f;
+        racingAI.mistakeDuration = 1.25f;
     }
 
     private RCCP_AIArcadePreset.Difficulty GetOpponentDifficulty(int opponentIndex)
@@ -847,11 +859,16 @@ public class GamePlayManager : MonoBehaviour
         racingAI.maxLookAheadDistance = Mathf.Min(preset.straightLookAhead, 24f);
         racingAI.minLookAheadDistance = Mathf.Min(preset.sharpCornerLookAhead, racingAI.maxLookAheadDistance);
         racingAI.sharpCornerSpeedKph = preset.sharpCornerSpeed;
+        racingAI.brakePreviewDistance = Mathf.Max(14f, preset.cornerDetectionDistance * .34f);
+        racingAI.cornerBrakeAggression = Mathf.Clamp(preset.cornerBrakingDistance / 26f, 1f, 1.8f);
         racingAI.frontSensorDistance = Mathf.Max(10f, preset.avoidanceDistance);
         racingAI.obstacleBrake = Mathf.Clamp01(preset.avoidanceBrake);
         racingAI.behindPlayerSpeedMultiplier = 1f + preset.rubberBandStrength;
         racingAI.aheadPlayerSpeedMultiplier = 1f - preset.rubberBandStrength * .35f;
         racingAI.stuckSeconds = preset.stuckSeconds;
+        racingAI.paceVariation = preset.paceVariation;
+        racingAI.mistakeChance = preset.mistakeChance;
+        racingAI.mistakeStrength = Mathf.Clamp(preset.mistakeChance * 2f, .01f, .16f);
     }
 
     private void ApplyRacingAIDifficulty(RCCP_RacingOpponentAI racingAI, RCCP_AIArcadePreset.Difficulty difficulty)
@@ -861,11 +878,47 @@ public class GamePlayManager : MonoBehaviour
             case RCCP_AIArcadePreset.Difficulty.Easy:
                 racingAI.maxSpeedKph = 120f;
                 racingAI.acceleration = .74f;
-                racingAI.mediumCornerSpeedKph = 72f;
-                racingAI.sharpCornerSpeedKph = 30f;
+                racingAI.mediumCornerSpeedKph = 70f;
+                racingAI.sharpCornerSpeedKph = 28f;
+                racingAI.brakePreviewDistance = 30f;
+                racingAI.brakePreviewFactor = .2f;
+                racingAI.cornerBrakeAggression = 1.7f;
+                racingAI.insideCornerOffset = .25f;
+                racingAI.maxLaneOffsetInCorners = .08f;
+                racingAI.steeringSensitivity = 1.45f;
+                racingAI.steeringSmoothTime = .15f;
+                racingAI.maxSteerChangePerSecond = 5.25f;
+                racingAI.highSpeedSteerLimit = .78f;
+                racingAI.paceVariation = .08f;
+                racingAI.mistakeChance = .1f;
+                racingAI.mistakeStrength = .12f;
+                racingAI.mistakeDuration = 1.45f;
                 racingAI.wallSlowSpeedKph = 38f;
-                racingAI.behindPlayerSpeedMultiplier = 1.1f;
-                racingAI.aheadPlayerSpeedMultiplier = .92f;
+                racingAI.behindPlayerSpeedMultiplier = 1.08f;
+                racingAI.aheadPlayerSpeedMultiplier = .9f;
+                break;
+
+            case RCCP_AIArcadePreset.Difficulty.Medium:
+                racingAI.maxSpeedKph = 142f;
+                racingAI.acceleration = .86f;
+                racingAI.mediumCornerSpeedKph = 84f;
+                racingAI.sharpCornerSpeedKph = 34f;
+                racingAI.brakePreviewDistance = 24f;
+                racingAI.brakePreviewFactor = .17f;
+                racingAI.cornerBrakeAggression = 1.45f;
+                racingAI.insideCornerOffset = .45f;
+                racingAI.maxLaneOffsetInCorners = .15f;
+                racingAI.steeringSensitivity = 1.55f;
+                racingAI.steeringSmoothTime = .12f;
+                racingAI.maxSteerChangePerSecond = 6f;
+                racingAI.highSpeedSteerLimit = .82f;
+                racingAI.paceVariation = .04f;
+                racingAI.mistakeChance = .03f;
+                racingAI.mistakeStrength = .06f;
+                racingAI.mistakeDuration = 1.25f;
+                racingAI.wallSlowSpeedKph = 42f;
+                racingAI.behindPlayerSpeedMultiplier = 1.16f;
+                racingAI.aheadPlayerSpeedMultiplier = .94f;
                 break;
 
             case RCCP_AIArcadePreset.Difficulty.Hard:
@@ -873,6 +926,19 @@ public class GamePlayManager : MonoBehaviour
                 racingAI.acceleration = .94f;
                 racingAI.mediumCornerSpeedKph = 96f;
                 racingAI.sharpCornerSpeedKph = 40f;
+                racingAI.brakePreviewDistance = 21f;
+                racingAI.brakePreviewFactor = .15f;
+                racingAI.cornerBrakeAggression = 1.32f;
+                racingAI.insideCornerOffset = .58f;
+                racingAI.maxLaneOffsetInCorners = .22f;
+                racingAI.steeringSensitivity = 1.62f;
+                racingAI.steeringSmoothTime = .105f;
+                racingAI.maxSteerChangePerSecond = 6.4f;
+                racingAI.highSpeedSteerLimit = .85f;
+                racingAI.paceVariation = .025f;
+                racingAI.mistakeChance = .015f;
+                racingAI.mistakeStrength = .035f;
+                racingAI.mistakeDuration = .95f;
                 racingAI.wallSlowSpeedKph = 44f;
                 racingAI.behindPlayerSpeedMultiplier = 1.22f;
                 racingAI.aheadPlayerSpeedMultiplier = .95f;
@@ -883,19 +949,26 @@ public class GamePlayManager : MonoBehaviour
                 racingAI.acceleration = 1f;
                 racingAI.mediumCornerSpeedKph = 108f;
                 racingAI.sharpCornerSpeedKph = 44f;
+                racingAI.brakePreviewDistance = 19f;
+                racingAI.brakePreviewFactor = .14f;
+                racingAI.cornerBrakeAggression = 1.22f;
+                racingAI.insideCornerOffset = .7f;
+                racingAI.maxLaneOffsetInCorners = .26f;
+                racingAI.steeringSensitivity = 1.7f;
+                racingAI.steeringSmoothTime = .095f;
+                racingAI.maxSteerChangePerSecond = 6.8f;
+                racingAI.highSpeedSteerLimit = .88f;
+                racingAI.paceVariation = .015f;
+                racingAI.mistakeChance = .005f;
+                racingAI.mistakeStrength = .02f;
+                racingAI.mistakeDuration = .8f;
                 racingAI.wallSlowSpeedKph = 48f;
-                racingAI.behindPlayerSpeedMultiplier = 1.28f;
-                racingAI.aheadPlayerSpeedMultiplier = .97f;
+                racingAI.behindPlayerSpeedMultiplier = 1.18f;
+                racingAI.aheadPlayerSpeedMultiplier = .98f;
                 break;
 
             default:
-                racingAI.maxSpeedKph = 142f;
-                racingAI.acceleration = .86f;
-                racingAI.mediumCornerSpeedKph = 84f;
-                racingAI.sharpCornerSpeedKph = 34f;
-                racingAI.wallSlowSpeedKph = 42f;
-                racingAI.behindPlayerSpeedMultiplier = 1.16f;
-                racingAI.aheadPlayerSpeedMultiplier = .94f;
+                ApplyRacingAIDifficulty(racingAI, RCCP_AIArcadePreset.Difficulty.Medium);
                 break;
         }
     }
