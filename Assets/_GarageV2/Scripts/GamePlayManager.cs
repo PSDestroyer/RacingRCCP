@@ -26,6 +26,7 @@ public class GamePlayManager : MonoBehaviour
         [NonSerialized] public bool finished;
         [NonSerialized] public bool eliminated;
         [NonSerialized] public float distanceToNextWaypoint;
+        [NonSerialized] public float raceProgress;
         [NonSerialized] public int finishPosition;
         [NonSerialized] public float finishTime;
     }
@@ -760,7 +761,8 @@ public class GamePlayManager : MonoBehaviour
 
     private float GetOpponentRacingLineOffset(int opponentIndex)
     {
-        return 0f;
+        float[] offsets = { -.3f, .3f, 0f, -.15f, .15f };
+        return offsets[Mathf.Abs(opponentIndex) % offsets.Length];
     }
 
     private void ConfigureOpponentRacingAI(RCCP_RacingOpponentAI racingAI, int opponentIndex)
@@ -792,8 +794,8 @@ public class GamePlayManager : MonoBehaviour
         if (mission != null && mission.useMissionAISettings && mission.rubberBandStrength > 0f)
         {
             float strength = Mathf.Clamp(mission.rubberBandStrength, 0f, .5f);
-            racingAI.behindPlayerSpeedMultiplier = Mathf.Max(racingAI.behindPlayerSpeedMultiplier, 1f + strength);
-            racingAI.aheadPlayerSpeedMultiplier = Mathf.Min(racingAI.aheadPlayerSpeedMultiplier, 1f - strength * .35f);
+            racingAI.behindPlayerSpeedMultiplier = Mathf.Max(racingAI.behindPlayerSpeedMultiplier, 1f + strength * 1.15f);
+            racingAI.aheadPlayerSpeedMultiplier = Mathf.Min(racingAI.aheadPlayerSpeedMultiplier, 1f - strength * .45f);
         }
     }
 
@@ -812,6 +814,7 @@ public class GamePlayManager : MonoBehaviour
         racingAI.maxLookAheadDistance = 16f;
         racingAI.insideCornerOffset = .45f;
         racingAI.maxLaneOffsetInCorners = .15f;
+        racingAI.laneVariationRange = .35f;
         racingAI.steeringSensitivity = 1.55f;
         racingAI.steeringSmoothTime = .12f;
         racingAI.maxSteerChangePerSecond = 6f;
@@ -819,8 +822,15 @@ public class GamePlayManager : MonoBehaviour
         racingAI.frontSensorDistance = 16f;
         racingAI.sideSensorDistance = 5f;
         racingAI.obstacleBrake = .3f;
-        racingAI.vehicleBrake = .12f;
+        racingAI.vehicleBrake = .06f;
+        racingAI.vehicleSteerStrength = .28f;
         racingAI.minimumTrafficSpeedKph = 24f;
+        racingAI.trafficLaneOffset = 1.35f;
+        racingAI.trafficBiasDuration = 2.2f;
+        racingAI.overtakeSpeedBonusKph = 12f;
+        racingAI.overtakeBrakeReduction = .45f;
+        racingAI.playerBrake = .16f;
+        racingAI.playerRespectSpeedKph = 34f;
         racingAI.cornerBrakeAggression = 1.45f;
         racingAI.paceVariation = .04f;
         racingAI.mistakeChance = .03f;
@@ -893,9 +903,13 @@ public class GamePlayManager : MonoBehaviour
                 racingAI.mistakeChance = .1f;
                 racingAI.mistakeStrength = .12f;
                 racingAI.mistakeDuration = 1.45f;
+                racingAI.trafficLaneOffset = 1.05f;
+                racingAI.trafficBiasDuration = 1.5f;
+                racingAI.overtakeSpeedBonusKph = 6f;
+                racingAI.overtakeBrakeReduction = .65f;
                 racingAI.wallSlowSpeedKph = 38f;
-                racingAI.behindPlayerSpeedMultiplier = 1.08f;
-                racingAI.aheadPlayerSpeedMultiplier = .9f;
+                racingAI.behindPlayerSpeedMultiplier = 1.12f;
+                racingAI.aheadPlayerSpeedMultiplier = .88f;
                 break;
 
             case RCCP_AIArcadePreset.Difficulty.Medium:
@@ -916,9 +930,13 @@ public class GamePlayManager : MonoBehaviour
                 racingAI.mistakeChance = .03f;
                 racingAI.mistakeStrength = .06f;
                 racingAI.mistakeDuration = 1.25f;
+                racingAI.trafficLaneOffset = 1.2f;
+                racingAI.trafficBiasDuration = 1.85f;
+                racingAI.overtakeSpeedBonusKph = 10f;
+                racingAI.overtakeBrakeReduction = .52f;
                 racingAI.wallSlowSpeedKph = 42f;
-                racingAI.behindPlayerSpeedMultiplier = 1.16f;
-                racingAI.aheadPlayerSpeedMultiplier = .94f;
+                racingAI.behindPlayerSpeedMultiplier = 1.2f;
+                racingAI.aheadPlayerSpeedMultiplier = .92f;
                 break;
 
             case RCCP_AIArcadePreset.Difficulty.Hard:
@@ -939,9 +957,13 @@ public class GamePlayManager : MonoBehaviour
                 racingAI.mistakeChance = .015f;
                 racingAI.mistakeStrength = .035f;
                 racingAI.mistakeDuration = .95f;
+                racingAI.trafficLaneOffset = 1.45f;
+                racingAI.trafficBiasDuration = 2.2f;
+                racingAI.overtakeSpeedBonusKph = 14f;
+                racingAI.overtakeBrakeReduction = .38f;
                 racingAI.wallSlowSpeedKph = 44f;
-                racingAI.behindPlayerSpeedMultiplier = 1.22f;
-                racingAI.aheadPlayerSpeedMultiplier = .95f;
+                racingAI.behindPlayerSpeedMultiplier = 1.26f;
+                racingAI.aheadPlayerSpeedMultiplier = .93f;
                 break;
 
             case RCCP_AIArcadePreset.Difficulty.Expert:
@@ -962,9 +984,13 @@ public class GamePlayManager : MonoBehaviour
                 racingAI.mistakeChance = .005f;
                 racingAI.mistakeStrength = .02f;
                 racingAI.mistakeDuration = .8f;
+                racingAI.trafficLaneOffset = 1.6f;
+                racingAI.trafficBiasDuration = 2.5f;
+                racingAI.overtakeSpeedBonusKph = 18f;
+                racingAI.overtakeBrakeReduction = .28f;
                 racingAI.wallSlowSpeedKph = 48f;
-                racingAI.behindPlayerSpeedMultiplier = 1.18f;
-                racingAI.aheadPlayerSpeedMultiplier = .98f;
+                racingAI.behindPlayerSpeedMultiplier = 1.24f;
+                racingAI.aheadPlayerSpeedMultiplier = .95f;
                 break;
 
             default:
@@ -1394,45 +1420,30 @@ public class GamePlayManager : MonoBehaviour
        UpdateRaceUI();
    }
 
-   private void UpdatePlayerRaceProgress()
-   {
-       if (playerRacer.eliminated)
-           return;
+    private void UpdatePlayerRaceProgress()
+    {
+        if (playerRacer.eliminated)
+            return;
 
        playerRacer.racerTransform = CarController.transform;
 
-       if (playerRacer.finished)
-           return;
+        if (playerRacer.finished)
+            return;
 
-       int waypointCount = raceWaypoints.waypoints.Count;
-       Transform targetWaypoint = raceWaypoints.waypoints[playerRacer.currentWaypointIndex].transform;
-       playerRacer.distanceToNextWaypoint = Vector3.Distance(playerRacer.racerTransform.position, targetWaypoint.position);
+       UpdateRacerRaceProgress(playerRacer);
 
-       if (playerRacer.distanceToNextWaypoint > waypointReachDistance)
-           return;
-
-       playerRacer.currentWaypointIndex++;
-
-       if (playerRacer.currentWaypointIndex >= waypointCount)
+       if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge) && playerRacer.completedLaps >= totalRaceLaps)
        {
-           playerRacer.currentWaypointIndex = 0;
-           playerRacer.completedLaps++;
-
-           if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge) && playerRacer.completedLaps >= totalRaceLaps)
-           {
-               MarkRacerFinished(playerRacer);
-               int finalPosition = GetPlayerRacePosition();
-               CompleteRaceMission(finalPosition == 1, finalPosition == 1 ? "Winner" : $"Finished {finalPosition}/{GetTotalRaceParticipantCount()}");
-           }
+           MarkRacerFinished(playerRacer);
+           int finalPosition = GetPlayerRacePosition();
+           CompleteRaceMission(finalPosition == 1, finalPosition == 1 ? "Winner" : $"Finished {finalPosition}/{GetTotalRaceParticipantCount()}");
        }
-   }
+    }
 
-   private void UpdateAIRaceProgress()
-   {
-       if (aiRacers == null)
-           return;
-
-       int waypointCount = raceWaypoints.waypoints.Count;
+    private void UpdateAIRaceProgress()
+    {
+        if (aiRacers == null)
+            return;
 
        for (int i = 0; i < aiRacers.Length; i++)
        {
@@ -1441,25 +1452,73 @@ public class GamePlayManager : MonoBehaviour
            if (aiRacer == null || aiRacer.racerTransform == null || aiRacer.finished || aiRacer.eliminated)
                continue;
 
-           if (aiRacer.aiDriver != null || aiRacer.racingAI != null)
-           {
-               int previousIndex = aiRacer.currentWaypointIndex;
-               aiRacer.currentWaypointIndex = aiRacer.racingAI != null ? aiRacer.racingAI.currentWaypointIndex : aiRacer.aiDriver.currentWaypointIndex;
+           UpdateRacerRaceProgress(aiRacer);
 
-               if (previousIndex > aiRacer.currentWaypointIndex)
-               {
-                   aiRacer.completedLaps++;
-
-                   if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge) && aiRacer.completedLaps >= totalRaceLaps)
-                       MarkRacerFinished(aiRacer);
-               }
-           }
-
-           int safeWaypointIndex = Mathf.Clamp(aiRacer.currentWaypointIndex, 0, waypointCount - 1);
-           aiRacer.distanceToNextWaypoint = Vector3.Distance(
-               aiRacer.racerTransform.position,
-               raceWaypoints.waypoints[safeWaypointIndex].transform.position);
+           if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge) && aiRacer.completedLaps >= totalRaceLaps)
+               MarkRacerFinished(aiRacer);
        }
+   }
+
+   private void UpdateRacerRaceProgress(RaceRacer racer)
+   {
+       if (racer == null || racer.racerTransform == null || raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count == 0)
+           return;
+
+       int waypointCount = raceWaypoints.waypoints.Count;
+       int safety = waypointCount + 1;
+
+       while (safety-- > 0)
+       {
+           int safeWaypointIndex = Mathf.Clamp(racer.currentWaypointIndex, 0, waypointCount - 1);
+           RCCP_Waypoint nextWaypoint = raceWaypoints.waypoints[safeWaypointIndex];
+
+           if (nextWaypoint == null)
+               break;
+
+           racer.distanceToNextWaypoint = Vector3.Distance(racer.racerTransform.position, nextWaypoint.transform.position);
+
+           if (racer.distanceToNextWaypoint > waypointReachDistance)
+               break;
+
+           racer.currentWaypointIndex++;
+
+           if (racer.currentWaypointIndex < waypointCount)
+               continue;
+
+           racer.currentWaypointIndex = 0;
+           racer.completedLaps++;
+       }
+
+       racer.raceProgress = GetRacerRaceProgressValue(racer);
+   }
+
+   private float GetRacerRaceProgressValue(RaceRacer racer)
+   {
+       if (racer == null || racer.racerTransform == null || raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count == 0)
+           return 0f;
+
+       int waypointCount = raceWaypoints.waypoints.Count;
+       int nextIndex = Mathf.Clamp(racer.currentWaypointIndex, 0, waypointCount - 1);
+       int previousIndex = nextIndex > 0 ? nextIndex - 1 : waypointCount - 1;
+       RCCP_Waypoint previousWaypoint = raceWaypoints.waypoints[previousIndex];
+       RCCP_Waypoint nextWaypoint = raceWaypoints.waypoints[nextIndex];
+
+       if (previousWaypoint == null || nextWaypoint == null)
+           return racer.completedLaps * waypointCount + previousIndex;
+
+       Vector3 from = previousWaypoint.transform.position;
+       Vector3 to = nextWaypoint.transform.position;
+       Vector3 segment = to - from;
+       float segmentLength = segment.magnitude;
+       float segmentProgress = 0f;
+
+       if (segmentLength > 0.01f)
+       {
+           Vector3 carOffset = racer.racerTransform.position - from;
+           segmentProgress = Mathf.Clamp01(Vector3.Dot(carOffset, segment.normalized) / segmentLength);
+       }
+
+       return racer.completedLaps * waypointCount + previousIndex + segmentProgress;
    }
 
    private void UpdateRaceUI()
@@ -2609,10 +2668,7 @@ public class GamePlayManager : MonoBehaviour
        if (otherRacer.completedLaps != playerRacer.completedLaps)
            return otherRacer.completedLaps > playerRacer.completedLaps;
 
-       if (otherRacer.currentWaypointIndex != playerRacer.currentWaypointIndex)
-           return otherRacer.currentWaypointIndex > playerRacer.currentWaypointIndex;
-
-       return otherRacer.distanceToNextWaypoint < playerRacer.distanceToNextWaypoint;
+       return otherRacer.raceProgress > playerRacer.raceProgress;
    }
 
    private void UpdateEliminationMode()
@@ -2679,10 +2735,7 @@ public class GamePlayManager : MonoBehaviour
        if (racerA.completedLaps != racerB.completedLaps)
            return racerA.completedLaps > racerB.completedLaps;
 
-       if (racerA.currentWaypointIndex != racerB.currentWaypointIndex)
-           return racerA.currentWaypointIndex > racerB.currentWaypointIndex;
-
-       return racerA.distanceToNextWaypoint < racerB.distanceToNextWaypoint;
+       return racerA.raceProgress > racerB.raceProgress;
    }
 
    private void EliminateRacer(RaceRacer racer)

@@ -49,6 +49,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     public float laneOffset = 0f;
     public float maxLaneOffsetInCorners = .35f;
     public float insideCornerOffset = .8f;
+    public float laneVariationRange = .35f;
 
     [Header("Rubber Band")]
     public bool useRubberBanding = true;
@@ -70,10 +71,16 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     public float sensorRadius = .55f;
     public float wallSlowSpeedKph = 42f;
     [Range(0f, 1f)] public float obstacleBrake = .3f;
-    [Range(0f, 1f)] public float vehicleBrake = .12f;
+    [Range(0f, 1f)] public float vehicleBrake = .06f;
     public float obstacleSteerStrength = .18f;
-    public float vehicleSteerStrength = .14f;
+    public float vehicleSteerStrength = .28f;
     public float minimumTrafficSpeedKph = 24f;
+    public float trafficLaneOffset = 1.35f;
+    public float trafficBiasDuration = 2.2f;
+    public float overtakeSpeedBonusKph = 12f;
+    public float overtakeBrakeReduction = .45f;
+    [Range(0f, 1f)] public float playerBrake = .16f;
+    public float playerRespectSpeedKph = 34f;
 
     [Header("Recovery")]
     public float stuckSpeedKph = 4f;
@@ -98,6 +105,16 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     private float mistakeSpeedMultiplier = 1f;
     private float mistakeSteerOffset;
     private float nextMistakeCheckTime;
+    private float trafficSideBias;
+    private float trafficBiasTimer;
+    private bool leftVehicleBlocked;
+    private bool rightVehicleBlocked;
+    private float frontVehicleUrgency;
+    private float personalityLaneOffset;
+    private float personalityBrakeBias = 1f;
+    private float personalityCornerSpeedBias = 1f;
+    private float personalitySteerBias = 1f;
+    private float personalityOvertakeBias = 1f;
 
     private void Awake() {
 
@@ -165,6 +182,8 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         stuckTimer = 0f;
         reverseTimer = 0f;
         upsideDownTimer = 0f;
+        trafficSideBias = 0f;
+        trafficBiasTimer = 0f;
         ResetDriverConsistency();
         inputs.Clear();
 
@@ -214,7 +233,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         ArcadeVP.WaypointCircuit.RoutePoint midPoint = waypointCircuit.GetRoutePoint(progressDistance + midLookAhead);
         ArcadeVP.WaypointCircuit.RoutePoint targetPoint = waypointCircuit.GetRoutePoint(progressDistance + lookAhead);
         float speedPreviewDistance = lookAheadForSpeedOffset + lookAheadForSpeedFactor * speed;
-        float brakePreviewLookAhead = speedPreviewDistance + brakePreviewDistance + brakePreviewFactor * speed;
+        float brakePreviewLookAhead = speedPreviewDistance + (brakePreviewDistance * personalityBrakeBias) + brakePreviewFactor * speed;
         ArcadeVP.WaypointCircuit.RoutePoint speedPoint = waypointCircuit.GetRoutePoint(progressDistance + speedPreviewDistance);
         ArcadeVP.WaypointCircuit.RoutePoint previewPoint = waypointCircuit.GetRoutePoint(progressDistance + brakePreviewLookAhead);
         float cornerAngle = Vector3.Angle(currentPoint.direction, speedPoint.direction);
@@ -231,8 +250,9 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         if (routeRight.sqrMagnitude > .01f) {
             float cornerT = Mathf.InverseLerp(mediumCornerAngle, sharpCornerAngle, cornerAngle);
             float laneLimit = Mathf.Lerp(1.1f, maxLaneOffsetInCorners, cornerT);
-            float offset = Mathf.Clamp(laneOffset, -laneLimit, laneLimit);
+            float offset = Mathf.Clamp(laneOffset + personalityLaneOffset, -laneLimit, laneLimit);
             offset += GetCornerLineOffset(currentPoint.direction, midPoint.direction, speedPoint.direction, routeRight, cornerT);
+            offset += GetTrafficOffset(cornerT);
             target += routeRight * offset;
         }
 
@@ -288,7 +308,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         float lateralWeight = Mathf.Lerp(1.15f, 1.35f, cornerT);
         float headingWeight = Mathf.Lerp(.8f, 1.2f, cornerT);
 
-        float rawSteer = (lateralComponent * lateralWeight + headingComponent * headingWeight) * steeringSensitivity;
+        float rawSteer = (lateralComponent * lateralWeight + headingComponent * headingWeight) * steeringSensitivity * personalitySteerBias;
         float speedLimit = Mathf.Lerp(1f, highSpeedSteerLimit, Mathf.InverseLerp(80f, 180f, Mathf.Max(0f, car.speed)));
         return Mathf.Clamp(rawSteer, -speedLimit, speedLimit);
 
@@ -301,15 +321,18 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         float previewAngleT = Mathf.InverseLerp(mediumCornerAngle, sharpCornerAngle, previewCornerAngle);
 
         if (cornerAngle >= mediumCornerAngle)
-            target = Mathf.Lerp(maxSpeedKph, Mathf.Lerp(mediumCornerSpeedKph, sharpCornerSpeedKph, angleT), angleT);
+            target = Mathf.Lerp(maxSpeedKph, Mathf.Lerp(mediumCornerSpeedKph, sharpCornerSpeedKph, angleT) * personalityCornerSpeedBias, angleT);
 
         if (cornerAngle >= brakeAngle)
-            target = Mathf.Min(target, Mathf.Lerp(mediumCornerSpeedKph, sharpCornerSpeedKph, Mathf.InverseLerp(brakeAngle, sharpCornerAngle, cornerAngle)));
+            target = Mathf.Min(target, Mathf.Lerp(mediumCornerSpeedKph, sharpCornerSpeedKph, Mathf.InverseLerp(brakeAngle, sharpCornerAngle, cornerAngle)) * personalityCornerSpeedBias);
 
         if (previewCornerAngle >= mediumCornerAngle) {
-            float previewTarget = Mathf.Lerp(maxSpeedKph, Mathf.Lerp(mediumCornerSpeedKph, sharpCornerSpeedKph, previewAngleT), previewAngleT);
+            float previewTarget = Mathf.Lerp(maxSpeedKph, Mathf.Lerp(mediumCornerSpeedKph, sharpCornerSpeedKph, previewAngleT) * personalityCornerSpeedBias, previewAngleT);
             target = Mathf.Min(target, Mathf.Lerp(maxSpeedKph, previewTarget, Mathf.Clamp01(previewAngleT * cornerBrakeAggression)));
         }
+
+        if (frontVehicleUrgency > .05f && trafficBiasTimer > 0f && (!leftVehicleBlocked || !rightVehicleBlocked))
+            target += overtakeSpeedBonusKph * personalityOvertakeBias * frontVehicleUrgency;
 
         target *= Mathf.Lerp(1f, .86f, Mathf.Clamp01(absSteer));
         target *= paceMultiplier;
@@ -325,6 +348,10 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         sensorBrake = 0f;
         sensorSpeedLimit = float.MaxValue;
         trafficBlocked = false;
+        leftVehicleBlocked = false;
+        rightVehicleBlocked = false;
+        frontVehicleUrgency = 0f;
+        trafficBiasTimer = Mathf.Max(0f, trafficBiasTimer - Time.fixedDeltaTime);
 
         Vector3 origin = transform.position + Vector3.up * 1.05f + transform.forward * 2f;
 
@@ -352,9 +379,20 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
         if (otherCar != null) {
             trafficBlocked = true;
-            sensorSteer += side * vehicleSteerStrength * urgency;
-            sensorBrake = Mathf.Max(sensorBrake, vehicleBrake * urgency);
-            sensorSpeedLimit = Mathf.Min(sensorSpeedLimit, Mathf.Lerp(maxSpeedKph, minimumTrafficSpeedKph, urgency));
+            frontVehicleUrgency = Mathf.Max(frontVehicleUrgency, urgency);
+            UpdateTrafficBias(GetPreferredTrafficSide(side), urgency);
+            sensorSteer += side * vehicleSteerStrength * Mathf.Lerp(.65f, 1.15f, urgency);
+            bool isPlayer = IsPlayerVehicle(otherCar);
+            float trafficBrake = isPlayer
+                ? playerBrake
+                : (leftVehicleBlocked && rightVehicleBlocked) ? vehicleBrake * 1.6f : vehicleBrake * overtakeBrakeReduction;
+            sensorBrake = Mathf.Max(sensorBrake, trafficBrake * urgency);
+            float clearSideTargetSpeed = minimumTrafficSpeedKph + 42f;
+            float blockedTargetSpeed = minimumTrafficSpeedKph + 12f;
+            float trafficTargetSpeed = isPlayer
+                ? Mathf.Min(playerRespectSpeedKph, blockedTargetSpeed + 10f)
+                : (leftVehicleBlocked && rightVehicleBlocked) ? blockedTargetSpeed : clearSideTargetSpeed;
+            sensorSpeedLimit = Mathf.Min(sensorSpeedLimit, Mathf.Lerp(maxSpeedKph, trafficTargetSpeed, urgency * .65f));
             return;
         }
 
@@ -373,7 +411,14 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
         if (otherCar != null) {
             trafficBlocked = true;
-            sensorSteer -= sensorSide * vehicleSteerStrength * .55f * urgency;
+            if (sensorSide > 0f)
+                rightVehicleBlocked = true;
+            else
+                leftVehicleBlocked = true;
+
+            UpdateTrafficBias(-sensorSide, urgency * .8f);
+            float sideSteerStrength = IsPlayerVehicle(otherCar) ? 1.1f : .8f;
+            sensorSteer -= sensorSide * vehicleSteerStrength * sideSteerStrength * urgency;
             return;
         }
 
@@ -609,9 +654,64 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
     }
 
+    private float GetTrafficOffset(float cornerT) {
+
+        if (Mathf.Abs(trafficSideBias) < .01f || trafficBiasTimer <= 0f)
+            return 0f;
+
+        float cornerReduction = Mathf.Lerp(1f, .7f, cornerT);
+        return trafficSideBias * trafficLaneOffset * cornerReduction;
+
+    }
+
+    private float GetPreferredTrafficSide(float fallbackSide) {
+
+        if (!leftVehicleBlocked && rightVehicleBlocked)
+            return -1f;
+
+        if (!rightVehicleBlocked && leftVehicleBlocked)
+            return 1f;
+
+        if (!leftVehicleBlocked && !rightVehicleBlocked) {
+            if (Mathf.Abs(trafficSideBias) > .01f)
+                return trafficSideBias;
+
+            return fallbackSide != 0f ? fallbackSide : (((GetInstanceID() & 1) == 0) ? 1f : -1f);
+        }
+
+        return fallbackSide;
+
+    }
+
+    private bool IsPlayerVehicle(RCCP_CarController otherCar) {
+
+        if (otherCar == null || playerTarget == null)
+            return false;
+
+        return otherCar.transform == playerTarget || otherCar.transform.IsChildOf(playerTarget) || playerTarget.IsChildOf(otherCar.transform);
+
+    }
+
+    private void UpdateTrafficBias(float desiredSide, float urgency) {
+
+        if (Mathf.Abs(desiredSide) < .01f)
+            desiredSide = ((GetInstanceID() & 1) == 0) ? 1f : -1f;
+
+        if (trafficBiasTimer <= 0f || Mathf.Sign(trafficSideBias) != Mathf.Sign(desiredSide))
+            trafficSideBias = Mathf.Sign(desiredSide);
+
+        trafficBiasTimer = Mathf.Max(trafficBiasTimer, Mathf.Lerp(.45f, trafficBiasDuration, Mathf.Clamp01(urgency)));
+
+    }
+
     private void ResetDriverConsistency() {
 
         paceMultiplier = 1f + Random.Range(-paceVariation, paceVariation);
+        personalityLaneOffset = Random.Range(-laneVariationRange, laneVariationRange);
+        personalityBrakeBias = Random.Range(.92f, 1.12f);
+        personalityCornerSpeedBias = Random.Range(.95f, 1.08f);
+        personalitySteerBias = Random.Range(.96f, 1.08f);
+        personalityOvertakeBias = Random.Range(.9f, 1.15f);
         mistakeTimer = 0f;
         mistakeSpeedMultiplier = 1f;
         mistakeSteerOffset = 0f;
