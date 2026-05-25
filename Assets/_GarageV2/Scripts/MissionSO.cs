@@ -12,8 +12,18 @@ public class MissionSO : ScriptableObject
     public int rewardMoney;
     public int rewardExp;
 
+    [Header("Race Settings")]
     public int laps = 3;
     public int opponentCount = 3;
+
+    [Header("Elimination Settings")]
+    public float eliminationInterval = 25f;
+
+    [Header("No Brake Settings")]
+    [Range(0f, 1f)] public float brakeEffectiveness = 0f;
+    [Range(0f, 1f)] public float handbrakeEffectiveness = 0f;
+
+    [Header("Drift / Timed Settings")]
     public int targetScore;
     public int timeLimit;
 

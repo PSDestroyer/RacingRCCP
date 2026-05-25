@@ -2955,6 +2955,12 @@ public class GamePlayManager : MonoBehaviour
        if (mission.opponentCount >= 0)
            opponentCount = mission.opponentCount;
 
+        if (mission.eliminationInterval > 0f)
+            eliminationInterval = mission.eliminationInterval;
+
+        brakeEffectiveness = Mathf.Clamp01(mission.brakeEffectiveness);
+        handbrakeEffectiveness = Mathf.Clamp01(mission.handbrakeEffectiveness);
+
        if (mission.targetScore > 0)
            targetDriftScore = mission.targetScore;
 
