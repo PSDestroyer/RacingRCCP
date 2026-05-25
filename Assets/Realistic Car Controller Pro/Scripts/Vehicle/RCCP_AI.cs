@@ -103,6 +103,53 @@ public class RCCP_AI : RCCP_Component {
     [Tooltip("Additional look-ahead per km/h of speed.")]
     public float lookAheadPerKph = .25f;
 
+    [Header("Corner Awareness")]
+    [Tooltip("Corner angle above this value starts reducing look-ahead.")]
+    public float mediumCornerAngleThreshold = 25f;
+
+    [Tooltip("Corner angle above this value is treated as a sharp corner.")]
+    public float sharpCornerAngleThreshold = 55f;
+
+    [Tooltip("Maximum steering look-ahead used for medium corners.")]
+    public float mediumCornerLookAhead = 14f;
+
+    [Tooltip("Maximum steering look-ahead used for sharp corners.")]
+    public float sharpCornerLookAhead = 7f;
+
+    [Tooltip("Distance ahead used to inspect upcoming waypoint direction changes.")]
+    public float cornerDetectionDistance = 30f;
+
+    [Tooltip("Target speed cap used for sharp corners.")]
+    public float sharpCornerTargetSpeed = 55f;
+
+    [Tooltip("Target speed cap used for medium corners.")]
+    public float mediumCornerTargetSpeed = 85f;
+
+    [Tooltip("How quickly look-ahead adapts between straight and corner states.")]
+    public float lookAheadSmoothSpeed = 6f;
+
+    [Header("Path Recovery")]
+    [Tooltip("Lateral path error in meters before the AI starts recovery steering behavior.")]
+    public float pathRecoveryDistance = 5f;
+
+    [Tooltip("Short look-ahead used while recovering back to the racing line.")]
+    public float recoveryLookAhead = 6f;
+
+    [Tooltip("Extra steering multiplier while the AI is recovering back to the path.")]
+    public float recoverySteerBoost = 1.35f;
+
+    [Tooltip("Reduces aggressive angle-braking while the AI is correcting back to the path.")]
+    [Range(0f, 1f)] public float recoveryAngleBrakeReduction = .5f;
+
+    [Tooltip("Minimum throttle kept alive during path recovery so the AI doesn't stall too hard.")]
+    [Range(0f, 1f)] public float recoveryMinimumThrottle = .12f;
+
+    [Tooltip("Maximum brake allowed during path recovery.")]
+    [Range(0f, 1f)] public float recoveryMaxBrake = .4f;
+
+    [Tooltip("Extra throttle added when the AI is exiting a corner cleanly.")]
+    [Range(0f, 1f)] public float cornerExitThrottleBoost = .18f;
+
     [Header("PID Control")]
     [Tooltip("Proportional gain for speed control.")]
     public float kp = .2f;
@@ -149,6 +196,7 @@ public class RCCP_AI : RCCP_Component {
     private float pidIntegral;
     private float lastSpeedError;
     private float brakeFeedForwardFactor = .25f;
+    private float smoothedSteeringLookAhead;
 
     private float[] defaultSteerSpeedOfAxle;
     private bool[] defaultInputStates;
@@ -181,6 +229,7 @@ public class RCCP_AI : RCCP_Component {
             waypointsContainer = FindFirstObjectByType<RCCP_AIWaypointsContainer>(FindObjectsInactive.Include);
 
         SaveAndApplyInputSettings();
+        smoothedSteeringLookAhead = minLookAhead;
 
     }
 
@@ -309,6 +358,7 @@ public class RCCP_AI : RCCP_Component {
 
         stopNow = false;
         reverseNow = false;
+        smoothedSteeringLookAhead = minLookAhead;
 
         if (behaviour == BehaviourType.FollowWaypoints || behaviour == BehaviourType.RaceWaypoints)
             currentWaypointIndex = GetClosestWaypoint();
@@ -486,13 +536,27 @@ public class RCCP_AI : RCCP_Component {
 
         // Calculate speed and look-ahead distance
         float speedKph = Mathf.Max(0f, CarController.speed);
-        float steeringLookAhead = Mathf.Max(minLookAhead, lookAheadPerKph * speedKph);
+        float normalLookAhead = Mathf.Max(minLookAhead, lookAheadPerKph * speedKph);
+        float cornerAngle = GetUpcomingCornerAngle(cornerDetectionDistance);
+        float targetSteeringLookAhead = GetCornerAwareLookAhead(normalLookAhead, cornerAngle);
+        float pathError = GetCurrentPathError();
+        float recoveryStrength = Mathf.InverseLerp(pathRecoveryDistance, pathRecoveryDistance * 2.5f, pathError);
+        float cornerSeverity = GetCornerSeverity(cornerAngle);
+        targetSteeringLookAhead = Mathf.Lerp(targetSteeringLookAhead, Mathf.Max(minLookAhead, recoveryLookAhead), recoveryStrength);
+        float lookAheadBlend = 1f - Mathf.Exp(-Mathf.Max(.01f, lookAheadSmoothSpeed) * Time.fixedDeltaTime);
+        smoothedSteeringLookAhead = Mathf.Lerp(
+            Mathf.Max(minLookAhead, smoothedSteeringLookAhead),
+            Mathf.Max(minLookAhead, targetSteeringLookAhead),
+            lookAheadBlend);
+        float steeringLookAhead = Mathf.Max(minLookAhead, smoothedSteeringLookAhead);
 
         // Get steering target
         Vector3 lookPt = GetSteeringLookAheadPoint(steeringLookAhead);
+        lookPt = GetRecoveryAwareLookPoint(lookPt, recoveryStrength);
         Vector3 localLook = Quaternion.Inverse(predRot) * (lookPt - predPos);
         float rawSteer = Mathf.Atan2(localLook.x, localLook.z);
-        float steer = Mathf.Clamp(rawSteer * steerSensitivity, -1f, 1f);
+        float steerSensitivityScale = Mathf.Lerp(1f, recoverySteerBoost, recoveryStrength);
+        float steer = Mathf.Clamp(rawSteer * steerSensitivity * steerSensitivityScale, -1f, 1f);
 
         // Calculate safe cornering speed
         float speedLookAhead = (behaviour == BehaviourType.RaceWaypoints || behaviour == BehaviourType.ChaseTarget)
@@ -500,6 +564,7 @@ public class RCCP_AI : RCCP_Component {
         float minRadius = Mathf.Max(1f, GetTightestRadiusAhead(speedLookAhead));
         float aLat = roadGrip * 9.81f;
         float safeSpeedKph = Mathf.Sqrt(aLat * minRadius) * 3.6f;
+        safeSpeedKph = Mathf.Min(safeSpeedKph, GetCornerAwareSpeedCap(cornerAngle, safeSpeedKph));
 
         // Cap speed to brake zone target if inside one
         if (currentBrakeZone != null)
@@ -525,6 +590,7 @@ public class RCCP_AI : RCCP_Component {
         Vector3 dirLook = lookPt - predPos;
         float angleToLook = Vector3.Angle(predRot * Vector3.forward, dirLook);
         float angleBrake = Mathf.Clamp01(angleToLook / Mathf.Lerp(20f, 75f, agressiveness / 3f)) * maxBrake;
+        angleBrake *= Mathf.Lerp(1f, Mathf.Clamp01(1f - recoveryAngleBrakeReduction), recoveryStrength);
 
         // Combine brakes
         float finalBrake = Mathf.Max(brakePID, ffBrake, angleBrake);
@@ -541,6 +607,15 @@ public class RCCP_AI : RCCP_Component {
             finalBrake = Mathf.Max(finalBrake, Mathf.Clamp01(overSpeed) * maxBrake);
             throttle = 0f;
         }
+
+        if (recoveryStrength > 0f) {
+            finalBrake = Mathf.Min(finalBrake, Mathf.Lerp(finalBrake, recoveryMaxBrake, recoveryStrength));
+            throttle = Mathf.Max(throttle, recoveryMinimumThrottle * recoveryStrength);
+        }
+
+        float cornerExitReadiness = (1f - recoveryStrength) * (1f - cornerSeverity) * Mathf.InverseLerp(10f, 45f, speedKph);
+        if (cornerExitReadiness > 0f && finalBrake < 0.2f)
+            throttle = Mathf.Clamp01(throttle + (cornerExitThrottleBoost * cornerExitReadiness));
 
         float cutThrottle = (speedKph >= 25f) ? finalBrake : 0f;
 
@@ -561,6 +636,151 @@ public class RCCP_AI : RCCP_Component {
             return GetWaypointLookAheadPoint(distance);
         else
             return GetPathLookAheadPoint(distance);
+
+    }
+
+    /// <summary>
+    /// Returns a recovery-adjusted look point when the AI has drifted away from the racing line.
+    /// </summary>
+    private Vector3 GetRecoveryAwareLookPoint(Vector3 defaultLookPoint, float recoveryStrength) {
+
+        if (recoveryStrength <= 0f || waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count == 0)
+            return defaultLookPoint;
+
+        int count = waypointsContainer.waypoints.Count;
+        int previousIndex = (currentWaypointIndex - 1 + count) % count;
+        Vector3 segmentStart = waypointsContainer.waypoints[previousIndex].transform.position;
+        Vector3 segmentEnd = waypointsContainer.waypoints[currentWaypointIndex].transform.position;
+        Vector3 closestPoint = GetClosestPointOnSegment(segmentStart, segmentEnd, CarController.transform.position);
+        Vector3 segmentDirection = (segmentEnd - segmentStart).normalized;
+        Vector3 recoveryPoint = closestPoint + segmentDirection * Mathf.Max(2f, recoveryLookAhead);
+
+        return Vector3.Lerp(defaultLookPoint, recoveryPoint, Mathf.Clamp01(recoveryStrength));
+
+    }
+
+    /// <summary>
+    /// Measures lateral distance from the AI to the current waypoint segment.
+    /// </summary>
+    private float GetCurrentPathError() {
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count == 0 || CarController == null)
+            return 0f;
+
+        int count = waypointsContainer.waypoints.Count;
+        int previousIndex = (currentWaypointIndex - 1 + count) % count;
+        Vector3 segmentStart = waypointsContainer.waypoints[previousIndex].transform.position;
+        Vector3 segmentEnd = waypointsContainer.waypoints[currentWaypointIndex].transform.position;
+        Vector3 closestPoint = GetClosestPointOnSegment(segmentStart, segmentEnd, CarController.transform.position);
+
+        return Vector3.Distance(CarController.transform.position, closestPoint);
+
+    }
+
+    /// <summary>
+    /// Finds the closest point on a segment.
+    /// </summary>
+    private Vector3 GetClosestPointOnSegment(Vector3 segmentStart, Vector3 segmentEnd, Vector3 point) {
+
+        Vector3 segment = segmentEnd - segmentStart;
+        float segmentLengthSqr = segment.sqrMagnitude;
+
+        if (segmentLengthSqr <= 0.0001f)
+            return segmentStart;
+
+        float t = Mathf.Clamp01(Vector3.Dot(point - segmentStart, segment) / segmentLengthSqr);
+        return segmentStart + segment * t;
+
+    }
+
+    /// <summary>
+    /// Calculates the strongest upcoming waypoint direction change within the scan distance.
+    /// </summary>
+    private float GetUpcomingCornerAngle(float scanDistance) {
+
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || waypointsContainer.waypoints.Count < 3)
+            return 0f;
+
+        float remainingDistance = Mathf.Max(1f, scanDistance);
+        int count = waypointsContainer.waypoints.Count;
+        int prevIndex = (currentWaypointIndex - 1 + count) % count;
+        Vector3 previousPoint = CarController != null ? CarController.transform.position : transform.position;
+        Vector3 currentPoint = waypointsContainer.waypoints[currentWaypointIndex].transform.position;
+        Vector3 previousDirection = (currentPoint - previousPoint).normalized;
+        float sharpestAngle = 0f;
+        int scanIndex = currentWaypointIndex;
+
+        while (remainingDistance > 0f) {
+
+            int nextIndex = (scanIndex + 1) % count;
+            Vector3 segmentStart = waypointsContainer.waypoints[scanIndex].transform.position;
+            Vector3 segmentEnd = waypointsContainer.waypoints[nextIndex].transform.position;
+            Vector3 nextDirection = (segmentEnd - segmentStart).normalized;
+
+            if (previousDirection.sqrMagnitude > 0.001f && nextDirection.sqrMagnitude > 0.001f)
+                sharpestAngle = Mathf.Max(sharpestAngle, Vector3.Angle(previousDirection, nextDirection));
+
+            float segmentLength = Vector3.Distance(segmentStart, segmentEnd);
+            remainingDistance -= segmentLength;
+            previousDirection = nextDirection;
+            scanIndex = nextIndex;
+
+            if (scanIndex == prevIndex)
+                break;
+
+        }
+
+        return sharpestAngle;
+
+    }
+
+    /// <summary>
+    /// Reduces steering look-ahead for medium and sharp corners.
+    /// </summary>
+    private float GetCornerAwareLookAhead(float normalLookAhead, float cornerAngle) {
+
+        if (cornerAngle < mediumCornerAngleThreshold)
+            return normalLookAhead;
+
+        if (cornerAngle < sharpCornerAngleThreshold) {
+            float t = Mathf.InverseLerp(mediumCornerAngleThreshold, sharpCornerAngleThreshold, cornerAngle);
+            float mediumCap = Mathf.Lerp(normalLookAhead, mediumCornerLookAhead, t);
+            return Mathf.Min(normalLookAhead, Mathf.Max(minLookAhead, mediumCap));
+        }
+
+        float sharpT = Mathf.InverseLerp(sharpCornerAngleThreshold, 120f, cornerAngle);
+        float sharpCap = Mathf.Lerp(mediumCornerLookAhead, sharpCornerLookAhead, sharpT);
+        return Mathf.Min(normalLookAhead, Mathf.Max(minLookAhead, sharpCap));
+
+    }
+
+    /// <summary>
+    /// Applies an earlier target speed cap for medium and sharp corners.
+    /// </summary>
+    private float GetCornerAwareSpeedCap(float cornerAngle, float fallbackSafeSpeed) {
+
+        if (cornerAngle < mediumCornerAngleThreshold)
+            return fallbackSafeSpeed;
+
+        if (cornerAngle < sharpCornerAngleThreshold) {
+            float t = Mathf.InverseLerp(mediumCornerAngleThreshold, sharpCornerAngleThreshold, cornerAngle);
+            float mediumTargetSpeed = Mathf.Lerp(fallbackSafeSpeed, mediumCornerTargetSpeed, t);
+            return Mathf.Min(fallbackSafeSpeed, mediumTargetSpeed);
+        }
+
+        return Mathf.Min(fallbackSafeSpeed, sharpCornerTargetSpeed);
+
+    }
+
+    /// <summary>
+    /// Returns a 0-1 severity value for the detected upcoming corner.
+    /// </summary>
+    private float GetCornerSeverity(float cornerAngle) {
+
+        if (cornerAngle <= mediumCornerAngleThreshold)
+            return 0f;
+
+        return Mathf.InverseLerp(mediumCornerAngleThreshold, 100f, cornerAngle);
 
     }
 

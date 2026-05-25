@@ -24,6 +24,18 @@ public class GamePlayManager : MonoBehaviour
         [NonSerialized] public bool eliminated;
         [NonSerialized] public float distanceToNextWaypoint;
         [NonSerialized] public int finishOrder;
+        [NonSerialized] public bool pacingBaselineCached;
+        [NonSerialized] public float pacingMultiplier = 1f;
+        [NonSerialized] public float baseEngineTorque;
+        [NonSerialized] public float baseEngineAccelerationRate;
+        [NonSerialized] public float baseEngineMaxRPM;
+        [NonSerialized] public float baseTurboChargePsi;
+        [NonSerialized] public float baseThrottleLimit;
+        [NonSerialized] public float baseAggressiveness;
+        [NonSerialized] public float baseRaceLookAhead;
+        [NonSerialized] public float baseLookAheadPerKph;
+        [NonSerialized] public float baseRoadGrip;
+        [NonSerialized] public float baseSteerSensitivity;
     }
 
     [NonSerialized]public GameObject player;
@@ -101,11 +113,19 @@ public class GamePlayManager : MonoBehaviour
     public bool useCountdown = true;
     public float countdownStepDuration = 1f;
     public float goTextDuration = 1f;
+    public bool overrideAILookAheadPerKphAtRaceStart = false;
+    public float aiLookAheadPerKphAtRaceStart = 0.25f;
 
     [Header("Opponent Spawning")]
     public bool autoSpawnOpponents = true;
     public int opponentCount = 3;
     public bool usePlayerCarForOpponents = true;
+    public bool copyPlayerPerformanceOnSpawn = true;
+    public bool allowSmallVariance = false;
+    [Range(0f, .03f)] public float maxVariancePercent = .03f;
+    public float aiPerformanceMultiplier = 1f;
+    public float aiExtraSteeringAngle = 5f;
+    public float aiBrakePowerMultiplier = 3f;
     public Transform[] opponentSpawnPoints;
     public float spawnRowSpacing = 8f;
     public float spawnColumnSpacing = 4f;
@@ -113,6 +133,18 @@ public class GamePlayManager : MonoBehaviour
     public float navMeshSampleDistance = 20f;
     public bool autoCalculateAINavMeshBaseOffset = true;
     public float aiNavMeshBaseOffset = 0f;
+
+    [Header("Dynamic Race Pacing")]
+    public bool enableDynamicRacePacing = true;
+    public float noCorrectionDistance = 10f;
+    public float smallBoostDistance = 35f;
+    public float mediumBoostDistance = 80f;
+    public float maxBoostDistance = 140f;
+    [Range(0f, .25f)] public float maxRecoveryBoost = .25f;
+    [Range(0f, .10f)] public float maxFrontReduction = .05f;
+    public float boostSmoothSpeed = 2.5f;
+    public float reductionSmoothSpeed = 1.2f;
+    [Range(0f, .5f)] public float disableCorrectionNearFinishPercent = .06f;
     
     [Header("Checkpoint Visuals")]
     public GameObject checkpointPrefab;
@@ -144,6 +176,8 @@ public class GamePlayManager : MonoBehaviour
     private Coroutine expRewardAnimationCoroutine;
     private Coroutine expSliderAnimationCoroutine;
     private Coroutine finishSummaryAnimationCoroutine;
+    private float raceTrackLength = 0f;
+    private float[] raceWaypointDistances = Array.Empty<float>();
 
     [Header("Drifting Settings")]
     public bool driftingNow = false;
@@ -479,6 +513,7 @@ public class GamePlayManager : MonoBehaviour
         missionFinalExpTotal = 0;
         missionStartingLevel = Mathf.Max(1, SaveManager.Instance != null && SaveManager.Instance.saveData != null ? SaveManager.Instance.saveData.currentLevel : 1);
         missionFinalLevel = missionStartingLevel;
+        BuildRaceDistanceCache();
         SpawnCheckpointVisuals();
         UpdateRaceUI();
     }
@@ -518,9 +553,28 @@ public class GamePlayManager : MonoBehaviour
 
     private void StartRaceNow()
     {
+        ApplyAILookAheadPerKphAtRaceStart();
         raceStarted = true;
         eliminationTimer = eliminationInterval;
         SetRaceParticipantsControl(true);
+    }
+
+    private void ApplyAILookAheadPerKphAtRaceStart()
+    {
+        if (!overrideAILookAheadPerKphAtRaceStart || aiRacers == null)
+            return;
+
+        float targetLookAheadPerKph = Mathf.Max(0f, aiLookAheadPerKphAtRaceStart);
+
+        for (int i = 0; i < aiRacers.Length; i++)
+        {
+            RaceRacer aiRacer = aiRacers[i];
+
+            if (aiRacer == null || aiRacer.aiDriver == null)
+                continue;
+
+            aiRacer.aiDriver.lookAheadPerKph = targetLookAheadPerKph;
+        }
     }
 
     private void SetRaceParticipantsControl(bool state)
@@ -583,6 +637,7 @@ public class GamePlayManager : MonoBehaviour
             spawnedOpponentObjects.Add(opponentObject);
 
             RCCP_AI aiDriver = opponentObject.GetComponent<RCCP_AI>();
+            RCCP_CarController opponentCarController = opponentObject.GetComponent<RCCP_CarController>();
 
             if (aiDriver == null)
                 aiDriver = opponentObject.AddComponent<RCCP_AI>();
@@ -591,6 +646,9 @@ public class GamePlayManager : MonoBehaviour
 
             if (raceWaypoints != null)
                 aiDriver.waypointsContainer = raceWaypoints;
+
+            if (copyPlayerPerformanceOnSpawn && CarController != null && opponentCarController != null)
+                CopyPlayerPerformanceToOpponent(CarController, opponentCarController);
 
             StartCoroutine(AlignAIAgentToNavMeshDeferred(aiDriver));
 
@@ -871,9 +929,170 @@ public class GamePlayManager : MonoBehaviour
        ApplyPlayerBrakeRestrictions();
        UpdatePlayerRaceProgress();
        UpdateAIRaceProgress();
+       UpdateDynamicRacePacing();
        UpdateEliminationMode();
        UpdateCheckpointVisuals();
        UpdateRaceUI();
+   }
+
+   private void CopyPlayerPerformanceToOpponent(RCCP_CarController playerCar, RCCP_CarController opponentCar)
+   {
+       if (playerCar == null || opponentCar == null)
+           return;
+
+       float varianceMultiplier = GetSpawnVarianceMultiplier();
+       float performanceMultiplier = Mathf.Max(0.01f, aiPerformanceMultiplier);
+       float finalPerformanceMultiplier = varianceMultiplier * performanceMultiplier;
+
+       CopyEnginePerformance(playerCar, opponentCar, finalPerformanceMultiplier);
+       CopyGearboxPerformance(playerCar, opponentCar, varianceMultiplier);
+       CopyDifferentialPerformance(playerCar, opponentCar, varianceMultiplier);
+       CopyAxlePerformance(playerCar, opponentCar, finalPerformanceMultiplier);
+       CopyWheelPerformance(playerCar, opponentCar, finalPerformanceMultiplier);
+
+       opponentCar.GetAllComponents();
+   }
+
+   private float GetSpawnVarianceMultiplier()
+   {
+       if (!allowSmallVariance || maxVariancePercent <= 0f)
+           return 1f;
+
+       return 1f + UnityEngine.Random.Range(-maxVariancePercent, maxVariancePercent);
+   }
+
+   private void CopyEnginePerformance(RCCP_CarController playerCar, RCCP_CarController opponentCar, float performanceMultiplier)
+   {
+       if (playerCar.Engine == null || opponentCar.Engine == null)
+           return;
+
+       opponentCar.Engine.minEngineRPM = playerCar.Engine.minEngineRPM;
+       opponentCar.Engine.maxEngineRPM = playerCar.Engine.maxEngineRPM * Mathf.Lerp(1f, performanceMultiplier, .35f);
+       opponentCar.Engine.engineAccelerationRate = playerCar.Engine.engineAccelerationRate * performanceMultiplier;
+       opponentCar.Engine.engineCouplingToWheelsRate = playerCar.Engine.engineCouplingToWheelsRate;
+       opponentCar.Engine.engineDecelerationRate = playerCar.Engine.engineDecelerationRate;
+       opponentCar.Engine.maximumTorqueAsNM = playerCar.Engine.maximumTorqueAsNM * performanceMultiplier;
+       opponentCar.Engine.peakRPM = playerCar.Engine.peakRPM;
+       opponentCar.Engine.engineRevLimiter = playerCar.Engine.engineRevLimiter;
+       opponentCar.Engine.revLimiterCutFrequency = playerCar.Engine.revLimiterCutFrequency;
+       opponentCar.Engine.turboCharged = playerCar.Engine.turboCharged;
+       opponentCar.Engine.maxTurboChargePsi = playerCar.Engine.maxTurboChargePsi * Mathf.Lerp(1f, performanceMultiplier, .4f);
+       opponentCar.Engine.turboChargerCoEfficient = playerCar.Engine.turboChargerCoEfficient;
+       opponentCar.Engine.engineFriction = playerCar.Engine.engineFriction;
+       opponentCar.Engine.engineInertia = playerCar.Engine.engineInertia;
+       opponentCar.Engine.enableDynamicAcceleration = playerCar.Engine.enableDynamicAcceleration;
+       opponentCar.Engine.simulateEngineTemperature = playerCar.Engine.simulateEngineTemperature;
+       opponentCar.Engine.optimalTemperature = playerCar.Engine.optimalTemperature;
+       opponentCar.Engine.ambientTemperature = playerCar.Engine.ambientTemperature;
+       opponentCar.Engine.enableVVT = playerCar.Engine.enableVVT;
+       opponentCar.Engine.vvtOptimalRange = playerCar.Engine.vvtOptimalRange;
+
+       if (playerCar.Engine.NMCurve != null)
+           opponentCar.Engine.NMCurve = new AnimationCurve(playerCar.Engine.NMCurve.keys);
+   }
+
+   private void CopyGearboxPerformance(RCCP_CarController playerCar, RCCP_CarController opponentCar, float varianceMultiplier)
+   {
+       if (playerCar.Gearbox == null || opponentCar.Gearbox == null)
+           return;
+
+       if (playerCar.Gearbox.gearRatios != null)
+       {
+           opponentCar.Gearbox.gearRatios = new float[playerCar.Gearbox.gearRatios.Length];
+
+           for (int i = 0; i < playerCar.Gearbox.gearRatios.Length; i++)
+               opponentCar.Gearbox.gearRatios[i] = playerCar.Gearbox.gearRatios[i];
+       }
+
+       opponentCar.Gearbox.transmissionType = playerCar.Gearbox.transmissionType;
+       opponentCar.Gearbox.shiftingTime = playerCar.Gearbox.shiftingTime;
+       opponentCar.Gearbox.shiftThreshold = playerCar.Gearbox.shiftThreshold;
+       opponentCar.Gearbox.shiftUpRPM = playerCar.Gearbox.shiftUpRPM;
+       opponentCar.Gearbox.shiftDownRPM = playerCar.Gearbox.shiftDownRPM;
+       opponentCar.Gearbox.defaultGearState = playerCar.Gearbox.defaultGearState;
+   }
+
+   private void CopyDifferentialPerformance(RCCP_CarController playerCar, RCCP_CarController opponentCar, float varianceMultiplier)
+   {
+       if (playerCar.Differentials == null || opponentCar.Differentials == null)
+           return;
+
+       int count = Mathf.Min(playerCar.Differentials.Length, opponentCar.Differentials.Length);
+
+       for (int i = 0; i < count; i++)
+       {
+           if (playerCar.Differentials[i] == null || opponentCar.Differentials[i] == null)
+               continue;
+
+           opponentCar.Differentials[i].differentialType = playerCar.Differentials[i].differentialType;
+           opponentCar.Differentials[i].limitedSlipRatio = playerCar.Differentials[i].limitedSlipRatio;
+           opponentCar.Differentials[i].finalDriveRatio = playerCar.Differentials[i].finalDriveRatio;
+       }
+   }
+
+   private void CopyAxlePerformance(RCCP_CarController playerCar, RCCP_CarController opponentCar, float performanceMultiplier)
+   {
+       if (playerCar.AxleManager == null || opponentCar.AxleManager == null)
+           return;
+
+       int count = Mathf.Min(playerCar.AxleManager.Axles.Count, opponentCar.AxleManager.Axles.Count);
+
+       for (int i = 0; i < count; i++)
+       {
+           RCCP_Axle playerAxle = playerCar.AxleManager.Axles[i];
+           RCCP_Axle opponentAxle = opponentCar.AxleManager.Axles[i];
+
+           if (playerAxle == null || opponentAxle == null)
+               continue;
+
+           opponentAxle.antirollForce = playerAxle.antirollForce;
+           opponentAxle.isPower = playerAxle.isPower;
+           opponentAxle.isSteer = playerAxle.isSteer;
+           opponentAxle.isBrake = playerAxle.isBrake;
+           opponentAxle.isHandbrake = playerAxle.isHandbrake;
+           opponentAxle.powerMultiplier = playerAxle.powerMultiplier * performanceMultiplier;
+           opponentAxle.steerMultiplier = playerAxle.steerMultiplier;
+           opponentAxle.brakeMultiplier = playerAxle.brakeMultiplier * aiBrakePowerMultiplier;
+           opponentAxle.handbrakeMultiplier = playerAxle.handbrakeMultiplier;
+           opponentAxle.steerSpeed = playerAxle.steerSpeed;
+           opponentAxle.maxBrakeTorque = playerAxle.maxBrakeTorque * aiBrakePowerMultiplier;
+           opponentAxle.maxSteerAngle = playerAxle.maxSteerAngle + aiExtraSteeringAngle;
+           opponentAxle.tractionHelpedSidewaysStiffness = playerAxle.tractionHelpedSidewaysStiffness;
+       }
+   }
+
+   private void CopyWheelPerformance(RCCP_CarController playerCar, RCCP_CarController opponentCar, float performanceMultiplier)
+   {
+       if (playerCar.AllWheelColliders == null || opponentCar.AllWheelColliders == null)
+           return;
+
+       int count = Mathf.Min(playerCar.AllWheelColliders.Length, opponentCar.AllWheelColliders.Length);
+
+       for (int i = 0; i < count; i++)
+       {
+           RCCP_WheelCollider playerWheel = playerCar.AllWheelColliders[i];
+           RCCP_WheelCollider opponentWheel = opponentCar.AllWheelColliders[i];
+
+           if (playerWheel == null || opponentWheel == null || playerWheel.WheelCollider == null || opponentWheel.WheelCollider == null)
+               continue;
+
+           opponentWheel.camber = playerWheel.camber;
+           opponentWheel.caster = playerWheel.caster;
+           opponentWheel.offset = playerWheel.offset;
+           opponentWheel.grip = playerWheel.grip * Mathf.Lerp(1f, performanceMultiplier, .3f);
+           opponentWheel.width = playerWheel.width;
+
+           WheelCollider source = playerWheel.WheelCollider;
+           WheelCollider target = opponentWheel.WheelCollider;
+           target.mass = source.mass;
+           target.radius = source.radius;
+           target.wheelDampingRate = source.wheelDampingRate;
+           target.suspensionDistance = source.suspensionDistance;
+           target.forceAppPointDistance = source.forceAppPointDistance;
+           target.suspensionSpring = source.suspensionSpring;
+           target.forwardFriction = source.forwardFriction;
+           target.sidewaysFriction = source.sidewaysFriction;
+       }
    }
 
    private void UpdatePlayerRaceProgress()
@@ -971,6 +1190,192 @@ public class GamePlayManager : MonoBehaviour
            if (RaceType == RaceType.Elimination && raceStarted && !playerRacer.finished)
                UpdateEliminationTimerUI();
        }
+   }
+
+   private void BuildRaceDistanceCache()
+   {
+       raceTrackLength = 0f;
+       raceWaypointDistances = Array.Empty<float>();
+
+       if (raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count < 2)
+           return;
+
+       int count = raceWaypoints.waypoints.Count;
+       raceWaypointDistances = new float[count];
+
+       for (int i = 1; i < count; i++)
+       {
+           raceWaypointDistances[i] = raceWaypointDistances[i - 1] + Vector3.Distance(
+               raceWaypoints.waypoints[i - 1].transform.position,
+               raceWaypoints.waypoints[i].transform.position);
+       }
+
+       raceTrackLength = raceWaypointDistances[count - 1] + Vector3.Distance(
+           raceWaypoints.waypoints[count - 1].transform.position,
+           raceWaypoints.waypoints[0].transform.position);
+   }
+
+   private void CacheAIRacerPacingBaseline(RaceRacer racer)
+   {
+       if (racer == null || racer.aiDriver == null || racer.pacingBaselineCached)
+           return;
+
+       RCCP_CarController aiCar = racer.aiDriver.CarController;
+
+       if (aiCar == null || aiCar.Engine == null)
+           return;
+
+       racer.baseEngineTorque = aiCar.Engine.maximumTorqueAsNM;
+       racer.baseEngineAccelerationRate = aiCar.Engine.engineAccelerationRate;
+       racer.baseEngineMaxRPM = aiCar.Engine.maxEngineRPM;
+       racer.baseTurboChargePsi = aiCar.Engine.maxTurboChargePsi;
+       racer.baseThrottleLimit = racer.aiDriver.maxThrottle;
+       racer.baseAggressiveness = racer.aiDriver.agressiveness;
+       racer.baseRaceLookAhead = racer.aiDriver.raceLookAhead;
+       racer.baseLookAheadPerKph = racer.aiDriver.lookAheadPerKph;
+       racer.baseRoadGrip = racer.aiDriver.roadGrip;
+       racer.baseSteerSensitivity = racer.aiDriver.steerSensitivity;
+       racer.pacingMultiplier = 1f;
+       racer.pacingBaselineCached = true;
+   }
+
+   private void UpdateDynamicRacePacing()
+   {
+       if (!enableDynamicRacePacing || !raceStarted || missionResultsShown || aiRacers == null || aiRacers.Length == 0 || raceTrackLength <= 0f)
+           return;
+
+       float playerProgress = GetRacerProgressMeters(playerRacer);
+       float finishFade = GetPacingFinishFade();
+
+       for (int i = 0; i < aiRacers.Length; i++)
+       {
+           RaceRacer aiRacer = aiRacers[i];
+
+           if (aiRacer == null || aiRacer.aiDriver == null || aiRacer.finished || aiRacer.eliminated)
+               continue;
+
+           CacheAIRacerPacingBaseline(aiRacer);
+
+           if (!aiRacer.pacingBaselineCached)
+               continue;
+
+           float aiProgress = GetRacerProgressMeters(aiRacer);
+           float gap = aiProgress - playerProgress;
+           float targetMultiplier = GetTargetPacingMultiplier(gap, finishFade);
+           float smoothSpeed = targetMultiplier > aiRacer.pacingMultiplier ? boostSmoothSpeed : reductionSmoothSpeed;
+           float blend = 1f - Mathf.Exp(-Mathf.Max(.01f, smoothSpeed) * Time.deltaTime);
+
+           aiRacer.pacingMultiplier = Mathf.Lerp(aiRacer.pacingMultiplier, targetMultiplier, blend);
+           ApplyPacingToAIRacer(aiRacer);
+       }
+   }
+
+   private float GetTargetPacingMultiplier(float signedGapMeters, float finishFade)
+   {
+       float multiplier = 1f;
+       float behindCorrectionDistance = Mathf.Max(3f, noCorrectionDistance * .6f);
+
+       if (signedGapMeters <= -behindCorrectionDistance)
+       {
+           float behindDistance = Mathf.Abs(signedGapMeters);
+           float boost = EvaluateRecoveryBoost(behindDistance, behindCorrectionDistance);
+           multiplier = 1f + (boost * finishFade);
+       }
+       else if (signedGapMeters >= noCorrectionDistance)
+       {
+           float reduction = EvaluateFrontReduction(signedGapMeters);
+           multiplier = 1f - (reduction * finishFade);
+       }
+
+       return Mathf.Clamp(multiplier, 1f - maxFrontReduction, 1f + maxRecoveryBoost);
+   }
+
+   private float EvaluateRecoveryBoost(float behindDistance, float correctionStartDistance)
+   {
+       if (behindDistance <= correctionStartDistance)
+           return 0f;
+
+       if (behindDistance <= smallBoostDistance)
+           return Mathf.Lerp(.06f, .12f, Mathf.InverseLerp(correctionStartDistance, smallBoostDistance, behindDistance));
+
+       if (behindDistance <= mediumBoostDistance)
+           return Mathf.Lerp(.12f, .21f, Mathf.InverseLerp(smallBoostDistance, mediumBoostDistance, behindDistance));
+
+       return Mathf.Lerp(.21f, maxRecoveryBoost, Mathf.InverseLerp(mediumBoostDistance, Mathf.Max(mediumBoostDistance + .01f, maxBoostDistance), behindDistance));
+   }
+
+   private float EvaluateFrontReduction(float aheadDistance)
+   {
+       if (aheadDistance <= noCorrectionDistance)
+           return 0f;
+
+       if (aheadDistance <= smallBoostDistance)
+           return Mathf.Lerp(.02f, .05f, Mathf.InverseLerp(noCorrectionDistance, smallBoostDistance, aheadDistance));
+
+       return Mathf.Lerp(.05f, maxFrontReduction, Mathf.InverseLerp(smallBoostDistance, Mathf.Max(smallBoostDistance + .01f, maxBoostDistance), aheadDistance));
+   }
+
+   private void ApplyPacingToAIRacer(RaceRacer racer)
+   {
+       if (racer == null || racer.aiDriver == null || racer.aiDriver.CarController == null || racer.aiDriver.CarController.Engine == null)
+           return;
+
+       float pace = racer.pacingMultiplier;
+       float behaviorPace = 1f + ((pace - 1f) * .5f);
+       RCCP_Engine engine = racer.aiDriver.CarController.Engine;
+
+       engine.maximumTorqueAsNM = racer.baseEngineTorque * pace;
+       engine.engineAccelerationRate = racer.baseEngineAccelerationRate * Mathf.Lerp(1f, pace, .9f);
+       engine.maxEngineRPM = racer.baseEngineMaxRPM * Mathf.Lerp(1f, pace, .35f);
+       engine.maxTurboChargePsi = racer.baseTurboChargePsi * Mathf.Lerp(1f, pace, .4f);
+       racer.aiDriver.maxThrottle = Mathf.Clamp01(racer.baseThrottleLimit * Mathf.Min(1.08f, Mathf.Lerp(1f, pace, .75f)));
+       racer.aiDriver.agressiveness = Mathf.Clamp(racer.baseAggressiveness * behaviorPace, 0f, 3f);
+       racer.aiDriver.raceLookAhead = Mathf.Max(1f, racer.baseRaceLookAhead * Mathf.Lerp(1f, behaviorPace, -.18f));
+       racer.aiDriver.lookAheadPerKph = Mathf.Max(0.01f, racer.baseLookAheadPerKph * Mathf.Lerp(1f, behaviorPace, -.22f));
+       racer.aiDriver.roadGrip = Mathf.Max(.1f, racer.baseRoadGrip * Mathf.Lerp(1f, pace, .45f));
+       racer.aiDriver.steerSensitivity = Mathf.Max(.1f, racer.baseSteerSensitivity * Mathf.Lerp(1f, behaviorPace, .55f));
+   }
+
+   private float GetPacingFinishFade()
+   {
+       if (disableCorrectionNearFinishPercent <= 0f || raceTrackLength <= 0f)
+           return 1f;
+
+       float totalDistance = raceTrackLength * Mathf.Max(1, totalRaceLaps);
+       float fadeStartDistance = totalDistance * (1f - disableCorrectionNearFinishPercent);
+       float playerProgress = GetRacerProgressMeters(playerRacer);
+
+       if (playerProgress <= fadeStartDistance)
+           return 1f;
+
+       return Mathf.Clamp01((totalDistance - playerProgress) / Mathf.Max(.01f, totalDistance - fadeStartDistance));
+   }
+
+   private float GetRacerProgressMeters(RaceRacer racer)
+   {
+       if (racer == null || racer.racerTransform == null || raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count == 0 || raceTrackLength <= 0f)
+           return 0f;
+
+       int count = raceWaypoints.waypoints.Count;
+       int nextIndex = Mathf.Clamp(racer.currentWaypointIndex, 0, count - 1);
+       int previousIndex = (nextIndex - 1 + count) % count;
+       Transform previousWaypoint = raceWaypoints.waypoints[previousIndex].transform;
+       Transform nextWaypoint = raceWaypoints.waypoints[nextIndex].transform;
+       Vector3 segment = nextWaypoint.position - previousWaypoint.position;
+       float segmentLength = segment.magnitude;
+       float segmentProgress = 0f;
+
+       if (segmentLength > .01f)
+       {
+           Vector3 toRacer = racer.racerTransform.position - previousWaypoint.position;
+           segmentProgress = Mathf.Clamp(Vector3.Dot(toRacer, segment.normalized), 0f, segmentLength);
+       }
+
+       float lapDistance = raceWaypointDistances != null && raceWaypointDistances.Length > previousIndex
+           ? raceWaypointDistances[previousIndex] + segmentProgress
+           : segmentProgress;
+
+       return racer.completedLaps * raceTrackLength + lapDistance;
    }
 
    private void UpdateDriftUI()
