@@ -115,6 +115,7 @@ public class GamePlayManager : MonoBehaviour
     public float goTextDuration = 1f;
     public bool overrideAILookAheadPerKphAtRaceStart = false;
     public float aiLookAheadPerKphAtRaceStart = 0.25f;
+    [Range(0f, 1f)] public float finishAutoDriveThrottle = 0.45f;
 
     [Header("Mission Intro")]
     public bool useMissionIntroCinematic = true;
@@ -613,6 +614,38 @@ public class GamePlayManager : MonoBehaviour
 
         GameObject cinematicObject = Instantiate(RCCP_Settings.Instance.RCCPCinematicCamera, Vector3.zero, Quaternion.identity);
         return cinematicObject != null ? cinematicObject.GetComponent<RCCP_CinematicCamera>() : null;
+    }
+
+    private void ActivateMissionCinematicCamera()
+    {
+        RCCP_Camera activeCamera = RCCP_SceneManager.Instance != null ? RCCP_SceneManager.Instance.activePlayerCamera : null;
+        RCCP_CinematicCamera cinematicCamera = EnsureMissionIntroCinematicCamera();
+
+        if (activeCamera == null || cinematicCamera == null)
+            return;
+
+        activeCamera.ChangeCamera(RCCP_Camera.CameraMode.CINEMATIC);
+        activeCamera.ResetCamera();
+    }
+
+    private void EnablePlayerFinishAutoDrive()
+    {
+        if (!IsRaceMode() || !missionSucceeded || CarController == null || raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count == 0)
+            return;
+
+        RCCP_AI playerAI = CarController.GetComponent<RCCP_AI>();
+
+        if (playerAI == null)
+            playerAI = CarController.gameObject.AddComponent<RCCP_AI>();
+
+        playerAI.behaviour = RCCP_AI.BehaviourType.RaceWaypoints;
+        playerAI.waypointsContainer = raceWaypoints;
+        playerAI.currentWaypointIndex = Mathf.Clamp(playerRacer.currentWaypointIndex, 0, raceWaypoints.waypoints.Count - 1);
+        playerAI.maxThrottle = Mathf.Clamp01(finishAutoDriveThrottle);
+        CarController.canControl = true;
+        CarController.externalControl = true;
+        playerAI.enabled = false;
+        playerAI.enabled = true;
     }
 
     private IEnumerator FadeMissionIntroText(float fromAlpha, float toAlpha, float duration)
@@ -1941,6 +1974,12 @@ public class GamePlayManager : MonoBehaviour
        if (raceStateText != null)
            raceStateText.text = string.IsNullOrEmpty(medalTitle) ? stateText : medalTitle;
 
+       if (success)
+       {
+           ActivateMissionCinematicCamera();
+           EnablePlayerFinishAutoDrive();
+       }
+
        ApplyMissionRewards();
        ShowFinishSummaryScreen();
    }
@@ -1967,6 +2006,9 @@ public class GamePlayManager : MonoBehaviour
        string medalTitle = GetMissionMedalTitle();
        if (raceStateText != null)
            raceStateText.text = string.IsNullOrEmpty(medalTitle) ? stateText : medalTitle;
+
+       if (success)
+           ActivateMissionCinematicCamera();
 
        ApplyMissionRewards();
        ShowFinishSummaryScreen();
