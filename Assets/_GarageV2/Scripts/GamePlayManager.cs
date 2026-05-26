@@ -1583,8 +1583,11 @@ public class GamePlayManager : MonoBehaviour
        return racer.completedLaps * raceTrackLength + lapDistance;
    }
 
-   private void UpdateDriftUI()
-   {
+    private void UpdateDriftUI()
+    {
+       if (DriftProgressSlider != null)
+           DriftProgressSlider.gameObject.SetActive(IsDriftScoringMode());
+
        currentDriftDisplayedScore = RaceType == RaceType.ComboMaster ? currentMP : totalDriftPoints + currentDriftPoints;
 
        if (TotalScoreText != null)
