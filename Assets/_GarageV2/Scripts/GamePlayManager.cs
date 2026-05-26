@@ -2615,8 +2615,21 @@ public class GamePlayManager : MonoBehaviour
            if (waypoint == null)
                continue;
 
+           int previousIndex = (i - 1 + raceWaypoints.waypoints.Count) % raceWaypoints.waypoints.Count;
+           RCCP_Waypoint previousWaypoint = raceWaypoints.waypoints[previousIndex];
            Vector3 spawnPosition = waypoint.transform.position + checkpointVisualOffset;
-           GameObject visual = Instantiate(checkpointPrefab, spawnPosition, waypoint.transform.rotation, waypoint.transform);
+           Quaternion spawnRotation = waypoint.transform.rotation;
+
+           if (previousWaypoint != null)
+           {
+               Vector3 previousPosition = previousWaypoint.transform.position + checkpointVisualOffset;
+               Vector3 lookDirection = previousPosition - spawnPosition;
+
+               if (lookDirection.sqrMagnitude > 0.0001f)
+                   spawnRotation = Quaternion.LookRotation(lookDirection.normalized, Vector3.up);
+           }
+
+           GameObject visual = Instantiate(checkpointPrefab, spawnPosition, spawnRotation, waypoint.transform);
            visual.name = $"{checkpointPrefab.name}_{i}";
            checkpointVisuals[i] = visual;
        }
