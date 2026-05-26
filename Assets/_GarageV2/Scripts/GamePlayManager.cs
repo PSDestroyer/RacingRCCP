@@ -185,6 +185,7 @@ public class GamePlayManager : MonoBehaviour
     private Coroutine finishSummaryAnimationCoroutine;
     private float raceTrackLength = 0f;
     private float[] raceWaypointDistances = Array.Empty<float>();
+    private MiniMap miniMap;
 
     [Header("Drifting Settings")]
     public bool driftingNow = false;
@@ -303,6 +304,7 @@ public class GamePlayManager : MonoBehaviour
             SpawnAutomaticOpponents();
 
         InitializeRaceMode();
+        RefreshMiniMapTargets();
         BeginGameplayStartFlow();
         
     }
@@ -800,6 +802,8 @@ public class GamePlayManager : MonoBehaviour
 
         if (CarController != null)
             RCCP.RegisterPlayerVehicle(CarController);
+
+        RefreshMiniMapTargets();
     }
 
     private GameObject SpawnOpponentVehicle(int opponentIndex, Transform spawnTransform)
@@ -876,6 +880,40 @@ public class GamePlayManager : MonoBehaviour
         }
 
         spawnedOpponentObjects.Clear();
+    }
+
+    private void RefreshMiniMapTargets()
+    {
+        if (miniMap == null)
+            miniMap = FindFirstObjectByType<MiniMap>(FindObjectsInactive.Include);
+
+        if (miniMap == null)
+            return;
+
+        miniMap.player1 = CarController != null ? CarController.transform : null;
+        miniMap.player2 = null;
+        miniMap.opponents = GetMiniMapOpponentTargets();
+        miniMap.Init();
+    }
+
+    private Transform[] GetMiniMapOpponentTargets()
+    {
+        if (aiRacers == null || aiRacers.Length == 0)
+            return Array.Empty<Transform>();
+
+        List<Transform> opponentTargets = new List<Transform>(aiRacers.Length);
+
+        for (int i = 0; i < aiRacers.Length; i++)
+        {
+            RaceRacer aiRacer = aiRacers[i];
+
+            if (aiRacer == null || aiRacer.racerTransform == null)
+                continue;
+
+            opponentTargets.Add(aiRacer.racerTransform);
+        }
+
+        return opponentTargets.ToArray();
     }
 
    private void Update() {

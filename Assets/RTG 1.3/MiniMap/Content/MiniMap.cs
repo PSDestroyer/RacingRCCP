@@ -56,14 +56,16 @@ public class MiniMap : MonoBehaviour
 
     void Awake()
     {
-        miniObj.transform.localScale = new Vector3(miniMapSize + 0.5f, miniMapSize + 0.5f, 0);
+        ResolveReferences();
+
+        if (miniObj != null)
+            miniObj.transform.localScale = new Vector3(miniMapSize + 0.5f, miniMapSize + 0.5f, 0);
 
         int iMiniMap = LayerMask.NameToLayer("MiniMapLayer");
 
         if (iMiniMap == -1)
         {
-            throw new UnassignedReferenceException("Layer MiniMapLayer must be assigned in Layer Manager.");
-
+            Debug.LogError("Layer MiniMapLayer must be assigned in Layer Manager.", this);
         }
 
 
@@ -74,6 +76,15 @@ public class MiniMap : MonoBehaviour
 
     public void Init()
     {
+        ResolveReferences();
+        EnsureMarkerTemplates();
+
+        if (miniMapCamera == null || miniMapTargetCircle == null || miniMapTargetArrow1 == null)
+        {
+            Debug.LogError("MiniMap is missing required references and could not recover them automatically.", this);
+            return;
+        }
+
         if (miniMapTargetContainer)
             Destroy(miniMapTargetContainer);
 
@@ -94,8 +105,11 @@ public class MiniMap : MonoBehaviour
     void LateUpdate()
     {
 
-    
-        miniObj.transform.localScale = new Vector3(miniMapSize + 0.5f, miniMapSize + 0.5f, 0);
+        if (!enabled)
+            return;
+
+        if (miniObj != null)
+            miniObj.transform.localScale = new Vector3(miniMapSize + 0.5f, miniMapSize + 0.5f, 0);
 
         if (player1)
         {
@@ -107,8 +121,11 @@ public class MiniMap : MonoBehaviour
 
 
             // miniMapCamera.transform.position = new Vector3(player1.position.x, miniMapCamera.transform.position.y, player1.position.z);
-            miniMapCamera.transform.position = new Vector3(player1.position.x, miniMapScale, player1.position.z);
-            miniMapCamera.transform.eulerAngles = new Vector3(0, player1.eulerAngles.y, 0);
+            if (miniMapCamera != null)
+            {
+                miniMapCamera.transform.position = new Vector3(player1.position.x, miniMapScale, player1.position.z);
+                miniMapCamera.transform.eulerAngles = new Vector3(0, player1.eulerAngles.y, 0);
+            }
 
         }
         else if (miniMapSpritePlayer1)
@@ -127,6 +144,9 @@ public class MiniMap : MonoBehaviour
         else if (miniMapSpritePlayer2)
             Destroy(miniMapSpritePlayer2);
 
+
+        if (opponents == null)
+            return;
 
         for (int i = 0; i < opponents.Length; i++)
         {
@@ -159,12 +179,16 @@ public class MiniMap : MonoBehaviour
 
     private void DefinePlayer1()
     {
+        if (miniMapTargetArrow1 == null || miniMapTargetContainer == null)
+            return;
 
         if (player1 && !miniMapSpritePlayer1)
         {
             miniMapSpritePlayer1 = Instantiate(miniMapTargetArrow1, new Vector3(0, 0, 0), Quaternion.Euler(270, 0, 0)) as GameObject;
             miniMapSpritePlayer1.transform.SetParent(miniMapTargetContainer.transform);
-            miniMapSpritePlayer1.layer = LayerMask.NameToLayer("MiniMapLayer");
+            int miniMapLayer = LayerMask.NameToLayer("MiniMapLayer");
+            if (miniMapLayer != -1)
+                miniMapSpritePlayer1.layer = miniMapLayer;
         }
 
         CheckCameras();
@@ -172,12 +196,16 @@ public class MiniMap : MonoBehaviour
 
     private void DefinePlayer2()
     {
+        if (miniMapTargetArrow2 == null || miniMapTargetContainer == null)
+            return;
 
         if (player2 && !miniMapSpritePlayer2)
         {
             miniMapSpritePlayer2 = Instantiate(miniMapTargetArrow2, new Vector3(0, 0, 0), Quaternion.Euler(270, 0, 0)) as GameObject;
             miniMapSpritePlayer2.transform.SetParent(miniMapTargetContainer.transform);
-            miniMapSpritePlayer2.layer = LayerMask.NameToLayer("MiniMapLayer");
+            int miniMapLayer = LayerMask.NameToLayer("MiniMapLayer");
+            if (miniMapLayer != -1)
+                miniMapSpritePlayer2.layer = miniMapLayer;
         }
 
         CheckCameras();
@@ -186,6 +214,8 @@ public class MiniMap : MonoBehaviour
 
     private void DefinePlayerOponents()
     {
+        if (miniMapTargetCircle == null || miniMapTargetContainer == null || opponents == null)
+            return;
 
         GameObject OpponentsMinimap;
 
@@ -197,12 +227,14 @@ public class MiniMap : MonoBehaviour
         OpponentsMinimap.transform.SetParent(miniMapTargetContainer.transform);
 
         miniMapSpriteOpponents = new GameObject[opponents.Length];
+        int opponentsLayer = LayerMask.NameToLayer("MiniMapLayer");
 
         for (int i = 0; i < opponents.Length; i++)
         {
             miniMapSpriteOpponents[i] = Instantiate(miniMapTargetCircle, new Vector3(0, 0, 0), Quaternion.Euler(270, 0, 0)) as GameObject;
             miniMapSpriteOpponents[i].transform.SetParent(OpponentsMinimap.transform);
-            miniMapSpriteOpponents[i].layer = LayerMask.NameToLayer("MiniMapLayer");
+            if (opponentsLayer != -1)
+                miniMapSpriteOpponents[i].layer = opponentsLayer;
         }
 
         CheckCameras();
@@ -227,11 +259,13 @@ public class MiniMap : MonoBehaviour
         //Copy Road objects, and put in the Layer "MiniMapLayer"
         GameObject[] roadObjs = GameObject.FindObjectsOfType(typeof(GameObject)).Select(g => g as GameObject).Where(g => g.name == "Collider-Road").ToArray();
         int n = roadObjs.Length;
+        int miniMapLayer = LayerMask.NameToLayer("MiniMapLayer");
         for (int i = 0; i < n; i++)
         {
             GameObject mapRoad = Instantiate(roadObjs[i], roadObjs[i].transform.position + new Vector3(0f, -0.1f, 0f), roadObjs[i].transform.rotation) as GameObject;
             mapRoad.transform.SetParent(RoadMinimap.transform);
-            mapRoad.layer = LayerMask.NameToLayer("MiniMapLayer");
+            if (miniMapLayer != -1)
+                mapRoad.layer = miniMapLayer;
 
             MeshCollider collider = mapRoad.GetComponent<MeshCollider>();
             Destroy(collider);
@@ -246,18 +280,106 @@ public class MiniMap : MonoBehaviour
 
     void CheckCameras()
     {
+        if (miniMapCamera == null)
+            return;
+
+        int miniMapLayer = LayerMask.NameToLayer("MiniMapLayer");
+
+        if (miniMapLayer == -1)
+            return;
 
         //The Cameras should not see the layer "MiniMapLayer"
         int count = Camera.allCameras.Length;
         for (int i = 0; i < count; i++)
         {
             int old = Camera.allCameras[i].GetComponent<Camera>().cullingMask;
-            Camera.allCameras[i].GetComponent<Camera>().cullingMask = old & ~(1 << LayerMask.NameToLayer("MiniMapLayer"));
+            Camera.allCameras[i].GetComponent<Camera>().cullingMask = old & ~(1 << miniMapLayer);
         }
 
         //The MiniMap camera sees only the  layer "MiniMapLayer"
-        miniMapCamera.transform.Find("Camera").GetComponent<Camera>().cullingMask = (1 << LayerMask.NameToLayer("MiniMapLayer"));
+        Transform childCamera = miniMapCamera.transform.Find("Camera");
+        Camera miniCamera = childCamera != null ? childCamera.GetComponent<Camera>() : miniMapCamera.GetComponentInChildren<Camera>(true);
 
+        if (miniCamera != null)
+            miniCamera.cullingMask = (1 << miniMapLayer);
+
+    }
+
+    private void ResolveReferences()
+    {
+        if (miniObj == null)
+        {
+            Transform miniTransform = transform.Find("CanvasMiniMap/MiniMask/Mini");
+
+            if (miniTransform == null)
+                miniTransform = transform.Find("Mini");
+
+            if (miniTransform != null)
+                miniObj = miniTransform.gameObject;
+        }
+
+        if (miniMapCamera == null)
+        {
+            Transform cameraRoot = transform.Find("MiniMap-Camera");
+
+            if (cameraRoot == null)
+                cameraRoot = transform.Find("Camera");
+
+            if (cameraRoot == null)
+            {
+                Camera foundCamera = GetComponentInChildren<Camera>(true);
+
+                if (foundCamera != null)
+                    cameraRoot = foundCamera.transform.parent != null ? foundCamera.transform.parent : foundCamera.transform;
+            }
+
+            if (cameraRoot != null)
+                miniMapCamera = cameraRoot.gameObject;
+        }
+    }
+
+    private void EnsureMarkerTemplates()
+    {
+        if (miniMapTargetArrow1 == null)
+            miniMapTargetArrow1 = CreateFallbackMarker("MiniMapPlayer1Template", Color.green, new Vector3(3f, 6f, 1f));
+
+        if (miniMapTargetArrow2 == null)
+            miniMapTargetArrow2 = CreateFallbackMarker("MiniMapPlayer2Template", Color.yellow, new Vector3(3f, 6f, 1f));
+
+        if (miniMapTargetCircle == null)
+            miniMapTargetCircle = CreateFallbackMarker("MiniMapOpponentTemplate", Color.white, new Vector3(3f, 3f, 1f));
+    }
+
+    private GameObject CreateFallbackMarker(string markerName, Color markerColor, Vector3 markerScale)
+    {
+        GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        marker.name = markerName;
+        marker.hideFlags = HideFlags.HideInHierarchy;
+        marker.transform.SetParent(transform, false);
+        marker.transform.localScale = markerScale;
+
+        Collider markerCollider = marker.GetComponent<Collider>();
+        if (markerCollider != null)
+            Destroy(markerCollider);
+
+        MeshRenderer renderer = marker.GetComponent<MeshRenderer>();
+        if (renderer != null)
+        {
+            Shader shader = Shader.Find("Sprites/Default");
+
+            if (shader == null)
+                shader = Shader.Find("Unlit/Color");
+
+            if (shader != null)
+            {
+                Material markerMaterial = new Material(shader);
+                markerMaterial.color = markerColor;
+                renderer.material = markerMaterial;
+            }
+        }
+
+        marker.SetActive(false);
+        return marker;
     }
 
 }
