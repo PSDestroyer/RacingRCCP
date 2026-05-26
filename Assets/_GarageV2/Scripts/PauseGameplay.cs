@@ -14,6 +14,7 @@ public class PauseGameplay : MonoBehaviour
     public bool pauseAudioListener = true;
 
     private bool isPaused = false;
+    private bool canPause = true;
     private bool wasVehicleControllableBeforePause = false;
 
     private void Awake()
@@ -51,6 +52,9 @@ public class PauseGameplay : MonoBehaviour
 
     public void TogglePause()
     {
+        if (!canPause)
+            return;
+
         if (settingsPanel != null && settingsPanel.activeSelf)
         {
             CloseSettingsPanel();
@@ -65,7 +69,7 @@ public class PauseGameplay : MonoBehaviour
 
     public void PauseGame()
     {
-        if (isPaused)
+        if (isPaused || !canPause)
             return;
 
         isPaused = true;
@@ -147,6 +151,14 @@ public class PauseGameplay : MonoBehaviour
         }
 
         SceneManager.LoadScene(menuSceneName);
+    }
+
+    public void SetPauseAvailability(bool state)
+    {
+        canPause = state;
+
+        if (!canPause && isPaused)
+            ResumeGameplay();
     }
 
     private void SetGameplayVehicleControl(bool state)

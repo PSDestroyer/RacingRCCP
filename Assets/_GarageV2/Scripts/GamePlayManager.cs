@@ -537,6 +537,7 @@ public class GamePlayManager : MonoBehaviour
         gameplayStarted = false;
         raceStarted = false;
         SetGameplayParticipantsControl(false);
+        SetPauseAvailability(true);
         if (IsDriftScoringMode())
             canScore = false;
 
@@ -708,6 +709,7 @@ public class GamePlayManager : MonoBehaviour
     private void StartGameplayNow()
     {
         gameplayStarted = true;
+        SetPauseAvailability(true);
 
         if (IsRaceMode())
         {
@@ -1962,15 +1964,16 @@ public class GamePlayManager : MonoBehaviour
        racer.finishOrder = raceFinishCounter;
    }
 
-   private void CompleteRaceMission(bool success, string stateText)
-   {
-       if (missionResultsShown)
-           return;
+    private void CompleteRaceMission(bool success, string stateText)
+    {
+        if (missionResultsShown)
+            return;
 
        missionSucceeded = success;
        missionResultsShown = true;
        gameplayStarted = false;
        raceStarted = false;
+       SetPauseAvailability(false);
        SetGameplayParticipantsControl(false);
 
        string medalTitle = GetMissionMedalTitle();
@@ -1987,10 +1990,10 @@ public class GamePlayManager : MonoBehaviour
        ShowFinishSummaryScreen();
    }
 
-   private void CompleteDriftMission(bool success, string stateText)
-   {
-       if (missionResultsShown)
-           return;
+    private void CompleteDriftMission(bool success, string stateText)
+    {
+        if (missionResultsShown)
+            return;
 
         CommitPendingDriftScore();
 
@@ -1999,6 +2002,7 @@ public class GamePlayManager : MonoBehaviour
        gameplayStarted = false;
        driftModeFinished = true;
        canScore = false;
+       SetPauseAvailability(false);
 
        if (CarController != null)
            CarController.canControl = false;
@@ -2016,6 +2020,12 @@ public class GamePlayManager : MonoBehaviour
        ApplyMissionRewards();
        ShowFinishSummaryScreen();
    }
+
+    private void SetPauseAvailability(bool state)
+    {
+        if (PauseGameplay.Instance != null)
+            PauseGameplay.Instance.SetPauseAvailability(state);
+    }
 
    private void ApplyMissionRewards()
    {
