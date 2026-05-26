@@ -116,6 +116,12 @@ public class GamePlayManager : MonoBehaviour
     public bool overrideAILookAheadPerKphAtRaceStart = false;
     public float aiLookAheadPerKphAtRaceStart = 0.25f;
 
+    [Header("Mission Intro")]
+    public bool useMissionIntroCinematic = true;
+    public float missionIntroDuration = 3f;
+    public TMP_Text missionIntroText;
+    public float missionIntroFadeDuration = 0.35f;
+
     [Header("Opponent Spawning")]
     public bool autoSpawnOpponents = true;
     public int opponentCount = 3;
@@ -281,6 +287,12 @@ public class GamePlayManager : MonoBehaviour
 
         if (scoreText != null)
             scoreText.gameObject.SetActive(false);
+
+        if (missionIntroText != null)
+        {
+            SetTextAlpha(missionIntroText, 0f);
+            missionIntroText.gameObject.SetActive(false);
+        }
 
         if (DriftTimeSlider != null)
             DriftTimeSlider.value = totalDriftTime;
@@ -525,10 +537,115 @@ public class GamePlayManager : MonoBehaviour
         if (IsDriftScoringMode())
             canScore = false;
 
+        StartCoroutine(GameplayStartSequenceCoroutine());
+    }
+
+    private IEnumerator GameplayStartSequenceCoroutine()
+    {
+        if (useMissionIntroCinematic)
+            yield return StartCoroutine(MissionIntroCinematicCoroutine());
+
         if (useCountdown)
-            StartCoroutine(RaceCountdownCoroutine());
+            yield return StartCoroutine(RaceCountdownCoroutine());
         else
             StartGameplayNow();
+    }
+
+    private IEnumerator MissionIntroCinematicCoroutine()
+    {
+        RCCP_Camera activeCamera = RCCP_SceneManager.Instance != null ? RCCP_SceneManager.Instance.activePlayerCamera : null;
+        RCCP_CinematicCamera cinematicCamera = EnsureMissionIntroCinematicCamera();
+        bool switchedToCinematic = false;
+
+        if (activeCamera != null && cinematicCamera != null)
+        {
+            activeCamera.ChangeCamera(RCCP_Camera.CameraMode.CINEMATIC);
+            activeCamera.ResetCamera();
+            switchedToCinematic = true;
+        }
+
+        string introText = GetMissionIntroText();
+        float duration = Mathf.Max(0f, missionIntroDuration);
+
+        if (missionIntroText != null)
+        {
+            missionIntroText.text = introText;
+            missionIntroText.gameObject.SetActive(!string.IsNullOrWhiteSpace(introText));
+            SetTextAlpha(missionIntroText, 0f);
+        }
+
+        float fadeDuration = Mathf.Clamp(missionIntroFadeDuration, 0.01f, duration <= 0f ? 0.35f : duration * 0.5f);
+        float holdDuration = Mathf.Max(0f, duration - (fadeDuration * 2f));
+
+        if (missionIntroText != null && missionIntroText.gameObject.activeSelf)
+        {
+            yield return FadeMissionIntroText(0f, 1f, fadeDuration);
+
+            if (holdDuration > 0f)
+                yield return new WaitForSeconds(holdDuration);
+
+            yield return FadeMissionIntroText(1f, 0f, fadeDuration);
+            missionIntroText.gameObject.SetActive(false);
+        }
+        else if (duration > 0f)
+        {
+            yield return new WaitForSeconds(duration);
+        }
+
+        if (switchedToCinematic && activeCamera != null)
+        {
+            activeCamera.ChangeCamera(RCCP_Camera.CameraMode.TPS);
+            activeCamera.ResetCamera();
+        }
+    }
+
+    private RCCP_CinematicCamera EnsureMissionIntroCinematicCamera()
+    {
+        RCCP_CinematicCamera cinematicCamera = RCCP_CinematicCamera.Instance;
+
+        if (cinematicCamera != null)
+            return cinematicCamera;
+
+        if (RCCP_Settings.Instance == null || RCCP_Settings.Instance.RCCPCinematicCamera == null)
+            return null;
+
+        GameObject cinematicObject = Instantiate(RCCP_Settings.Instance.RCCPCinematicCamera, Vector3.zero, Quaternion.identity);
+        return cinematicObject != null ? cinematicObject.GetComponent<RCCP_CinematicCamera>() : null;
+    }
+
+    private IEnumerator FadeMissionIntroText(float fromAlpha, float toAlpha, float duration)
+    {
+        if (missionIntroText == null)
+            yield break;
+
+        float safeDuration = Mathf.Max(0.01f, duration);
+
+        for (float time = 0f; time < safeDuration; time += Time.unscaledDeltaTime)
+        {
+            float t = time / safeDuration;
+            SetTextAlpha(missionIntroText, Mathf.Lerp(fromAlpha, toAlpha, t));
+            yield return null;
+        }
+
+        SetTextAlpha(missionIntroText, toAlpha);
+    }
+
+    private string GetMissionIntroText()
+    {
+        if (GlobalCarData.thismap != null && !string.IsNullOrWhiteSpace(GlobalCarData.thismap.mapName))
+            return GlobalCarData.thismap.mapName;
+
+        return GetRaceModeDisplayName();
+    }
+
+    private void SetTextAlpha(TMP_Text textComponent, float alpha)
+    {
+        if (textComponent == null)
+            return;
+
+        Color color = textComponent.color;
+        color.a = Mathf.Clamp01(alpha);
+        textComponent.color = color;
     }
 
     private IEnumerator RaceCountdownCoroutine()
