@@ -156,6 +156,7 @@ public class GamePlayManager : MonoBehaviour
     private GameObject[] checkpointVisuals = Array.Empty<GameObject>();
     private readonly List<GameObject> spawnedOpponentObjects = new List<GameObject>();
     private bool raceStarted = false;
+    private bool gameplayStarted = false;
     private float eliminationTimer = 0f;
     private int raceFinishCounter = 0;
     private string lastRacePositionText = string.Empty;
@@ -290,9 +291,7 @@ public class GamePlayManager : MonoBehaviour
             SpawnAutomaticOpponents();
 
         InitializeRaceMode();
-
-        if (IsRaceMode())
-            BeginRaceStartFlow();
+        BeginGameplayStartFlow();
         
     }
 
@@ -323,7 +322,7 @@ public class GamePlayManager : MonoBehaviour
         missionStartingLevel = Mathf.Max(1, SaveManager.Instance != null && SaveManager.Instance.saveData != null ? SaveManager.Instance.saveData.currentLevel : 1);
         missionFinalLevel = missionStartingLevel;
         lastDisplayedComboMultiplier = 0f;
-        canScore = true;
+        canScore = false;
         UpdateDriftUI();
     }
     
@@ -518,15 +517,18 @@ public class GamePlayManager : MonoBehaviour
         UpdateRaceUI();
     }
 
-    private void BeginRaceStartFlow()
+    private void BeginGameplayStartFlow()
     {
-        SetRaceParticipantsControl(false);
+        gameplayStarted = false;
         raceStarted = false;
+        SetGameplayParticipantsControl(false);
+        if (IsDriftScoringMode())
+            canScore = false;
 
         if (useCountdown)
             StartCoroutine(RaceCountdownCoroutine());
         else
-            StartRaceNow();
+            StartGameplayNow();
     }
 
     private IEnumerator RaceCountdownCoroutine()
@@ -544,19 +546,28 @@ public class GamePlayManager : MonoBehaviour
         if (raceStateText != null)
             raceStateText.text = "GO";
 
-        StartRaceNow();
+        StartGameplayNow();
         yield return new WaitForSeconds(goTextDuration);
 
         if (raceStateText != null && !playerRacer.finished)
             raceStateText.text = string.Empty;
     }
 
-    private void StartRaceNow()
+    private void StartGameplayNow()
     {
-        ApplyAILookAheadPerKphAtRaceStart();
-        raceStarted = true;
-        eliminationTimer = eliminationInterval;
-        SetRaceParticipantsControl(true);
+        gameplayStarted = true;
+
+        if (IsRaceMode())
+        {
+            ApplyAILookAheadPerKphAtRaceStart();
+            raceStarted = true;
+            eliminationTimer = eliminationInterval;
+        }
+
+        if (IsDriftScoringMode())
+            canScore = true;
+
+        SetGameplayParticipantsControl(true);
     }
 
     private void ApplyAILookAheadPerKphAtRaceStart()
@@ -577,10 +588,13 @@ public class GamePlayManager : MonoBehaviour
         }
     }
 
-    private void SetRaceParticipantsControl(bool state)
+    private void SetGameplayParticipantsControl(bool state)
     {
         if (CarController != null)
             CarController.canControl = state;
+
+        if (!IsRaceMode())
+            return;
 
         if (aiRacers == null)
             return;
@@ -772,12 +786,15 @@ public class GamePlayManager : MonoBehaviour
 
    private void UpdateDriftMode()
    {
-       if (!missionResultsShown)
+       if (gameplayStarted && !missionResultsShown)
            driftElapsedTime += Time.deltaTime;
 
        UpdateDriftUI();
 
        if (!IsDriftScoringMode())
+           return;
+
+       if (!gameplayStarted)
            return;
 
        UpdateTargetDriftTimer();
@@ -1761,8 +1778,9 @@ public class GamePlayManager : MonoBehaviour
 
        missionSucceeded = success;
        missionResultsShown = true;
+       gameplayStarted = false;
        raceStarted = false;
-       SetRaceParticipantsControl(false);
+       SetGameplayParticipantsControl(false);
 
        string medalTitle = GetMissionMedalTitle();
        if (raceStateText != null)
@@ -1781,6 +1799,7 @@ public class GamePlayManager : MonoBehaviour
 
        missionSucceeded = success;
        missionResultsShown = true;
+       gameplayStarted = false;
        driftModeFinished = true;
        canScore = false;
 
