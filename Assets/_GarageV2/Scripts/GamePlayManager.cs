@@ -64,6 +64,8 @@ public class GamePlayManager : MonoBehaviour
     public float eliminationPulseScale = 0.15f;
     public float eliminationCriticalPulseSpeed = 10f;
     public float eliminationCriticalPulseScale = 0.3f;
+    public float eliminationOutMessageDuration = 3f;
+    public float eliminationOutFadeDuration = 0.4f;
 
     [Header("Race Position UI")]
     public bool showLiveLeaderboard = false;
@@ -184,6 +186,7 @@ public class GamePlayManager : MonoBehaviour
     private Coroutine expRewardAnimationCoroutine;
     private Coroutine expSliderAnimationCoroutine;
     private Coroutine finishSummaryAnimationCoroutine;
+    private Coroutine raceStateMessageCoroutine;
     private float raceTrackLength = 0f;
     private float[] raceWaypointDistances = Array.Empty<float>();
     private MiniMap miniMap;
@@ -2967,10 +2970,62 @@ public class GamePlayManager : MonoBehaviour
            playerRacer.finished = true;
            CompleteRaceMission(false, "Eliminated");
        }
-       else if (raceStateText != null)
+       else
        {
-           raceStateText.text = $"{racer.displayName} OUT";
+           ShowTemporaryRaceStateMessage($"{racer.displayName} OUT", eliminationOutMessageDuration, eliminationOutFadeDuration);
        }
+   }
+
+   private void ShowTemporaryRaceStateMessage(string message, float visibleDuration, float fadeDuration)
+   {
+       if (raceStateText == null || string.IsNullOrWhiteSpace(message))
+           return;
+
+       if (raceStateMessageCoroutine != null)
+           StopCoroutine(raceStateMessageCoroutine);
+
+       raceStateMessageCoroutine = StartCoroutine(TemporaryRaceStateMessageCoroutine(message, visibleDuration, fadeDuration));
+   }
+
+   private IEnumerator TemporaryRaceStateMessageCoroutine(string message, float visibleDuration, float fadeDuration)
+   {
+       if (raceStateText == null)
+           yield break;
+
+       float baseAlpha = raceStateText.color.a;
+       if (baseAlpha <= 0f)
+           baseAlpha = 1f;
+
+       SetRaceStateTextAlpha(baseAlpha);
+       raceStateText.text = message;
+
+       float holdTime = Mathf.Max(0f, visibleDuration - Mathf.Max(0f, fadeDuration));
+       if (holdTime > 0f)
+           yield return new WaitForSeconds(holdTime);
+
+       float safeFadeDuration = Mathf.Max(0.01f, fadeDuration);
+       for (float time = 0f; time < safeFadeDuration; time += Time.unscaledDeltaTime)
+       {
+           float t = time / safeFadeDuration;
+           SetRaceStateTextAlpha(Mathf.Lerp(baseAlpha, 0f, t));
+           yield return null;
+       }
+
+       SetRaceStateTextAlpha(baseAlpha);
+       if (raceStateText != null && raceStateText.text == message)
+           raceStateText.text = string.Empty;
+
+       raceStateMessageCoroutine = null;
+   }
+
+   private void SetRaceStateTextAlpha(float alpha)
+   {
+       if (raceStateText == null)
+           return;
+
+       Color color = raceStateText.color;
+       color.a = Mathf.Clamp01(alpha);
+       raceStateText.color = color;
    }
 
    private void ResolveEliminationWinner()
