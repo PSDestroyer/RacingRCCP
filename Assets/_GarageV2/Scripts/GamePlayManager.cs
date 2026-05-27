@@ -299,6 +299,8 @@ public class GamePlayManager : MonoBehaviour
             missionIntroText.gameObject.SetActive(false);
         }
 
+        RefreshDriftProgressSliderVisibility();
+
         if (DriftTimeSlider != null)
             DriftTimeSlider.value = totalDriftTime;
 
@@ -1590,8 +1592,7 @@ public class GamePlayManager : MonoBehaviour
 
     private void UpdateDriftUI()
     {
-       if (DriftProgressSlider != null)
-           DriftProgressSlider.gameObject.SetActive(IsDriftScoringMode());
+       RefreshDriftProgressSliderVisibility();
 
        currentDriftDisplayedScore = RaceType == RaceType.ComboMaster ? currentMP : totalDriftPoints + currentDriftPoints;
 
@@ -1644,6 +1645,17 @@ public class GamePlayManager : MonoBehaviour
        }
 
        UpdateDriftMedalImages();
+   }
+
+   private void RefreshDriftProgressSliderVisibility()
+   {
+       if (DriftProgressSlider == null)
+           return;
+
+       bool shouldShowDriftProgress = RaceType == RaceType.DriftScore || RaceType == RaceType.TargetDrift || RaceType == RaceType.ComboMaster;
+
+       if (DriftProgressSlider.gameObject.activeSelf != shouldShowDriftProgress)
+           DriftProgressSlider.gameObject.SetActive(shouldShowDriftProgress);
    }
 
    private void UpdateDriftMedalImages()
