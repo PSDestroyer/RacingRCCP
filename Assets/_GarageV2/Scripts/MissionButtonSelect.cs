@@ -7,6 +7,7 @@ public class MissionButtonSelect : MonoBehaviour
 {
     [SerializeField] private Image missionImage;
     [SerializeField] private TMP_Text missionLabel;
+    [SerializeField] private TMP_Text missionStateLabel;
     [SerializeField] private Button button;
     [SerializeField] private GameObject lockStateObject;
     [SerializeField] private float lockedAlpha = .4f;
@@ -17,7 +18,7 @@ public class MissionButtonSelect : MonoBehaviour
     private MapSO mapSo;
     private bool isUnlocked;
 
-    public void Configure(MapSelect owner, int index, MapSelect.MissionData missionData, bool unlocked, bool completed)
+    public void Configure(MapSelect owner, int index, MapSelect.MissionData missionData, bool unlocked, bool completed, string medalText)
     {
         mapSelect = owner;
         missionIndex = index;
@@ -32,8 +33,21 @@ public class MissionButtonSelect : MonoBehaviour
             string missionName = string.IsNullOrWhiteSpace(missionData.missionName)
                 ? (missionData.mapSo != null ? missionData.mapSo.raceType.ToString() : "Mission")
                 : missionData.missionName;
-            missionLabel.text = unlocked ? missionName : $"{missionName}\nLOCKED";
+            missionLabel.text = missionName;
             missionLabel.alpha = unlocked ? unlockedAlpha : lockedAlpha;
+        }
+
+        if (missionStateLabel != null)
+        {
+            missionStateLabel.text = GetMissionStateText(unlocked, completed, medalText);
+            missionStateLabel.alpha = unlocked ? unlockedAlpha : lockedAlpha;
+            missionStateLabel.gameObject.SetActive(!string.IsNullOrEmpty(missionStateLabel.text));
+        }
+        else if (missionLabel != null)
+        {
+            string missionName = missionLabel.text;
+            string missionStateText = GetMissionStateText(unlocked, completed, medalText);
+            missionLabel.text = string.IsNullOrEmpty(missionStateText) ? missionName : $"{missionName}\n{missionStateText}";
         }
 
         if (button == null)
@@ -75,5 +89,16 @@ public class MissionButtonSelect : MonoBehaviour
         SaveManager.Instance.saveData.currentMissionMapId = mapSo.id;
         SaveManager.Instance.saveData.currentMissionRaceType = (int)mapSo.raceType;
         SaveManager.Instance.Save();
+    }
+
+    private string GetMissionStateText(bool unlocked, bool completed, string medalText)
+    {
+        if (!unlocked)
+            return "LOCKED";
+
+        if (!string.IsNullOrWhiteSpace(medalText))
+            return medalText;
+
+        return completed ? "COMPLETED" : string.Empty;
     }
 }

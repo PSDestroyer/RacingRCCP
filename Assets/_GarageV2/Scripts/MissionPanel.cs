@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MissionPanel : MonoBehaviour
 {
@@ -25,7 +26,8 @@ public class MissionPanel : MonoBehaviour
             var button = Instantiate(MissionButton, MissionContent);
             bool isUnlocked = mapSelect == null || mapSelect.IsMissionUnlocked(GetSelectedMapIndex(), GetSelectedTrackIndex(), i);
             bool isCompleted = mapSelect != null && mapSelect.IsMissionCompleted(GetSelectedMapIndex(), GetSelectedTrackIndex(), i);
-            button.Configure(mapSelect, i, missions[i], isUnlocked, isCompleted);
+            string medalText = mapSelect != null ? mapSelect.GetMissionMedalText(GetSelectedMapIndex(), GetSelectedTrackIndex(), i) : string.Empty;
+            button.Configure(mapSelect, i, missions[i], isUnlocked, isCompleted, medalText);
             MissionButtons.Add(button);
         }
     }
@@ -39,6 +41,24 @@ public class MissionPanel : MonoBehaviour
         }
 
         MissionButtons.Clear();
+    }
+
+    public GameObject GetFirstSelectableMissionButton()
+    {
+        for (int i = 0; i < MissionButtons.Count; i++)
+        {
+            MissionButtonSelect missionButton = MissionButtons[i];
+
+            if (missionButton == null || !missionButton.gameObject.activeInHierarchy)
+                continue;
+
+            Button button = missionButton.GetComponent<Button>();
+
+            if (button != null && button.interactable)
+                return button.gameObject;
+        }
+
+        return null;
     }
 
     private int GetSelectedMapIndex()

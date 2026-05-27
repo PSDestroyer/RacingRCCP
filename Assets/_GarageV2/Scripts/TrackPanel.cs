@@ -56,6 +56,24 @@ public class TrackPanel : MonoBehaviour
         mapSelect.SelectTrack(index);
     }
 
+    public GameObject GetFirstSelectableTrackButton()
+    {
+        for (int i = 0; i < tracksBUttons.Count; i++)
+        {
+            Image trackButtonImage = tracksBUttons[i];
+
+            if (trackButtonImage == null || !trackButtonImage.gameObject.activeInHierarchy)
+                continue;
+
+            Button button = trackButtonImage.GetComponent<Button>();
+
+            if (button != null && button.interactable)
+                return button.gameObject;
+        }
+
+        return null;
+    }
+
     private int GetSelectedMapIndex()
     {
         if (HalvaStudio.Save.SaveManager.Instance == null || HalvaStudio.Save.SaveManager.Instance.saveData == null)

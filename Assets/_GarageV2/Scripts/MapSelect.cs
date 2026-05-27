@@ -1,8 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using HalvaStudio.Save;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class MapSelect : MonoBehaviour
 {
@@ -85,6 +88,8 @@ public class MapSelect : MonoBehaviour
         if (trackPanelController != null)
             trackPanelController.ShowTracks(this, maps[mapIndex].tracks);
 
+        RequestSelection(trackPanelController != null ? trackPanelController.GetFirstSelectableTrackButton() : null, TrackPanel);
+
         PlayClick();
     }
 
@@ -125,6 +130,8 @@ public class MapSelect : MonoBehaviour
         if (missionPanelController != null)
             missionPanelController.ShowMissions(this, selectedTrack.missions);
 
+        RequestSelection(missionPanelController != null ? missionPanelController.GetFirstSelectableMissionButton() : null, MissionPanel);
+
         PlayClick();
     }
 
@@ -148,7 +155,7 @@ public class MapSelect : MonoBehaviour
 
         if (mission == null || mission.mapSo == null)
             return;
-        SetUpRaceStyle((int)mission.mapSo.raceType);
+        SetUpRaceStyle(mission.mapSo.raceType);
         
         selectedMissionIndex = missionIndex;
         GlobalCarData.thismap = mission.mapSo;
@@ -181,14 +188,47 @@ public class MapSelect : MonoBehaviour
         }
 
     }
+    public void SetUpRaceStyle(RaceType raceType)
+    {
+        SetUpRaceStyle(GetDrivingStyleIndex(raceType));
+    }
+
     public void SetUpRaceStyle(int type)
     {
         // 0  = Balanced
         // 1  = Drift
         // 2  = Race
         // 3  = Arcade
-        RCCP_Settings.Instance.behaviorSelectedIndex = type;
+        if (RCCP_Settings.Instance == null || RCCP_Settings.Instance.behaviorTypes == null || RCCP_Settings.Instance.behaviorTypes.Length == 0)
+            return;
+
+        int safeBehaviorIndex = Mathf.Clamp(type, 0, RCCP_Settings.Instance.behaviorTypes.Length - 1);
+        RCCP_Settings.Instance.behaviorSelectedIndex = safeBehaviorIndex;
+
+        if (RCCP_SceneManager.Instance != null)
+            RCCP_SceneManager.Instance.SetBehavior(safeBehaviorIndex);
+
         // Debug.Log(RCCP_Settings.Instance.behaviorTypes[type].behaviorName.ToString()); // Test Debug style
+    }
+
+    private int GetDrivingStyleIndex(RaceType raceType)
+    {
+        switch (raceType)
+        {
+            case RaceType.Racing:
+            case RaceType.Elimination:
+            case RaceType.NoBrakeChallenge:
+                return 2;
+
+            case RaceType.FreeDrift:
+            case RaceType.DriftScore:
+            case RaceType.TargetDrift:
+            case RaceType.ComboMaster:
+                return 1;
+
+            default:
+                return 0;
+        }
     }
 
     public bool IsTrackUnlocked(int mapIndex, int trackIndex)
@@ -212,6 +252,14 @@ public class MapSelect : MonoBehaviour
         return SaveManager.Instance != null && SaveManager.Instance.IsMissionCompleted(mapIndex, trackIndex, missionIndex);
     }
 
+    public string GetMissionMedalText(int mapIndex, int trackIndex, int missionIndex)
+    {
+        if (SaveManager.Instance == null)
+            return string.Empty;
+
+        return SaveManager.Instance.GetMissionMedal(mapIndex, trackIndex, missionIndex);
+    }
+
     public bool HandleBack()
     {
         if (MissionPanel != null && MissionPanel.activeSelf)
@@ -226,6 +274,7 @@ public class MapSelect : MonoBehaviour
             }
 
             ShowTrackStep();
+            RequestSelection(trackPanelController != null ? trackPanelController.GetFirstSelectableTrackButton() : null, TrackPanel);
             PlayClick();
             return true;
         }
@@ -246,6 +295,7 @@ public class MapSelect : MonoBehaviour
             }
 
             ResetPanels();
+            RequestSelection(GetFirstSelectableInPanel(MapPanel), MapPanel);
             PlayClick();
             return true;
         }
@@ -266,6 +316,8 @@ public class MapSelect : MonoBehaviour
 
         if (PlayPanel != null)
             PlayPanel.SetActive(false);
+
+        RequestSelection(GetFirstSelectableInPanel(MapPanel), MapPanel);
     }
 
     private void ShowTrackStep()
@@ -296,6 +348,49 @@ public class MapSelect : MonoBehaviour
 
         if (PlayPanel != null)
             PlayPanel.SetActive(false);
+    }
+
+    private void RequestSelection(GameObject preferredTarget, GameObject panelRoot)
+    {
+        StartCoroutine(SelectPanelButtonNextFrame(preferredTarget, panelRoot));
+    }
+
+    private IEnumerator SelectPanelButtonNextFrame(GameObject preferredTarget, GameObject panelRoot)
+    {
+        yield return null;
+
+        if (EventSystem.current == null)
+            yield break;
+
+        GameObject selectedObject = preferredTarget != null && preferredTarget.activeInHierarchy
+            ? preferredTarget
+            : GetFirstSelectableInPanel(panelRoot);
+
+        if (selectedObject == null)
+            yield break;
+
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(selectedObject);
+    }
+
+    private GameObject GetFirstSelectableInPanel(GameObject panelRoot)
+    {
+        if (panelRoot == null)
+            return null;
+
+        Button[] buttons = panelRoot.GetComponentsInChildren<Button>(true);
+
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            Button button = buttons[i];
+
+            if (button == null || !button.gameObject.activeInHierarchy || !button.interactable)
+                continue;
+
+            return button.gameObject;
+        }
+
+        return null;
     }
 
     private void PlayClick()

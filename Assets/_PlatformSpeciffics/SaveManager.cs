@@ -185,6 +185,20 @@ namespace HalvaStudio.Save
             public List<string> unlockedTrackKeys = new List<string>();
             public List<string> unlockedMissionKeys = new List<string>();
             public List<string> completedMissionKeys = new List<string>();
+            public List<MissionMedalData> missionMedalData = new List<MissionMedalData>();
+
+            [System.Serializable]
+            public class MissionMedalData
+            {
+                public string missionKey;
+                public string medal;
+
+                public MissionMedalData(string missionKey, string medal)
+                {
+                    this.missionKey = missionKey;
+                    this.medal = medal;
+                }
+            }
 
             // NOU
             // public RCCP_CustomizationLoadout customizationLoadout;
@@ -264,7 +278,24 @@ namespace HalvaStudio.Save
             return saveData.completedMissionKeys.Contains(GetMissionKey(mapIndex, trackIndex, missionIndex));
         }
 
-        public void CompleteCurrentMissionAndUnlockNext()
+        public string GetMissionMedal(int mapIndex, int trackIndex, int missionIndex)
+        {
+            EnsureMissionProgressInitialized();
+
+            string missionKey = GetMissionKey(mapIndex, trackIndex, missionIndex);
+
+            for (int i = 0; i < saveData.missionMedalData.Count; i++)
+            {
+                SaveData.MissionMedalData medalData = saveData.missionMedalData[i];
+
+                if (medalData != null && medalData.missionKey == missionKey)
+                    return medalData.medal;
+            }
+
+            return string.Empty;
+        }
+
+        public void CompleteCurrentMissionAndUnlockNext(string medal)
         {
             if (saveData == null)
                 saveData = new SaveData();
@@ -282,6 +313,8 @@ namespace HalvaStudio.Save
 
             if (!saveData.completedMissionKeys.Contains(missionKey))
                 saveData.completedMissionKeys.Add(missionKey);
+
+            SetMissionMedalInternal(missionKey, medal);
 
             UnlockTrackInternal(mapIndex, trackIndex);
             UnlockMissionInternal(mapIndex, trackIndex, missionIndex);
@@ -383,6 +416,9 @@ namespace HalvaStudio.Save
 
             if (saveData.completedMissionKeys == null)
                 saveData.completedMissionKeys = new List<string>();
+
+            if (saveData.missionMedalData == null)
+                saveData.missionMedalData = new List<SaveData.MissionMedalData>();
         }
 
         private void UnlockTrackInternal(int mapIndex, int trackIndex)
@@ -411,6 +447,44 @@ namespace HalvaStudio.Save
         private string GetMissionKey(int mapIndex, int trackIndex, int missionIndex)
         {
             return $"{mapIndex}:{trackIndex}:{missionIndex}";
+        }
+
+        private void SetMissionMedalInternal(string missionKey, string medal)
+        {
+            if (string.IsNullOrWhiteSpace(missionKey) || string.IsNullOrWhiteSpace(medal))
+                return;
+
+            string normalizedMedal = medal.Trim();
+
+            for (int i = 0; i < saveData.missionMedalData.Count; i++)
+            {
+                SaveData.MissionMedalData medalData = saveData.missionMedalData[i];
+
+                if (medalData == null || medalData.missionKey != missionKey)
+                    continue;
+
+                if (GetMedalRank(normalizedMedal) > GetMedalRank(medalData.medal))
+                    medalData.medal = normalizedMedal;
+
+                return;
+            }
+
+            saveData.missionMedalData.Add(new SaveData.MissionMedalData(missionKey, normalizedMedal));
+        }
+
+        private int GetMedalRank(string medal)
+        {
+            switch (medal)
+            {
+                case "Gold":
+                    return 3;
+                case "Silver":
+                    return 2;
+                case "Bronze":
+                    return 1;
+                default:
+                    return 0;
+            }
         }
 
         #endregion
