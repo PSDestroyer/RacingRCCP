@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5581013661281110369}
   - component: {fileID: 1803440083602683978}
   - component: {fileID: 1937003402575996897}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Brake Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -25,13 +25,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8101017998206165}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.9914449, z: 0.13052616, w: 0}
   m_LocalPosition: {x: -0.57, y: -0.108, z: -2.027}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2157549337237653481}
-  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 15, y: -180, z: 0}
 --- !u!108 &1803440083602683978
 Light:
@@ -41,9 +41,8 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8101017998206165}
   m_Enabled: 1
-  serializedVersion: 10
+  serializedVersion: 11
   m_Type: 0
-  m_Shape: 0
   m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -93,8 +92,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!123 &1937003402575996897
 LensFlare:
   m_ObjectHideFlags: 0
@@ -122,7 +125,7 @@ GameObject:
   - component: {fileID: 3149725443040483658}
   - component: {fileID: 6301887769495287017}
   - component: {fileID: 4473958941453513520}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Brake Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -136,13 +139,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1030396813257899632}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.9914449, z: 0.13052616, w: 0}
   m_LocalPosition: {x: 0.57, y: -0.108, z: -2.027}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2157549337237653481}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 15, y: -180, z: 0}
 --- !u!108 &6301887769495287017
 Light:
@@ -152,9 +155,8 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1030396813257899632}
   m_Enabled: 1
-  serializedVersion: 10
+  serializedVersion: 11
   m_Type: 0
-  m_Shape: 0
   m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -204,8 +206,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!123 &4473958941453513520
 LensFlare:
   m_ObjectHideFlags: 0
@@ -233,7 +239,7 @@ GameObject:
   - component: {fileID: 7839339861701973543}
   - component: {fileID: 5694582907307212071}
   - component: {fileID: 7267083096589562412}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Indicator_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -247,13 +253,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1229914485805219008}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
   m_LocalPosition: {x: -0.706, y: -0.321, z: 2.117}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2157549337237653481}
-  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
 --- !u!108 &5694582907307212071
 Light:
@@ -263,9 +269,8 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1229914485805219008}
   m_Enabled: 1
-  serializedVersion: 10
+  serializedVersion: 11
   m_Type: 0
-  m_Shape: 0
   m_Color: {r: 1, g: 0.725698, b: 0, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -315,8 +320,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!123 &7267083096589562412
 LensFlare:
   m_ObjectHideFlags: 0
@@ -342,7 +351,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2157549337237653481}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Lights
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -356,6 +365,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1310385387408181248}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -372,7 +382,6 @@ Transform:
   - {fileID: 2323777017427638513}
   - {fileID: 3196659807845991539}
   m_Father: {fileID: 567777796368858825}
-  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1649269243449656406
 GameObject:
@@ -385,7 +394,7 @@ GameObject:
   - component: {fileID: 7325878426410678456}
   - component: {fileID: 6480336232691284087}
   - component: {fileID: 47639829306524106}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Wheel_RL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -399,13 +408,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1649269243449656406}
+  serializedVersion: 2
   m_LocalRotation: {x: -0.00000016292068, y: 0.00000004371138, z: 0.000000043711395, w: 1}
   m_LocalPosition: {x: -0.6758448, y: -0.38886458, z: -1.1807407}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 823082542870134766}
-  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6480336232691284087
 MeshFilter:
@@ -432,6 +441,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -469,7 +481,7 @@ GameObject:
   - component: {fileID: 567777796368858825}
   - component: {fileID: 8725526928568372405}
   - component: {fileID: 8157298429978324586}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Police
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -483,6 +495,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1910820224662948583}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -493,7 +506,6 @@ Transform:
   - {fileID: 6477458639059419488}
   - {fileID: 2157549337237653481}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &8725526928568372405
 Rigidbody:
@@ -502,10 +514,21 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1910820224662948583}
-  serializedVersion: 2
+  serializedVersion: 4
   m_Mass: 1350
   m_Drag: 0
   m_AngularDrag: 0.1
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 1
@@ -800,7 +823,7 @@ GameObject:
   - component: {fileID: 6449086007741238575}
   - component: {fileID: 4596650281121977743}
   - component: {fileID: 4444284201820804288}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Headlight_ (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -814,13 +837,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1950536708979765748}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.13052616, y: -0, z: -0, w: 0.9914449}
   m_LocalPosition: {x: 0.688, y: -0.109, z: 1.996}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2157549337237653481}
-  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
 --- !u!108 &4596650281121977743
 Light:
@@ -830,9 +853,8 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1950536708979765748}
   m_Enabled: 1
-  serializedVersion: 10
+  serializedVersion: 11
   m_Type: 0
-  m_Shape: 0
   m_Color: {r: 1, g: 0.972549, b: 0.9, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -882,8 +904,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!123 &4444284201820804288
 LensFlare:
   m_ObjectHideFlags: 0
@@ -910,7 +936,7 @@ GameObject:
   m_Component:
   - component: {fileID: 218818799714087089}
   - component: {fileID: 8986259695211063936}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Wheel_RR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -924,13 +950,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2266168667372646498}
+  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.6758448, y: -0.35326898, z: -1.1807407}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6477458639059419488}
-  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!146 &8986259695211063936
 WheelCollider:
@@ -939,6 +965,7 @@ WheelCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2266168667372646498}
+  serializedVersion: 2
   m_Center: {x: 0, y: 0, z: 0}
   m_Radius: 0.28658018
   m_SuspensionSpring:
@@ -961,7 +988,15 @@ WheelCollider:
     m_AsymptoteSlip: 0.5
     m_AsymptoteValue: 0.8
     m_Stiffness: 1.25
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_Enabled: 1
+  m_ProvidesContacts: 0
 --- !u!1 &2405400022425407197
 GameObject:
   m_ObjectHideFlags: 0
@@ -973,7 +1008,7 @@ GameObject:
   - component: {fileID: 2323777017427638513}
   - component: {fileID: 10259370786394344}
   - component: {fileID: 4216110626931064791}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Headlight_ (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -987,13 +1022,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2405400022425407197}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.13052616, y: -0, z: -0, w: 0.9914449}
   m_LocalPosition: {x: 0.475, y: -0.109, z: 1.996}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2157549337237653481}
-  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
 --- !u!108 &10259370786394344
 Light:
@@ -1003,9 +1038,8 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2405400022425407197}
   m_Enabled: 1
-  serializedVersion: 10
+  serializedVersion: 11
   m_Type: 0
-  m_Shape: 0
   m_Color: {r: 1, g: 0.972549, b: 0.9, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -1055,8 +1089,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!123 &4216110626931064791
 LensFlare:
   m_ObjectHideFlags: 0
@@ -1084,7 +1122,7 @@ GameObject:
   - component: {fileID: 6923529926448558441}
   - component: {fileID: 4545966888509734878}
   - component: {fileID: 8093373615911637029}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Indicator_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1098,13 +1136,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2632171344106226772}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.9914449, z: 0.13052616, w: 0}
   m_LocalPosition: {x: 0.758, y: -0.275, z: -2.033}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2157549337237653481}
-  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 15, y: -180, z: 0}
 --- !u!108 &4545966888509734878
 Light:
@@ -1114,9 +1152,8 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2632171344106226772}
   m_Enabled: 1
-  serializedVersion: 10
+  serializedVersion: 11
   m_Type: 0
-  m_Shape: 0
   m_Color: {r: 1, g: 0.725698, b: 0, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -1166,8 +1203,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!123 &8093373615911637029
 LensFlare:
   m_ObjectHideFlags: 0
@@ -1193,7 +1234,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7362567633921322000}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: COM
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1207,13 +1248,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3316228236044760211}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.3532701, z: 0.07171464}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 567777796368858825}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4981002812440979306
 GameObject:
@@ -1226,7 +1267,7 @@ GameObject:
   - component: {fileID: 948766564872397167}
   - component: {fileID: 4360681505761447732}
   - component: {fileID: 1830034675998829389}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Headlight_
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1240,13 +1281,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4981002812440979306}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.13052616, y: -0, z: -0, w: 0.9914449}
   m_LocalPosition: {x: -0.688, y: -0.109, z: 1.996}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2157549337237653481}
-  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
 --- !u!108 &4360681505761447732
 Light:
@@ -1256,9 +1297,8 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4981002812440979306}
   m_Enabled: 1
-  serializedVersion: 10
+  serializedVersion: 11
   m_Type: 0
-  m_Shape: 0
   m_Color: {r: 1, g: 0.972549, b: 0.9, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -1308,8 +1348,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!123 &1830034675998829389
 LensFlare:
   m_ObjectHideFlags: 0
@@ -1337,7 +1381,7 @@ GameObject:
   - component: {fileID: 8867891755311836829}
   - component: {fileID: 6009176101720152132}
   - component: {fileID: 885135800664252115}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Police_Indicator_RL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1351,13 +1395,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4981101404126312063}
+  serializedVersion: 2
   m_LocalRotation: {x: -0.00000017881393, y: -7.1054274e-15, z: 0.00000004371139, w: 1}
   m_LocalPosition: {x: 0, y: 0.06298543, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 823082542870134766}
-  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6009176101720152132
 MeshFilter:
@@ -1384,6 +1428,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1420,7 +1467,7 @@ GameObject:
   - component: {fileID: 8409729002047322424}
   - component: {fileID: 297253455444069161}
   - component: {fileID: 8312064428573823493}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Wheel_FR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1434,13 +1481,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5361531892118569238}
+  serializedVersion: 2
   m_LocalRotation: {x: -0.00000016292068, y: 0.00000004371138, z: 0.000000043711395, w: 1}
   m_LocalPosition: {x: 0.6758412, y: -0.3888668, z: 1.32417}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 823082542870134766}
-  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &297253455444069161
 MeshFilter:
@@ -1467,6 +1514,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1503,7 +1553,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5884856415501983188}
   - component: {fileID: 6829106494063900108}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Wheel_RL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1517,13 +1567,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5567416168994216827}
+  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.6758448, y: -0.35326898, z: -1.1807407}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6477458639059419488}
-  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!146 &6829106494063900108
 WheelCollider:
@@ -1532,6 +1582,7 @@ WheelCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5567416168994216827}
+  serializedVersion: 2
   m_Center: {x: 0, y: 0, z: 0}
   m_Radius: 0.28658006
   m_SuspensionSpring:
@@ -1554,7 +1605,15 @@ WheelCollider:
     m_AsymptoteSlip: 0.5
     m_AsymptoteValue: 0.8
     m_Stiffness: 1.25
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_Enabled: 1
+  m_ProvidesContacts: 0
 --- !u!1 &5683117555931348778
 GameObject:
   m_ObjectHideFlags: 0
@@ -1566,7 +1625,7 @@ GameObject:
   - component: {fileID: 3200487074270331297}
   - component: {fileID: 8959247391257988683}
   - component: {fileID: 1912112592633229091}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Wheel_FL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1580,13 +1639,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5683117555931348778}
+  serializedVersion: 2
   m_LocalRotation: {x: -0.00000016292068, y: 0.00000004371138, z: 0.000000043711395, w: 1}
   m_LocalPosition: {x: -0.6758412, y: -0.3888668, z: 1.32417}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 823082542870134766}
-  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8959247391257988683
 MeshFilter:
@@ -1613,6 +1672,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1650,7 +1712,7 @@ GameObject:
   - component: {fileID: 9135569775233615577}
   - component: {fileID: 3233622724691860592}
   - component: {fileID: 2715149944590515245}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Police_Indicator_RR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1664,13 +1726,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5925741510990395721}
+  serializedVersion: 2
   m_LocalRotation: {x: -0.00000017881393, y: -7.1054274e-15, z: 0.00000004371139, w: 1}
   m_LocalPosition: {x: 0, y: 0.06298543, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 823082542870134766}
-  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3233622724691860592
 MeshFilter:
@@ -1697,6 +1759,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1733,7 +1798,7 @@ GameObject:
   - component: {fileID: 306519395381232072}
   - component: {fileID: 6370592652243475178}
   - component: {fileID: 7503289961332494640}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Police_Indicator_FL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1747,13 +1812,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6010803178248317191}
+  serializedVersion: 2
   m_LocalRotation: {x: -0.00000017881393, y: -7.1054274e-15, z: 0.00000004371139, w: 1}
   m_LocalPosition: {x: 0, y: 0.06298543, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 823082542870134766}
-  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6370592652243475178
 MeshFilter:
@@ -1780,6 +1845,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1816,7 +1884,7 @@ GameObject:
   - component: {fileID: 175547106564652284}
   - component: {fileID: 2591946356703220506}
   - component: {fileID: 9013933049807518645}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Wheel_RR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1830,13 +1898,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6027075243706288576}
+  serializedVersion: 2
   m_LocalRotation: {x: -0.00000016292068, y: 0.00000004371138, z: 0.000000043711395, w: 1}
   m_LocalPosition: {x: 0.6758448, y: -0.38886458, z: -1.1807407}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 823082542870134766}
-  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2591946356703220506
 MeshFilter:
@@ -1863,6 +1931,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -1899,7 +1970,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3430675591984970885}
   - component: {fileID: 2489866161588231350}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Wheel_FR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1913,13 +1984,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6303164355196764133}
+  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.6758412, y: -0.35327122, z: 1.32417}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6477458639059419488}
-  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!146 &2489866161588231350
 WheelCollider:
@@ -1928,6 +1999,7 @@ WheelCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6303164355196764133}
+  serializedVersion: 2
   m_Center: {x: 0, y: 0, z: 0}
   m_Radius: 0.28658023
   m_SuspensionSpring:
@@ -1950,7 +2022,15 @@ WheelCollider:
     m_AsymptoteSlip: 0.5
     m_AsymptoteValue: 0.75
     m_Stiffness: 1.25
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_Enabled: 1
+  m_ProvidesContacts: 0
 --- !u!1 &6406608741892084624
 GameObject:
   m_ObjectHideFlags: 0
@@ -1962,7 +2042,7 @@ GameObject:
   - component: {fileID: 3196659807845991539}
   - component: {fileID: 314841837183186611}
   - component: {fileID: 5990738844618156406}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Headlight_ (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1976,13 +2056,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6406608741892084624}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.13052616, y: -0, z: -0, w: 0.9914449}
   m_LocalPosition: {x: -0.475, y: -0.109, z: 1.996}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2157549337237653481}
-  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
 --- !u!108 &314841837183186611
 Light:
@@ -1992,9 +2072,8 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6406608741892084624}
   m_Enabled: 1
-  serializedVersion: 10
+  serializedVersion: 11
   m_Type: 0
-  m_Shape: 0
   m_Color: {r: 1, g: 0.972549, b: 0.9, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -2044,8 +2123,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!123 &5990738844618156406
 LensFlare:
   m_ObjectHideFlags: 0
@@ -2073,7 +2156,7 @@ GameObject:
   - component: {fileID: 1383742734743598697}
   - component: {fileID: 1784928925642886944}
   - component: {fileID: 6618878528212645397}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Indicator_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2087,13 +2170,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6407084068873252793}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
   m_LocalPosition: {x: 0.706, y: -0.321, z: 2.117}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2157549337237653481}
-  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
 --- !u!108 &1784928925642886944
 Light:
@@ -2103,9 +2186,8 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6407084068873252793}
   m_Enabled: 1
-  serializedVersion: 10
+  serializedVersion: 11
   m_Type: 0
-  m_Shape: 0
   m_Color: {r: 1, g: 0.725698, b: 0, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -2155,8 +2237,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!123 &6618878528212645397
 LensFlare:
   m_ObjectHideFlags: 0
@@ -2184,7 +2270,7 @@ GameObject:
   - component: {fileID: 5461330270641630682}
   - component: {fileID: 965360318356653590}
   - component: {fileID: 4930235505577245841}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Indicator_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2198,13 +2284,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7250488394746250948}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.9914449, z: 0.13052616, w: 0}
   m_LocalPosition: {x: -0.758, y: -0.275, z: -2.033}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2157549337237653481}
-  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 15, y: -180, z: 0}
 --- !u!108 &965360318356653590
 Light:
@@ -2214,9 +2300,8 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7250488394746250948}
   m_Enabled: 1
-  serializedVersion: 10
+  serializedVersion: 11
   m_Type: 0
-  m_Shape: 0
   m_Color: {r: 1, g: 0.725698, b: 0, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -2266,8 +2351,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!123 &4930235505577245841
 LensFlare:
   m_ObjectHideFlags: 0
@@ -2296,7 +2385,7 @@ GameObject:
   - component: {fileID: 1641201624953660998}
   - component: {fileID: 3811136939521480278}
   - component: {fileID: 8796766195485151335}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2310,13 +2399,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7933000249299925432}
+  serializedVersion: 2
   m_LocalRotation: {x: -0.00000016292068, y: 0.00000004371138, z: 0.000000043711395, w: 1}
   m_LocalPosition: {x: -0.0000014776226, y: 0.06298506, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 823082542870134766}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1641201624953660998
 MeshFilter:
@@ -2343,6 +2432,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -2385,9 +2477,17 @@ MeshCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7933000249299925432}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 4
+  serializedVersion: 5
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 8253620547385192655, guid: df45d302711176f4cba4c3198f318b85, type: 3}
@@ -2400,7 +2500,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6477458639059419488}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Wheel Colliders
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2414,6 +2514,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8089705273218061634}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -2424,7 +2525,6 @@ Transform:
   - {fileID: 5884856415501983188}
   - {fileID: 218818799714087089}
   m_Father: {fileID: 567777796368858825}
-  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8188049087032974834
 GameObject:
@@ -2435,7 +2535,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 823082542870134766}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Police
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2449,6 +2549,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8188049087032974834}
+  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.035595596, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -2464,7 +2565,6 @@ Transform:
   - {fileID: 8867891755311836829}
   - {fileID: 9135569775233615577}
   m_Father: {fileID: 567777796368858825}
-  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8204287893982447738
 GameObject:
@@ -2477,7 +2577,7 @@ GameObject:
   - component: {fileID: 5015397328757705703}
   - component: {fileID: 2308766577685865787}
   - component: {fileID: 7862513561769689406}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Police_Indicator_FR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2491,13 +2591,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8204287893982447738}
+  serializedVersion: 2
   m_LocalRotation: {x: -0.00000017881393, y: -7.1054274e-15, z: 0.00000004371139, w: 1}
   m_LocalPosition: {x: 0, y: 0.06298543, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 823082542870134766}
-  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2308766577685865787
 MeshFilter:
@@ -2524,6 +2624,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -2559,7 +2662,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1956638527861822810}
   - component: {fileID: 8545357658876343725}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: Wheel_FL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2573,13 +2676,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9168132817065665752}
+  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.6758412, y: -0.35327122, z: 1.32417}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6477458639059419488}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!146 &8545357658876343725
 WheelCollider:
@@ -2588,6 +2691,7 @@ WheelCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9168132817065665752}
+  serializedVersion: 2
   m_Center: {x: 0, y: 0, z: 0}
   m_Radius: 0.28658018
   m_SuspensionSpring:
@@ -2610,4 +2714,12 @@ WheelCollider:
     m_AsymptoteSlip: 0.5
     m_AsymptoteValue: 0.75
     m_Stiffness: 1.25
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_Enabled: 1
+  m_ProvidesContacts: 0
