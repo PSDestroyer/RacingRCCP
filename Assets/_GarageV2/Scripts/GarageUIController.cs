@@ -168,7 +168,6 @@ public class GarageUIController : MonoBehaviour
     {
         if (back == null)
             return;
-        carSelection.loadmaincar();
         bool showBackButton = hasCurrentPanel && currentPanel != UIPanelType.MainHub;
         back.gameObject.SetActive(showBackButton);
     }

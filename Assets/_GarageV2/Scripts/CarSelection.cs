@@ -264,13 +264,10 @@ public class CarSelection : MonoBehaviour
   //}
     #endregion
 
-    private void UpdateCurrentCar()
+  private void UpdateCurrentCar()
   {    
       SM.PlayButtonClick();
-      if(player!=null) Destroy(player.gameObject);
-      player = Instantiate(Resources.Load<GameObject>(GlobalCarData._carlists[indexcar].carPrefabLocation), spawnCarPoint);
-      player.GetComponent<RCCP_CarController>().canControl = false;
-      player.GetComponent<RCCP_CarController>().engineRunning = false;
+      ReplacePreviewCar(indexcar);
 
       // player.GetComponent<Rigidbody>().isKinematic = true;
       // foreach (var mirror in player.GetComponentsInChildren<RCC_Mirror>())
@@ -306,22 +303,18 @@ public class CarSelection : MonoBehaviour
   public void loadmaincar()
   {
       int savedCarIndex = SaveManager.Instance.saveData.currentCar;
+      indexcar = savedCarIndex;
 
       if (player == null || indexcar != savedCarIndex)
       {
-          if (player != null) Destroy(player.gameObject);
-
-          player = Instantiate(Resources.Load<GameObject>(GlobalCarData._carlists[savedCarIndex].carPrefabLocation), spawnCarPoint);
-
-           player.GetComponent<RCCP_CarController>().canControl = false;
-           player.GetComponent<RCCP_CarController>().engineRunning = false;
-
-          // var rb = player.GetComponent<Rigidbody>();
-          // if (rb != null) rb.isKinematic = true;
+          ReplacePreviewCar(savedCarIndex);
       }
   }
   public void Navigations(InputAction.CallbackContext ctx)
   {
+      if (!CanHandleNavigation())
+          return;
+
       if (ctx.performed && Time.time - lastMoveTime > moveCooldown)
       {
             
@@ -387,7 +380,46 @@ public class CarSelection : MonoBehaviour
       if (playerInput == null || playerInput.actions == null)
           return;
 
-      playerInput.actions["Navigate"].performed -= Navigations;
-      // playerInput.actions["Submit"].performed -= SelectOrBuyCtx;
+       playerInput.actions["Navigate"].performed -= Navigations;
+       // playerInput.actions["Submit"].performed -= SelectOrBuyCtx;
   }
+
+    private bool CanHandleNavigation()
+    {
+        if (CanvasManager == null)
+            return true;
+
+        return CanvasManager.GetCurrentPanel() == UIPanelType.MainHub;
+    }
+
+    private void ReplacePreviewCar(int carId)
+    {
+        if (spawnCarPoint == null)
+            return;
+
+        for (int i = spawnCarPoint.childCount - 1; i >= 0; i--)
+            Destroy(spawnCarPoint.GetChild(i).gameObject);
+
+        GameObject carPrefab = Resources.Load<GameObject>(GlobalCarData._carlists[carId].carPrefabLocation);
+
+        if (carPrefab == null)
+        {
+            Debug.LogError($"Car prefab not found at '{GlobalCarData._carlists[carId].carPrefabLocation}'.", this);
+            player = null;
+            return;
+        }
+
+        player = Instantiate(carPrefab, spawnCarPoint);
+
+        RCCP_CarController controller = player.GetComponent<RCCP_CarController>();
+
+        if (controller != null)
+        {
+            controller.canControl = false;
+            controller.engineRunning = false;
+
+            if (RCCP_SceneManager.Instance != null)
+                RCCP_SceneManager.Instance.RegisterPlayer(controller, false, false);
+        }
+    }
 }
