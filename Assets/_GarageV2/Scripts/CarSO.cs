@@ -10,28 +10,18 @@ public class CarSO : ScriptableObject
     [SerializeField] private Sprite _carsprite;
     [SerializeField] private Sprite _CarClass;
     [SerializeField] private string _carName;
+    [TextArea(2, 6)]
+    [SerializeField] private string _carInfo;
     [SerializeField] private int _price;
-    [SerializeField] private int _power;
     [SerializeField] private int _color;
-    [SerializeField] private int _topSpeed;
-    [SerializeField] private int _steerAngle;
-    [SerializeField] private int _traction;
-    [Min(2000f),Tooltip("BrakePower")]
-    [SerializeField] private int _brake;
-    [SerializeField] private bool _turbo;
     
     public int id => _id;
     public string carPrefabLocation => _carPrefabLocation;
     public Sprite carsprite => _carsprite;
     public Sprite CarClass => _CarClass;
     public string carName => _carName;
+    public string carInfo => _carInfo;
     public int price => _price;
-    public int power => _power;
-    public int speed => _topSpeed;
     public int color => _color;
-    public int steerAngle => _steerAngle;
-    public int traction => _traction;
-    public int brake => _brake;
-    public bool turbo => _turbo;
 
 }

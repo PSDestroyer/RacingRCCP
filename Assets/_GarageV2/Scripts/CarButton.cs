@@ -16,6 +16,7 @@ public class CarButton : MonoBehaviour
     [SerializeField] private TextMeshProUGUI priceText;
     [SerializeField] private TextMeshProUGUI PowerText;
     [SerializeField] private TextMeshProUGUI AvaliableText;
+    [SerializeField] private GameObject purchasedStateObject;
     [SerializeField] private GameObject selected;
     [NonSerialized] private int id;
     [NonSerialized] private CarSelection carSelection;
@@ -26,11 +27,15 @@ public class CarButton : MonoBehaviour
         CarIcon.sprite = carData.carsprite;
         CtrIcon.sprite = carData.CarClass;
         carText.text = carData.carName;
-        PowerText.text = carData.power+" HP";
+        if (PowerText != null)
+        {
+            CarSelection.CarDisplayStats displayStats = carSelections != null ? carSelections.GetDisplayCarStats(carData) : default;
+            PowerText.text = $"{displayStats.power} HP";
+        }
         id = carData.id;
         if (carData.price != 0)
         {
-            priceText.text = carData.price.ToString() +"<sprite index=0>";
+            priceText.text = carData.price.ToString() +" <sprite index=0>";
         }
         else
         { 
@@ -38,7 +43,12 @@ public class CarButton : MonoBehaviour
         }
         carSelection = carSelections;
         // animator = GetComponent<Animator>();
-        if (SaveManager.Instance.IsCarBought(carData.carName))
+        bool isPurchased = SaveManager.Instance.IsCarBought(carData.carName);
+
+        if (purchasedStateObject != null)
+            purchasedStateObject.SetActive(isPurchased);
+
+        if (isPurchased)
         {
             AvaliableText.text = "Purchased";
             if (carData.id == SaveManager.Instance.saveData.currentCar)

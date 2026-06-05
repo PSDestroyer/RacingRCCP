@@ -11,6 +11,16 @@ using UnityEngine.Localization.Settings;
 
 public class CarSelection : MonoBehaviour
 {
+  public struct CarDisplayStats
+  {
+      public int power;
+      public int speed;
+      public int steer;
+      public int brake;
+      public int traction;
+      public bool turbo;
+  }
+
   [SerializeField] public Transform spawnCarPoint;
   [SerializeField] private Transform spawninPanel;
   [SerializeField] private CarButton uiPrefab;
@@ -35,7 +45,9 @@ public class CarSelection : MonoBehaviour
     public Slider BrakeSlider;
     public TMP_Text BrakeText;
     public Image Turbo;
+    public Image CarClassImage;
     public TMP_Text Traction;
+    public TMP_Text CarInfoText;
     public List<string> TractionText = new List<string>();
     public TMP_Text Name;
     public TMP_Text NameShadow;
@@ -85,7 +97,7 @@ public class CarSelection : MonoBehaviour
 
   }
   
-  private void SetupListeners()
+    private void SetupListeners()
   {  
     for (int i = 0; i < GlobalCarData._buttonList.Count ; i++)
     {
@@ -95,6 +107,7 @@ public class CarSelection : MonoBehaviour
     }
 
     litenered = true;
+    RefreshCarButtonsUI();
     GlobalCarData._buttonList[SaveManager.Instance.saveData.currentCar].onClick.Invoke();
     GlobalCarData._buttonList[SaveManager.Instance.saveData.currentCar].Select();
     ScrollToSelectedButton(GlobalCarData._buttonList[SaveManager.Instance.saveData.currentCar]);
@@ -111,6 +124,7 @@ public class CarSelection : MonoBehaviour
     indexcar = id;
     ScrollToSelectedButton(GlobalCarData._buttonList[id]);
     UpdateCurrentCar();
+        RefreshCarButtonsUI();
         if (SaveManager.Instance.IsCarBought(GlobalCarData._carlists[indexcar].carName))
         {
             var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Select");
@@ -124,8 +138,8 @@ public class CarSelection : MonoBehaviour
         {
             var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","BuyYes/No");
 
-            selecttext.text = "<color=#DFA93B> "+buystring.Result + " "+GlobalCarData._carlists[id].price+"<sprite index=0>";
-            selecttextJP.text = "<color=#DFA93B> "+buystring.Result +GlobalCarData._carlists[id].price+"<sprite index=0>";
+            selecttext.text = "<color=#DFA93B> "+buystring.Result + " "+GlobalCarData._carlists[id].price+" <sprite index=0>";
+            selecttextJP.text = "<color=#DFA93B> "+buystring.Result +GlobalCarData._carlists[id].price+" <sprite index=0>";
 
         }
         selectbut.Select();
@@ -154,13 +168,16 @@ public class CarSelection : MonoBehaviour
         {
             if (GlobalCarData._carlists[indexcar].price <= SaveManager.Instance.saveData.money)
                 {
+                    CarDisplayStats carStats = GetDisplayCarStats(GlobalCarData._carlists[indexcar]);
                     moneyManager.MoneyToTake( GlobalCarData._carlists[indexcar].price);
-                    SaveManager.Instance.SaveCar(GlobalCarData._carlists[indexcar].carName,true, GlobalCarData._carlists[indexcar].power,GlobalCarData._carlists[indexcar].speed,GlobalCarData._carlists[indexcar].turbo,GlobalCarData._carlists[indexcar].color,GlobalCarData._carlists[indexcar].steerAngle,GlobalCarData._carlists[indexcar].traction,GlobalCarData._carlists[indexcar].brake);
+                    SaveManager.Instance.SaveCar(GlobalCarData._carlists[indexcar].carName,true, carStats.power, carStats.speed, carStats.turbo, GlobalCarData._carlists[indexcar].color, carStats.steer, carStats.traction, carStats.brake);
                     var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Select");
 
                     selecttext.text = operation.Result;
+                    selecttextJP.text = operation.Result;
                     SaveManager.Instance.saveData.currentCar = indexcar;
                     SaveManager.Instance.Save();
+                    RefreshCarButtonsUI();
                     PlayNewCarClipSafe();
                     Debug.Log("bought");
                 }
@@ -285,18 +302,25 @@ public class CarSelection : MonoBehaviour
 
     public void UpdateStats()
     {
-        Name.text = GlobalCarData._carlists[indexcar].carName;
-        NameShadow.text = GlobalCarData._carlists[indexcar].carName;
-        PowerSlider.value = GlobalCarData._carlists[indexcar].power;
-        PowerText.text = GlobalCarData._carlists[indexcar].power.ToString();
-        SpeedSlider.value = GlobalCarData._carlists[indexcar].speed;
-        SpeedText.text = GlobalCarData._carlists[indexcar].speed.ToString();
-        SteerSlider.value = GlobalCarData._carlists[indexcar].steerAngle;
-        SteerText.text = GlobalCarData._carlists[indexcar].steerAngle.ToString();
-        BrakeSlider.value = GlobalCarData._carlists[indexcar].brake;
-        BrakeText.text = GlobalCarData._carlists[indexcar].brake.ToString();
-        Traction.text = TractionText[GlobalCarData._carlists[indexcar].traction].ToString();
-        Turbo.gameObject.SetActive(GlobalCarData._carlists[indexcar].turbo);
+        CarSO currentCar = GlobalCarData._carlists[indexcar];
+        CarDisplayStats displayStats = GetDisplayCarStats(currentCar);
+
+        Name.text = currentCar.carName;
+        NameShadow.text = currentCar.carName;
+        if (CarInfoText != null)
+            CarInfoText.text = currentCar.carInfo;
+        if (CarClassImage != null)
+            CarClassImage.sprite = currentCar.CarClass;
+        PowerSlider.value = displayStats.power;
+        PowerText.text = displayStats.power.ToString();
+        SpeedSlider.value = displayStats.speed;
+        SpeedText.text = displayStats.speed.ToString();
+        SteerSlider.value = displayStats.steer;
+        SteerText.text = displayStats.steer.ToString();
+        BrakeSlider.value = displayStats.brake;
+        BrakeText.text = displayStats.brake.ToString();
+        Traction.text = displayStats.traction >= 0 && displayStats.traction < TractionText.Count ? TractionText[displayStats.traction].ToString() : displayStats.traction.ToString();
+        Turbo.gameObject.SetActive(displayStats.turbo);
     }
 
 
@@ -383,6 +407,248 @@ public class CarSelection : MonoBehaviour
           navigateAction.performed += Navigations;
       selectbut.Select();
       // playerInput.actions["Submit"].performed += SelectOrBuyCtx;
+  }
+
+  private void RefreshCarButtonsUI()
+  {
+      int buttonCount = Mathf.Min(GlobalCarData._buttonList.Count, GlobalCarData._carlists.Count);
+
+      for (int i = 0; i < buttonCount; i++)
+      {
+          if (GlobalCarData._buttonList[i] == null)
+              continue;
+
+          CarButton carButton = GlobalCarData._buttonList[i].GetComponent<CarButton>();
+
+          if (carButton != null)
+              carButton.SetUpButton(GlobalCarData._carlists[i], this);
+      }
+  }
+
+  public CarDisplayStats GetDisplayCarStats(CarSO carData)
+  {
+      CarDisplayStats stats = new CarDisplayStats();
+
+      if (carData == null)
+          return stats;
+
+      SaveManager.SaveData.CarSpecs savedCarSpecs = SaveManager.Instance != null ? SaveManager.Instance.GetCarSpecs(carData.carName) : null;
+
+      if (savedCarSpecs != null && savedCarSpecs.isBought)
+      {
+          stats.power = savedCarSpecs.power;
+          stats.speed = savedCarSpecs.topSpeed;
+          stats.steer = savedCarSpecs.steerAngle;
+          stats.brake = savedCarSpecs.brake;
+          stats.traction = savedCarSpecs.traction;
+          stats.turbo = savedCarSpecs.turbo;
+          return stats;
+      }
+
+      return BuildStatsFromCarPrefab(carData);
+  }
+
+  private CarDisplayStats BuildStatsFromCarPrefab(CarSO carData)
+  {
+      CarDisplayStats stats = new CarDisplayStats();
+
+      RCCP_CarController sourceController = TryGetLiveCarController(carData);
+
+      if (sourceController == null)
+      {
+          GameObject carPrefab = Resources.Load<GameObject>(carData.carPrefabLocation);
+
+          if (carPrefab != null)
+              sourceController = carPrefab.GetComponent<RCCP_CarController>() ?? carPrefab.GetComponentInChildren<RCCP_CarController>(true);
+      }
+
+      if (sourceController == null)
+          return stats;
+
+      RCCP_Engine engine = sourceController.Engine != null ? sourceController.Engine : sourceController.GetComponentInChildren<RCCP_Engine>(true);
+      RCCP_Gearbox gearbox = sourceController.Gearbox != null ? sourceController.Gearbox : sourceController.GetComponentInChildren<RCCP_Gearbox>(true);
+      RCCP_Axle frontAxle = sourceController.FrontAxle != null ? sourceController.FrontAxle : sourceController.GetComponentInChildren<RCCP_Axle>(true);
+
+      stats.power = engine != null ? Mathf.RoundToInt(engine.maximumTorqueAsNM) : 0;
+      stats.speed = Mathf.RoundToInt(CalculateEstimatedTopSpeed(sourceController, engine, gearbox));
+      stats.steer = frontAxle != null ? Mathf.RoundToInt(frontAxle.maxSteerAngle) : 0;
+      stats.brake = Mathf.RoundToInt(GetRepresentativeBrakeValue(sourceController));
+      stats.traction = EstimateTractionIndex(sourceController);
+      stats.turbo = engine != null && (engine.turboCharged || engine.maxTurboChargePsi > 0f);
+
+      return stats;
+  }
+
+  private RCCP_CarController TryGetLiveCarController(CarSO carData)
+  {
+      if (carData == null || player == null || indexcar < 0 || indexcar >= GlobalCarData._carlists.Count)
+          return null;
+
+      if (GlobalCarData._carlists[indexcar] != carData)
+          return null;
+
+      return player.GetComponent<RCCP_CarController>();
+  }
+
+  private float CalculateEstimatedTopSpeed(RCCP_CarController carController, RCCP_Engine engine, RCCP_Gearbox gearbox)
+  {
+      if (carController == null || engine == null || gearbox == null || gearbox.gearRatios == null || gearbox.gearRatios.Length == 0)
+          return 0f;
+
+      float lastGearRatio = gearbox.gearRatios[gearbox.gearRatios.Length - 1];
+      float differentialRatio = GetAverageFinalDriveRatio(carController);
+      float radius = GetAverageDrivenWheelRadius(carController);
+
+      if (lastGearRatio <= 0f || differentialRatio <= 0f || radius <= 0f)
+          return Mathf.Max(0f, carController.maximumSpeed);
+
+      return (engine.maxEngineRPM / lastGearRatio / differentialRatio) * (2f * Mathf.PI * radius) * 60f / 1000f;
+  }
+
+  private float GetAverageFinalDriveRatio(RCCP_CarController carController)
+  {
+      if (carController == null || carController.Differentials == null || carController.Differentials.Length == 0)
+          return Mathf.Max(0.01f, carController != null ? carController.differentialRatio : 1f);
+
+      float ratio = 0f;
+      int validCount = 0;
+
+      for (int i = 0; i < carController.Differentials.Length; i++)
+      {
+          RCCP_Differential differential = carController.Differentials[i];
+
+          if (differential == null)
+              continue;
+
+          ratio += differential.finalDriveRatio;
+          validCount++;
+      }
+
+      return validCount > 0 ? Mathf.Max(0.01f, ratio / validCount) : Mathf.Max(0.01f, carController.differentialRatio);
+  }
+
+  private float GetAverageDrivenWheelRadius(RCCP_CarController carController)
+  {
+      if (carController == null)
+          return 0f;
+
+      float radius = 0f;
+      int wheelCount = 0;
+
+      List<RCCP_Axle> drivenAxles = GetCandidateDrivenAxles(carController);
+
+      for (int i = 0; i < drivenAxles.Count; i++)
+      {
+          RCCP_Axle axle = drivenAxles[i];
+
+          if (axle == null)
+              continue;
+
+          if (axle.leftWheelCollider != null && axle.leftWheelCollider.WheelCollider != null)
+          {
+              radius += axle.leftWheelCollider.WheelCollider.radius;
+              wheelCount++;
+          }
+
+          if (axle.rightWheelCollider != null && axle.rightWheelCollider.WheelCollider != null)
+          {
+              radius += axle.rightWheelCollider.WheelCollider.radius;
+              wheelCount++;
+          }
+      }
+
+      return wheelCount > 0 ? radius / wheelCount : 0f;
+  }
+
+  private List<RCCP_Axle> GetCandidateDrivenAxles(RCCP_CarController carController)
+  {
+      List<RCCP_Axle> drivenAxles = new List<RCCP_Axle>();
+
+      if (carController == null)
+          return drivenAxles;
+
+      if (carController.PoweredAxles != null && carController.PoweredAxles.Count > 0)
+      {
+          for (int i = 0; i < carController.PoweredAxles.Count; i++)
+          {
+              RCCP_Axle axle = carController.PoweredAxles[i];
+
+              if (axle != null && !drivenAxles.Contains(axle))
+                  drivenAxles.Add(axle);
+          }
+      }
+
+      if (drivenAxles.Count > 0)
+          return drivenAxles;
+
+      if (carController.AxleManager != null && carController.AxleManager.Axles != null && carController.AxleManager.Axles.Count > 0)
+      {
+          for (int i = 0; i < carController.AxleManager.Axles.Count; i++)
+          {
+              RCCP_Axle axle = carController.AxleManager.Axles[i];
+
+              if (axle == null)
+                  continue;
+
+              if (axle.isPower)
+                  drivenAxles.Add(axle);
+          }
+
+          if (drivenAxles.Count > 0)
+              return drivenAxles;
+
+          for (int i = 0; i < carController.AxleManager.Axles.Count; i++)
+          {
+              RCCP_Axle axle = carController.AxleManager.Axles[i];
+
+              if (axle != null)
+                  drivenAxles.Add(axle);
+          }
+      }
+
+      if (drivenAxles.Count == 0 && carController.FrontAxle != null)
+          drivenAxles.Add(carController.FrontAxle);
+
+      if (drivenAxles.Count == 0 && carController.RearAxle != null)
+          drivenAxles.Add(carController.RearAxle);
+
+      return drivenAxles;
+  }
+
+  private float GetRepresentativeBrakeValue(RCCP_CarController carController)
+  {
+      if (carController == null || carController.AxleManager == null || carController.AxleManager.Axles == null || carController.AxleManager.Axles.Count == 0)
+          return 0f;
+
+      float maxBrake = 0f;
+
+      for (int i = 0; i < carController.AxleManager.Axles.Count; i++)
+      {
+          RCCP_Axle axle = carController.AxleManager.Axles[i];
+
+          if (axle == null || !axle.isBrake)
+              continue;
+
+          maxBrake = Mathf.Max(maxBrake, axle.maxBrakeTorque);
+      }
+
+      return maxBrake;
+  }
+
+  private int EstimateTractionIndex(RCCP_CarController carController)
+  {
+      if (carController == null || carController.Stability == null)
+          return 0;
+
+      float tractionStrength = carController.Stability.tractionHelperStrength;
+
+      if (tractionStrength < 0.15f)
+          return 0;
+
+      if (tractionStrength < 0.35f)
+          return 1;
+
+      return 2;
   }
 
   private void OnDisable()
