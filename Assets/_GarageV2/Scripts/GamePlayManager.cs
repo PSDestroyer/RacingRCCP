@@ -31,6 +31,11 @@ public class GamePlayManager : MonoBehaviour
         [NonSerialized] public float raceProgress;
         [NonSerialized] public int finishPosition;
         [NonSerialized] public float finishTime;
+        [NonSerialized] public float currentCircuitDistance;
+        [NonSerialized] public bool progressInitialized;
+        [NonSerialized] public float startCircuitDistance;
+        [NonSerialized] public bool lapCountingArmed;
+        [NonSerialized] public int currentSegmentIndex;
     }
 
     [NonSerialized]public GameObject player;
@@ -40,8 +45,6 @@ public class GamePlayManager : MonoBehaviour
 
     [Header("Racing Settings")]
     public bool useCurrentMapModeSettings = true;
-    public RCCP_AIWaypointsContainer raceWaypoints;
-    public ArcadeVP.WaypointCircuit raceWaypointCircuit;
     public Waypoint_System externalWaypointSystem;
     public Transform externalWaypointRoot;
     public RaceRacer[] aiRacers;
@@ -159,6 +162,8 @@ public class GamePlayManager : MonoBehaviour
     private Coroutine finishSummaryAnimationCoroutine;
     private ArcadeVP.WaypointCircuit runtimeRaceWaypointCircuit;
     private RCCP_AIWaypointsContainer runtimeRaceWaypoints;
+    private readonly List<Waypoint_System> resolvedWaypointSystems = new List<Waypoint_System>();
+    private readonly List<ArcadeVP.WaypointCircuit> runtimeOpponentWaypointCircuits = new List<ArcadeVP.WaypointCircuit>();
 
     [Header("Drifting Settings")]
     public bool driftingNow = false;
@@ -554,6 +559,7 @@ public class GamePlayManager : MonoBehaviour
             return;
 
         EnsureRaceWaypointSources();
+        ArcadeVP.WaypointCircuit raceCircuit = GetRaceWaypointCircuit();
 
         playerRacer = new RaceRacer
         {
@@ -561,11 +567,16 @@ public class GamePlayManager : MonoBehaviour
             racerTransform = CarController != null ? CarController.transform : null,
             aiDriver = null,
             currentWaypointIndex = GetClosestWaypointIndex(CarController != null ? CarController.transform : null),
+            currentCircuitDistance = raceCircuit != null && CarController != null ? FindClosestDistanceAlongRaceRoute(CarController.transform.position) : 0f,
             completedLaps = 0,
             finished = false,
             eliminated = false,
             finishPosition = 0,
-            finishTime = 0f
+            finishTime = 0f,
+            progressInitialized = false,
+            startCircuitDistance = raceCircuit != null && CarController != null ? FindClosestDistanceAlongRaceRoute(CarController.transform.position) : 0f,
+            lapCountingArmed = false,
+            currentSegmentIndex = 0
         };
 
         int aiCount = aiRacers != null ? aiRacers.Length : 0;
@@ -593,10 +604,12 @@ public class GamePlayManager : MonoBehaviour
                 aiRacer.racerTransform = aiRacer.racingAI.transform;
                 ConfigureOpponentRacingAI(aiRacer.racingAI, i);
                 aiRacer.currentWaypointIndex = aiRacer.racingAI.currentWaypointIndex;
+                aiRacer.currentCircuitDistance = aiRacer.racingAI.progressDistance;
             }
             else
             {
                 aiRacer.currentWaypointIndex = GetClosestWaypointIndex(aiRacer.racerTransform);
+                aiRacer.currentCircuitDistance = raceCircuit != null && aiRacer.racerTransform != null ? FindClosestDistanceAlongRaceRoute(aiRacer.racerTransform.position) : 0f;
             }
 
             aiRacer.completedLaps = 0;
@@ -604,6 +617,10 @@ public class GamePlayManager : MonoBehaviour
             aiRacer.eliminated = false;
             aiRacer.finishPosition = 0;
             aiRacer.finishTime = 0f;
+            aiRacer.progressInitialized = false;
+            aiRacer.startCircuitDistance = aiRacer.currentCircuitDistance;
+            aiRacer.lapCountingArmed = false;
+            aiRacer.currentSegmentIndex = 0;
             allRacers[i + 1] = aiRacer;
         }
 
@@ -780,8 +797,8 @@ public class GamePlayManager : MonoBehaviour
             : GetOpponentDifficulty(opponentIndex);
 
         racingAI.car = racingAI.GetComponent<RCCP_CarController>();
-        racingAI.waypointsContainer = raceWaypoints;
-        racingAI.waypointCircuit = GetRaceWaypointCircuit();
+        racingAI.waypointsContainer = runtimeRaceWaypoints;
+        racingAI.waypointCircuit = GetOpponentWaypointCircuit(opponentIndex);
         racingAI.playerTarget = CarController != null ? CarController.transform : null;
         racingAI.laneOffset = GetOpponentRacingLineOffset(opponentIndex);
         racingAI.obstacleLayers = new LayerMask { value = Physics.AllLayers };
@@ -1090,26 +1107,23 @@ public class GamePlayManager : MonoBehaviour
     {
         EnsureRaceWaypointSources();
 
-        if (raceWaypointCircuit != null)
+        if (runtimeRaceWaypointCircuit != null)
         {
-            raceWaypointCircuit.RebuildRoute();
-            return raceWaypointCircuit;
+            runtimeRaceWaypointCircuit.RebuildRoute();
+            return runtimeRaceWaypointCircuit;
         }
 
-        if (runtimeRaceWaypointCircuit != null)
-            return runtimeRaceWaypointCircuit;
-
-        if (raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count < 2)
+        if (runtimeRaceWaypoints == null || runtimeRaceWaypoints.waypoints == null || runtimeRaceWaypoints.waypoints.Count < 2)
             return null;
 
         GameObject circuitObject = new GameObject("Runtime_RaceWaypointCircuit");
         circuitObject.transform.SetParent(transform);
         runtimeRaceWaypointCircuit = circuitObject.AddComponent<ArcadeVP.WaypointCircuit>();
-        runtimeRaceWaypointCircuit.waypointList.items = new Transform[raceWaypoints.waypoints.Count];
+        runtimeRaceWaypointCircuit.waypointList.items = new Transform[runtimeRaceWaypoints.waypoints.Count];
 
-        for (int i = 0; i < raceWaypoints.waypoints.Count; i++)
+        for (int i = 0; i < runtimeRaceWaypoints.waypoints.Count; i++)
         {
-            RCCP_Waypoint waypoint = raceWaypoints.waypoints[i];
+            RCCP_Waypoint waypoint = runtimeRaceWaypoints.waypoints[i];
 
             if (waypoint == null)
                 continue;
@@ -1121,40 +1135,48 @@ public class GamePlayManager : MonoBehaviour
         }
 
         runtimeRaceWaypointCircuit.RebuildRoute();
-        raceWaypointCircuit = runtimeRaceWaypointCircuit;
-
         return runtimeRaceWaypointCircuit;
+    }
+
+    private ArcadeVP.WaypointCircuit GetOpponentWaypointCircuit(int opponentIndex)
+    {
+        EnsureRaceWaypointSources();
+
+        if (runtimeOpponentWaypointCircuits.Count == 0)
+            return GetRaceWaypointCircuit();
+
+        int safeIndex = Mathf.Abs(opponentIndex) % runtimeOpponentWaypointCircuits.Count;
+        ArcadeVP.WaypointCircuit circuit = runtimeOpponentWaypointCircuits[safeIndex];
+
+        if (circuit != null)
+            circuit.RebuildRoute();
+
+        return circuit != null ? circuit : GetRaceWaypointCircuit();
     }
 
     private void EnsureRaceWaypointSources()
     {
-        if (raceWaypoints == null)
-            raceWaypoints = FindFirstObjectByType<RCCP_AIWaypointsContainer>(FindObjectsInactive.Include);
-
-        if (raceWaypoints != null)
-            return;
-
         if (runtimeRaceWaypoints != null)
-        {
-            raceWaypoints = runtimeRaceWaypoints;
             return;
-        }
 
-        List<Transform> sourceWaypoints = GetExternalWaypointTransforms();
+        resolvedWaypointSystems.Clear();
+        resolvedWaypointSystems.AddRange(GetResolvedWaypointSystems());
 
-        if (sourceWaypoints == null || sourceWaypoints.Count < 2)
+        if (resolvedWaypointSystems.Count == 0)
+            return;
+
+        List<Pose> progressRoute = BuildProgressRoutePoses();
+
+        if (progressRoute.Count < 2)
             return;
 
         GameObject runtimeContainerObject = new GameObject("Runtime_RaceWaypoints");
         runtimeContainerObject.transform.SetParent(transform);
         runtimeRaceWaypoints = runtimeContainerObject.AddComponent<RCCP_AIWaypointsContainer>();
 
-        for (int i = 0; i < sourceWaypoints.Count; i++)
+        for (int i = 0; i < progressRoute.Count; i++)
         {
-            Transform sourceWaypoint = sourceWaypoints[i];
-
-            if (sourceWaypoint == null)
-                continue;
+            Pose sourceWaypoint = progressRoute[i];
 
             GameObject waypointObject = new GameObject($"RCCP_Waypoint_{i:000}");
             waypointObject.transform.SetParent(runtimeContainerObject.transform);
@@ -1163,12 +1185,63 @@ public class GamePlayManager : MonoBehaviour
         }
 
         runtimeRaceWaypoints.GetAllWaypoints();
-        raceWaypoints = runtimeRaceWaypoints;
+
+        BuildOpponentWaypointCircuits();
     }
 
-    private List<Transform> GetExternalWaypointTransforms()
+    private List<Pose> BuildProgressRoutePoses()
     {
-        List<Transform> result = new List<Transform>();
+        List<Pose> result = new List<Pose>();
+
+        if (resolvedWaypointSystems.Count == 0)
+            return result;
+
+        int waypointCount = resolvedWaypointSystems
+            .Where(system => system != null && system.waypoints != null)
+            .Select(system => system.waypoints.Count)
+            .DefaultIfEmpty(0)
+            .Min();
+
+        if (waypointCount < 2)
+            return result;
+
+        for (int waypointIndex = 0; waypointIndex < waypointCount; waypointIndex++)
+        {
+            Vector3 positionSum = Vector3.zero;
+            Vector3 forwardSum = Vector3.zero;
+            int validCount = 0;
+
+            for (int systemIndex = 0; systemIndex < resolvedWaypointSystems.Count; systemIndex++)
+            {
+                Waypoint_System system = resolvedWaypointSystems[systemIndex];
+
+                if (system == null || system.waypoints == null || waypointIndex >= system.waypoints.Count)
+                    continue;
+
+                Transform waypoint = system.waypoints[waypointIndex];
+
+                if (waypoint == null)
+                    continue;
+
+                positionSum += waypoint.position;
+                forwardSum += waypoint.forward;
+                validCount++;
+            }
+
+            if (validCount == 0)
+                continue;
+
+            Vector3 position = positionSum / validCount;
+            Vector3 forward = forwardSum.sqrMagnitude > 0.001f ? forwardSum.normalized : Vector3.forward;
+            result.Add(new Pose(position, Quaternion.LookRotation(forward, Vector3.up)));
+        }
+
+        return result;
+    }
+
+    private List<Waypoint_System> GetResolvedWaypointSystems()
+    {
+        List<Waypoint_System> result = new List<Waypoint_System>();
         IEnumerable<Waypoint_System> waypointSystems = Enumerable.Empty<Waypoint_System>();
 
         if (externalWaypointRoot != null)
@@ -1206,22 +1279,48 @@ public class GamePlayManager : MonoBehaviour
             if (system == null || system.waypoints == null)
                 continue;
 
-            foreach (Transform waypoint in system.waypoints)
-            {
-                if (waypoint == null)
-                    continue;
+            if (system.waypoints.Count < 2)
+                continue;
 
-                if (waypoint.GetComponent<Waypoint_System>() != null)
-                    continue;
+            if (result.Contains(system))
+                continue;
 
-                if (result.Count > 0 && result[result.Count - 1] == waypoint)
-                    continue;
-
-                result.Add(waypoint);
-            }
+            result.Add(system);
         }
 
         return result;
+    }
+
+    private void BuildOpponentWaypointCircuits()
+    {
+        for (int i = 0; i < runtimeOpponentWaypointCircuits.Count; i++)
+        {
+            if (runtimeOpponentWaypointCircuits[i] != null)
+                Destroy(runtimeOpponentWaypointCircuits[i].gameObject);
+        }
+
+        runtimeOpponentWaypointCircuits.Clear();
+
+        if (resolvedWaypointSystems.Count == 0)
+            return;
+
+        for (int i = 0; i < resolvedWaypointSystems.Count; i++)
+        {
+            Waypoint_System system = resolvedWaypointSystems[i];
+
+            if (system == null || system.waypoints == null || system.waypoints.Count < 2)
+                continue;
+
+            GameObject circuitObject = new GameObject($"Runtime_OpponentCircuit_{i + 1}");
+            circuitObject.transform.SetParent(transform);
+            ArcadeVP.WaypointCircuit circuit = circuitObject.AddComponent<ArcadeVP.WaypointCircuit>();
+            circuit.waypointList.items = system.waypoints.Where(waypoint => waypoint != null).ToArray();
+            circuit.RebuildRoute();
+            runtimeOpponentWaypointCircuits.Add(circuit);
+        }
+
+        if (runtimeOpponentWaypointCircuits.Count == 0 && runtimeRaceWaypointCircuit != null)
+            runtimeOpponentWaypointCircuits.Add(runtimeRaceWaypointCircuit);
     }
 
     private string GetHierarchyOrderKey(Transform target)
@@ -1316,21 +1415,25 @@ public class GamePlayManager : MonoBehaviour
 
         if (runtimeRaceWaypointCircuit != null)
         {
-            if (ReferenceEquals(raceWaypointCircuit, runtimeRaceWaypointCircuit))
-                raceWaypointCircuit = null;
-
             Destroy(runtimeRaceWaypointCircuit.gameObject);
             runtimeRaceWaypointCircuit = null;
         }
 
+        for (int i = 0; i < runtimeOpponentWaypointCircuits.Count; i++)
+        {
+            if (runtimeOpponentWaypointCircuits[i] != null)
+                Destroy(runtimeOpponentWaypointCircuits[i].gameObject);
+        }
+
+        runtimeOpponentWaypointCircuits.Clear();
+
         if (runtimeRaceWaypoints != null)
         {
-            if (ReferenceEquals(raceWaypoints, runtimeRaceWaypoints))
-                raceWaypoints = null;
-
             Destroy(runtimeRaceWaypoints.gameObject);
             runtimeRaceWaypoints = null;
         }
+
+        resolvedWaypointSystems.Clear();
     }
 
    private void Update() {
@@ -1530,7 +1633,7 @@ public class GamePlayManager : MonoBehaviour
 
    private void UpdateRaceMode()
    {
-       if (CarController == null || raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count == 0)
+       if (CarController == null || runtimeRaceWaypoints == null || runtimeRaceWaypoints.waypoints == null || runtimeRaceWaypoints.waypoints.Count == 0 || GetRaceWaypointCircuit() == null)
            return;
 
        if (!raceStarted)
@@ -1591,64 +1694,217 @@ public class GamePlayManager : MonoBehaviour
 
    private void UpdateRacerRaceProgress(RaceRacer racer)
    {
-       if (racer == null || racer.racerTransform == null || raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count == 0)
+       if (racer == null || racer.racerTransform == null || runtimeRaceWaypoints == null || runtimeRaceWaypoints.waypoints == null || runtimeRaceWaypoints.waypoints.Count == 0)
            return;
 
-       int waypointCount = raceWaypoints.waypoints.Count;
-       int safety = waypointCount + 1;
+       int waypointCount = runtimeRaceWaypoints.waypoints.Count;
+       if (waypointCount < 2)
+           return;
 
-       while (safety-- > 0)
+       float previousProgress = Mathf.Repeat(racer.currentCircuitDistance, waypointCount);
+       float currentProgress = FindClosestWaypointProgress(racer);
+       float lapWrapThreshold = Mathf.Clamp(waypointCount * .08f, 0.75f, 3f);
+
+       if (!racer.progressInitialized)
        {
-           int safeWaypointIndex = Mathf.Clamp(racer.currentWaypointIndex, 0, waypointCount - 1);
-           RCCP_Waypoint nextWaypoint = raceWaypoints.waypoints[safeWaypointIndex];
+           racer.progressInitialized = true;
+           racer.currentCircuitDistance = currentProgress;
+           racer.startCircuitDistance = currentProgress;
+           racer.lapCountingArmed = false;
+           racer.currentSegmentIndex = Mathf.FloorToInt(currentProgress) % waypointCount;
+           racer.currentWaypointIndex = (racer.currentSegmentIndex + 1) % waypointCount;
+           racer.raceProgress = (racer.completedLaps * waypointCount) + currentProgress;
 
-           if (nextWaypoint == null)
-               break;
+           if (racer.currentWaypointIndex >= 0 && racer.currentWaypointIndex < runtimeRaceWaypoints.waypoints.Count)
+           {
+               RCCP_Waypoint initialNextWaypoint = runtimeRaceWaypoints.waypoints[racer.currentWaypointIndex];
 
-           racer.distanceToNextWaypoint = Vector3.Distance(racer.racerTransform.position, nextWaypoint.transform.position);
+               if (initialNextWaypoint != null)
+                   racer.distanceToNextWaypoint = Vector3.Distance(racer.racerTransform.position, initialNextWaypoint.transform.position);
+           }
 
-           if (racer.distanceToNextWaypoint > waypointReachDistance)
-               break;
-
-           racer.currentWaypointIndex++;
-
-           if (racer.currentWaypointIndex < waypointCount)
-               continue;
-
-           racer.currentWaypointIndex = 0;
-           racer.completedLaps++;
+           return;
        }
 
-       racer.raceProgress = GetRacerRaceProgressValue(racer);
+       float armDistance = Mathf.Clamp(waypointCount * .25f, 3f, waypointCount * .5f);
+       float distanceFromStart = GetForwardLoopDistance(racer.startCircuitDistance, currentProgress, waypointCount);
+
+       if (!racer.lapCountingArmed && distanceFromStart >= armDistance)
+           racer.lapCountingArmed = true;
+
+       if (racer.lapCountingArmed && previousProgress > waypointCount - lapWrapThreshold && currentProgress < lapWrapThreshold)
+           racer.completedLaps++;
+       else if (racer.completedLaps > 0 && previousProgress < lapWrapThreshold && currentProgress > waypointCount - lapWrapThreshold)
+           racer.completedLaps--;
+
+       racer.currentCircuitDistance = currentProgress;
+       racer.currentSegmentIndex = Mathf.FloorToInt(currentProgress) % waypointCount;
+       racer.currentWaypointIndex = (racer.currentSegmentIndex + 1) % waypointCount;
+
+       if (racer.currentWaypointIndex >= 0 && racer.currentWaypointIndex < runtimeRaceWaypoints.waypoints.Count)
+       {
+           RCCP_Waypoint nextWaypoint = runtimeRaceWaypoints.waypoints[racer.currentWaypointIndex];
+
+           if (nextWaypoint != null)
+               racer.distanceToNextWaypoint = Vector3.Distance(racer.racerTransform.position, nextWaypoint.transform.position);
+       }
+
+       racer.raceProgress = (racer.completedLaps * waypointCount) + currentProgress;
    }
 
-   private float GetRacerRaceProgressValue(RaceRacer racer)
+   private float FindClosestWaypointProgress(RaceRacer racer)
    {
-       if (racer == null || racer.racerTransform == null || raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count == 0)
+       if (racer == null || racer.racerTransform == null || runtimeRaceWaypoints == null || runtimeRaceWaypoints.waypoints == null)
            return 0f;
 
-       int waypointCount = raceWaypoints.waypoints.Count;
-       int nextIndex = Mathf.Clamp(racer.currentWaypointIndex, 0, waypointCount - 1);
-       int previousIndex = nextIndex > 0 ? nextIndex - 1 : waypointCount - 1;
-       RCCP_Waypoint previousWaypoint = raceWaypoints.waypoints[previousIndex];
-       RCCP_Waypoint nextWaypoint = raceWaypoints.waypoints[nextIndex];
+       int waypointCount = runtimeRaceWaypoints.waypoints.Count;
+       if (waypointCount < 2)
+           return 0f;
 
-       if (previousWaypoint == null || nextWaypoint == null)
-           return racer.completedLaps * waypointCount + previousIndex;
+       bool useLocalSearch = racer.progressInitialized;
+       int localBackRange = 2;
+       int localForwardRange = 6;
+       float bestProgress = 0f;
+       float bestSqrDistance = float.MaxValue;
 
-       Vector3 from = previousWaypoint.transform.position;
-       Vector3 to = nextWaypoint.transform.position;
-       Vector3 segment = to - from;
-       float segmentLength = segment.magnitude;
-       float segmentProgress = 0f;
-
-       if (segmentLength > 0.01f)
+       if (useLocalSearch)
        {
-           Vector3 carOffset = racer.racerTransform.position - from;
-           segmentProgress = Mathf.Clamp01(Vector3.Dot(carOffset, segment.normalized) / segmentLength);
+           for (int offset = -localBackRange; offset <= localForwardRange; offset++)
+           {
+               int segmentIndex = Mathf.FloorToInt(Mathf.Repeat(racer.currentSegmentIndex + offset, waypointCount));
+               EvaluateWaypointSegmentProgress(racer.racerTransform.position, segmentIndex, ref bestProgress, ref bestSqrDistance);
+           }
+
+           if (bestSqrDistance < float.MaxValue)
+               return bestProgress;
        }
 
-       return racer.completedLaps * waypointCount + previousIndex + segmentProgress;
+       for (int segmentIndex = 0; segmentIndex < waypointCount; segmentIndex++)
+           EvaluateWaypointSegmentProgress(racer.racerTransform.position, segmentIndex, ref bestProgress, ref bestSqrDistance);
+
+       return bestProgress;
+   }
+
+   private void EvaluateWaypointSegmentProgress(Vector3 worldPosition, int segmentIndex, ref float bestProgress, ref float bestSqrDistance)
+   {
+       int waypointCount = runtimeRaceWaypoints.waypoints.Count;
+       int nextIndex = (segmentIndex + 1) % waypointCount;
+       RCCP_Waypoint fromWaypoint = runtimeRaceWaypoints.waypoints[segmentIndex];
+       RCCP_Waypoint toWaypoint = runtimeRaceWaypoints.waypoints[nextIndex];
+
+       if (fromWaypoint == null || toWaypoint == null)
+           return;
+
+       Vector3 from = fromWaypoint.transform.position;
+       Vector3 to = toWaypoint.transform.position;
+       Vector3 segment = to - from;
+       float segmentLengthSqr = segment.sqrMagnitude;
+
+       if (segmentLengthSqr <= 0.0001f)
+           return;
+
+       float t = Mathf.Clamp01(Vector3.Dot(worldPosition - from, segment) / segmentLengthSqr);
+       Vector3 closestPoint = from + segment * t;
+       float sqrDistance = (worldPosition - closestPoint).sqrMagnitude;
+
+       if (sqrDistance >= bestSqrDistance)
+           return;
+
+       bestSqrDistance = sqrDistance;
+       bestProgress = segmentIndex + t;
+   }
+
+   private float FindClosestDistanceAlongRaceRoute(Vector3 worldPosition, float? distanceHint = null)
+   {
+       ArcadeVP.WaypointCircuit raceCircuit = GetRaceWaypointCircuit();
+
+       if (raceCircuit == null || raceCircuit.Length <= 0f)
+           return 0f;
+
+       float bestDistance = 0f;
+       float bestSqrDistance = float.MaxValue;
+       int samples = 180;
+
+       if (distanceHint.HasValue)
+       {
+           float searchRange = Mathf.Clamp(waypointReachDistance * 3f, 30f, 90f);
+           samples = 72;
+
+           for (int i = 0; i <= samples; i++)
+           {
+               float t = i / (float)samples;
+               float sampleDistance = Mathf.Repeat(distanceHint.Value - searchRange + (searchRange * 2f * t), raceCircuit.Length);
+               Vector3 samplePosition = raceCircuit.GetRoutePosition(sampleDistance);
+               float sqrDistance = (worldPosition - samplePosition).sqrMagnitude;
+
+               if (sqrDistance < bestSqrDistance)
+               {
+                   bestSqrDistance = sqrDistance;
+                   bestDistance = sampleDistance;
+               }
+           }
+
+           return bestDistance;
+       }
+
+        for (int i = 0; i <= samples; i++)
+        {
+            float sampleDistance = raceCircuit.Length * (i / (float)samples);
+            Vector3 samplePosition = raceCircuit.GetRoutePosition(sampleDistance);
+            float sqrDistance = (worldPosition - samplePosition).sqrMagnitude;
+
+            if (sqrDistance < bestSqrDistance)
+            {
+                bestSqrDistance = sqrDistance;
+                bestDistance = sampleDistance;
+            }
+        }
+
+       return bestDistance;
+   }
+
+   private int GetNextWaypointIndexFromCircuitDistance(float circuitDistance)
+   {
+       if (runtimeRaceWaypoints == null || runtimeRaceWaypoints.waypoints == null || runtimeRaceWaypoints.waypoints.Count == 0)
+           return 0;
+
+       if (runtimeRaceWaypointCircuit == null || runtimeRaceWaypointCircuit.Waypoints == null || runtimeRaceWaypointCircuit.Waypoints.Length == 0)
+           return 0;
+
+       Vector3 routePosition = runtimeRaceWaypointCircuit.GetRoutePosition(circuitDistance);
+       int closestIndex = 0;
+       float closestSqrDistance = float.MaxValue;
+
+       for (int i = 0; i < runtimeRaceWaypoints.waypoints.Count; i++)
+       {
+           RCCP_Waypoint waypoint = runtimeRaceWaypoints.waypoints[i];
+
+           if (waypoint == null)
+               continue;
+
+           float sqrDistance = (waypoint.transform.position - routePosition).sqrMagnitude;
+
+           if (sqrDistance < closestSqrDistance)
+           {
+               closestSqrDistance = sqrDistance;
+               closestIndex = i;
+           }
+       }
+
+       return closestIndex;
+   }
+
+   private float GetForwardLoopDistance(float fromDistance, float toDistance, float loopLength)
+   {
+       if (loopLength <= 0f)
+           return 0f;
+
+       float delta = toDistance - fromDistance;
+
+       if (delta < 0f)
+           delta += loopLength;
+
+       return delta;
    }
 
    private void UpdateRaceUI()
@@ -2648,14 +2904,14 @@ public class GamePlayManager : MonoBehaviour
    {
        ClearCheckpointVisuals();
 
-       if (checkpointPrefab == null || raceWaypoints == null || raceWaypoints.waypoints == null)
+       if (checkpointPrefab == null || runtimeRaceWaypoints == null || runtimeRaceWaypoints.waypoints == null)
            return;
 
-       checkpointVisuals = new GameObject[raceWaypoints.waypoints.Count];
+       checkpointVisuals = new GameObject[runtimeRaceWaypoints.waypoints.Count];
 
-       for (int i = 0; i < raceWaypoints.waypoints.Count; i++)
+       for (int i = 0; i < runtimeRaceWaypoints.waypoints.Count; i++)
        {
-           RCCP_Waypoint waypoint = raceWaypoints.waypoints[i];
+           RCCP_Waypoint waypoint = runtimeRaceWaypoints.waypoints[i];
 
            if (waypoint == null)
                continue;
@@ -2996,15 +3252,15 @@ public class GamePlayManager : MonoBehaviour
 
    private int GetClosestWaypointIndex(Transform targetTransform)
    {
-       if (targetTransform == null || raceWaypoints == null || raceWaypoints.waypoints == null || raceWaypoints.waypoints.Count == 0)
+       if (targetTransform == null || runtimeRaceWaypoints == null || runtimeRaceWaypoints.waypoints == null || runtimeRaceWaypoints.waypoints.Count == 0)
            return 0;
 
        int closestIndex = 0;
        float closestDistance = float.MaxValue;
 
-       for (int i = 0; i < raceWaypoints.waypoints.Count; i++)
+       for (int i = 0; i < runtimeRaceWaypoints.waypoints.Count; i++)
        {
-           RCCP_Waypoint waypoint = raceWaypoints.waypoints[i];
+           RCCP_Waypoint waypoint = runtimeRaceWaypoints.waypoints[i];
 
            if (waypoint == null)
                continue;
