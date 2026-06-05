@@ -90,6 +90,22 @@ public class GarageUIController : MonoBehaviour
         carSelection.loadmaincar();
     }
 
+    public void FocusCurrentPanelSelection()
+    {
+        if (!hasCurrentPanel)
+            return;
+
+        if (!panels.TryGetValue(currentPanel, out UIPanel panel))
+            return;
+
+        GameObject selected = panel.DefaultSelected;
+        if (selected != null && EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+            EventSystem.current.SetSelectedGameObject(selected);
+        }
+    }
+
     public void OpenPanel(UIPanelType newPanel, bool addToHistory = true)
     {
         if (isTransitioning)
@@ -120,12 +136,7 @@ public class GarageUIController : MonoBehaviour
         nextPanel.Show();
         UpdateBackButton();
 
-        GameObject selected = nextPanel.DefaultSelected;
-        if (selected != null && EventSystem.current != null)
-        {
-            EventSystem.current.SetSelectedGameObject(null);
-            EventSystem.current.SetSelectedGameObject(selected);
-        }
+        FocusCurrentPanelSelection();
         SoundManager.Instance.PlayButtonClick();
         isTransitioning = false;
     }

@@ -10,6 +10,7 @@ public class MissionButton : MonoBehaviour
 
     private MissionSO mission;
     private CareerUIController controller;
+    public Button Button => button;
 
     public void Setup(MissionSO mission, CareerUIController controller)
     {
