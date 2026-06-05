@@ -39,7 +39,7 @@ public class Username : MonoBehaviour
 
     }
     private void LoadMenuCTX(InputAction.CallbackContext ctx) => LoadMenu();
-    void LoadMenu()
+    public void LoadMenu()
     {
         SaveManager.Instance.saveData.PlayerName = inputF.text;
         SaveManager.Instance.Save();

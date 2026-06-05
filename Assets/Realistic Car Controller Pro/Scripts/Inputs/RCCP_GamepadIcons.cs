@@ -24,6 +24,7 @@ using UnityEngine.UI;
 public class RCCP_GamepadIcons : RCCP_GenericComponent {
     public GamepadIcons xbox;
     public GamepadIcons ps4;
+    public GamepadIcons switchGamepad;
 
     protected void OnEnable() {
         // Hook into all updateBindingUIEvents on all RebindActionUI components in our hierarchy.
@@ -38,17 +39,21 @@ public class RCCP_GamepadIcons : RCCP_GenericComponent {
         if (string.IsNullOrEmpty(deviceLayoutName) || string.IsNullOrEmpty(controlPath))
             return;
 
-        var icon = default(Sprite);
-        if (InputSystem.IsFirstLayoutBasedOnSecond(deviceLayoutName, "DualSenseGamepadHID"))
-            icon = ps4.GetSprite(controlPath);
-        else if (InputSystem.IsFirstLayoutBasedOnSecond(deviceLayoutName, "Gamepad"))
-            icon = xbox.GetSprite(controlPath);
+        var icon = GetSpriteForBinding(deviceLayoutName, controlPath);
 
         var textComponent = component.bindingText;
 
+        if (textComponent == null)
+            return;
+
         // Grab Image component.
         var imageGO = textComponent.transform.parent.Find("ActionBindingIcon");
+        if (imageGO == null)
+            return;
+
         var imageComponent = imageGO.GetComponent<Image>();
+        if (imageComponent == null)
+            return;
 
         if (icon != null) {
             textComponent.gameObject.SetActive(false);
@@ -58,6 +63,49 @@ public class RCCP_GamepadIcons : RCCP_GenericComponent {
             textComponent.gameObject.SetActive(true);
             imageComponent.gameObject.SetActive(false);
         }
+    }
+
+    public Sprite GetSpriteForBinding(string deviceLayoutName, string controlPath) {
+        if (string.IsNullOrWhiteSpace(deviceLayoutName) || string.IsNullOrWhiteSpace(controlPath))
+            return null;
+
+        if (IsSwitchGamepadLayout(deviceLayoutName))
+            return switchGamepad.GetSprite(controlPath);
+
+        if (InputSystem.IsFirstLayoutBasedOnSecond(deviceLayoutName, "DualSenseGamepadHID"))
+            return ps4.GetSprite(controlPath);
+
+        if (InputSystem.IsFirstLayoutBasedOnSecond(deviceLayoutName, "Gamepad"))
+            return xbox.GetSprite(controlPath);
+
+        return null;
+    }
+
+    public bool IsGamepadLayout(string deviceLayoutName) {
+        if (string.IsNullOrWhiteSpace(deviceLayoutName))
+            return false;
+
+        return IsSwitchGamepadLayout(deviceLayoutName) ||
+               InputSystem.IsFirstLayoutBasedOnSecond(deviceLayoutName, "DualSenseGamepadHID") ||
+               InputSystem.IsFirstLayoutBasedOnSecond(deviceLayoutName, "Gamepad");
+    }
+
+    public bool IsSwitchGamepadLayout(string deviceLayoutName) {
+        if (string.IsNullOrWhiteSpace(deviceLayoutName))
+            return false;
+
+        if (InputSystem.IsFirstLayoutBasedOnSecond(deviceLayoutName, "SwitchProControllerHID"))
+            return true;
+
+        if (InputSystem.IsFirstLayoutBasedOnSecond(deviceLayoutName, "NPad"))
+            return true;
+
+        string normalizedLayoutName = deviceLayoutName.ToLowerInvariant();
+
+        return normalizedLayoutName.Contains("switchprocontroller") ||
+               normalizedLayoutName.Contains("switch pro controller") ||
+               normalizedLayoutName.Contains("npad") ||
+               normalizedLayoutName.Contains("nintendo");
     }
 
     [Serializable]

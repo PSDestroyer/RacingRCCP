@@ -168,7 +168,7 @@ public class MoneyManager : MonoBehaviour
         SaveMoney();
 
         if (moneyText != null)
-            moneyText.text = money + "<sprite index=0>";
+            moneyText.text = "<sprite index=0>"+money ;
 
         int safeExpPerLevel = Mathf.Max(1, expPerLevel);
         currentLevel = Mathf.Max(1, currentLevel);
