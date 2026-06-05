@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.AI;
+using ALIyerEdon;
+using System.Linq;
 
 public class GamePlayManager : MonoBehaviour
 {
@@ -40,6 +42,8 @@ public class GamePlayManager : MonoBehaviour
     public bool useCurrentMapModeSettings = true;
     public RCCP_AIWaypointsContainer raceWaypoints;
     public ArcadeVP.WaypointCircuit raceWaypointCircuit;
+    public Waypoint_System externalWaypointSystem;
+    public Transform externalWaypointRoot;
     public RaceRacer[] aiRacers;
     public int totalRaceLaps = 3;
     public float waypointReachDistance = 20f;
@@ -154,6 +158,7 @@ public class GamePlayManager : MonoBehaviour
     private Coroutine expSliderAnimationCoroutine;
     private Coroutine finishSummaryAnimationCoroutine;
     private ArcadeVP.WaypointCircuit runtimeRaceWaypointCircuit;
+    private RCCP_AIWaypointsContainer runtimeRaceWaypoints;
 
     [Header("Drifting Settings")]
     public bool driftingNow = false;
@@ -548,8 +553,7 @@ public class GamePlayManager : MonoBehaviour
         if (!IsRaceMode())
             return;
 
-        if (raceWaypoints == null)
-            raceWaypoints = FindFirstObjectByType<RCCP_AIWaypointsContainer>(FindObjectsInactive.Include);
+        EnsureRaceWaypointSources();
 
         playerRacer = new RaceRacer
         {
@@ -1084,6 +1088,8 @@ public class GamePlayManager : MonoBehaviour
 
     private ArcadeVP.WaypointCircuit GetRaceWaypointCircuit()
     {
+        EnsureRaceWaypointSources();
+
         if (raceWaypointCircuit != null)
         {
             raceWaypointCircuit.RebuildRoute();
@@ -1118,6 +1124,121 @@ public class GamePlayManager : MonoBehaviour
         raceWaypointCircuit = runtimeRaceWaypointCircuit;
 
         return runtimeRaceWaypointCircuit;
+    }
+
+    private void EnsureRaceWaypointSources()
+    {
+        if (raceWaypoints == null)
+            raceWaypoints = FindFirstObjectByType<RCCP_AIWaypointsContainer>(FindObjectsInactive.Include);
+
+        if (raceWaypoints != null)
+            return;
+
+        if (runtimeRaceWaypoints != null)
+        {
+            raceWaypoints = runtimeRaceWaypoints;
+            return;
+        }
+
+        List<Transform> sourceWaypoints = GetExternalWaypointTransforms();
+
+        if (sourceWaypoints == null || sourceWaypoints.Count < 2)
+            return;
+
+        GameObject runtimeContainerObject = new GameObject("Runtime_RaceWaypoints");
+        runtimeContainerObject.transform.SetParent(transform);
+        runtimeRaceWaypoints = runtimeContainerObject.AddComponent<RCCP_AIWaypointsContainer>();
+
+        for (int i = 0; i < sourceWaypoints.Count; i++)
+        {
+            Transform sourceWaypoint = sourceWaypoints[i];
+
+            if (sourceWaypoint == null)
+                continue;
+
+            GameObject waypointObject = new GameObject($"RCCP_Waypoint_{i:000}");
+            waypointObject.transform.SetParent(runtimeContainerObject.transform);
+            waypointObject.transform.SetPositionAndRotation(sourceWaypoint.position, sourceWaypoint.rotation);
+            waypointObject.AddComponent<RCCP_Waypoint>();
+        }
+
+        runtimeRaceWaypoints.GetAllWaypoints();
+        raceWaypoints = runtimeRaceWaypoints;
+    }
+
+    private List<Transform> GetExternalWaypointTransforms()
+    {
+        List<Transform> result = new List<Transform>();
+        IEnumerable<Waypoint_System> waypointSystems = Enumerable.Empty<Waypoint_System>();
+
+        if (externalWaypointRoot != null)
+        {
+            waypointSystems = externalWaypointRoot
+                .GetComponentsInChildren<Waypoint_System>(true)
+                .OrderBy(system => GetHierarchyOrderKey(system.transform));
+        }
+        else if (externalWaypointSystem != null)
+        {
+            Transform parent = externalWaypointSystem.transform.parent;
+
+            if (parent != null)
+            {
+                waypointSystems = parent
+                    .GetComponentsInChildren<Waypoint_System>(true)
+                    .Where(system => system.transform.parent == parent)
+                    .OrderBy(system => system.transform.GetSiblingIndex());
+            }
+            else
+            {
+                waypointSystems = new[] { externalWaypointSystem };
+            }
+        }
+        else
+        {
+            Waypoint_System foundSystem = FindFirstObjectByType<Waypoint_System>(FindObjectsInactive.Include);
+
+            if (foundSystem != null)
+                waypointSystems = new[] { foundSystem };
+        }
+
+        foreach (Waypoint_System system in waypointSystems)
+        {
+            if (system == null || system.waypoints == null)
+                continue;
+
+            foreach (Transform waypoint in system.waypoints)
+            {
+                if (waypoint == null)
+                    continue;
+
+                if (waypoint.GetComponent<Waypoint_System>() != null)
+                    continue;
+
+                if (result.Count > 0 && result[result.Count - 1] == waypoint)
+                    continue;
+
+                result.Add(waypoint);
+            }
+        }
+
+        return result;
+    }
+
+    private string GetHierarchyOrderKey(Transform target)
+    {
+        if (target == null)
+            return string.Empty;
+
+        Stack<int> indices = new Stack<int>();
+        Transform current = target;
+
+        while (current != null)
+        {
+            indices.Push(current.GetSiblingIndex());
+            current = current.parent;
+        }
+
+        return string.Join(".", indices.Select(index => index.ToString("D4")));
     }
 
     private GameObject SpawnOpponentVehicle(int opponentIndex, Transform spawnTransform)
@@ -1200,6 +1321,15 @@ public class GamePlayManager : MonoBehaviour
 
             Destroy(runtimeRaceWaypointCircuit.gameObject);
             runtimeRaceWaypointCircuit = null;
+        }
+
+        if (runtimeRaceWaypoints != null)
+        {
+            if (ReferenceEquals(raceWaypoints, runtimeRaceWaypoints))
+                raceWaypoints = null;
+
+            Destroy(runtimeRaceWaypoints.gameObject);
+            runtimeRaceWaypoints = null;
         }
     }
 
@@ -2056,6 +2186,25 @@ public class GamePlayManager : MonoBehaviour
        }
 
        SceneManager.LoadScene("Menu");
+   }
+
+   public bool IsRaceStartedForPause()
+   {
+       if (!IsRaceMode())
+           return true;
+
+       return raceStarted;
+   }
+
+   public bool IsAnyResultScreenVisible()
+   {
+       if (finishSummaryScreen != null && finishSummaryScreen.activeInHierarchy)
+           return true;
+
+       if (finishExpScreen != null && finishExpScreen.activeInHierarchy)
+           return true;
+
+       return false;
    }
 
    private IEnumerator AnimateExpRewardSequence()
