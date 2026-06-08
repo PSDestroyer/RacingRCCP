@@ -59,7 +59,7 @@ public class RCCP_UI_Decal : RCCP_UIComponent ,ISelectHandler{
     private void Initialize() 
     {
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
-        priceText.text = price + "<sprite index=1>";
+        priceText.text = price + " <sprite index=0>";
         
         switch (location) {
 
@@ -68,7 +68,7 @@ public class RCCP_UI_Decal : RCCP_UIComponent ,ISelectHandler{
                         playerVehicle.Customizer.DecalManager.index_decalFront)
                     {
                         var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
-                        priceText.text = Purch.ToString();
+                        priceText.text = Purch.Result;
                     }
                     break;
 
@@ -77,7 +77,7 @@ public class RCCP_UI_Decal : RCCP_UIComponent ,ISelectHandler{
                         playerVehicle.Customizer.DecalManager.index_decalBack)
                     {
                         var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
-                        priceText.text = Purch.ToString();
+                        priceText.text = Purch.Result;
                     }
                     break;
 
@@ -86,7 +86,7 @@ public class RCCP_UI_Decal : RCCP_UIComponent ,ISelectHandler{
                         playerVehicle.Customizer.DecalManager.index_decalLeft)
                     {
                         var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
-                        priceText.text = Purch.ToString();
+                        priceText.text = Purch.Result;
                     }
                     break;
 
@@ -95,7 +95,7 @@ public class RCCP_UI_Decal : RCCP_UIComponent ,ISelectHandler{
                         playerVehicle.Customizer.DecalManager.index_decalRight)
                     {
                         var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
-                        priceText.text = Purch.ToString();
+                        priceText.text = Purch.Result;
                     }
                     break;
 

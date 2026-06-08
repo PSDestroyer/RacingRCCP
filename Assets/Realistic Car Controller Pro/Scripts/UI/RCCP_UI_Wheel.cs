@@ -31,6 +31,7 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
     [SerializeField] private YesNo _yesNo;
     [SerializeField] private TMP_Text priceText;
     [SerializeField] private MoneyManager _moneyManager;
+    [SerializeField] private List<RCCP_UI_Wheel> comp = new List<RCCP_UI_Wheel>();
 
     public void OnSelect(BaseEventData baseEventData)
     {
@@ -40,7 +41,7 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
     }
     private void Start()
     {
-        priceText.text = price + " <sprite index=0>";
+        Initialize();
     }
     private void OnDisable()
     {
@@ -52,6 +53,36 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
 
         YesNo();
 
+    }
+
+    public void Refresh()
+    {
+        for (int i = 0; i < comp.Count; i++)
+        {
+            if (comp[i] != null)
+                comp[i].Initialize();
+        }
+    }
+
+    private void Initialize()
+    {
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
+
+        if (playerVehicle == null || playerVehicle.Customizer == null || playerVehicle.Customizer.WheelManager == null)
+        {
+            priceText.text = price + " <sprite index=0>";
+            return;
+        }
+
+        if (playerVehicle.Customizer.WheelManager.wheelIndex != wheelIndex)
+        {
+            priceText.text = price + " <sprite index=0>";
+        }
+        else
+        {
+            var purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "Purchased");
+            priceText.text = purch.Result;
+        }
     }
 
     public async void YesNo()
@@ -83,6 +114,7 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
                     _moneyManager.MoneyToTake(price);
                     SoundManager.Instance.PlayButtonClick();
                     playerVehicle.Customizer.WheelManager.UpdateWheel(wheelIndex);
+                    Refresh();
                 }
                 else
                 {

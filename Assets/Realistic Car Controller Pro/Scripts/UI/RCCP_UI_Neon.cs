@@ -58,12 +58,12 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
         if (playerVehicle.Customizer.NeonManager.FindMaterialIndex(material) !=
             playerVehicle.Customizer.NeonManager.index)
         {
-            priceText.text = price + "<sprite index=1>";
+            priceText.text = price + " <sprite index=0>";
         }
         else
         {
             var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
-            priceText.text = Purch.ToString();
+            priceText.text = Purch.Result;
         }
     }
     private void OnDisable()

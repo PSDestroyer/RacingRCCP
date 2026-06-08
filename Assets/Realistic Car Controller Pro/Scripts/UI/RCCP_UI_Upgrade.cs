@@ -75,7 +75,7 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
         }
 
         UpgText.text = upgradeClass.ToString();
-        priceText.text = price + "<sprite index=1>";
+        priceText.text = price + "<sprite index=0>";
     }
 
     public void OnClick()
