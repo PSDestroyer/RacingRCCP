@@ -36,6 +36,16 @@ public class GamePlayManager : MonoBehaviour
         [NonSerialized] public float startCircuitDistance;
         [NonSerialized] public bool lapCountingArmed;
         [NonSerialized] public int currentSegmentIndex;
+        [NonSerialized] public int currentProgressPathIndex;
+        [NonSerialized] public float sharedRankingProgress;
+    }
+
+    private struct PathProgressInfo
+    {
+        public int pathIndex;
+        public float normalizedProgress;
+        public float sqrDistance;
+        public float distanceToNextWaypoint;
     }
 
     [NonSerialized]public GameObject player;
@@ -47,6 +57,7 @@ public class GamePlayManager : MonoBehaviour
     public bool useCurrentMapModeSettings = true;
     public Waypoint_System externalWaypointSystem;
     public Transform externalWaypointRoot;
+    public Checkpoint_Manager externalCheckpointManager;
     public RaceRacer[] aiRacers;
     public int totalRaceLaps = 3;
     public float waypointReachDistance = 20f;
@@ -576,7 +587,9 @@ public class GamePlayManager : MonoBehaviour
             progressInitialized = false,
             startCircuitDistance = raceCircuit != null && CarController != null ? FindClosestDistanceAlongRaceRoute(CarController.transform.position) : 0f,
             lapCountingArmed = false,
-            currentSegmentIndex = 0
+            currentSegmentIndex = 0,
+            currentProgressPathIndex = -1,
+            sharedRankingProgress = 0f
         };
 
         int aiCount = aiRacers != null ? aiRacers.Length : 0;
@@ -621,6 +634,8 @@ public class GamePlayManager : MonoBehaviour
             aiRacer.startCircuitDistance = aiRacer.currentCircuitDistance;
             aiRacer.lapCountingArmed = false;
             aiRacer.currentSegmentIndex = 0;
+            aiRacer.currentProgressPathIndex = -1;
+            aiRacer.sharedRankingProgress = FindClosestWaypointProgress(aiRacer);
             allRacers[i + 1] = aiRacer;
         }
 
@@ -759,7 +774,9 @@ public class GamePlayManager : MonoBehaviour
                 completedLaps = 0,
                 finished = false,
                 finishPosition = 0,
-                finishTime = 0f
+                finishTime = 0f,
+                currentProgressPathIndex = -1,
+                sharedRankingProgress = 0f
             };
         }
 
@@ -1191,40 +1208,43 @@ public class GamePlayManager : MonoBehaviour
 
     private List<Pose> BuildProgressRoutePoses()
     {
+        List<Pose> checkpointRoute = BuildCheckpointRoutePoses();
+        if (checkpointRoute.Count >= 2)
+            return checkpointRoute;
+
         List<Pose> result = new List<Pose>();
 
         if (resolvedWaypointSystems.Count == 0)
             return result;
 
-        int waypointCount = resolvedWaypointSystems
+        int sampleCount = resolvedWaypointSystems
             .Where(system => system != null && system.waypoints != null)
-            .Select(system => system.waypoints.Count)
+            .Select(system => Mathf.Max(0, system.waypoints.Count))
             .DefaultIfEmpty(0)
-            .Min();
+            .Max();
 
-        if (waypointCount < 2)
+        sampleCount = Mathf.Max(sampleCount * 2, 64);
+
+        if (sampleCount < 2)
             return result;
 
-        for (int waypointIndex = 0; waypointIndex < waypointCount; waypointIndex++)
+        for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++)
         {
             Vector3 positionSum = Vector3.zero;
             Vector3 forwardSum = Vector3.zero;
             int validCount = 0;
+            float normalizedDistance = sampleIndex / (float)sampleCount;
 
             for (int systemIndex = 0; systemIndex < resolvedWaypointSystems.Count; systemIndex++)
             {
                 Waypoint_System system = resolvedWaypointSystems[systemIndex];
 
-                if (system == null || system.waypoints == null || waypointIndex >= system.waypoints.Count)
+                if (system == null || system.waypoints == null || system.waypoints.Count < 2)
                     continue;
 
-                Transform waypoint = system.waypoints[waypointIndex];
-
-                if (waypoint == null)
-                    continue;
-
-                positionSum += waypoint.position;
-                forwardSum += waypoint.forward;
+                Pose sampledPose = SampleWaypointSystemPose(system.waypoints, normalizedDistance);
+                positionSum += sampledPose.position;
+                forwardSum += sampledPose.forward;
                 validCount++;
             }
 
@@ -1237,6 +1257,88 @@ public class GamePlayManager : MonoBehaviour
         }
 
         return result;
+    }
+
+    private List<Pose> BuildCheckpointRoutePoses()
+    {
+        List<Pose> result = new List<Pose>();
+        Checkpoint_Manager checkpointManager = externalCheckpointManager != null
+            ? externalCheckpointManager
+            : FindFirstObjectByType<Checkpoint_Manager>(FindObjectsInactive.Include);
+
+        if (checkpointManager == null || checkpointManager.checkpoints == null || checkpointManager.checkpoints.Count < 2)
+            return result;
+
+        for (int i = 0; i < checkpointManager.checkpoints.Count; i++)
+        {
+            Transform checkpoint = checkpointManager.checkpoints[i];
+
+            if (checkpoint == null)
+                continue;
+
+            Vector3 forward = checkpoint.forward.sqrMagnitude > 0.001f ? checkpoint.forward : Vector3.forward;
+            result.Add(new Pose(checkpoint.position, Quaternion.LookRotation(forward, Vector3.up)));
+        }
+
+        return result;
+    }
+
+    private Pose SampleWaypointSystemPose(List<Transform> waypoints, float normalizedDistance)
+    {
+        if (waypoints == null || waypoints.Count == 0)
+            return new Pose(transform.position, transform.rotation);
+
+        if (waypoints.Count == 1 || waypoints[0] == null)
+            return new Pose(waypoints[0] != null ? waypoints[0].position : transform.position, waypoints[0] != null ? waypoints[0].rotation : transform.rotation);
+
+        float totalLength = 0f;
+        int count = waypoints.Count;
+
+        for (int i = 0; i < count; i++)
+        {
+            Transform from = waypoints[i];
+            Transform to = waypoints[(i + 1) % count];
+
+            if (from == null || to == null)
+                continue;
+
+            totalLength += Vector3.Distance(from.position, to.position);
+        }
+
+        if (totalLength <= 0.01f)
+            return new Pose(waypoints[0].position, waypoints[0].rotation);
+
+        float targetDistance = Mathf.Repeat(normalizedDistance, 1f) * totalLength;
+        float accumulated = 0f;
+
+        for (int i = 0; i < count; i++)
+        {
+            Transform from = waypoints[i];
+            Transform to = waypoints[(i + 1) % count];
+
+            if (from == null || to == null)
+                continue;
+
+            float segmentLength = Vector3.Distance(from.position, to.position);
+
+            if (segmentLength <= 0.001f)
+                continue;
+
+            if (accumulated + segmentLength >= targetDistance)
+            {
+                float t = Mathf.InverseLerp(accumulated, accumulated + segmentLength, targetDistance);
+                Vector3 position = Vector3.Lerp(from.position, to.position, t);
+                Vector3 forward = (to.position - from.position).normalized;
+                return new Pose(position, Quaternion.LookRotation(forward.sqrMagnitude > 0.001f ? forward : from.forward, Vector3.up));
+            }
+
+            accumulated += segmentLength;
+        }
+
+        Transform last = waypoints[count - 1];
+        Transform first = waypoints[0];
+        Vector3 fallbackForward = first != null && last != null ? (first.position - last.position).normalized : Vector3.forward;
+        return new Pose(last != null ? last.position : transform.position, Quaternion.LookRotation(fallbackForward.sqrMagnitude > 0.001f ? fallbackForward : Vector3.forward, Vector3.up));
     }
 
     private List<Waypoint_System> GetResolvedWaypointSystems()
@@ -1694,7 +1796,21 @@ public class GamePlayManager : MonoBehaviour
 
    private void UpdateRacerRaceProgress(RaceRacer racer)
    {
-       if (racer == null || racer.racerTransform == null || runtimeRaceWaypoints == null || runtimeRaceWaypoints.waypoints == null || runtimeRaceWaypoints.waypoints.Count == 0)
+       if (racer == null || racer.racerTransform == null)
+           return;
+
+       if (resolvedWaypointSystems.Count == 0)
+           resolvedWaypointSystems.AddRange(GetResolvedWaypointSystems());
+
+       bool useCheckpointProgress = HasCheckpointProgressSource();
+
+       if (!useCheckpointProgress && TryFindBestResolvedPathProgress(racer, out PathProgressInfo pathProgress))
+       {
+           UpdateRacerRaceProgressOnResolvedPaths(racer, pathProgress);
+           return;
+       }
+
+       if (runtimeRaceWaypoints == null || runtimeRaceWaypoints.waypoints == null || runtimeRaceWaypoints.waypoints.Count == 0)
            return;
 
        int waypointCount = runtimeRaceWaypoints.waypoints.Count;
@@ -1750,6 +1866,201 @@ public class GamePlayManager : MonoBehaviour
        }
 
        racer.raceProgress = (racer.completedLaps * waypointCount) + currentProgress;
+   }
+
+   private bool HasCheckpointProgressSource()
+   {
+       Checkpoint_Manager checkpointManager = externalCheckpointManager != null
+           ? externalCheckpointManager
+           : FindFirstObjectByType<Checkpoint_Manager>(FindObjectsInactive.Include);
+
+       return checkpointManager != null
+           && checkpointManager.checkpoints != null
+           && checkpointManager.checkpoints.Count >= 2;
+   }
+
+   private void UpdateRacerRaceProgressOnResolvedPaths(RaceRacer racer, PathProgressInfo pathProgress)
+   {
+       float previousProgress = Mathf.Repeat(racer.currentCircuitDistance, 1f);
+       float currentProgress = Mathf.Repeat(pathProgress.normalizedProgress, 1f);
+       const float lapWrapThreshold = 0.08f;
+
+       int runtimeWaypointCount = runtimeRaceWaypoints != null && runtimeRaceWaypoints.waypoints != null
+           ? runtimeRaceWaypoints.waypoints.Count
+           : 0;
+
+       if (!racer.progressInitialized)
+       {
+           racer.progressInitialized = true;
+           racer.currentCircuitDistance = currentProgress;
+           racer.startCircuitDistance = currentProgress;
+           racer.lapCountingArmed = false;
+           racer.currentProgressPathIndex = pathProgress.pathIndex;
+           racer.currentSegmentIndex = runtimeWaypointCount > 0 ? Mathf.FloorToInt(currentProgress * runtimeWaypointCount) % runtimeWaypointCount : 0;
+           racer.sharedRankingProgress = FindClosestWaypointProgress(racer);
+           if (runtimeWaypointCount > 0)
+           {
+               int sharedSegmentIndex = Mathf.FloorToInt(racer.sharedRankingProgress) % runtimeWaypointCount;
+               racer.currentWaypointIndex = (sharedSegmentIndex + 1) % runtimeWaypointCount;
+           }
+           else
+           {
+               racer.currentWaypointIndex = 0;
+           }
+
+           if (racer.currentWaypointIndex >= 0 && racer.currentWaypointIndex < runtimeRaceWaypoints.waypoints.Count)
+           {
+               RCCP_Waypoint nextWaypoint = runtimeRaceWaypoints.waypoints[racer.currentWaypointIndex];
+
+               if (nextWaypoint != null)
+                   racer.distanceToNextWaypoint = Vector3.Distance(racer.racerTransform.position, nextWaypoint.transform.position);
+           }
+           else
+           {
+               racer.distanceToNextWaypoint = pathProgress.distanceToNextWaypoint;
+           }
+
+           racer.raceProgress = racer.completedLaps + currentProgress;
+           return;
+       }
+
+       float distanceFromStart = GetForwardLoopDistance(racer.startCircuitDistance, currentProgress, 1f);
+
+       if (!racer.lapCountingArmed && distanceFromStart >= 0.25f)
+           racer.lapCountingArmed = true;
+
+       if (racer.lapCountingArmed && previousProgress > 1f - lapWrapThreshold && currentProgress < lapWrapThreshold)
+           racer.completedLaps++;
+       else if (racer.completedLaps > 0 && previousProgress < lapWrapThreshold && currentProgress > 1f - lapWrapThreshold)
+           racer.completedLaps--;
+
+       racer.currentCircuitDistance = currentProgress;
+       racer.currentProgressPathIndex = pathProgress.pathIndex;
+       racer.currentSegmentIndex = runtimeWaypointCount > 0 ? Mathf.FloorToInt(currentProgress * runtimeWaypointCount) % runtimeWaypointCount : 0;
+       racer.sharedRankingProgress = FindClosestWaypointProgress(racer);
+
+       if (runtimeWaypointCount > 0)
+       {
+           int sharedSegmentIndex = Mathf.FloorToInt(racer.sharedRankingProgress) % runtimeWaypointCount;
+           racer.currentWaypointIndex = (sharedSegmentIndex + 1) % runtimeWaypointCount;
+       }
+       else
+       {
+           racer.currentWaypointIndex = 0;
+       }
+
+       if (racer.currentWaypointIndex >= 0 && racer.currentWaypointIndex < runtimeRaceWaypoints.waypoints.Count)
+       {
+           RCCP_Waypoint nextWaypoint = runtimeRaceWaypoints.waypoints[racer.currentWaypointIndex];
+
+           if (nextWaypoint != null)
+               racer.distanceToNextWaypoint = Vector3.Distance(racer.racerTransform.position, nextWaypoint.transform.position);
+       }
+       else
+       {
+           racer.distanceToNextWaypoint = pathProgress.distanceToNextWaypoint;
+       }
+
+       racer.raceProgress = racer.completedLaps + currentProgress;
+   }
+
+   private bool TryFindBestResolvedPathProgress(RaceRacer racer, out PathProgressInfo bestProgress)
+   {
+       bestProgress = default;
+       bestProgress.pathIndex = -1;
+       bestProgress.sqrDistance = float.MaxValue;
+
+       if (racer == null || racer.racerTransform == null || resolvedWaypointSystems.Count == 0)
+           return false;
+
+       float bestScore = float.MaxValue;
+
+       for (int pathIndex = 0; pathIndex < resolvedWaypointSystems.Count; pathIndex++)
+       {
+           Waypoint_System system = resolvedWaypointSystems[pathIndex];
+
+           if (system == null || system.waypoints == null || system.waypoints.Count < 2)
+               continue;
+
+           EvaluateResolvedPathProgress(
+               racer.racerTransform.position,
+               system.waypoints,
+               pathIndex,
+               racer.currentProgressPathIndex,
+               ref bestProgress,
+               ref bestScore);
+       }
+
+       return bestProgress.pathIndex >= 0;
+   }
+
+   private void EvaluateResolvedPathProgress(
+       Vector3 worldPosition,
+       List<Transform> waypoints,
+       int pathIndex,
+       int preferredPathIndex,
+       ref PathProgressInfo bestProgress,
+       ref float bestScore)
+   {
+       if (waypoints == null || waypoints.Count < 2)
+           return;
+
+       float totalLength = 0f;
+       int waypointCount = waypoints.Count;
+
+       for (int i = 0; i < waypointCount; i++)
+       {
+           Transform from = waypoints[i];
+           Transform to = waypoints[(i + 1) % waypointCount];
+
+           if (from == null || to == null)
+               continue;
+
+           totalLength += Vector3.Distance(from.position, to.position);
+       }
+
+       if (totalLength <= 0.001f)
+           return;
+
+       float accumulated = 0f;
+
+       for (int segmentIndex = 0; segmentIndex < waypointCount; segmentIndex++)
+       {
+           Transform from = waypoints[segmentIndex];
+           Transform to = waypoints[(segmentIndex + 1) % waypointCount];
+
+           if (from == null || to == null)
+               continue;
+
+           Vector3 segment = to.position - from.position;
+           float segmentLengthSqr = segment.sqrMagnitude;
+
+           if (segmentLengthSqr <= 0.0001f)
+           {
+               accumulated += Mathf.Sqrt(segmentLengthSqr);
+               continue;
+           }
+
+           float segmentLength = Mathf.Sqrt(segmentLengthSqr);
+           float t = Mathf.Clamp01(Vector3.Dot(worldPosition - from.position, segment) / segmentLengthSqr);
+           Vector3 closestPoint = from.position + segment * t;
+           float sqrDistance = (worldPosition - closestPoint).sqrMagnitude;
+           float score = sqrDistance;
+
+           if (pathIndex == preferredPathIndex)
+               score *= 0.92f;
+
+           if (score < bestScore)
+           {
+               bestScore = score;
+               bestProgress.pathIndex = pathIndex;
+               bestProgress.normalizedProgress = Mathf.Repeat((accumulated + (segmentLength * t)) / totalLength, 1f);
+               bestProgress.sqrDistance = sqrDistance;
+               bestProgress.distanceToNextWaypoint = Vector3.Distance(worldPosition, to.position);
+           }
+
+           accumulated += segmentLength;
+       }
    }
 
    private float FindClosestWaypointProgress(RaceRacer racer)
@@ -3070,10 +3381,13 @@ public class GamePlayManager : MonoBehaviour
        if (playerRacer.eliminated)
            return true;
 
+       if (ShouldUseGridRanking(playerRacer, otherRacer))
+           return GetGridRankingValue(otherRacer) > GetGridRankingValue(playerRacer);
+
        if (otherRacer.completedLaps != playerRacer.completedLaps)
            return otherRacer.completedLaps > playerRacer.completedLaps;
 
-       return otherRacer.raceProgress > playerRacer.raceProgress;
+       return otherRacer.sharedRankingProgress > playerRacer.sharedRankingProgress;
    }
 
    private void UpdateEliminationMode()
@@ -3137,10 +3451,37 @@ public class GamePlayManager : MonoBehaviour
            return racerA.finished;
        }
 
+       if (ShouldUseGridRanking(racerA, racerB))
+           return GetGridRankingValue(racerA) > GetGridRankingValue(racerB);
+
        if (racerA.completedLaps != racerB.completedLaps)
            return racerA.completedLaps > racerB.completedLaps;
 
-       return racerA.raceProgress > racerB.raceProgress;
+       return racerA.sharedRankingProgress > racerB.sharedRankingProgress;
+   }
+
+   private bool ShouldUseGridRanking(RaceRacer racerA, RaceRacer racerB)
+   {
+       if (SpawnPoint == null)
+           return false;
+
+       if (racerA == null || racerB == null)
+           return false;
+
+       if (racerA.completedLaps > 0 || racerB.completedLaps > 0)
+           return false;
+
+       return !racerA.lapCountingArmed && !racerB.lapCountingArmed;
+   }
+
+   private float GetGridRankingValue(RaceRacer racer)
+   {
+       if (racer == null || racer.racerTransform == null || SpawnPoint == null)
+           return float.MinValue;
+
+       Vector3 localPosition = SpawnPoint.InverseTransformPoint(racer.racerTransform.position);
+
+       return localPosition.z;
    }
 
    private void EliminateRacer(RaceRacer racer)
