@@ -161,8 +161,9 @@ public class CarSelection : MonoBehaviour
     {
         RemoveEvents();
         var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","BuyYes/No");
-
-        bool result = await yesNo.ShowYesNoPanelAsync(buystring.Result+"?");
+        CarSO currentCar = GlobalCarData._carlists[indexcar];
+        CarDisplayStats displayStats = GetDisplayCarStats(currentCar);
+        bool result = await yesNo.ShowBuyYesNoPanelAsync(buystring.Result+"?",GlobalCarData._carlists[indexcar].carName,GlobalCarData._carlists[indexcar].carInfo,"<sprite index=0> "+GlobalCarData._carlists[indexcar].price, displayStats.power.ToString(),GlobalCarData._carlists[indexcar].CarClass,GlobalCarData._carlists[indexcar].carsprite);
 
         if (result)
         {

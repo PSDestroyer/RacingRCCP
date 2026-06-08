@@ -16,6 +16,15 @@ public class YesNo : MonoBehaviour
     [SerializeField] private TMP_Text InfoText;
     private TaskCompletionSource<bool> tcs;
     public PlayerInput playerInput;
+    [Header("Buy Yes/No")] 
+    [SerializeField]private GameObject BuyYesNoPanelObject;
+    [SerializeField] private TMP_Text BuyInfoText;
+    [SerializeField] private TMP_Text CarNameText;
+    [SerializeField] private TMP_Text CarPriceText;
+    [SerializeField] private TMP_Text CarPowerText;
+    [SerializeField] private TMP_Text CarInfoText;
+    [SerializeField] private Image carImage;
+    [SerializeField] private Image carClass;
 
     [Header("Notification")] 
     [SerializeField]private GameObject NotifiPanelObject;
@@ -30,7 +39,31 @@ public class YesNo : MonoBehaviour
     
     
     #region Yes/No
+    public async Task<bool> ShowBuyYesNoPanelAsync(string Text,string Name,string Info,string Price,string power,Sprite Class, Sprite CarImg)
+    {
+        InputAction cancelAction = GetAction("Cancel");
+        if (cancelAction != null)
+            cancelAction.performed += ClosePanelCTX;
 
+        InfoText.text = "";
+        BuyInfoText.text = Text;
+        CarNameText.text = Name;
+        CarInfoText.text = Info;
+        CarPriceText.text = Price;
+        CarPowerText.text = power;
+        carClass.sprite = Class;
+        carImage.sprite = CarImg;
+        tcs = new TaskCompletionSource<bool>();
+        YesNoPanelObject.SetActive(true);        
+        BuyYesNoPanelObject.SetActive(true);        
+        YesButton.Select();
+
+        bool result = await tcs.Task;
+        BuyYesNoPanelObject.SetActive(false);
+        
+        ClosePanel();
+        return result;
+    }
     
     public async Task<bool> ShowYesNoPanelAsync(string Text)
     {
