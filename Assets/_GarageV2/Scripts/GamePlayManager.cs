@@ -38,6 +38,9 @@ public class GamePlayManager : MonoBehaviour
         [NonSerialized] public int currentSegmentIndex;
         [NonSerialized] public int currentProgressPathIndex;
         [NonSerialized] public float sharedRankingProgress;
+        [NonSerialized] public int currentCheckpointIndex;
+        [NonSerialized] public int nextCheckpointIndex;
+        [NonSerialized] public bool checkpointProgressInitialized;
     }
 
     private struct PathProgressInfo
@@ -589,7 +592,10 @@ public class GamePlayManager : MonoBehaviour
             lapCountingArmed = false,
             currentSegmentIndex = 0,
             currentProgressPathIndex = -1,
-            sharedRankingProgress = 0f
+            sharedRankingProgress = 0f,
+            currentCheckpointIndex = -1,
+            nextCheckpointIndex = 0,
+            checkpointProgressInitialized = false
         };
 
         int aiCount = aiRacers != null ? aiRacers.Length : 0;
@@ -636,6 +642,9 @@ public class GamePlayManager : MonoBehaviour
             aiRacer.currentSegmentIndex = 0;
             aiRacer.currentProgressPathIndex = -1;
             aiRacer.sharedRankingProgress = FindClosestWaypointProgress(aiRacer);
+            aiRacer.currentCheckpointIndex = -1;
+            aiRacer.nextCheckpointIndex = 0;
+            aiRacer.checkpointProgressInitialized = false;
             allRacers[i + 1] = aiRacer;
         }
 
@@ -776,7 +785,10 @@ public class GamePlayManager : MonoBehaviour
                 finishPosition = 0,
                 finishTime = 0f,
                 currentProgressPathIndex = -1,
-                sharedRankingProgress = 0f
+                sharedRankingProgress = 0f,
+                currentCheckpointIndex = -1,
+                nextCheckpointIndex = 0,
+                checkpointProgressInitialized = false
             };
         }
 
@@ -1262,9 +1274,7 @@ public class GamePlayManager : MonoBehaviour
     private List<Pose> BuildCheckpointRoutePoses()
     {
         List<Pose> result = new List<Pose>();
-        Checkpoint_Manager checkpointManager = externalCheckpointManager != null
-            ? externalCheckpointManager
-            : FindFirstObjectByType<Checkpoint_Manager>(FindObjectsInactive.Include);
+        Checkpoint_Manager checkpointManager = ResolveCheckpointManager();
 
         if (checkpointManager == null || checkpointManager.checkpoints == null || checkpointManager.checkpoints.Count < 2)
             return result;
@@ -1281,6 +1291,15 @@ public class GamePlayManager : MonoBehaviour
         }
 
         return result;
+    }
+
+    private Checkpoint_Manager ResolveCheckpointManager()
+    {
+        if (externalCheckpointManager != null)
+            return externalCheckpointManager;
+
+        externalCheckpointManager = FindFirstObjectByType<Checkpoint_Manager>(FindObjectsInactive.Include);
+        return externalCheckpointManager;
     }
 
     private Pose SampleWaypointSystemPose(List<Transform> waypoints, float normalizedDistance)
@@ -1804,7 +1823,13 @@ public class GamePlayManager : MonoBehaviour
 
        bool useCheckpointProgress = HasCheckpointProgressSource();
 
-       if (!useCheckpointProgress && TryFindBestResolvedPathProgress(racer, out PathProgressInfo pathProgress))
+       if (useCheckpointProgress)
+       {
+           UpdateRacerCheckpointProgress(racer);
+           return;
+       }
+
+       if (TryFindBestResolvedPathProgress(racer, out PathProgressInfo pathProgress))
        {
            UpdateRacerRaceProgressOnResolvedPaths(racer, pathProgress);
            return;
@@ -1868,11 +1893,84 @@ public class GamePlayManager : MonoBehaviour
        racer.raceProgress = (racer.completedLaps * waypointCount) + currentProgress;
    }
 
+   private void UpdateRacerCheckpointProgress(RaceRacer racer)
+   {
+       Checkpoint_Manager checkpointManager = ResolveCheckpointManager();
+
+       if (checkpointManager == null || checkpointManager.checkpoints == null || checkpointManager.checkpoints.Count < 2)
+           return;
+
+       List<Transform> checkpoints = checkpointManager.checkpoints;
+       int checkpointCount = checkpoints.Count;
+
+       if (!racer.checkpointProgressInitialized)
+       {
+           racer.checkpointProgressInitialized = true;
+           racer.currentCheckpointIndex = -1;
+           racer.nextCheckpointIndex = 0;
+           racer.completedLaps = 0;
+           racer.lapCountingArmed = false;
+       }
+
+       for (int guard = 0; guard < checkpointCount; guard++)
+       {
+           Transform nextCheckpoint = checkpoints[racer.nextCheckpointIndex];
+
+           if (nextCheckpoint == null || !IsInsideCheckpoint(nextCheckpoint, racer.racerTransform.position))
+               break;
+
+           racer.currentCheckpointIndex = racer.nextCheckpointIndex;
+           racer.nextCheckpointIndex = (racer.currentCheckpointIndex + 1) % checkpointCount;
+
+           if (racer.currentCheckpointIndex == checkpointCount / 2)
+               racer.lapCountingArmed = true;
+
+           if (racer.currentCheckpointIndex == 0)
+           {
+               if (racer.lapCountingArmed)
+                   racer.completedLaps++;
+
+               racer.lapCountingArmed = false;
+           }
+       }
+
+       Transform targetCheckpoint = checkpoints[racer.nextCheckpointIndex];
+       racer.distanceToNextWaypoint = targetCheckpoint != null
+           ? Vector3.Distance(racer.racerTransform.position, targetCheckpoint.position)
+           : 0f;
+       racer.currentWaypointIndex = racer.nextCheckpointIndex;
+       racer.sharedRankingProgress = racer.currentCheckpointIndex >= 0
+           ? racer.currentCheckpointIndex + (100000f - Mathf.Min(racer.distanceToNextWaypoint, 100000f)) / 100000f
+           : -1f;
+       racer.raceProgress = racer.completedLaps + Mathf.Max(0f, racer.sharedRankingProgress / checkpointCount);
+   }
+
+   private bool IsInsideCheckpoint(Transform checkpoint, Vector3 worldPosition)
+   {
+       if (checkpoint == null)
+           return false;
+
+       Collider checkpointCollider = checkpoint.GetComponent<Collider>();
+
+       if (checkpointCollider == null)
+           return Vector3.Distance(checkpoint.position, worldPosition) <= waypointReachDistance;
+
+       if (checkpointCollider is BoxCollider boxCollider)
+       {
+           Vector3 localPoint = checkpoint.InverseTransformPoint(worldPosition) - boxCollider.center;
+           Vector3 halfSize = boxCollider.size * .5f;
+           return Mathf.Abs(localPoint.x) <= halfSize.x
+               && Mathf.Abs(localPoint.y) <= halfSize.y
+               && Mathf.Abs(localPoint.z) <= halfSize.z;
+       }
+
+       Vector3 closestPoint = checkpointCollider.ClosestPoint(worldPosition);
+       return (closestPoint - worldPosition).sqrMagnitude <= 0.01f;
+   }
+
    private bool HasCheckpointProgressSource()
    {
-       Checkpoint_Manager checkpointManager = externalCheckpointManager != null
-           ? externalCheckpointManager
-           : FindFirstObjectByType<Checkpoint_Manager>(FindObjectsInactive.Include);
+       Checkpoint_Manager checkpointManager = ResolveCheckpointManager();
 
        return checkpointManager != null
            && checkpointManager.checkpoints != null
@@ -3387,6 +3485,14 @@ public class GamePlayManager : MonoBehaviour
        if (otherRacer.completedLaps != playerRacer.completedLaps)
            return otherRacer.completedLaps > playerRacer.completedLaps;
 
+       if (HasCheckpointProgressSource())
+       {
+           if (otherRacer.currentCheckpointIndex != playerRacer.currentCheckpointIndex)
+               return otherRacer.currentCheckpointIndex > playerRacer.currentCheckpointIndex;
+
+           return otherRacer.distanceToNextWaypoint < playerRacer.distanceToNextWaypoint;
+       }
+
        return otherRacer.sharedRankingProgress > playerRacer.sharedRankingProgress;
    }
 
@@ -3457,6 +3563,14 @@ public class GamePlayManager : MonoBehaviour
        if (racerA.completedLaps != racerB.completedLaps)
            return racerA.completedLaps > racerB.completedLaps;
 
+       if (HasCheckpointProgressSource())
+       {
+           if (racerA.currentCheckpointIndex != racerB.currentCheckpointIndex)
+               return racerA.currentCheckpointIndex > racerB.currentCheckpointIndex;
+
+           return racerA.distanceToNextWaypoint < racerB.distanceToNextWaypoint;
+       }
+
        return racerA.sharedRankingProgress > racerB.sharedRankingProgress;
    }
 
@@ -3470,6 +3584,9 @@ public class GamePlayManager : MonoBehaviour
 
        if (racerA.completedLaps > 0 || racerB.completedLaps > 0)
            return false;
+
+       if (HasCheckpointProgressSource())
+           return racerA.currentCheckpointIndex < 0 && racerB.currentCheckpointIndex < 0;
 
        return !racerA.lapCountingArmed && !racerB.lapCountingArmed;
    }
