@@ -2783,6 +2783,63 @@ public class GamePlayManager : MonoBehaviour
        return $"{GetPlayerRacePosition()}/{GetActiveRacerCount()}";
    }
 
+   public RaceRacer[] GetAIRacers()
+   {
+       return aiRacers ?? Array.Empty<RaceRacer>();
+   }
+
+   public int GetRacerPosition(RaceRacer targetRacer)
+   {
+       if (targetRacer == null || allRacers == null || allRacers.Length == 0)
+           return -1;
+
+       List<RaceRacer> rankedRacers = GetRankedActiveRacers();
+
+       for (int i = 0; i < rankedRacers.Count; i++)
+       {
+           if (ReferenceEquals(rankedRacers[i], targetRacer))
+               return i + 1;
+       }
+
+       return -1;
+   }
+
+   public int GetRacerPosition(Transform racerTransform)
+   {
+       if (racerTransform == null || allRacers == null || allRacers.Length == 0)
+           return -1;
+
+       for (int i = 0; i < allRacers.Length; i++)
+       {
+           RaceRacer racer = allRacers[i];
+
+           if (racer == null || racer.racerTransform == null)
+               continue;
+
+           bool isExactMatch = racer.racerTransform == racerTransform;
+           bool isChildMatch = racerTransform.IsChildOf(racer.racerTransform);
+           bool isParentMatch = racer.racerTransform.IsChildOf(racerTransform);
+
+           if (!isExactMatch && !isChildMatch && !isParentMatch)
+               continue;
+
+           return racer.eliminated ? -1 : GetRacerPosition(racer);
+       }
+
+       return -1;
+   }
+
+   public bool IsPlayerRacer(Transform racerTransform)
+   {
+       if (racerTransform == null || playerRacer == null || playerRacer.racerTransform == null)
+           return false;
+
+       Transform playerTransform = playerRacer.racerTransform;
+       return racerTransform == playerTransform
+           || racerTransform.IsChildOf(playerTransform)
+           || playerTransform.IsChildOf(racerTransform);
+   }
+
    private List<RaceRacer> GetRankedActiveRacers()
    {
        return GetRankedRacers(includeEliminated: false);
