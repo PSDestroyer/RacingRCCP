@@ -14,12 +14,19 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Localization.Settings;
 
 /// <summary>
 /// A reusable component with a self-contained UI for rebinding a single action.
 /// </summary>
 [AddComponentMenu("BoneCracker Games/Realistic Car Controller Pro/UI/Input/RCCP UI Rebind Input")]
 public class RCCP_UI_RebindInput : RCCP_UIComponent {
+
+    private const string LOCALIZATION_TABLE = "UI";
+    private const string KEY_WAITING_FOR = "Waiting for";
+    private const string KEY_INPUT = "Input";
+    private const string KEY_WAITING = "Waiting";
+    private const string KEY_BINDING = "Binding";
 
     /// <summary>
     /// Reference to the action that is to be rebound.
@@ -269,21 +276,23 @@ public class RCCP_UI_RebindInput : RCCP_UIComponent {
         // If it's a part binding, show the name of the part in the UI.
         var partName = default(string);
         if (action.bindings[bindingIndex].isPartOfComposite)
-            partName = $"Binding '{action.bindings[bindingIndex].name}'. ";
+            partName = $"{GetLocalizedText(KEY_BINDING, "Binding")} '{action.bindings[bindingIndex].name}'. ";
 
         // Bring up rebind overlay, if we have one.
         m_RebindOverlay?.SetActive(true);
         if (m_RebindText != null) {
+            string waitingForText = GetLocalizedText(KEY_WAITING_FOR, "Waiting for");
+            string inputSuffixText = GetLocalizedText(KEY_INPUT, "Input");
             var text = !string.IsNullOrEmpty(m_RebindOperation.expectedControlType)
-                ? $"{partName}Waiting for {m_RebindOperation.expectedControlType} input..."
-                : $"{partName}Waiting for input...";
+                ? $"{partName}{waitingForText} {m_RebindOperation.expectedControlType} {inputSuffixText}..."
+                : $"{partName}{waitingForText} {inputSuffixText}...";
             m_RebindText.text = text;
         }
 
         // If we have no rebind overlay and no callback but we have a binding text label,
         // temporarily set the binding text label to "<Waiting>".
         if (m_RebindOverlay == null && m_RebindText == null && m_RebindStartEvent == null && m_BindingText != null)
-            m_BindingText.text = "<Waiting...>";
+            m_BindingText.text = $"<{GetLocalizedText(KEY_WAITING, "Waiting")}...>";
 
         // Give listeners a chance to act on the rebind starting.
         m_RebindStartEvent?.Invoke(this, m_RebindOperation);
@@ -333,6 +342,11 @@ public class RCCP_UI_RebindInput : RCCP_UIComponent {
                 referencedAction.actionMap?.asset == actionAsset)
                 component.UpdateBindingDisplay();
         }
+    }
+
+    private static string GetLocalizedText(string key, string fallback) {
+        var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(LOCALIZATION_TABLE, key);
+        return string.IsNullOrWhiteSpace(operation.Result) ? fallback : operation.Result;
     }
 
     [Tooltip("Reference to action that is to be rebound from the UI.")]
