@@ -361,7 +361,7 @@ public class CarSelection : MonoBehaviour
             
           int newindex = indexcar;
             
-          if (inputValue.x >= 0.1f)
+          if (inputValue.y >= 0.1f)
           {
               newindex++;
               if (newindex > GlobalCarData._carlists.Count - 1)
@@ -369,7 +369,7 @@ public class CarSelection : MonoBehaviour
                   newindex = 0;
               }
           }
-          else if (inputValue.x <= -0.1f)
+          else if (inputValue.y <= -0.1f)
           {
               newindex--;
               if (newindex < 0)

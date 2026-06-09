@@ -50,7 +50,7 @@ public class YesNo : MonoBehaviour
         CarNameText.text = Name;
         CarInfoText.text = Info;
         CarPriceText.text = Price;
-        CarPowerText.text = power;
+        CarPowerText.text = power+" HP";
         carClass.sprite = Class;
         carImage.sprite = CarImg;
         tcs = new TaskCompletionSource<bool>();
