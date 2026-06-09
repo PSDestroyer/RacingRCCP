@@ -50,6 +50,12 @@ namespace Trive.Rendering
 
 		public override bool IsEnabledAndSupported(PostProcessRenderContext context)
 		{
+			if (UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline != null)
+				return false;
+
+			if (context == null || context.camera == null || context.isSceneView)
+				return false;
+
 			return enabled
 				   && intensity.value > 0
 				   && rayDistance.value > 0 
@@ -303,6 +309,12 @@ namespace Trive.Rendering
 
 		public override void Render(PostProcessRenderContext context)
 		{
+			if (UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline != null || context == null || context.camera == null || context.isSceneView)
+			{
+				context.command.Blit(context.source, context.destination);
+				return;
+			}
+
 			context.command.BeginSample("Stochastic Reflection");
 
 			var sheet = context.propertySheets.Get(Shader.Find("Hidden/Stochastic SSR"));

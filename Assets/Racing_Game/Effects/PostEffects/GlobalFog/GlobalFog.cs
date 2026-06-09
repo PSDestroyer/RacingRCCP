@@ -36,6 +36,12 @@ namespace LightingBox.Effects
         }
         public override bool CheckResources ()
 		{
+            if (UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline != null)
+            {
+                enabled = false;
+                return false;
+            }
+
             CheckSupport (true);
 
             fogMaterial = CheckShaderAndCreateMaterial (fogShader, fogMaterial);
@@ -48,6 +54,12 @@ namespace LightingBox.Effects
         [ImageEffectOpaque] //DIMA FOR WATER
         void OnRenderImage (RenderTexture source, RenderTexture destination)
 		{
+            if (UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline != null)
+            {
+                Graphics.Blit(source, destination);
+                return;
+            }
+
             if (CheckResources()==false || (!distanceFog && !heightFog))
             {
                 Graphics.Blit (source, destination);

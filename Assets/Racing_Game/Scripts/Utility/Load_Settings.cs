@@ -13,6 +13,10 @@ namespace ALIyerEdon
 {
     public class Load_Settings : MonoBehaviour
     {
+        private static bool UsingScriptableRenderPipeline()
+        {
+            return UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline != null;
+        }
 
         public Color fogColor = Color.white;
 
@@ -98,6 +102,9 @@ namespace ALIyerEdon
 
         public void Set_Reflection(bool ssr_1, bool ssr_2)
         {
+            if (UsingScriptableRenderPipeline())
+                return;
+
             Trive.Rendering.StochasticReflections ssr2;
 
             UnityEngine.Rendering.PostProcessing.ScreenSpaceReflections ssr1;
@@ -180,6 +187,12 @@ namespace ALIyerEdon
 
         public void Set_QualityLevel(int qualityLevel)
         {
+            if (UsingScriptableRenderPipeline())
+            {
+                QualitySettings.SetQualityLevel(Mathf.Clamp(qualityLevel, 0, QualitySettings.names.Length - 1), true);
+                return;
+            }
+
             // Very Low
             if (qualityLevel == 0)
             {

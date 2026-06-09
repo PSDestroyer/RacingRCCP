@@ -418,7 +418,7 @@ public class GamePlayManager : MonoBehaviour
             if (eventSystem == sceneEventSystem)
                 continue;
 
-            Destroy(eventSystem.gameObject);
+                Destroy(eventSystem.gameObject);
         }
     }
 
