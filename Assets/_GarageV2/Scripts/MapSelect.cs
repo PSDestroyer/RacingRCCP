@@ -218,10 +218,13 @@ public class MapSelect : MonoBehaviour
             case RaceType.Racing:
             case RaceType.Elimination:
             case RaceType.NoBrakeChallenge:
+            case RaceType.TimeAttack:
+            case RaceType.ChaseRace:
                 return 2;
 
             case RaceType.FreeDrift:
             case RaceType.DriftScore:
+            case RaceType.PerfectDrift:
             case RaceType.TargetDrift:
             case RaceType.ComboMaster:
                 return 1;
