@@ -44,6 +44,8 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     public float steeringSmoothTime = .12f;
     public float maxSteerChangePerSecond = 6f;
     [Range(.2f, 1f)] public float highSpeedSteerLimit = .82f;
+    public float straightSteerDeadZone = .045f;
+    public float straightSteerAssist = .35f;
 
     [Header("Racing Line")]
     public float laneOffset = 0f;
@@ -87,6 +89,8 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     public float stuckSeconds = 3f;
     public float reverseStuckSeconds = 1.1f;
     public float uprightAssistSeconds = 2.5f;
+    public float wallStuckSeconds = 1.4f;
+    public float hardResetStuckSeconds = 5f;
 
     public RCCP_Inputs inputs = new RCCP_Inputs();
 
@@ -96,10 +100,14 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     private float stuckTimer;
     private float reverseTimer;
     private float upsideDownTimer;
+    private float wallStuckTimer;
     private float sensorSteer;
     private float sensorBrake;
     private float sensorSpeedLimit;
     private bool trafficBlocked;
+    private bool frontStaticBlocked;
+    private float frontStaticUrgency;
+    private float frontStaticEscapeSide;
     private float paceMultiplier = 1f;
     private float mistakeTimer;
     private float mistakeSpeedMultiplier = 1f;
@@ -182,8 +190,12 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         stuckTimer = 0f;
         reverseTimer = 0f;
         upsideDownTimer = 0f;
+        wallStuckTimer = 0f;
         trafficSideBias = 0f;
         trafficBiasTimer = 0f;
+        frontStaticBlocked = false;
+        frontStaticUrgency = 0f;
+        frontStaticEscapeSide = 0f;
         ResetDriverConsistency();
         inputs.Clear();
 
@@ -348,6 +360,9 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         sensorBrake = 0f;
         sensorSpeedLimit = float.MaxValue;
         trafficBlocked = false;
+        frontStaticBlocked = false;
+        frontStaticUrgency = 0f;
+        frontStaticEscapeSide = 0f;
         leftVehicleBlocked = false;
         rightVehicleBlocked = false;
         frontVehicleUrgency = 0f;
@@ -398,6 +413,10 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
         sensorBrake = Mathf.Max(sensorBrake, obstacleBrake * urgency);
         sensorSpeedLimit = Mathf.Min(sensorSpeedLimit, Mathf.Lerp(maxSpeedKph, wallSlowSpeedKph, urgency));
+        frontStaticBlocked = true;
+        frontStaticUrgency = Mathf.Max(frontStaticUrgency, urgency);
+        frontStaticEscapeSide = side != 0f ? side : GetAvoidanceSide(hit);
+        sensorSteer += frontStaticEscapeSide * obstacleSteerStrength * Mathf.Lerp(.7f, 1.25f, urgency);
 
     }
 
@@ -431,9 +450,16 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
         targetSteer = Mathf.Clamp(targetSteer + mistakeSteerOffset, -1f, 1f);
 
+        if (!frontStaticBlocked && frontVehicleUrgency < .05f && Mathf.Abs(targetSteer) < .18f) {
+            targetSteer = Mathf.Abs(targetSteer) < straightSteerDeadZone
+                ? 0f
+                : Mathf.Lerp(targetSteer, 0f, straightSteerAssist);
+        }
+
         if (reverseTimer > 0f) {
             reverseTimer -= Time.fixedDeltaTime;
-            targetSteer = -Mathf.Sign(currentSteer == 0f ? 1f : currentSteer) * .8f;
+            float reverseSide = frontStaticEscapeSide != 0f ? frontStaticEscapeSide : -Mathf.Sign(currentSteer == 0f ? 1f : currentSteer);
+            targetSteer = reverseSide * .85f;
         }
 
         float smoothedSteer = Mathf.SmoothDamp(currentSteer, targetSteer, ref steerVelocity, steeringSmoothTime);
@@ -477,11 +503,25 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         else
             stuckTimer = 0f;
 
+        if (wantsToMove && frontStaticBlocked && car.speed < stuckSpeedKph + 1f)
+            wallStuckTimer += Time.fixedDeltaTime;
+        else
+            wallStuckTimer = 0f;
+
         if (stuckTimer >= stuckSeconds) {
-            reverseTimer = reverseStuckSeconds;
+            reverseTimer = Mathf.Max(reverseTimer, reverseStuckSeconds);
             stuckTimer = 0f;
             progressDistance = FindClosestDistanceOnCircuit(transform.position);
         }
+
+        if (wallStuckTimer >= wallStuckSeconds) {
+            reverseTimer = Mathf.Max(reverseTimer, reverseStuckSeconds * 1.75f);
+            currentSteer = Mathf.Clamp(frontStaticEscapeSide == 0f ? currentSteer : frontStaticEscapeSide, -.95f, .95f);
+            wallStuckTimer = 0f;
+        }
+
+        if (frontStaticBlocked && stuckTimer + wallStuckTimer >= hardResetStuckSeconds)
+            RecoverToRoute();
 
         if (Vector3.Dot(transform.up, Vector3.up) < .25f)
             upsideDownTimer += Time.fixedDeltaTime;
@@ -501,6 +541,40 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
             upsideDownTimer = 0f;
         }
+
+    }
+
+    private void RecoverToRoute() {
+
+        if (waypointCircuit == null || car == null)
+            return;
+
+        ArcadeVP.WaypointCircuit.RoutePoint routePoint = waypointCircuit.GetRoutePoint(progressDistance);
+        Vector3 forward = Flatten(routePoint.direction).normalized;
+
+        if (forward.sqrMagnitude < .001f)
+            forward = Flatten(transform.forward).normalized;
+
+        Vector3 offset = Vector3.zero;
+
+        if (frontStaticEscapeSide != 0f) {
+            Vector3 routeRight = new Vector3(forward.z, 0f, -forward.x).normalized;
+            offset = routeRight * frontStaticEscapeSide * 1.25f;
+        }
+
+        transform.SetPositionAndRotation(routePoint.position + offset + Vector3.up * .55f, Quaternion.LookRotation(forward, Vector3.up));
+
+        if (car.Rigid != null) {
+            car.Rigid.linearVelocity = Vector3.zero;
+            car.Rigid.angularVelocity = Vector3.zero;
+            car.Rigid.WakeUp();
+        }
+
+        stuckTimer = 0f;
+        wallStuckTimer = 0f;
+        reverseTimer = reverseStuckSeconds;
+        progressDistance = FindClosestDistanceOnCircuit(transform.position);
+        currentWaypointIndex = FindClosestCircuitWaypoint(transform.position);
 
     }
 
