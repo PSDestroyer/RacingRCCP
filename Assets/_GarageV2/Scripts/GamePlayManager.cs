@@ -195,6 +195,7 @@ public class GamePlayManager : MonoBehaviour
     private float raceElapsedTime = 0f;
     private float limitedBrakeUsageSeconds = 0f;
     private bool chaseRaceCaughtTarget = false;
+    private bool chaseRacePlayerReleased = false;
     private Coroutine chaseRaceHeadStartCoroutine;
     private float driftElapsedTime = 0f;
     private bool missionResultsShown = false;
@@ -603,6 +604,7 @@ public class GamePlayManager : MonoBehaviour
         eliminationTimer = eliminationInterval;
         limitedBrakeUsageSeconds = 0f;
         chaseRaceCaughtTarget = false;
+        chaseRacePlayerReleased = false;
         raceFinishCounter = 0;
         raceElapsedTime = 0f;
         missionResultsShown = false;
@@ -633,6 +635,8 @@ public class GamePlayManager : MonoBehaviour
             StopCoroutine(chaseRaceHeadStartCoroutine);
             chaseRaceHeadStartCoroutine = null;
         }
+
+        chaseRacePlayerReleased = false;
 
         if (IsDriftScoringMode())
             canScore = false;
@@ -819,6 +823,7 @@ public class GamePlayManager : MonoBehaviour
 
         if (RaceType == RaceType.ChaseRace)
         {
+            chaseRacePlayerReleased = false;
             SetPlayerControl(false);
             SetAIParticipantsControl(true);
             chaseRaceHeadStartCoroutine = StartCoroutine(ChaseRaceHeadStartCoroutine());
@@ -846,6 +851,7 @@ public class GamePlayManager : MonoBehaviour
             raceStateText.text = "GO";
 
         SetPlayerControl(true);
+        chaseRacePlayerReleased = true;
         yield return new WaitForSeconds(goTextDuration);
 
         if (raceStateText != null && !playerRacer.finished)
@@ -3382,6 +3388,9 @@ public class GamePlayManager : MonoBehaviour
        if (RaceType != RaceType.ChaseRace || playerRacer.finished || missionResultsShown)
            return;
 
+        if (!chaseRacePlayerReleased)
+            return;
+
        RaceRacer targetRacer = GetPrimaryChaseTargetRacer();
 
        if (targetRacer == null || targetRacer.racerTransform == null)
@@ -3436,6 +3445,9 @@ public class GamePlayManager : MonoBehaviour
 
    private string GetChaseRaceStatusText()
    {
+       if (!chaseRacePlayerReleased)
+           return $"Head Start  {Mathf.CeilToInt(Mathf.Max(0f, chaseHeadStartSeconds - raceElapsedTime))}s";
+
        RaceRacer targetRacer = GetPrimaryChaseTargetRacer();
 
        if (targetRacer == null || targetRacer.racerTransform == null || playerRacer.racerTransform == null)
