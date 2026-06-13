@@ -1789,8 +1789,17 @@ public class GamePlayManager : MonoBehaviour
 
        if (DriftProgressSlider != null)
        {
-           float progressTarget = RaceType == RaceType.TargetDrift ? GetTargetDriftScore() : GetGoldTarget();
-           DriftProgressSlider.value = Mathf.Clamp01(currentDriftDisplayedScore / Mathf.Max(1f, progressTarget));
+           if (RaceType == RaceType.TargetDrift)
+           {
+               float progressTarget = GetTargetDriftScore();
+               DriftProgressSlider.minValue = 0f;
+               DriftProgressSlider.maxValue = Mathf.Max(1f, progressTarget);
+               DriftProgressSlider.value = Mathf.Clamp(currentDriftDisplayedScore, 0f, DriftProgressSlider.maxValue);
+           }
+           else
+           {
+               UpdateSegmentedDriftProgressSlider();
+           }
        }
 
        if (DriftMedalText != null)
@@ -1829,6 +1838,36 @@ public class GamePlayManager : MonoBehaviour
        }
 
        UpdateDriftMedalImages();
+   }
+
+   private void UpdateSegmentedDriftProgressSlider()
+   {
+       if (DriftProgressSlider == null)
+           return;
+
+       float currentValue = GetCurrentDriftMedalValue();
+       float bronzeTarget = Mathf.Max(0.01f, GetBronzeTarget());
+       float silverTarget = Mathf.Max(bronzeTarget, GetSilverTarget());
+       float goldTarget = Mathf.Max(silverTarget, GetGoldTarget());
+
+       float segmentStart = 0f;
+       float segmentEnd = bronzeTarget;
+
+       if (currentValue >= silverTarget)
+       {
+           segmentStart = silverTarget;
+           segmentEnd = goldTarget;
+       }
+       else if (currentValue >= bronzeTarget)
+       {
+           segmentStart = bronzeTarget;
+           segmentEnd = silverTarget;
+       }
+
+       float segmentSize = Mathf.Max(0.01f, segmentEnd - segmentStart);
+       DriftProgressSlider.minValue = 0f;
+       DriftProgressSlider.maxValue = segmentSize;
+       DriftProgressSlider.value = Mathf.Clamp(currentValue - segmentStart, 0f, segmentSize);
    }
 
    private void RefreshDriftProgressSliderVisibility()
