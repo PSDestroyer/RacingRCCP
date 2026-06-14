@@ -146,6 +146,7 @@ public class GamePlayManager : MonoBehaviour
     public float missionIntroDuration = 3f;
     public TMP_Text missionIntroText;
     public float missionIntroFadeDuration = 0.35f;
+    public GameObject[] missionIntroAdditionalHiddenUI;
 
     [Header("Opponent Spawn")]
     public bool autoSpawnOpponents = true;
@@ -188,6 +189,7 @@ public class GamePlayManager : MonoBehaviour
     private readonly List<GameObject> spawnedOpponentObjects = new List<GameObject>();
     private bool raceStarted = false;
     private bool gameplayStarted = false;
+    private bool missionIntroActive = false;
     private float eliminationTimer = 0f;
     private int raceFinishCounter = 0;
     private string lastRacePositionText = string.Empty;
@@ -216,6 +218,7 @@ public class GamePlayManager : MonoBehaviour
     private float raceTrackLength = 0f;
     private float[] raceWaypointDistances = Array.Empty<float>();
     private MiniMap miniMap;
+    private readonly Dictionary<GameObject, bool> missionIntroHiddenUIStates = new Dictionary<GameObject, bool>();
 
     [Header("Drift Core")]
     public bool driftingNow = false;
@@ -657,9 +660,11 @@ public class GamePlayManager : MonoBehaviour
 
     private IEnumerator MissionIntroCinematicCoroutine()
     {
+        missionIntroActive = true;
         RCCP_Camera activeCamera = RCCP_SceneManager.Instance != null ? RCCP_SceneManager.Instance.activePlayerCamera : null;
         RCCP_CinematicCamera cinematicCamera = EnsureMissionIntroCinematicCamera();
         bool switchedToCinematic = false;
+        HideGameplayUIForMissionIntro();
 
         if (activeCamera != null && cinematicCamera != null)
         {
@@ -701,6 +706,9 @@ public class GamePlayManager : MonoBehaviour
             activeCamera.ChangeCamera(RCCP_Camera.CameraMode.TPS);
             activeCamera.ResetCamera();
         }
+
+        missionIntroActive = false;
+        RestoreGameplayUIAfterMissionIntro();
     }
 
     private RCCP_CinematicCamera EnsureMissionIntroCinematicCamera()
@@ -782,6 +790,64 @@ public class GamePlayManager : MonoBehaviour
         Color color = textComponent.color;
         color.a = Mathf.Clamp01(alpha);
         textComponent.color = color;
+    }
+
+    private void HideGameplayUIForMissionIntro()
+    {
+        missionIntroHiddenUIStates.Clear();
+
+        RegisterMissionIntroHiddenObject(currentLapText);
+        RegisterMissionIntroHiddenObject(missionGoalText);
+        RegisterMissionIntroHiddenObject(racePositionText);
+        RegisterMissionIntroHiddenObject(raceStateText);
+        RegisterMissionIntroHiddenObject(eliminationTimerText);
+        RegisterMissionIntroHiddenObject(scoreText);
+        RegisterMissionIntroHiddenObject(TotalScoreText);
+        RegisterMissionIntroHiddenObject(DriftMedalText);
+        RegisterMissionIntroHiddenObject(DriftTargetText);
+        RegisterMissionIntroHiddenObject(DriftComboText);
+        RegisterMissionIntroHiddenObject(DriftModeText);
+        RegisterMissionIntroHiddenObject(DriftTimerText);
+        RegisterMissionIntroHiddenObject(limitedBrakeUsageLabelText);
+        RegisterMissionIntroHiddenObject(limitedBrakeUsageText);
+        RegisterMissionIntroHiddenObject(DriftTimeSlider);
+        RegisterMissionIntroHiddenObject(DriftProgressSlider);
+
+        if (missionIntroAdditionalHiddenUI != null)
+        {
+            for (int i = 0; i < missionIntroAdditionalHiddenUI.Length; i++)
+                RegisterMissionIntroHiddenObject(missionIntroAdditionalHiddenUI[i]);
+        }
+
+        foreach (KeyValuePair<GameObject, bool> hiddenState in missionIntroHiddenUIStates)
+            hiddenState.Key.SetActive(false);
+    }
+
+    private void RestoreGameplayUIAfterMissionIntro()
+    {
+        foreach (KeyValuePair<GameObject, bool> hiddenState in missionIntroHiddenUIStates)
+        {
+            if (hiddenState.Key != null)
+                hiddenState.Key.SetActive(hiddenState.Value);
+        }
+
+        missionIntroHiddenUIStates.Clear();
+    }
+
+    private void RegisterMissionIntroHiddenObject(Component component)
+    {
+        if (component == null)
+            return;
+
+        RegisterMissionIntroHiddenObject(component.gameObject);
+    }
+
+    private void RegisterMissionIntroHiddenObject(GameObject targetObject)
+    {
+        if (targetObject == null || targetObject == missionIntroText?.gameObject || missionIntroHiddenUIStates.ContainsKey(targetObject))
+            return;
+
+        missionIntroHiddenUIStates.Add(targetObject, targetObject.activeSelf);
     }
 
     private IEnumerator RaceCountdownCoroutine()
@@ -1534,6 +1600,11 @@ public class GamePlayManager : MonoBehaviour
 
    private void UpdateRaceUI()
    {
+       if (missionIntroActive)
+           return;
+
+       UpdateMissionModeNameText();
+
        if (currentLapText != null)
        {
            if (RaceType == RaceType.Elimination)
@@ -1541,17 +1612,17 @@ public class GamePlayManager : MonoBehaviour
            else if (RaceType == RaceType.NoBrakeChallenge)
            {
                int shownLap = Mathf.Min(playerRacer.completedLaps + 1, totalRaceLaps);
-               currentLapText.text = $"Limited Brake  Lap {shownLap}/{totalRaceLaps}";
+               currentLapText.text = $"Lap {shownLap}/{totalRaceLaps}";
            }
            else if (RaceType == RaceType.TimeAttack)
            {
                int shownLap = Mathf.Min(playerRacer.completedLaps + 1, totalRaceLaps);
-               currentLapText.text = $"Time Attack  Lap {shownLap}/{totalRaceLaps}";
+               currentLapText.text = $"Lap {shownLap}/{totalRaceLaps}";
            }
            else if (RaceType == RaceType.ChaseRace)
            {
                int shownLap = Mathf.Min(playerRacer.completedLaps + 1, chaseLapLimit);
-               currentLapText.text = $"Chase  Lap {shownLap}/{chaseLapLimit}";
+               currentLapText.text = $"Lap {shownLap}/{chaseLapLimit}";
            }
            else
            {
@@ -1763,6 +1834,21 @@ public class GamePlayManager : MonoBehaviour
 
     private void UpdateDriftUI()
     {
+       if (missionIntroActive)
+       {
+           if (DriftTimerText != null)
+               DriftTimerText.gameObject.SetActive(false);
+
+           if (DriftProgressSlider != null)
+               DriftProgressSlider.gameObject.SetActive(false);
+
+           if (DriftComboText != null)
+               DriftComboText.gameObject.SetActive(false);
+
+           return;
+       }
+
+       UpdateMissionModeNameText();
        RefreshDriftProgressSliderVisibility();
 
        currentDriftDisplayedScore = RaceType == RaceType.ComboMaster
@@ -1784,9 +1870,6 @@ public class GamePlayManager : MonoBehaviour
        if (DriftComboText != null)
            UpdateDriftComboText();
 
-       if (DriftTargetText != null)
-           DriftTargetText.text = GetDriftTargetText();
-
        if (DriftProgressSlider != null)
        {
            if (RaceType == RaceType.TargetDrift)
@@ -1804,18 +1887,6 @@ public class GamePlayManager : MonoBehaviour
 
        if (DriftMedalText != null)
            DriftMedalText.text = GetCurrentDriftMedalText();
-
-       if (DriftModeText != null)
-       {
-           if (RaceType == RaceType.ComboMaster)
-               DriftModeText.text = "Combo Master";
-           else if (RaceType == RaceType.PerfectDrift)
-               DriftModeText.text = "Perfect Drift";
-           else if (RaceType == RaceType.TargetDrift)
-               DriftModeText.text = "Target Drift";
-           else if (RaceType == RaceType.DriftScore)
-               DriftModeText.text = "Drift Score";
-       }
 
        if (DriftTimerText != null)
        {
@@ -1914,7 +1985,7 @@ public class GamePlayManager : MonoBehaviour
        if (RaceType == RaceType.TargetDrift)
        {
            if (currentDriftDisplayedScore >= GetTargetDriftScore())
-               CompleteDriftMission(true, GetMissionMedalTitle());
+               CompleteDriftMission(true, "Finish");
 
            return;
        }
@@ -1922,17 +1993,7 @@ public class GamePlayManager : MonoBehaviour
        float medalValue = GetCurrentDriftMedalValue();
 
        if (medalValue >= GetGoldTarget())
-           CompleteDriftMission(true, GetMissionMedalTitle());
-       else if (medalValue >= GetSilverTarget())
-       {
-           if (raceStateText != null)
-               raceStateText.text = "Silver";
-       }
-       else if (medalValue >= GetBronzeTarget())
-       {
-           if (raceStateText != null)
-               raceStateText.text = "Bronze";
-       }
+           CompleteDriftMission(true, "Finish");
    }
 
    private float GetCurrentDriftComboMultiplier()
@@ -2123,7 +2184,7 @@ public class GamePlayManager : MonoBehaviour
            return;
 
        targetDriftTimeRemaining = 0f;
-       CompleteDriftMission(currentDriftDisplayedScore >= GetTargetDriftScore(), currentDriftDisplayedScore >= GetTargetDriftScore() ? GetMissionMedalTitle() : "Failed");
+       CompleteDriftMission(currentDriftDisplayedScore >= GetTargetDriftScore(), currentDriftDisplayedScore >= GetTargetDriftScore() ? "Finish" : "Failed");
    }
 
    private void UpdateTimedDriftModeLimit()
@@ -2136,7 +2197,7 @@ public class GamePlayManager : MonoBehaviour
 
        float medalValue = GetCurrentDriftMedalValue();
        bool success = medalValue >= GetBronzeTarget();
-       CompleteDriftMission(success, success ? GetMissionMedalTitle() : "Failed");
+       CompleteDriftMission(success, success ? "Finish" : "Failed");
    }
 
    private bool HasLimitedDriftRunTime()
@@ -2267,9 +2328,8 @@ public class GamePlayManager : MonoBehaviour
        SetPauseAvailability(false);
        SetGameplayParticipantsControl(false);
 
-       string medalTitle = GetMissionMedalTitle();
        if (raceStateText != null)
-           raceStateText.text = string.IsNullOrEmpty(medalTitle) ? stateText : medalTitle;
+           raceStateText.text = stateText;
 
        if (success)
        {
@@ -2301,9 +2361,8 @@ public class GamePlayManager : MonoBehaviour
        if (scoreText != null && scoreText.gameObject.activeSelf)
            scoreText.gameObject.SetActive(false);
 
-       string medalTitle = GetMissionMedalTitle();
        if (raceStateText != null)
-           raceStateText.text = string.IsNullOrEmpty(medalTitle) ? stateText : medalTitle;
+           raceStateText.text = stateText;
 
        if (success)
            ActivateMissionCinematicCamera();
@@ -2968,24 +3027,37 @@ public class GamePlayManager : MonoBehaviour
        racePositionAnimationCoroutine = StartCoroutine(AnimateRacePositionChange());
    }
 
-   private void UpdateMissionGoalText()
-   {
-       if (missionGoalText == null)
-           return;
+    private void UpdateMissionGoalText()
+    {
+       TMP_Text sharedGoalText = missionGoalText;
 
-       if (!IsRaceMode())
-       {
-           missionGoalText.gameObject.SetActive(false);
+       if (sharedGoalText == null)
            return;
-       }
 
        string goalText = GetMissionGoalText();
        bool shouldShow = !string.IsNullOrWhiteSpace(goalText);
 
-       missionGoalText.gameObject.SetActive(shouldShow);
+       sharedGoalText.gameObject.SetActive(shouldShow);
 
        if (shouldShow)
-           missionGoalText.text = goalText;
+           sharedGoalText.text = goalText;
+
+       if (DriftTargetText != null && DriftTargetText != missionGoalText)
+           DriftTargetText.gameObject.SetActive(false);
+    }
+
+   private void UpdateMissionModeNameText()
+   {
+       if (DriftModeText == null)
+           return;
+
+       string modeName = GetRaceModeDisplayName();
+       bool shouldShow = !string.IsNullOrWhiteSpace(modeName);
+
+       DriftModeText.gameObject.SetActive(shouldShow);
+
+       if (shouldShow)
+           DriftModeText.text = modeName;
    }
 
    private string GetMissionGoalText()
@@ -3010,6 +3082,12 @@ public class GamePlayManager : MonoBehaviour
 
            case RaceType.ChaseRace:
                return $"Target  Catch opponent\nHead Start  {chaseHeadStartSeconds:0} sec\nLap Limit  {chaseLapLimit}";
+
+           case RaceType.DriftScore:
+           case RaceType.PerfectDrift:
+           case RaceType.TargetDrift:
+           case RaceType.ComboMaster:
+               return GetDriftTargetText();
 
            default:
                return string.Empty;
@@ -3056,18 +3134,12 @@ public class GamePlayManager : MonoBehaviour
 
    private TMP_Text GetLimitedBrakeLabelText()
    {
-       if (limitedBrakeUsageLabelText != null)
-           return limitedBrakeUsageLabelText;
-
-       return DriftModeText;
+       return limitedBrakeUsageLabelText;
    }
 
    private TMP_Text GetLimitedBrakeValueText()
    {
-       if (limitedBrakeUsageText != null)
-           return limitedBrakeUsageText;
-
-       return TotalScoreText;
+       return limitedBrakeUsageText;
    }
 
    private IEnumerator AnimateRacePositionChange()
