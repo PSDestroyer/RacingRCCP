@@ -50,7 +50,7 @@ public class RCCP_UI_Customizer : RCCP_UIComponent
 
         CloseCustomizationPanels();
 
-        if (activeMenu)
+        if (activeMenu && IsPanelAvailable(activeMenu))
             activeMenu.SetActive(true);
 
     }
@@ -85,6 +85,7 @@ public class RCCP_UI_Customizer : RCCP_UIComponent
     private void OnEnable()
     {
         RefreshButtons();
+        RefreshPanelAvailability();
         if(LastCinemachine != null)
         enableCinemachine.CameraChange(LastCinemachine);
 
@@ -146,6 +147,73 @@ public class RCCP_UI_Customizer : RCCP_UIComponent
 
         if (neonsButton)
             neonsButton.interactable = customizer.NeonManager != null;
+    }
+
+    private void RefreshPanelAvailability()
+    {
+        if (!RCCPSceneManager || !RCCPSceneManager.activePlayerVehicle || !RCCPSceneManager.activePlayerVehicle.Customizer)
+        {
+            CloseCustomizationPanels();
+            return;
+        }
+
+        if (paints && !IsPanelAvailable(paints))
+            paints.SetActive(false);
+
+        if (wheels && !IsPanelAvailable(wheels))
+            wheels.SetActive(false);
+
+        if (customization && !IsPanelAvailable(customization))
+            customization.SetActive(false);
+
+        if (upgrades && !IsPanelAvailable(upgrades))
+            upgrades.SetActive(false);
+
+        if (spoilers && !IsPanelAvailable(spoilers))
+            spoilers.SetActive(false);
+
+        if (sirens && !IsPanelAvailable(sirens))
+            sirens.SetActive(false);
+
+        if (decals && !IsPanelAvailable(decals))
+            decals.SetActive(false);
+
+        if (neons && !IsPanelAvailable(neons))
+            neons.SetActive(false);
+    }
+
+    private bool IsPanelAvailable(GameObject panel)
+    {
+        if (!panel || !RCCPSceneManager || !RCCPSceneManager.activePlayerVehicle || !RCCPSceneManager.activePlayerVehicle.Customizer)
+            return false;
+
+        var customizer = RCCPSceneManager.activePlayerVehicle.Customizer;
+
+        if (panel == paints)
+            return customizer.PaintManager != null;
+
+        if (panel == wheels)
+            return customizer.WheelManager != null;
+
+        if (panel == customization)
+            return customizer.CustomizationManager != null;
+
+        if (panel == upgrades)
+            return customizer.UpgradeManager != null;
+
+        if (panel == spoilers)
+            return customizer.SpoilerManager != null;
+
+        if (panel == sirens)
+            return customizer.SirenManager != null;
+
+        if (panel == decals)
+            return customizer.DecalManager != null;
+
+        if (panel == neons)
+            return customizer.NeonManager != null;
+
+        return false;
     }
 /*
     private void Update() {
