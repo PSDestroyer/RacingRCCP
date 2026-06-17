@@ -38,6 +38,7 @@ public class CarSelection : MonoBehaviour
     public YesNo yesNo;
     [Header("--Stats--")] public Slider PowerSlider;
     public TMP_Text PowerText;
+    public TMP_Text PowerTextDuplicate;
     public Slider SpeedSlider;
     public TMP_Text SpeedText;
     public Slider SteerSlider;
@@ -314,6 +315,8 @@ public class CarSelection : MonoBehaviour
             CarClassImage.sprite = currentCar.CarClass;
         PowerSlider.value = displayStats.power;
         PowerText.text = displayStats.power.ToString();
+        if (PowerTextDuplicate != null)
+            PowerTextDuplicate.text = $"{displayStats.power} HP";
         SpeedSlider.value = displayStats.speed;
         SpeedText.text = displayStats.speed.ToString();
         SteerSlider.value = displayStats.steer;
