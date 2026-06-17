@@ -14,6 +14,12 @@ public class GameplayMangerCarHud : MonoBehaviour
 
     [Header("Gear")]
     public TMP_Text currentGearText;
+    public Image currentGearImage;
+    public Color lowGearColor = Color.green;
+    public Color midGearColor = Color.yellow;
+    public Color highGearColor = Color.red;
+    public Color neutralGearColor = Color.white;
+    public Color reverseGearColor = Color.white;
 
     [Header("Tachometer")]
     public RectTransform tachometerNeedle;
@@ -87,7 +93,13 @@ public class GameplayMangerCarHud : MonoBehaviour
             speedKmhText.text = $"0{speedSuffix}";
 
         if (currentGearText != null)
+        {
             currentGearText.text = "N";
+            currentGearText.color = neutralGearColor;
+        }
+
+        if (currentGearImage != null)
+            currentGearImage.color = neutralGearColor;
 
         if (tachometerNeedle != null)
             tachometerNeedle.localRotation = Quaternion.Euler(0f, 0f, tachometerMinAngle);
@@ -114,16 +126,40 @@ public class GameplayMangerCarHud : MonoBehaviour
         if (currentCar.NGearNow)
         {
             currentGearText.text = "N";
+            SetGearVisualColor(neutralGearColor);
             return;
         }
 
         if (currentCar.reversingNow || currentCar.direction < 0)
         {
             currentGearText.text = "R";
+            SetGearVisualColor(reverseGearColor);
             return;
         }
 
-        currentGearText.text = Mathf.Max(1, currentCar.currentGear).ToString();
+        int gearValue = Mathf.Max(1, currentCar.currentGear);
+        currentGearText.text = gearValue.ToString();
+        SetGearVisualColor(GetGearColor(gearValue));
+    }
+
+    private Color GetGearColor(int gearValue)
+    {
+        if (gearValue <= 2)
+            return lowGearColor;
+
+        if (gearValue <= 4)
+            return midGearColor;
+
+        return highGearColor;
+    }
+
+    private void SetGearVisualColor(Color targetColor)
+    {
+        if (currentGearText != null)
+            currentGearText.color = targetColor;
+
+        if (currentGearImage != null)
+            currentGearImage.color = targetColor;
     }
 
     private void UpdateTachometer()

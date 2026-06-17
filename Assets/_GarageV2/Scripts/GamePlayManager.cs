@@ -8,9 +8,13 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.AI;
+using UnityEngine.Localization.Settings;
 
 public class GamePlayManager : MonoBehaviour
 {
+    private const string LocalizationTableUI = "UI";
+    private const string LocalizationKeyChase = "CHASE";
+
     [Serializable]
     public class RaceRacer
     {
@@ -24,6 +28,8 @@ public class GamePlayManager : MonoBehaviour
         [NonSerialized] public bool eliminated;
         [NonSerialized] public float distanceToNextWaypoint;
         [NonSerialized] public int finishOrder;
+        [NonSerialized] public int startWaypointIndex;
+        [NonSerialized] public bool lapCountingArmed;
         [NonSerialized] public bool pacingBaselineCached;
         [NonSerialized] public float pacingMultiplier = 1f;
         [NonSerialized] public float baseEngineTorque;
@@ -55,9 +61,15 @@ public class GamePlayManager : MonoBehaviour
     public RaceRacer[] aiRacers;
     public int totalRaceLaps = 3;
     public float waypointReachDistance = 20f;
+    public GameObject lapUIRoot;
+    public GameObject timerUIRoot;
     public TMP_Text currentLapText;
+    public TMP_Text totalLapsText;
     public TMP_Text missionGoalText;
     public TMP_Text racePositionText;
+    public TMP_Text racePositionTotalText;
+    public TMP_Text liveLeaderboardText;
+    public TMP_Text chaseStatusText;
     public TMP_Text raceStateText;
     public TMP_Text eliminationTimerText;
 
@@ -131,7 +143,7 @@ public class GamePlayManager : MonoBehaviour
     [Header("Mode: Chase Race")]
     public float chaseHeadStartSeconds = 5f;
     public int chaseLapLimit = 2;
-    public float chaseCatchDistance = 8f;
+    public float chaseWinLeadDistance = 20f;
 
     [Header("Start Flow")]
     public bool useCountdown = true;
@@ -257,6 +269,7 @@ public class GamePlayManager : MonoBehaviour
     public Slider DriftProgressSlider;
     public TMP_Text scoreText;
     public TMP_Text TotalScoreText;
+    public TMP_Text PerfectDriftBestTimeText;
     public TMP_Text DriftMedalText;
     public TMP_Text DriftTargetText;
     public TMP_Text DriftComboText;
@@ -269,6 +282,9 @@ public class GamePlayManager : MonoBehaviour
     [Range(0f, 1f)] public float unlockedMedalAlpha = 1f;
     public float comboPulseDuration = 0.18f;
     public float comboPulseScale = 0.2f;
+    public Color driftCollisionFeedbackColor = Color.red;
+    public float driftCollisionFeedbackDuration = 0.5f;
+    public float driftCollisionShakeMagnitude = 10f;
 
     [Header("Mode: Drift Score")]
     public bool useCurrentMapDriftTarget = true;
@@ -280,6 +296,7 @@ public class GamePlayManager : MonoBehaviour
     public float perfectDriftBronzeTime = 5f;
     public float perfectDriftSilverTime = 10f;
     public float perfectDriftGoldTime = 15f;
+    public float perfectDriftRunTimeLimit = 60f;
 
     [Header("Mode: Combo Master")]
     public float bronzeComboTarget = 2f;
@@ -306,6 +323,12 @@ public class GamePlayManager : MonoBehaviour
     private float bestPerfectDriftTime = 0f;
     private float lastDisplayedComboMultiplier = 0f;
     private Coroutine driftComboAnimationCoroutine;
+    private Coroutine driftCollisionFeedbackCoroutine;
+    private Vector2 scoreTextOriginalAnchoredPosition;
+    private Vector2 driftTimeSliderOriginalAnchoredPosition;
+    private Color scoreTextOriginalColor = Color.white;
+    private Graphic[] driftTimeSliderGraphics = Array.Empty<Graphic>();
+    private Color[] driftTimeSliderOriginalColors = Array.Empty<Color>();
     private float targetDriftTimeRemaining = 0f;
     //  When player achieved a score.
     // public delegate void onDriftScoreAchieved(BD_PlayerManager Player);
@@ -331,6 +354,8 @@ public class GamePlayManager : MonoBehaviour
 
         if (scoreText != null)
             scoreText.gameObject.SetActive(false);
+
+        CacheDriftCollisionUIVisuals();
 
         if (missionIntroText != null)
         {
@@ -471,6 +496,9 @@ public class GamePlayManager : MonoBehaviour
         if (currentMap.perfectDriftGoldTime > 0f)
             perfectDriftGoldTime = currentMap.perfectDriftGoldTime;
 
+        if (currentMap.perfectDriftRunTimeLimit > 0f)
+            perfectDriftRunTimeLimit = currentMap.perfectDriftRunTimeLimit;
+
         if (currentMap.comboBronzeTarget > 0f)
             bronzeComboTarget = currentMap.comboBronzeTarget;
 
@@ -562,6 +590,8 @@ public class GamePlayManager : MonoBehaviour
             racerTransform = CarController != null ? CarController.transform : null,
             aiDriver = null,
             currentWaypointIndex = GetClosestWaypointIndex(CarController != null ? CarController.transform : null),
+            startWaypointIndex = GetClosestWaypointIndex(CarController != null ? CarController.transform : null),
+            lapCountingArmed = false,
             completedLaps = 0,
             finished = false,
             eliminated = false,
@@ -597,6 +627,8 @@ public class GamePlayManager : MonoBehaviour
                 aiRacer.currentWaypointIndex = GetClosestWaypointIndex(aiRacer.racerTransform);
             }
 
+            aiRacer.startWaypointIndex = aiRacer.currentWaypointIndex;
+            aiRacer.lapCountingArmed = false;
             aiRacer.completedLaps = 0;
             aiRacer.finished = false;
             aiRacer.eliminated = false;
@@ -796,13 +828,20 @@ public class GamePlayManager : MonoBehaviour
     {
         missionIntroHiddenUIStates.Clear();
 
+        RegisterMissionIntroHiddenObject(lapUIRoot);
+        RegisterMissionIntroHiddenObject(timerUIRoot);
         RegisterMissionIntroHiddenObject(currentLapText);
+        RegisterMissionIntroHiddenObject(totalLapsText);
         RegisterMissionIntroHiddenObject(missionGoalText);
         RegisterMissionIntroHiddenObject(racePositionText);
+        RegisterMissionIntroHiddenObject(racePositionTotalText);
+        RegisterMissionIntroHiddenObject(liveLeaderboardText);
+        RegisterMissionIntroHiddenObject(chaseStatusText);
         RegisterMissionIntroHiddenObject(raceStateText);
         RegisterMissionIntroHiddenObject(eliminationTimerText);
         RegisterMissionIntroHiddenObject(scoreText);
         RegisterMissionIntroHiddenObject(TotalScoreText);
+        RegisterMissionIntroHiddenObject(PerfectDriftBestTimeText);
         RegisterMissionIntroHiddenObject(DriftMedalText);
         RegisterMissionIntroHiddenObject(DriftTargetText);
         RegisterMissionIntroHiddenObject(DriftComboText);
@@ -902,16 +941,21 @@ public class GamePlayManager : MonoBehaviour
 
     private IEnumerator ChaseRaceHeadStartCoroutine()
     {
-        float remainingHeadStart = Mathf.Max(0f, chaseHeadStartSeconds);
+        int wholeSeconds = Mathf.CeilToInt(Mathf.Max(0f, chaseHeadStartSeconds));
+        string chaseLabel = GetLocalizedUIString(LocalizationKeyChase, "CHASE");
 
-        while (remainingHeadStart > 0f)
+        for (int remainingSeconds = wholeSeconds; remainingSeconds > 0; remainingSeconds--)
         {
             if (raceStateText != null)
-                raceStateText.text = $"CHASE {Mathf.CeilToInt(remainingHeadStart)}";
+                raceStateText.text = $"{chaseLabel} {remainingSeconds}";
 
             yield return new WaitForSeconds(1f);
-            remainingHeadStart -= 1f;
         }
+
+        float fractionalRemainder = Mathf.Max(0f, chaseHeadStartSeconds - Mathf.Floor(chaseHeadStartSeconds));
+
+        if (fractionalRemainder > 0f && fractionalRemainder < 1f)
+            yield return new WaitForSeconds(fractionalRemainder);
 
         if (raceStateText != null && !playerRacer.finished)
             raceStateText.text = "GO";
@@ -924,6 +968,12 @@ public class GamePlayManager : MonoBehaviour
             raceStateText.text = string.Empty;
 
         chaseRaceHeadStartCoroutine = null;
+    }
+
+    private string GetLocalizedUIString(string key, string fallback)
+    {
+        var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync(LocalizationTableUI, key);
+        return operation.IsDone && !string.IsNullOrWhiteSpace(operation.Result) ? operation.Result : fallback;
     }
 
     private void ApplyAILookAheadPerKphAtRaceStart()
@@ -1285,6 +1335,7 @@ public class GamePlayManager : MonoBehaviour
                    bestComboMasterScore = Mathf.Max(bestComboMasterScore, currentMP);
                    if (scoreText != null)
                    {
+                        RestoreDriftCollisionUIVisuals();
                         scoreText.text = currentDriftPoints.ToString("N1");
                    }
                    currentDriftPoints += (driftPointsMP * currentMP) * Time.deltaTime;
@@ -1306,6 +1357,12 @@ public class GamePlayManager : MonoBehaviour
        }
        if (DriftTimeSlider != null)
        {
+           if (driftingNow && !DriftTimeSlider.gameObject.activeSelf)
+           {
+               RestoreDriftCollisionUIVisuals();
+               DriftTimeSlider.gameObject.SetActive(true);
+           }
+
            DriftTimeSlider.value = totalDriftTime;
        }
        //  Clamping the drifting time.
@@ -1552,7 +1609,9 @@ public class GamePlayManager : MonoBehaviour
        if (playerRacer.currentWaypointIndex >= waypointCount)
        {
            playerRacer.currentWaypointIndex = 0;
-           playerRacer.completedLaps++;
+           
+           if (playerRacer.lapCountingArmed)
+               playerRacer.completedLaps++;
 
            if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge || RaceType == RaceType.TimeAttack) && playerRacer.completedLaps >= totalRaceLaps)
            {
@@ -1561,6 +1620,9 @@ public class GamePlayManager : MonoBehaviour
                CompleteRaceMission(success, success ? "Finish" : "Failed");
            }
        }
+
+       if (!playerRacer.lapCountingArmed && playerRacer.currentWaypointIndex != playerRacer.startWaypointIndex)
+           playerRacer.lapCountingArmed = true;
    }
 
    private void UpdateAIRaceProgress()
@@ -1582,7 +1644,12 @@ public class GamePlayManager : MonoBehaviour
                int previousIndex = aiRacer.currentWaypointIndex;
                aiRacer.currentWaypointIndex = aiRacer.aiDriver.currentWaypointIndex;
 
-               if (previousIndex > aiRacer.currentWaypointIndex)
+               if (!aiRacer.lapCountingArmed)
+               {
+                   if (aiRacer.currentWaypointIndex != aiRacer.startWaypointIndex)
+                       aiRacer.lapCountingArmed = true;
+               }
+               else if (previousIndex > aiRacer.currentWaypointIndex)
                {
                    aiRacer.completedLaps++;
 
@@ -1605,35 +1672,65 @@ public class GamePlayManager : MonoBehaviour
 
        UpdateMissionModeNameText();
 
-       if (currentLapText != null)
+       if (lapUIRoot != null)
+           lapUIRoot.SetActive(RaceType != RaceType.Elimination);
+
+       if (currentLapText != null || totalLapsText != null)
        {
            if (RaceType == RaceType.Elimination)
-               currentLapText.text = $"Survivors {GetActiveRacerCount()}/{allRacers.Length}";
+           {
+               if (currentLapText != null)
+                   currentLapText.text = GetActiveRacerCount().ToString();
+
+               if (totalLapsText != null)
+                   totalLapsText.text = $"/{allRacers.Length}";
+           }
            else if (RaceType == RaceType.NoBrakeChallenge)
            {
                int shownLap = Mathf.Min(playerRacer.completedLaps + 1, totalRaceLaps);
-               currentLapText.text = $"Lap {shownLap}/{totalRaceLaps}";
+
+               if (currentLapText != null)
+                   currentLapText.text = shownLap.ToString();
+
+               if (totalLapsText != null)
+                   totalLapsText.text = $"/{totalRaceLaps}";
            }
            else if (RaceType == RaceType.TimeAttack)
            {
                int shownLap = Mathf.Min(playerRacer.completedLaps + 1, totalRaceLaps);
-               currentLapText.text = $"Lap {shownLap}/{totalRaceLaps}";
+
+               if (currentLapText != null)
+                   currentLapText.text = shownLap.ToString();
+
+               if (totalLapsText != null)
+                   totalLapsText.text = $"/{totalRaceLaps}";
            }
            else if (RaceType == RaceType.ChaseRace)
            {
                int shownLap = Mathf.Min(playerRacer.completedLaps + 1, chaseLapLimit);
-               currentLapText.text = $"Lap {shownLap}/{chaseLapLimit}";
+
+               if (currentLapText != null)
+                   currentLapText.text = shownLap.ToString();
+
+               if (totalLapsText != null)
+                   totalLapsText.text = $"/{chaseLapLimit}";
            }
            else
            {
                int shownLap = Mathf.Min(playerRacer.completedLaps + 1, totalRaceLaps);
-               currentLapText.text = $"Lap {shownLap}/{totalRaceLaps}";
+
+               if (currentLapText != null)
+                   currentLapText.text = shownLap.ToString();
+
+               if (totalLapsText != null)
+                   totalLapsText.text = $"/{totalRaceLaps}";
            }
        }
 
        if (racePositionText != null)
            UpdateRacePositionText();
 
+       UpdateRaceTimerUI();
        UpdateMissionGoalText();
        UpdateLimitedBrakeUI();
 
@@ -1643,6 +1740,25 @@ public class GamePlayManager : MonoBehaviour
 
            if (RaceType == RaceType.Elimination && raceStarted && !playerRacer.finished)
                UpdateEliminationTimerUI();
+       }
+   }
+
+   private void UpdateRaceTimerUI()
+   {
+       if (timerUIRoot != null)
+           timerUIRoot.SetActive((RaceType == RaceType.Racing || RaceType == RaceType.TimeAttack) && raceStarted && !playerRacer.finished);
+
+       if (DriftTimerText == null)
+           return;
+
+       bool showRaceTimer = (RaceType == RaceType.Racing || RaceType == RaceType.TimeAttack) && raceStarted && !playerRacer.finished;
+       DriftTimerText.gameObject.SetActive(showRaceTimer);
+
+       if (showRaceTimer)
+       {
+           DriftTimerText.text = FormatRaceTime(raceElapsedTime);
+           DriftTimerText.color = targetDriftTimerNormalColor;
+           DriftTimerText.rectTransform.localScale = Vector3.one;
        }
    }
 
@@ -1848,7 +1964,29 @@ public class GamePlayManager : MonoBehaviour
            return;
        }
 
+       if (lapUIRoot != null)
+           lapUIRoot.SetActive(false);
+
+       if (currentLapText != null && lapUIRoot == null)
+           currentLapText.gameObject.SetActive(false);
+
+       if (totalLapsText != null && lapUIRoot == null)
+           totalLapsText.gameObject.SetActive(false);
+
+       if (racePositionText != null)
+           racePositionText.gameObject.SetActive(false);
+
+       if (racePositionTotalText != null)
+           racePositionTotalText.gameObject.SetActive(false);
+
+       if (liveLeaderboardText != null)
+           liveLeaderboardText.gameObject.SetActive(false);
+
+       if (chaseStatusText != null)
+           chaseStatusText.gameObject.SetActive(false);
+
        UpdateMissionModeNameText();
+       UpdateMissionGoalText();
        RefreshDriftProgressSliderVisibility();
 
        currentDriftDisplayedScore = RaceType == RaceType.ComboMaster
@@ -1865,6 +2003,15 @@ public class GamePlayManager : MonoBehaviour
                TotalScoreText.text = $"{currentDriftDisplayedScore:0.0}s";
            else
                TotalScoreText.text = currentDriftDisplayedScore.ToString("N0");
+       }
+
+       if (PerfectDriftBestTimeText != null)
+       {
+           bool showBestPerfectDriftTime = RaceType == RaceType.PerfectDrift;
+           PerfectDriftBestTimeText.gameObject.SetActive(showBestPerfectDriftTime);
+
+           if (showBestPerfectDriftTime)
+               PerfectDriftBestTimeText.text = $"{bestPerfectDriftTime:0.0}s";
        }
 
        if (DriftComboText != null)
@@ -1891,6 +2038,10 @@ public class GamePlayManager : MonoBehaviour
        if (DriftTimerText != null)
        {
            bool showTargetTimer = HasLimitedDriftRunTime() && !driftModeFinished;
+
+           if (timerUIRoot != null)
+               timerUIRoot.SetActive(showTargetTimer);
+
            DriftTimerText.gameObject.SetActive(showTargetTimer);
 
            if (showTargetTimer)
@@ -2137,7 +2288,7 @@ public class GamePlayManager : MonoBehaviour
 
    private float GetCurrentPerfectDriftTime()
    {
-       return Mathf.Max(bestPerfectDriftTime, currentDriftComboTime);
+       return Mathf.Max(0f, currentDriftComboTime);
    }
 
    private string GetDriftTargetText()
@@ -2214,7 +2365,7 @@ public class GamePlayManager : MonoBehaviour
            case RaceType.DriftScore:
                return driftScoreRunTimeLimit;
            case RaceType.PerfectDrift:
-               return 0f;
+               return perfectDriftRunTimeLimit;
            case RaceType.ComboMaster:
                return comboMasterRunTimeLimit;
            default:
@@ -3000,14 +3151,45 @@ public class GamePlayManager : MonoBehaviour
 
    private void UpdateRacePositionText()
    {
+       bool showSplitRacePosition = ShouldShowSplitRacePositionUI();
+       string newPositionText = RaceType == RaceType.TimeAttack
+           ? string.Empty
+           : RaceType == RaceType.ChaseRace
+               ? string.Empty
+               : showSplitRacePosition
+                   ? GetPlayerRacePosition().ToString()
+                   : GetPlayerRacePositionText();
+
+       if (racePositionTotalText != null)
+       {
+           bool shouldShowTotalPosition = showSplitRacePosition;
+           racePositionTotalText.gameObject.SetActive(shouldShowTotalPosition);
+
+           if (shouldShowTotalPosition)
+               racePositionTotalText.text = $"/{GetTotalRaceParticipants()}";
+       }
+
+       if (liveLeaderboardText != null)
+       {
+           bool shouldShowLeaderboard = showLiveLeaderboard && IsRaceMode() && RaceType != RaceType.TimeAttack && RaceType != RaceType.ChaseRace;
+           liveLeaderboardText.gameObject.SetActive(shouldShowLeaderboard);
+
+           if (shouldShowLeaderboard)
+               liveLeaderboardText.text = GetLiveLeaderboardText();
+       }
+
+       if (chaseStatusText != null)
+       {
+           bool shouldShowChaseStatus = RaceType == RaceType.ChaseRace && raceStarted && !playerRacer.finished;
+           chaseStatusText.gameObject.SetActive(shouldShowChaseStatus);
+
+           if (shouldShowChaseStatus)
+               chaseStatusText.text = GetChaseRaceStatusText();
+       }
+
        if (racePositionText == null)
            return;
 
-       string newPositionText = RaceType == RaceType.TimeAttack
-           ? FormatRaceTime(raceElapsedTime)
-           : RaceType == RaceType.ChaseRace
-               ? GetChaseRaceStatusText()
-           : (showLiveLeaderboard ? GetLiveLeaderboardText() : GetPlayerRacePositionText());
        racePositionText.text = newPositionText;
 
        if (string.IsNullOrEmpty(lastRacePositionText))
@@ -3025,6 +3207,27 @@ public class GamePlayManager : MonoBehaviour
            StopCoroutine(racePositionAnimationCoroutine);
 
        racePositionAnimationCoroutine = StartCoroutine(AnimateRacePositionChange());
+   }
+
+   private bool ShouldShowSplitRacePositionUI()
+   {
+       switch (RaceType)
+       {
+           case RaceType.Racing:
+           case RaceType.Elimination:
+           case RaceType.NoBrakeChallenge:
+               return true;
+           default:
+               return false;
+       }
+   }
+
+   private int GetTotalRaceParticipants()
+   {
+       if (RaceType == RaceType.Elimination)
+           return Mathf.Max(1, GetActiveRacerCount());
+
+       return Mathf.Max(1, allRacers != null && allRacers.Length > 0 ? allRacers.Length : 1);
    }
 
     private void UpdateMissionGoalText()
@@ -3065,10 +3268,8 @@ public class GamePlayManager : MonoBehaviour
        switch (RaceType)
        {
            case RaceType.Racing:
-               return "Bronze  Place 3\nSilver  Place 2\nGold    Place 1";
-
            case RaceType.Elimination:
-               return "Bronze  Place 3\nSilver  Place 2\nGold    Place 1";
+               return string.Empty;
 
            case RaceType.NoBrakeChallenge:
                return $"Bronze  {limitedBrakeBronzeTime:0.0} sec\n" +
@@ -3076,9 +3277,9 @@ public class GamePlayManager : MonoBehaviour
                       $"Gold    {limitedBrakeGoldTime:0.0} sec";
 
            case RaceType.TimeAttack:
-               return $"Bronze  {timeAttackBronzeTime} sec\n" +
-                      $"Silver  {timeAttackSilverTime} sec\n" +
-                      $"Gold    {timeAttackGoldTime} sec";
+               return $"Bronze  {FormatRaceTime(timeAttackBronzeTime)}\n" +
+                      $"Silver  {FormatRaceTime(timeAttackSilverTime)}\n" +
+                      $"Gold    {FormatRaceTime(timeAttackGoldTime)}";
 
            case RaceType.ChaseRace:
                return $"Target  Catch opponent\nHead Start  {chaseHeadStartSeconds:0} sec\nLap Limit  {chaseLapLimit}";
@@ -3548,10 +3749,9 @@ public class GamePlayManager : MonoBehaviour
        if (targetRacer == null || targetRacer.racerTransform == null || playerRacer.racerTransform == null)
            return false;
 
-       if (!targetRacer.eliminated && GetPlayerRacePosition() <= 1)
-           return true;
-
-       return Vector3.Distance(playerRacer.racerTransform.position, targetRacer.racerTransform.position) <= Mathf.Max(0.5f, chaseCatchDistance);
+       float playerProgress = GetRacerProgressMeters(playerRacer);
+       float targetProgress = GetRacerProgressMeters(targetRacer);
+       return playerProgress >= targetProgress + Mathf.Max(0.5f, chaseWinLeadDistance);
    }
 
    private string GetChaseRaceStatusText()
@@ -3893,6 +4093,8 @@ public class GamePlayManager : MonoBehaviour
        if (!resetDriftPointsAfterCollision)
            return;
 
+       bool hadActiveDriftFeedback = currentDriftPoints > 0f || totalDriftTime > 0f;
+
        driftingNow = false;
        driftInterruptedByCollision = true;
        driftInterruptTimer = driftInterruptDuration;
@@ -3910,6 +4112,120 @@ public class GamePlayManager : MonoBehaviour
            currentDriftCoins = 0;
            currentMP = 1f;
        }
+
+       if (hadActiveDriftFeedback)
+       {
+           if (driftCollisionFeedbackCoroutine != null)
+               StopCoroutine(driftCollisionFeedbackCoroutine);
+
+           driftCollisionFeedbackCoroutine = StartCoroutine(PlayDriftCollisionUIFeedback());
+       }
+   }
+
+   private void CacheDriftCollisionUIVisuals()
+   {
+       if (scoreText != null)
+       {
+           scoreTextOriginalAnchoredPosition = scoreText.rectTransform.anchoredPosition;
+           scoreTextOriginalColor = scoreText.color;
+       }
+
+       if (DriftTimeSlider != null)
+       {
+           RectTransform sliderRect = DriftTimeSlider.transform as RectTransform;
+
+           if (sliderRect != null)
+               driftTimeSliderOriginalAnchoredPosition = sliderRect.anchoredPosition;
+
+           driftTimeSliderGraphics = DriftTimeSlider.GetComponentsInChildren<Graphic>(true);
+           driftTimeSliderOriginalColors = new Color[driftTimeSliderGraphics.Length];
+
+           for (int i = 0; i < driftTimeSliderGraphics.Length; i++)
+               driftTimeSliderOriginalColors[i] = driftTimeSliderGraphics[i].color;
+       }
+   }
+
+   private void RestoreDriftCollisionUIVisuals()
+   {
+       if (scoreText != null)
+       {
+           scoreText.rectTransform.anchoredPosition = scoreTextOriginalAnchoredPosition;
+           scoreText.color = scoreTextOriginalColor;
+       }
+
+       if (DriftTimeSlider != null)
+       {
+           RectTransform sliderRect = DriftTimeSlider.transform as RectTransform;
+
+           if (sliderRect != null)
+               sliderRect.anchoredPosition = driftTimeSliderOriginalAnchoredPosition;
+       }
+
+       if (driftTimeSliderGraphics != null && driftTimeSliderOriginalColors != null)
+       {
+           int count = Mathf.Min(driftTimeSliderGraphics.Length, driftTimeSliderOriginalColors.Length);
+
+           for (int i = 0; i < count; i++)
+           {
+               if (driftTimeSliderGraphics[i] != null)
+                   driftTimeSliderGraphics[i].color = driftTimeSliderOriginalColors[i];
+           }
+       }
+   }
+
+   private IEnumerator PlayDriftCollisionUIFeedback()
+   {
+       RestoreDriftCollisionUIVisuals();
+
+       if (scoreText != null)
+       {
+           scoreText.gameObject.SetActive(true);
+           scoreText.color = driftCollisionFeedbackColor;
+       }
+
+       if (DriftTimeSlider != null)
+       {
+           DriftTimeSlider.gameObject.SetActive(true);
+
+           for (int i = 0; i < driftTimeSliderGraphics.Length; i++)
+           {
+               if (driftTimeSliderGraphics[i] != null)
+                   driftTimeSliderGraphics[i].color = driftCollisionFeedbackColor;
+           }
+       }
+
+       float duration = Mathf.Max(0.01f, driftCollisionFeedbackDuration);
+       float elapsed = 0f;
+
+       while (elapsed < duration)
+       {
+           elapsed += Time.deltaTime;
+           float damper = 1f - Mathf.Clamp01(elapsed / duration);
+           Vector2 shakeOffset = UnityEngine.Random.insideUnitCircle * driftCollisionShakeMagnitude * damper;
+
+           if (scoreText != null)
+               scoreText.rectTransform.anchoredPosition = scoreTextOriginalAnchoredPosition + shakeOffset;
+
+           if (DriftTimeSlider != null)
+           {
+               RectTransform sliderRect = DriftTimeSlider.transform as RectTransform;
+
+               if (sliderRect != null)
+                   sliderRect.anchoredPosition = driftTimeSliderOriginalAnchoredPosition + shakeOffset;
+           }
+
+           yield return null;
+       }
+
+       RestoreDriftCollisionUIVisuals();
+
+       if (scoreText != null)
+           scoreText.gameObject.SetActive(false);
+
+       if (DriftTimeSlider != null)
+           DriftTimeSlider.gameObject.SetActive(false);
+
+       driftCollisionFeedbackCoroutine = null;
    }
 
    private void FixedUpdate() {

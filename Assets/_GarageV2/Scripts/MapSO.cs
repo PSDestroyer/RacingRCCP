@@ -59,6 +59,7 @@ public class MapSO : ScriptableObject
     [SerializeField] private float _perfectDriftBronzeTime = 5f;
     [SerializeField] private float _perfectDriftSilverTime = 10f;
     [SerializeField] private float _perfectDriftGoldTime = 15f;
+    [SerializeField] private float _perfectDriftRunTimeLimit = 60f;
 
     [Header("Mode: Target Drift")]
     [SerializeField] private int _targetDriftScore = 50000;
@@ -97,6 +98,7 @@ public class MapSO : ScriptableObject
     public float perfectDriftBronzeTime => _perfectDriftBronzeTime;
     public float perfectDriftSilverTime => _perfectDriftSilverTime;
     public float perfectDriftGoldTime => _perfectDriftGoldTime;
+    public float perfectDriftRunTimeLimit => _perfectDriftRunTimeLimit;
     public int targetDriftScore => _targetDriftScore;
     public int targetDriftTimeLimit => _targetDriftTimeLimit;
     public float comboBronzeTarget => _comboBronzeTarget;
