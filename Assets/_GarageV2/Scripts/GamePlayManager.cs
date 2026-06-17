@@ -91,6 +91,9 @@ public class GamePlayManager : MonoBehaviour
     public float positionChangeFadeDuration = 0.2f;
     [Range(0f, 1f)] public float positionChangeMinAlpha = 0.25f;
     public Color playerLeaderboardColor = new Color(1f, 0.85f, 0.2f, 1f);
+    public Color achievedBronzeGoalColor = new Color(0.78f, 0.55f, 0.32f, 1f);
+    public Color achievedSilverGoalColor = new Color(0.82f, 0.86f, 0.92f, 1f);
+    public Color achievedGoldGoalColor = new Color(1f, 0.82f, 0.2f, 1f);
 
     [Header("Finish Summary UI")]
     public GameObject finishSummaryScreen;
@@ -1378,8 +1381,6 @@ public class GamePlayManager : MonoBehaviour
            }
            else if (RaceType == RaceType.ComboMaster)
            {
-               if (raceStateText != null && !driftModeFinished)
-                   raceStateText.text = "Combo Lost";
            }
 
            if (scoreText != null && scoreText.gameObject.activeSelf)
@@ -2295,16 +2296,16 @@ public class GamePlayManager : MonoBehaviour
    {
        if (RaceType == RaceType.ComboMaster)
        {
-           return $"Bronze  x{GetBronzeTarget():0.0}\n" +
-                  $"Silver  x{GetSilverTarget():0.0}\n" +
-                  $"Gold    x{GetGoldTarget():0.0}";
+           return $"{FormatMissionGoalLine("Bronze", $"x{GetBronzeTarget():0.0}", IsMissionGoalReached(GetBronzeTarget()), achievedBronzeGoalColor)}\n" +
+                  $"{FormatMissionGoalLine("Silver", $"x{GetSilverTarget():0.0}", IsMissionGoalReached(GetSilverTarget()), achievedSilverGoalColor)}\n" +
+                  $"{FormatMissionGoalLine("Gold", $"x{GetGoldTarget():0.0}", IsMissionGoalReached(GetGoldTarget()), achievedGoldGoalColor)}";
        }
 
        if (RaceType == RaceType.PerfectDrift)
        {
-           return $"Bronze  {GetBronzeTarget():0.0}s\n" +
-                  $"Silver  {GetSilverTarget():0.0}s\n" +
-                  $"Gold    {GetGoldTarget():0.0}s";
+           return $"{FormatMissionGoalLine("Bronze", $"{GetBronzeTarget():0.0}s", IsMissionGoalReached(GetBronzeTarget()), achievedBronzeGoalColor)}\n" +
+                  $"{FormatMissionGoalLine("Silver", $"{GetSilverTarget():0.0}s", IsMissionGoalReached(GetSilverTarget()), achievedSilverGoalColor)}\n" +
+                  $"{FormatMissionGoalLine("Gold", $"{GetGoldTarget():0.0}s", IsMissionGoalReached(GetGoldTarget()), achievedGoldGoalColor)}";
        }
 
        if (RaceType == RaceType.TargetDrift)
@@ -2319,9 +2320,9 @@ public class GamePlayManager : MonoBehaviour
                   $"Gold    {goldTime:0}s / {GetTargetDriftScore():N0}";
        }
 
-       return $"Bronze  {GetBronzeTarget():N0}\n" +
-              $"Silver  {GetSilverTarget():N0}\n" +
-              $"Gold    {GetGoldTarget():N0}";
+       return $"{FormatMissionGoalLine("Bronze", $"{GetBronzeTarget():N0}", IsMissionGoalReached(GetBronzeTarget()), achievedBronzeGoalColor)}\n" +
+              $"{FormatMissionGoalLine("Silver", $"{GetSilverTarget():N0}", IsMissionGoalReached(GetSilverTarget()), achievedSilverGoalColor)}\n" +
+              $"{FormatMissionGoalLine("Gold", $"{GetGoldTarget():N0}", IsMissionGoalReached(GetGoldTarget()), achievedGoldGoalColor)}";
    }
 
    private void UpdateTargetDriftTimer()
@@ -3261,6 +3262,35 @@ public class GamePlayManager : MonoBehaviour
 
        if (shouldShow)
            DriftModeText.text = modeName;
+   }
+
+   private string FormatMissionGoalLine(string label, string value, bool reached, Color reachedColor)
+   {
+       if (!reached)
+           return $"{label}  {value}";
+
+       return $"<color=#{UnityEngine.ColorUtility.ToHtmlStringRGB(reachedColor)}>{label}</color>  {value}";
+   }
+
+   private bool SupportsProgressiveMissionGoalHighlight()
+   {
+       switch (RaceType)
+       {
+           case RaceType.DriftScore:
+           case RaceType.PerfectDrift:
+           case RaceType.ComboMaster:
+               return true;
+           default:
+               return false;
+       }
+   }
+
+   private bool IsMissionGoalReached(float targetValue)
+   {
+       if (!SupportsProgressiveMissionGoalHighlight())
+           return false;
+
+       return GetCurrentDriftMedalValue() >= targetValue;
    }
 
    private string GetMissionGoalText()
