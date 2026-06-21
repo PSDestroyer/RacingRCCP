@@ -221,6 +221,8 @@ public class RCCP_VehicleUpgrade_WheelManager : RCCP_UpgradeComponent, IRCCP_Upg
             if (wheelCollider == null || wheelCollider.wheelModel == null)
                 continue;
 
+            float targetWheelExtent = RCCP_GetBounds.MaxBoundsExtent(wheelCollider.wheelModel);
+
             // Hide default wheel visuals on the root + children
             var renderers = wheelCollider.wheelModel.GetComponentsInChildren<Renderer>(true);
 
@@ -237,7 +239,13 @@ public class RCCP_VehicleUpgrade_WheelManager : RCCP_UpgradeComponent, IRCCP_Upg
 
             newWheel.transform.localPosition = Vector3.zero;
             newWheel.transform.localRotation = Quaternion.identity;
+            newWheel.transform.localScale = wheel.transform.localScale;
             newWheel.SetActive(true);
+
+            float newWheelExtent = RCCP_GetBounds.MaxBoundsExtent(newWheel.transform);
+
+            if (targetWheelExtent > 0.0001f && newWheelExtent > 0.0001f)
+                newWheel.transform.localScale *= targetWheelExtent / newWheelExtent;
 
             instantiatedWheels.Add(newWheel);
 
@@ -246,8 +254,10 @@ public class RCCP_VehicleUpgrade_WheelManager : RCCP_UpgradeComponent, IRCCP_Upg
                 newWheel.transform.localScale = new Vector3(-Mathf.Abs(s.x), s.y, s.z);
             }
 
-            if (applyRadius)
-                wheelCollider.WheelCollider.radius = RCCP_GetBounds.MaxBoundsExtent(wheel.transform);
+            if (applyRadius && wheelCollider.WheelCollider != null) {
+                float rootScaleY = Mathf.Abs(wheelCollider.transform.root.localScale.y);
+                wheelCollider.WheelCollider.radius = targetWheelExtent / Mathf.Max(rootScaleY, 0.0001f);
+            }
         }
     }
 
