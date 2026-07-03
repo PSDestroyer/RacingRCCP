@@ -6,8 +6,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.Localization.Settings;
 
 public class CarSelection : MonoBehaviour
 {
@@ -48,7 +48,6 @@ public class CarSelection : MonoBehaviour
     private float contentTop;
     private float contentBottom;
     private bool isScrolling = false;
-    private float targetNormalizedPosition;
     private float scrollDuration = 0.5f;
     private float elapsedTime = 0f;
     private float lastMoveTime = 0f;
@@ -57,19 +56,23 @@ public class CarSelection : MonoBehaviour
     private void Start()
   {
    GlobalCarData._buttonList.Clear();
+   ConfigureVerticalScrollView();
+
+   for (int i = spawninPanel.childCount - 1; i >= 0; i--)
+       Destroy(spawninPanel.GetChild(i).gameObject);
    
     for (var i = 0; i < GlobalCarData._carlists.Count; i++)
     {
       CarButton uibutton = Instantiate(uiPrefab, spawninPanel);
       uibutton.SetUpButton(GlobalCarData._carlists[i],this);
-      GlobalCarData._buttonList.Add( uibutton.GetComponent<Button>());
+      Button button = uibutton.GetComponent<Button>();
+      ConfigureCarButtonLayout(button);
+      GlobalCarData._buttonList.Add(button);
     }
     
     
         selectbut.onClick.AddListener(()=>SelectOrBuy());
         contentRectTransform = scrollRect.content.GetComponent<RectTransform>();
-        contentTop = contentRectTransform.localPosition.x - 1100 + (contentRectTransform.rect.width / 2f);
-        contentBottom = contentRectTransform.localPosition.x + 50- (contentRectTransform.rect.width / 2f);
         SetupListeners();
     
         StartCoroutine(scroll());
@@ -78,13 +81,20 @@ public class CarSelection : MonoBehaviour
   IEnumerator scroll()
   {
       yield return new WaitForSeconds(1);
+      if (GlobalCarData._buttonList.Count == 0)
+          yield break;
+
       Canvas.ForceUpdateCanvases();
-      ScrollToSelectedButton(GlobalCarData._buttonList[0]);
+      int savedIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._buttonList.Count - 1);
+      ScrollToSelectedButton(GlobalCarData._buttonList[savedIndex]);
 
   }
   
   private void SetupListeners()
   {  
+    if (GlobalCarData._buttonList.Count == 0)
+        return;
+
     for (int i = 0; i < GlobalCarData._buttonList.Count ; i++)
     {
            
@@ -93,14 +103,18 @@ public class CarSelection : MonoBehaviour
     }
 
     litenered = true;
-    GlobalCarData._buttonList[SaveManager.Instance.saveData.currentCar].onClick.Invoke();
-    GlobalCarData._buttonList[SaveManager.Instance.saveData.currentCar].Select();
-    ScrollToSelectedButton(GlobalCarData._buttonList[SaveManager.Instance.saveData.currentCar]);
+    int savedIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._buttonList.Count - 1);
+    OnPressedButton(savedIndex);
+    FocusCarButton(savedIndex);
 
   }
 
   public void OnPressedButton(int id)
   {
+    if (id < 0 || id >= GlobalCarData._buttonList.Count)
+        return;
+
+    indexcar = Mathf.Clamp(indexcar, 0, GlobalCarData._buttonList.Count - 1);
    // Debug.Log("Pressed");
     GlobalCarData._buttonList[id].GetComponent<CarButton>().isPressed();
     if(id!=indexcar)
@@ -111,24 +125,18 @@ public class CarSelection : MonoBehaviour
     UpdateCurrentCar();
         if (SaveManager.Instance.IsCarBought(GlobalCarData._carlists[indexcar].carName))
         {
-            var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Select");
-
-            selecttext.text = operation.Result;
-            selecttextJP.text = operation.Result;
+            selecttext.text = "Select";
+            selecttextJP.text = "Select";
             
             SaveManager.Instance.saveData.currentCar = indexcar;
         }
         else
         {
-            var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","BuyYes/No");
-
-            selecttext.text = "<color=#DFA93B> "+buystring.Result + " "+GlobalCarData._carlists[id].price+"<sprite index=0>";
-            selecttextJP.text = "<color=#DFA93B> "+buystring.Result +GlobalCarData._carlists[id].price+"<sprite index=0>";
+            selecttext.text = "<color=#DFA93B> Buy / Select "+GlobalCarData._carlists[id].price+"<sprite index=0>";
+            selecttextJP.text = "<color=#DFA93B> Buy / Select "+GlobalCarData._carlists[id].price+"<sprite index=0>";
 
         }
-        selectbut.Select();
-
-        }
+  }
 
     public void SelectOrBuy()
     {
@@ -144,9 +152,7 @@ public class CarSelection : MonoBehaviour
     public async void BuyCar()
     {
         RemoveEvents();
-        var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","BuyYes/No");
-
-        bool result = await yesNo.ShowYesNoPanelAsync(buystring.Result+"?");
+        bool result = await yesNo.ShowYesNoPanelAsync("Buy / Select?");
 
         if (result)
         {
@@ -154,9 +160,7 @@ public class CarSelection : MonoBehaviour
                 {
                     moneyManager.MoneyToTake( GlobalCarData._carlists[indexcar].price);
                     SaveManager.Instance.SaveCar(GlobalCarData._carlists[indexcar].carName,true, GlobalCarData._carlists[indexcar].power,GlobalCarData._carlists[indexcar].speed,GlobalCarData._carlists[indexcar].turbo,GlobalCarData._carlists[indexcar].color,GlobalCarData._carlists[indexcar].steerAngle,GlobalCarData._carlists[indexcar].traction,GlobalCarData._carlists[indexcar].brake);
-                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Select");
-
-                    selecttext.text = operation.Result;
+                    selecttext.text = "Select";
                     SaveManager.Instance.saveData.currentCar = indexcar;
                     SaveManager.Instance.Save();
                     SM.PlayNewCarClip();
@@ -164,8 +168,7 @@ public class CarSelection : MonoBehaviour
                 }
                 else
                 {
-                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","No money");
-                    yesNo.Notify(operation.Result);
+                    yesNo.Notify("No money");
                     SM.PlayButtonError();
                     Debug.Log("dont have enought Money");
                 }
@@ -315,6 +318,9 @@ public class CarSelection : MonoBehaviour
       if (!CanHandleNavigation())
           return;
 
+      if (GlobalCarData._buttonList == null || GlobalCarData._buttonList.Count == 0)
+          return;
+
       if (ctx.performed && Time.time - lastMoveTime > moveCooldown)
       {
             
@@ -324,25 +330,30 @@ public class CarSelection : MonoBehaviour
             
           int newindex = indexcar;
             
-          if (inputValue.x >= 0.1f)
+          if (inputValue.y <= -0.1f)
           {
               newindex++;
-              if (newindex > GlobalCarData._carlists.Count - 1)
+              if (newindex > GlobalCarData._buttonList.Count - 1)
               {
                   newindex = 0;
               }
           }
-          else if (inputValue.x <= -0.1f)
+          else if (inputValue.y >= 0.1f)
           {
               newindex--;
               if (newindex < 0)
               {
-                  newindex = GlobalCarData._carlists.Count - 1;
+                  newindex = GlobalCarData._buttonList.Count - 1;
               }
+          }
+          else
+          {
+              return;
           }
 
           // Debug.Log(newindex);
           OnPressedButton(newindex);
+          FocusCarButton(newindex);
       }
     
       // selectbut.Select();
@@ -351,9 +362,9 @@ public class CarSelection : MonoBehaviour
   {
       if (litenered)
       {
-          GlobalCarData._buttonList[SaveManager.Instance.saveData.currentCar].onClick.Invoke();
-          GlobalCarData._buttonList[SaveManager.Instance.saveData.currentCar].Select();
-          ScrollToSelectedButton(GlobalCarData._buttonList[SaveManager.Instance.saveData.currentCar]);
+          int savedIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._buttonList.Count - 1);
+          OnPressedButton(savedIndex);
+          FocusCarButton(savedIndex);
       }
       // if (litenered)
       //     GlobalCarData._buttonList[SaveManager.Instance.saveData.currentCar].onClick.Invoke();
@@ -367,7 +378,6 @@ public class CarSelection : MonoBehaviour
           return;
 
       playerInput.actions["Navigate"].performed += Navigations;
-      selectbut.Select();
       // playerInput.actions["Submit"].performed += SelectOrBuyCtx;
   }
 
@@ -389,7 +399,117 @@ public class CarSelection : MonoBehaviour
         if (CanvasManager == null)
             return true;
 
-        return CanvasManager.GetCurrentPanel() == UIPanelType.MainHub;
+        UIPanelType currentPanel = CanvasManager.GetCurrentPanel();
+        return currentPanel == UIPanelType.MainHub || currentPanel == UIPanelType.Shop;
+    }
+
+    private void ConfigureVerticalScrollView()
+    {
+        if (scrollRect == null || scrollRect.content == null)
+            return;
+
+        scrollRect.horizontal = false;
+        scrollRect.vertical = true;
+
+        if (scrollRect.viewport != null)
+        {
+            RectTransform viewport = scrollRect.viewport;
+            viewport.anchorMin = Vector2.zero;
+            viewport.anchorMax = Vector2.one;
+            viewport.anchoredPosition = Vector2.zero;
+            viewport.sizeDelta = Vector2.zero;
+            viewport.pivot = new Vector2(0.5f, 0.5f);
+        }
+
+        RectTransform content = scrollRect.content;
+        content.anchorMin = new Vector2(0f, 1f);
+        content.anchorMax = new Vector2(1f, 1f);
+        content.pivot = new Vector2(0.5f, 1f);
+
+        HorizontalLayoutGroup horizontal = content.GetComponent<HorizontalLayoutGroup>();
+        if (horizontal != null)
+            horizontal.enabled = false;
+
+        GridLayoutGroup grid = content.GetComponent<GridLayoutGroup>();
+
+        if (grid != null)
+        {
+            grid.enabled = true;
+            grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
+            grid.startAxis = GridLayoutGroup.Axis.Vertical;
+            grid.childAlignment = TextAnchor.UpperCenter;
+            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            grid.constraintCount = 1;
+            grid.cellSize = new Vector2(330f, 150f);
+            grid.spacing = new Vector2(0f, 15f);
+        }
+        else
+        {
+            VerticalLayoutGroup vertical = content.GetComponent<VerticalLayoutGroup>();
+            if (vertical == null)
+                vertical = content.gameObject.AddComponent<VerticalLayoutGroup>();
+
+            vertical.enabled = true;
+            vertical.childAlignment = TextAnchor.UpperCenter;
+            vertical.spacing = 15f;
+            vertical.childControlWidth = false;
+            vertical.childControlHeight = false;
+            vertical.childForceExpandWidth = false;
+            vertical.childForceExpandHeight = false;
+        }
+
+        ContentSizeFitter fitter = content.GetComponent<ContentSizeFitter>();
+        if (fitter == null)
+            fitter = content.gameObject.AddComponent<ContentSizeFitter>();
+
+        if (fitter != null)
+        {
+            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        }
+    }
+
+    private void ConfigureCarButtonLayout(Button button)
+    {
+        if (button == null)
+            return;
+
+        RectTransform rect = button.GetComponent<RectTransform>();
+        if (rect != null)
+        {
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.sizeDelta = new Vector2(330f, 150f);
+        }
+
+        LayoutElement layout = button.GetComponent<LayoutElement>();
+        if (layout == null)
+            layout = button.gameObject.AddComponent<LayoutElement>();
+
+        layout.ignoreLayout = false;
+        layout.minWidth = 330f;
+        layout.minHeight = 150f;
+        layout.preferredWidth = 330f;
+        layout.preferredHeight = 150f;
+        layout.flexibleWidth = 0f;
+        layout.flexibleHeight = 0f;
+
+        Navigation navigation = button.navigation;
+        navigation.mode = Navigation.Mode.None;
+        button.navigation = navigation;
+    }
+
+    private void FocusCarButton(int carId)
+    {
+        if (GlobalCarData._buttonList == null || carId < 0 || carId >= GlobalCarData._buttonList.Count)
+            return;
+
+        Button button = GlobalCarData._buttonList[carId];
+        button.Select();
+
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(button.gameObject);
     }
 
     private void ReplacePreviewCar(int carId)

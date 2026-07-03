@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using HalvaStudio.Save;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -21,8 +20,19 @@ public class CarButton : MonoBehaviour
     [NonSerialized] private CarSelection carSelection;
     // [NonSerialized] private Animator animator;
 
+    private void Awake()
+    {
+        NormalizeVisuals();
+    }
+
+    private void OnValidate()
+    {
+        NormalizeVisuals();
+    }
+
     public void SetUpButton(CarSO carData,CarSelection carSelections)
     {
+        NormalizeVisuals();
         CarIcon.sprite = carData.carsprite;
         CtrIcon.sprite = carData.CarClass;
         carText.text = carData.carName;
@@ -57,6 +67,7 @@ public class CarButton : MonoBehaviour
     public void isPressed()
     {
         selected.SetActive(true);
+        NormalizeVisuals();
         // animator.SetTrigger("Selected");
     }
 
@@ -73,5 +84,36 @@ public class CarButton : MonoBehaviour
         // carSelection.OnPressedButton(id);
         // animator.SetTrigger("Selected");
 // Debug.Log("ALili");
+    }
+
+    private void NormalizeVisuals()
+    {
+        RectTransform rect = GetComponent<RectTransform>();
+
+        if (rect != null && (rect.sizeDelta.x <= 0.01f || rect.sizeDelta.y <= 0.01f))
+            rect.sizeDelta = new Vector2(330f, 150f);
+
+        Graphic rootGraphic = GetComponent<Graphic>();
+        if (rootGraphic != null)
+            rootGraphic.enabled = true;
+
+        if (selected != null)
+            selected.transform.SetAsFirstSibling();
+
+        EnsureGraphicVisible(CarIcon);
+        EnsureGraphicVisible(CtrIcon);
+        EnsureGraphicVisible(carText);
+        EnsureGraphicVisible(priceText);
+        EnsureGraphicVisible(PowerText);
+        EnsureGraphicVisible(AvaliableText);
+    }
+
+    private void EnsureGraphicVisible(Graphic graphic)
+    {
+        if (graphic == null)
+            return;
+
+        graphic.gameObject.SetActive(true);
+        graphic.enabled = true;
     }
 }
