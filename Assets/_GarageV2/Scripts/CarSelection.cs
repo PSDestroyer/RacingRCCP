@@ -39,6 +39,7 @@ public class CarSelection : MonoBehaviour
     public List<string> TractionText = new List<string>();
     public TMP_Text Name;
     public TMP_Text NameShadow;
+    public TMP_Text PriceText;
 
     
     
@@ -53,10 +54,15 @@ public class CarSelection : MonoBehaviour
     private float lastMoveTime = 0f;
     private float moveCooldown = 0.2f; // Adjust this value as needed
     private Vector2 targetNormPos;
+    private bool navigationSubscribed;
+    private int lastNavigationFrame = -1;
+    private bool navigationInputHeld;
     private void Start()
   {
    GlobalCarData._buttonList.Clear();
    ConfigureVerticalScrollView();
+
+   ClearSelectedObjectIfInside(spawninPanel);
 
    for (int i = spawninPanel.childCount - 1; i >= 0; i--)
        Destroy(spawninPanel.GetChild(i).gameObject);
@@ -76,6 +82,7 @@ public class CarSelection : MonoBehaviour
         SetupListeners();
     
         StartCoroutine(scroll());
+        StartCoroutine(SelectInitialCarNextFrame());
   }
 
   IEnumerator scroll()
@@ -88,6 +95,18 @@ public class CarSelection : MonoBehaviour
       int savedIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._buttonList.Count - 1);
       ScrollToSelectedButton(GlobalCarData._buttonList[savedIndex]);
 
+  }
+
+  private IEnumerator SelectInitialCarNextFrame()
+  {
+      yield return null;
+
+      if (GlobalCarData._buttonList == null || GlobalCarData._buttonList.Count == 0)
+          yield break;
+
+      int savedIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._buttonList.Count - 1);
+      OnPressedButton(savedIndex);
+      FocusCarButton(savedIndex);
   }
   
   private void SetupListeners()
@@ -111,17 +130,36 @@ public class CarSelection : MonoBehaviour
 
   public void OnPressedButton(int id)
   {
+    RemoveDestroyedButtons();
+
     if (id < 0 || id >= GlobalCarData._buttonList.Count)
         return;
 
     indexcar = Mathf.Clamp(indexcar, 0, GlobalCarData._buttonList.Count - 1);
    // Debug.Log("Pressed");
-    GlobalCarData._buttonList[id].GetComponent<CarButton>().isPressed();
-    if(id!=indexcar)
-    GlobalCarData._buttonList[indexcar].GetComponent<CarButton>().UnPressed();
+    Button selectedButton = GlobalCarData._buttonList[id];
+    if (selectedButton == null)
+        return;
+
+    CarButton selectedCarButton = selectedButton.GetComponent<CarButton>();
+    if (selectedCarButton == null)
+        return;
+
+    selectedCarButton.isPressed();
+
+    if (id != indexcar && indexcar >= 0 && indexcar < GlobalCarData._buttonList.Count)
+    {
+        Button previousButton = GlobalCarData._buttonList[indexcar];
+        if (previousButton != null)
+        {
+            CarButton previousCarButton = previousButton.GetComponent<CarButton>();
+            if (previousCarButton != null)
+                previousCarButton.UnPressed();
+        }
+    }
        
     indexcar = id;
-    ScrollToSelectedButton(GlobalCarData._buttonList[id]);
+    ScrollToSelectedButton(selectedButton);
     UpdateCurrentCar();
         if (SaveManager.Instance.IsCarBought(GlobalCarData._carlists[indexcar].carName))
         {
@@ -132,8 +170,8 @@ public class CarSelection : MonoBehaviour
         }
         else
         {
-            selecttext.text = "<color=#DFA93B> Buy / Select "+GlobalCarData._carlists[id].price+"<sprite index=0>";
-            selecttextJP.text = "<color=#DFA93B> Buy / Select "+GlobalCarData._carlists[id].price+"<sprite index=0>";
+            selecttext.text = "Buy";//+GlobalCarData._carlists[id].price+"<sprite index=0>";
+            selecttextJP.text = "Buy";//+GlobalCarData._carlists[id].price+"<sprite index=0>";
 
         }
   }
@@ -241,6 +279,8 @@ public class CarSelection : MonoBehaviour
 
     private void Update()
     {
+        HandleNavigationInput();
+
         if (!isScrolling) return;
 
         elapsedTime += Time.unscaledDeltaTime;
@@ -293,6 +333,8 @@ public class CarSelection : MonoBehaviour
         BrakeSlider.value = GlobalCarData._carlists[indexcar].brake;
         BrakeText.text = GlobalCarData._carlists[indexcar].brake.ToString();
         Traction.text = TractionText[GlobalCarData._carlists[indexcar].traction].ToString();
+        if (PriceText != null)
+            PriceText.text = GlobalCarData._carlists[indexcar].price.ToString();
         Turbo.gameObject.SetActive(GlobalCarData._carlists[indexcar].turbo);
     }
 
@@ -315,52 +357,75 @@ public class CarSelection : MonoBehaviour
   }
   public void Navigations(InputAction.CallbackContext ctx)
   {
+      if (!ctx.performed)
+          return;
+
+      TryMoveSelection(ctx.ReadValue<Vector2>().y);
+  }
+
+  public void NavigationCanceled(InputAction.CallbackContext ctx)
+  {
+      navigationInputHeld = false;
+  }
+
+  private void HandleNavigationInput()
+  {
+      if (playerInput == null || playerInput.actions == null)
+          return;
+
+      InputAction navigateAction = playerInput.actions.FindAction("Navigate", false);
+      if (navigateAction == null)
+          return;
+
+      Vector2 inputValue = navigateAction.ReadValue<Vector2>();
+      TryMoveSelection(inputValue.y);
+  }
+
+  private void TryMoveSelection(float verticalInput)
+  {
+      if (Mathf.Abs(verticalInput) <= 0.1f)
+      {
+          navigationInputHeld = false;
+          return;
+      }
+
       if (!CanHandleNavigation())
           return;
+
+      RemoveDestroyedButtons();
 
       if (GlobalCarData._buttonList == null || GlobalCarData._buttonList.Count == 0)
           return;
 
-      if (ctx.performed && Time.time - lastMoveTime > moveCooldown)
-      {
-            
-          lastMoveTime = Time.time; // Update last move time
-            
-          Vector2 inputValue = ctx.ReadValue<Vector2>();
-            
-          int newindex = indexcar;
-            
-          if (inputValue.y <= -0.1f)
-          {
-              newindex++;
-              if (newindex > GlobalCarData._buttonList.Count - 1)
-              {
-                  newindex = 0;
-              }
-          }
-          else if (inputValue.y >= 0.1f)
-          {
-              newindex--;
-              if (newindex < 0)
-              {
-                  newindex = GlobalCarData._buttonList.Count - 1;
-              }
-          }
-          else
-          {
-              return;
-          }
+      if (navigationInputHeld || Time.frameCount == lastNavigationFrame || Time.time - lastMoveTime <= moveCooldown)
+          return;
 
-          // Debug.Log(newindex);
-          OnPressedButton(newindex);
-          FocusCarButton(newindex);
+      navigationInputHeld = true;
+      lastNavigationFrame = Time.frameCount;
+      lastMoveTime = Time.time;
+
+      int newindex = indexcar;
+
+      if (verticalInput <= -0.1f)
+      {
+          newindex++;
+          if (newindex > GlobalCarData._buttonList.Count - 1)
+              newindex = 0;
       }
-    
-      // selectbut.Select();
+      else
+      {
+          newindex--;
+          if (newindex < 0)
+              newindex = GlobalCarData._buttonList.Count - 1;
+      }
+
+      OnPressedButton(newindex);
+      FocusCarButton(newindex);
   }
+
   private void OnEnable()
   {
-      if (litenered)
+      if (litenered && GlobalCarData._buttonList != null && GlobalCarData._buttonList.Count > 0)
       {
           int savedIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._buttonList.Count - 1);
           OnPressedButton(savedIndex);
@@ -377,7 +442,17 @@ public class CarSelection : MonoBehaviour
       if (playerInput == null || playerInput.actions == null)
           return;
 
-      playerInput.actions["Navigate"].performed += Navigations;
+      InputAction navigateAction = playerInput.actions.FindAction("Navigate", false);
+      if (navigateAction == null)
+          return;
+
+      for (int i = 0; i < 8; i++)
+      {
+          navigateAction.performed -= Navigations;
+          navigateAction.canceled -= NavigationCanceled;
+      }
+
+      navigationSubscribed = true;
       // playerInput.actions["Submit"].performed += SelectOrBuyCtx;
   }
 
@@ -385,12 +460,26 @@ public class CarSelection : MonoBehaviour
   {
       RemoveEvents();
   }
+
+  private void OnDestroy()
+  {
+      RemoveEvents();
+  }
+
   private void RemoveEvents()
   {
       if (playerInput == null || playerInput.actions == null)
           return;
 
-       playerInput.actions["Navigate"].performed -= Navigations;
+       InputAction navigateAction = playerInput.actions.FindAction("Navigate", false);
+       if (navigateAction != null)
+       {
+           navigateAction.performed -= Navigations;
+           navigateAction.canceled -= NavigationCanceled;
+       }
+
+       navigationSubscribed = false;
+       navigationInputHeld = false;
        // playerInput.actions["Submit"].performed -= SelectOrBuyCtx;
   }
 
@@ -411,16 +500,6 @@ public class CarSelection : MonoBehaviour
         scrollRect.horizontal = false;
         scrollRect.vertical = true;
 
-        if (scrollRect.viewport != null)
-        {
-            RectTransform viewport = scrollRect.viewport;
-            viewport.anchorMin = Vector2.zero;
-            viewport.anchorMax = Vector2.one;
-            viewport.anchoredPosition = Vector2.zero;
-            viewport.sizeDelta = Vector2.zero;
-            viewport.pivot = new Vector2(0.5f, 0.5f);
-        }
-
         RectTransform content = scrollRect.content;
         content.anchorMin = new Vector2(0f, 1f);
         content.anchorMax = new Vector2(1f, 1f);
@@ -440,8 +519,6 @@ public class CarSelection : MonoBehaviour
             grid.childAlignment = TextAnchor.UpperCenter;
             grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             grid.constraintCount = 1;
-            grid.cellSize = new Vector2(330f, 150f);
-            grid.spacing = new Vector2(0f, 15f);
         }
         else
         {
@@ -475,12 +552,16 @@ public class CarSelection : MonoBehaviour
             return;
 
         RectTransform rect = button.GetComponent<RectTransform>();
+        Vector2 buttonSize = GetConfiguredButtonSize(button);
+
         if (rect != null)
         {
             rect.anchorMin = new Vector2(0.5f, 1f);
             rect.anchorMax = new Vector2(0.5f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
-            rect.sizeDelta = new Vector2(330f, 150f);
+
+            if (rect.sizeDelta.x <= 0.01f || rect.sizeDelta.y <= 0.01f)
+                rect.sizeDelta = buttonSize;
         }
 
         LayoutElement layout = button.GetComponent<LayoutElement>();
@@ -488,28 +569,82 @@ public class CarSelection : MonoBehaviour
             layout = button.gameObject.AddComponent<LayoutElement>();
 
         layout.ignoreLayout = false;
-        layout.minWidth = 330f;
-        layout.minHeight = 150f;
-        layout.preferredWidth = 330f;
-        layout.preferredHeight = 150f;
+        layout.minWidth = buttonSize.x;
+        layout.minHeight = buttonSize.y;
+        layout.preferredWidth = buttonSize.x;
+        layout.preferredHeight = buttonSize.y;
         layout.flexibleWidth = 0f;
         layout.flexibleHeight = 0f;
 
         Navigation navigation = button.navigation;
         navigation.mode = Navigation.Mode.None;
         button.navigation = navigation;
+
+        Graphic targetGraphic = button.GetComponent<Graphic>();
+        if (targetGraphic != null)
+            button.targetGraphic = targetGraphic;
+    }
+
+    private Vector2 GetConfiguredButtonSize(Button button)
+    {
+        if (scrollRect != null && scrollRect.content != null)
+        {
+            GridLayoutGroup grid = scrollRect.content.GetComponent<GridLayoutGroup>();
+            if (grid != null && grid.cellSize.x > 0.01f && grid.cellSize.y > 0.01f)
+                return grid.cellSize;
+        }
+
+        RectTransform rect = button != null ? button.GetComponent<RectTransform>() : null;
+        if (rect != null && rect.sizeDelta.x > 0.01f && rect.sizeDelta.y > 0.01f)
+            return rect.sizeDelta;
+
+        return new Vector2(330f, 150f);
     }
 
     private void FocusCarButton(int carId)
     {
+        RemoveDestroyedButtons();
+
         if (GlobalCarData._buttonList == null || carId < 0 || carId >= GlobalCarData._buttonList.Count)
             return;
 
         Button button = GlobalCarData._buttonList[carId];
-        button.Select();
+        if (button == null)
+            return;
 
-        if (EventSystem.current != null)
-            EventSystem.current.SetSelectedGameObject(button.gameObject);
+        Graphic targetGraphic = button.GetComponent<Graphic>();
+        if (targetGraphic != null)
+            button.targetGraphic = targetGraphic;
+
+        if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == button.gameObject)
+            EventSystem.current.SetSelectedGameObject(null);
+    }
+
+    private void RemoveDestroyedButtons()
+    {
+        if (GlobalCarData._buttonList == null)
+            return;
+
+        for (int i = GlobalCarData._buttonList.Count - 1; i >= 0; i--)
+        {
+            if (GlobalCarData._buttonList[i] == null)
+                GlobalCarData._buttonList.RemoveAt(i);
+        }
+
+        if (GlobalCarData._buttonList.Count > 0)
+            indexcar = Mathf.Clamp(indexcar, 0, GlobalCarData._buttonList.Count - 1);
+        else
+            indexcar = 0;
+    }
+
+    private void ClearSelectedObjectIfInside(Transform root)
+    {
+        if (root == null || EventSystem.current == null || EventSystem.current.currentSelectedGameObject == null)
+            return;
+
+        Transform selected = EventSystem.current.currentSelectedGameObject.transform;
+        if (selected == root || selected.IsChildOf(root))
+            EventSystem.current.SetSelectedGameObject(null);
     }
 
     private void ReplacePreviewCar(int carId)

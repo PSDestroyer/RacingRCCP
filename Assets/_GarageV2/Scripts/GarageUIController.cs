@@ -134,6 +134,7 @@ public class GarageUIController : MonoBehaviour
         hasCurrentPanel = true;
 
         nextPanel.Show();
+        ActivatePanelCamera(nextPanel.PanelCamera);
         UpdateBackButton();
 
         FocusCurrentPanelSelection();
@@ -181,5 +182,16 @@ public class GarageUIController : MonoBehaviour
             return;
         bool showBackButton = hasCurrentPanel && currentPanel != UIPanelType.MainHub;
         back.gameObject.SetActive(showBackButton);
+    }
+
+    private void ActivatePanelCamera(GameObject targetCamera)
+    {
+        foreach (UIPanel panel in panels.Values)
+        {
+            if (panel == null || panel.PanelCamera == null)
+                continue;
+
+            panel.PanelCamera.SetActive(panel.PanelCamera == targetCamera);
+        }
     }
 }

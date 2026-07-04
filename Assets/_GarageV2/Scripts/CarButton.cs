@@ -16,6 +16,9 @@ public class CarButton : MonoBehaviour
     [SerializeField] private TextMeshProUGUI PowerText;
     [SerializeField] private TextMeshProUGUI AvaliableText;
     [SerializeField] private GameObject selected;
+    private Image buttonImage;
+    private Button button;
+    private Sprite normalSprite;
     [NonSerialized] private int id;
     [NonSerialized] private CarSelection carSelection;
     // [NonSerialized] private Animator animator;
@@ -23,6 +26,7 @@ public class CarButton : MonoBehaviour
     private void Awake()
     {
         NormalizeVisuals();
+        CacheButtonVisuals();
     }
 
     private void OnValidate()
@@ -33,6 +37,7 @@ public class CarButton : MonoBehaviour
     public void SetUpButton(CarSO carData,CarSelection carSelections)
     {
         NormalizeVisuals();
+        CacheButtonVisuals();
         CarIcon.sprite = carData.carsprite;
         CtrIcon.sprite = carData.CarClass;
         carText.text = carData.carName;
@@ -40,7 +45,7 @@ public class CarButton : MonoBehaviour
         id = carData.id;
         if (carData.price != 0)
         {
-            priceText.text = carData.price.ToString() +"<sprite index=0>";
+            priceText.text = carData.price.ToString() +"";
         }
         else
         { 
@@ -68,12 +73,14 @@ public class CarButton : MonoBehaviour
     {
         selected.SetActive(true);
         NormalizeVisuals();
+        SetSelectedSprite(true);
         // animator.SetTrigger("Selected");
     }
 
     public void UnPressed()
     {
         selected.SetActive(false);
+        SetSelectedSprite(false);
         // animator.SetTrigger("Normal");
 
     }
@@ -106,6 +113,35 @@ public class CarButton : MonoBehaviour
         EnsureGraphicVisible(priceText);
         EnsureGraphicVisible(PowerText);
         EnsureGraphicVisible(AvaliableText);
+    }
+
+    private void CacheButtonVisuals()
+    {
+        if (buttonImage == null)
+            buttonImage = GetComponent<Image>();
+
+        if (button == null)
+            button = GetComponent<Button>();
+
+        if (normalSprite == null && buttonImage != null)
+            normalSprite = buttonImage.sprite;
+    }
+
+    private void SetSelectedSprite(bool isSelected)
+    {
+        CacheButtonVisuals();
+
+        if (buttonImage == null)
+            return;
+
+        if (isSelected && button != null && button.spriteState.selectedSprite != null)
+        {
+            buttonImage.sprite = button.spriteState.selectedSprite;
+            return;
+        }
+
+        if (normalSprite != null)
+            buttonImage.sprite = normalSprite;
     }
 
     private void EnsureGraphicVisible(Graphic graphic)
