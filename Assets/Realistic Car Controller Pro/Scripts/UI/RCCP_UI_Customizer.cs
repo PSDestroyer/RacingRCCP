@@ -38,12 +38,22 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
     public Button decalsButton;     //  Decals button.
     public Button neonsButton;     //  Neons button.
 
+    private Dictionary<Button, Sprite> normalButtonSprites;
+
+    private void Awake() {
+
+        CacheNormalButtonSprites();
+
+    }
+
     public void OpenCustomizationPanel(GameObject activeMenu) {
 
         CloseCustomizationPanels();
 
         if (activeMenu)
             activeMenu.SetActive(true);
+
+        SetSelectedCustomizationButton(activeMenu);
 
     }
 
@@ -76,7 +86,9 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
     }
     private void OnEnable()
     {
+        CacheNormalButtonSprites();
         RefreshButtons();
+        SetSelectedCustomizationButton(GetActiveCustomizationPanel());
     }
 
     private void RefreshButtons()
@@ -126,6 +138,96 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
 
         if (neonsButton)
             neonsButton.interactable = customizer.NeonManager != null;
+    }
+
+    private void CacheNormalButtonSprites() {
+
+        if (normalButtonSprites == null)
+            normalButtonSprites = new Dictionary<Button, Sprite>();
+
+        CacheNormalButtonSprite(paintsButton);
+        CacheNormalButtonSprite(wheelsButton);
+        CacheNormalButtonSprite(customizationButton);
+        CacheNormalButtonSprite(upgradesButton);
+        CacheNormalButtonSprite(spoilersButton);
+        CacheNormalButtonSprite(sirensButton);
+        CacheNormalButtonSprite(decalsButton);
+        CacheNormalButtonSprite(neonsButton);
+
+    }
+
+    private void CacheNormalButtonSprite(Button button) {
+
+        if (!button || !button.targetGraphic)
+            return;
+
+        Image image = button.targetGraphic as Image;
+
+        if (!image || normalButtonSprites.ContainsKey(button))
+            return;
+
+        normalButtonSprites.Add(button, image.sprite);
+
+    }
+
+    private GameObject GetActiveCustomizationPanel() {
+
+        if (paints && paints.activeSelf)
+            return paints;
+
+        if (wheels && wheels.activeSelf)
+            return wheels;
+
+        if (customization && customization.activeSelf)
+            return customization;
+
+        if (upgrades && upgrades.activeSelf)
+            return upgrades;
+
+        if (spoilers && spoilers.activeSelf)
+            return spoilers;
+
+        if (sirens && sirens.activeSelf)
+            return sirens;
+
+        if (decals && decals.activeSelf)
+            return decals;
+
+        if (neons && neons.activeSelf)
+            return neons;
+
+        return null;
+
+    }
+
+    private void SetSelectedCustomizationButton(GameObject activeMenu) {
+
+        SetButtonSelectedSprite(paintsButton, activeMenu == paints);
+        SetButtonSelectedSprite(wheelsButton, activeMenu == wheels);
+        SetButtonSelectedSprite(customizationButton, activeMenu == customization);
+        SetButtonSelectedSprite(upgradesButton, activeMenu == upgrades);
+        SetButtonSelectedSprite(spoilersButton, activeMenu == spoilers);
+        SetButtonSelectedSprite(sirensButton, activeMenu == sirens);
+        SetButtonSelectedSprite(decalsButton, activeMenu == decals);
+        SetButtonSelectedSprite(neonsButton, activeMenu == neons);
+
+    }
+
+    private void SetButtonSelectedSprite(Button button, bool selected) {
+
+        if (!button || !button.targetGraphic)
+            return;
+
+        Image image = button.targetGraphic as Image;
+
+        if (!image)
+            return;
+
+        if (selected && button.spriteState.selectedSprite)
+            image.sprite = button.spriteState.selectedSprite;
+        else if (normalButtonSprites != null && normalButtonSprites.TryGetValue(button, out Sprite normalSprite))
+            image.sprite = normalSprite;
+
     }
 /*
     private void Update() {
