@@ -40,7 +40,7 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
     }
     private void Start()
     {
-        priceText.text = price + "<sprite index=1>";
+        priceText.text = price + "";
     }
     private void OnDisable()
     {
