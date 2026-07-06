@@ -57,6 +57,11 @@ public class RCCP_UI_Spoiler : RCCP_UIComponent , ISelectHandler{
         Initialize();
     }
 
+    private void OnEnable()
+    {
+        Initialize();
+    }
+
     public void Refresh()
     {
         foreach (var VARIABLE in Comp)
@@ -68,14 +73,17 @@ public class RCCP_UI_Spoiler : RCCP_UIComponent , ISelectHandler{
     private void Initialize()
     {
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
+
+        if (!playerVehicle || !playerVehicle.Customizer || !playerVehicle.Customizer.SpoilerManager)
+            return;
+
         if (playerVehicle.Customizer.SpoilerManager.spoilerIndex != index)
         {
-            priceText.text = price + "  ";
+            RCCP_UI_PriceLabelUtility.SetPrice(priceText, price);
         }
         else
         {
-            //var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
-            priceText.text = "Purchased";
+            RCCP_UI_PriceLabelUtility.SetPurchased(priceText, "Owned");
         }
 
 

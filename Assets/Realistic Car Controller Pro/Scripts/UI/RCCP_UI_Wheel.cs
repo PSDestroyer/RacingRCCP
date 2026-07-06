@@ -40,7 +40,12 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
     }
     private void Start()
     {
-        priceText.text = price + "";
+        Initialize();
+    }
+
+    private void OnEnable()
+    {
+        Initialize();
     }
     private void OnDisable()
     {
@@ -52,6 +57,31 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
 
         YesNo();
 
+    }
+
+    private void Initialize()
+    {
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
+
+        if (!playerVehicle || !playerVehicle.Customizer || !playerVehicle.Customizer.WheelManager)
+            return;
+
+        if (playerVehicle.Customizer.WheelManager.wheelIndex == wheelIndex)
+            RCCP_UI_PriceLabelUtility.SetPurchased(priceText, "Owned");
+        else
+            RCCP_UI_PriceLabelUtility.SetPrice(priceText, price);
+    }
+
+    private void RefreshWheelButtons()
+    {
+        Transform root = transform.parent ? transform.parent : transform;
+        RCCP_UI_Wheel[] wheels = root.GetComponentsInChildren<RCCP_UI_Wheel>(true);
+
+        foreach (RCCP_UI_Wheel wheel in wheels)
+        {
+            if (wheel)
+                wheel.Initialize();
+        }
     }
 
     public async void YesNo()
@@ -83,6 +113,7 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
                     _moneyManager.MoneyToTake(price);
                     SoundManager.Instance.PlayButtonClick();
                     playerVehicle.Customizer.WheelManager.UpdateWheel(wheelIndex);
+                    RefreshWheelButtons();
                 }
                 else
                 {

@@ -44,6 +44,11 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
         Initialize();
     }
 
+    private void OnEnable()
+    {
+        Initialize();
+    }
+
     public void Refresh()
     {
         foreach (var VARIABLE in _neons)
@@ -55,15 +60,17 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
     {
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
 
+        if (!playerVehicle || !playerVehicle.Customizer || !playerVehicle.Customizer.NeonManager)
+            return;
+
         if (playerVehicle.Customizer.NeonManager.FindMaterialIndex(material) !=
             playerVehicle.Customizer.NeonManager.index)
         {
-            priceText.text = price + "<sprite index=1>";
+            RCCP_UI_PriceLabelUtility.SetPrice(priceText, price);
         }
         else
         {
-            var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
-            priceText.text = Purch.ToString();
+            RCCP_UI_PriceLabelUtility.SetPurchased(priceText, "Owned");
         }
     }
     private void OnDisable()
@@ -106,8 +113,7 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
                     _moneyManager.MoneyToTake(price);
                     SoundManager.Instance.PlayButtonClick();
                     playerVehicle.Customizer.NeonManager.Upgrade(material);
-                    var Purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Purchased");
-                    priceText.text = Purch.ToString();
+                    RCCP_UI_PriceLabelUtility.SetPurchased(priceText, "Owned");
                     Refresh();
                 }
                 else
