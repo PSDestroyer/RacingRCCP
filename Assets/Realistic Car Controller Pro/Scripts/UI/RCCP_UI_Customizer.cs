@@ -11,6 +11,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// RCCP UI Canvas that manages the event systems, panels, gauges, images and texts related to the vehicle and player.
@@ -54,6 +56,7 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
             activeMenu.SetActive(true);
 
         SetSelectedCustomizationButton(activeMenu);
+        SelectFirstPanelItem(activeMenu);
 
     }
 
@@ -89,6 +92,19 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
         CacheNormalButtonSprites();
         RefreshButtons();
         SetSelectedCustomizationButton(GetActiveCustomizationPanel());
+        SelectFirstPanelItem(GetActiveCustomizationPanel());
+    }
+
+    private void Update()
+    {
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy || Gamepad.current == null)
+            return;
+
+        if (Gamepad.current.leftShoulder.wasPressedThisFrame)
+            SwitchCustomizationPanel(1);
+
+        if (Gamepad.current.rightShoulder.wasPressedThisFrame)
+            SwitchCustomizationPanel(-1);
     }
 
     private void RefreshButtons()
@@ -138,6 +154,32 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
 
         if (neonsButton)
             neonsButton.interactable = customizer.NeonManager != null;
+
+        DisableTabNavigation();
+    }
+
+    private void DisableTabNavigation() {
+
+        DisableButtonNavigation(paintsButton);
+        DisableButtonNavigation(wheelsButton);
+        DisableButtonNavigation(customizationButton);
+        DisableButtonNavigation(upgradesButton);
+        DisableButtonNavigation(spoilersButton);
+        DisableButtonNavigation(sirensButton);
+        DisableButtonNavigation(decalsButton);
+        DisableButtonNavigation(neonsButton);
+
+    }
+
+    private void DisableButtonNavigation(Button button) {
+
+        if (!button)
+            return;
+
+        Navigation navigation = button.navigation;
+        navigation.mode = Navigation.Mode.None;
+        button.navigation = navigation;
+
     }
 
     private void CacheNormalButtonSprites() {
@@ -197,6 +239,98 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
             return neons;
 
         return null;
+
+    }
+
+    private void SwitchCustomizationPanel(int direction) {
+
+        List<CustomizationTab> tabs = GetAvailableTabs();
+
+        if (tabs.Count == 0)
+            return;
+
+        GameObject activePanel = GetActiveCustomizationPanel();
+        int currentIndex = tabs.FindIndex(tab => tab.panel == activePanel);
+
+        if (currentIndex < 0)
+            currentIndex = 0;
+        else
+            currentIndex = (currentIndex + direction + tabs.Count) % tabs.Count;
+
+        OpenCustomizationPanel(tabs[currentIndex].panel);
+
+    }
+
+    private void SelectFirstPanelItem(GameObject panel) {
+
+        if (!panel || !panel.activeInHierarchy || EventSystem.current == null)
+            return;
+
+        StartCoroutine(SelectFirstPanelItemNextFrame(panel));
+
+    }
+
+    private IEnumerator SelectFirstPanelItemNextFrame(GameObject panel) {
+
+        yield return null;
+
+        if (!panel || !panel.activeInHierarchy || EventSystem.current == null)
+            yield break;
+
+        Selectable[] selectables = panel.GetComponentsInChildren<Selectable>(true);
+
+        foreach (Selectable selectable in selectables) {
+
+            if (!selectable || !selectable.gameObject.activeInHierarchy || !selectable.IsInteractable())
+                continue;
+
+            EventSystem.current.SetSelectedGameObject(null);
+            EventSystem.current.SetSelectedGameObject(selectable.gameObject);
+            yield break;
+
+        }
+
+        EventSystem.current.SetSelectedGameObject(null);
+
+    }
+
+    private List<CustomizationTab> GetAvailableTabs() {
+
+        List<CustomizationTab> tabs = new List<CustomizationTab>();
+
+        AddTabIfAvailable(tabs, paints, paintsButton);
+        AddTabIfAvailable(tabs, wheels, wheelsButton);
+        AddTabIfAvailable(tabs, customization, customizationButton);
+        AddTabIfAvailable(tabs, upgrades, upgradesButton);
+        AddTabIfAvailable(tabs, spoilers, spoilersButton);
+        AddTabIfAvailable(tabs, sirens, sirensButton);
+        AddTabIfAvailable(tabs, decals, decalsButton);
+        AddTabIfAvailable(tabs, neons, neonsButton);
+
+        return tabs;
+
+    }
+
+    private void AddTabIfAvailable(List<CustomizationTab> tabs, GameObject panel, Button button) {
+
+        if (!panel || !button || !button.gameObject.activeInHierarchy || !button.interactable)
+            return;
+
+        tabs.Add(new CustomizationTab(panel, button));
+
+    }
+
+    private struct CustomizationTab {
+
+        public GameObject panel;
+        public Button button;
+
+        public CustomizationTab(GameObject panel, Button button) {
+
+            this.panel = panel;
+            this.button = button;
+
+        }
 
     }
 

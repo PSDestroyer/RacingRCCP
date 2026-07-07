@@ -64,6 +64,12 @@ public class TournamentCarousel : MonoBehaviour
 
         if (Gamepad.current != null)
         {
+            if (Gamepad.current.leftShoulder.wasPressedThisFrame)
+                Previous();
+
+            if (Gamepad.current.rightShoulder.wasPressedThisFrame)
+                Next();
+
             if (Gamepad.current.dpad.left.wasPressedThisFrame)
                 Previous();
 
@@ -93,34 +99,12 @@ public class TournamentCarousel : MonoBehaviour
 
     public void Next()
     {
-        if (cards.Count == 0 || isSliding)
-        {
-            return;
-        }
-
-        if (currentIndex >= cards.Count - 1)
-        {
-            return;
-        }
-        
-        currentIndex++;
-        SnapToIndex(currentIndex, 1);
+        TryMove(1, false);
     }
 
     public void Previous()
     {
-        if (cards.Count == 0 || isSliding)
-        {
-            return;
-        }
-
-        if (currentIndex <= 0)
-        {
-            return;
-        }
-        
-        currentIndex--;
-        SnapToIndex(currentIndex, -1);
+        TryMove(-1, false);
     }
 
     public void SelectCurrentTournament()
@@ -155,7 +139,26 @@ public class TournamentCarousel : MonoBehaviour
         EventSystem.current.SetSelectedGameObject(target);
     }
     
-    private void SnapToIndex(int index, int direction)
+    private bool TryMove(int direction, bool selectAfterMove)
+    {
+        if (cards.Count == 0 || isSliding)
+        {
+            return false;
+        }
+
+        int targetIndex = currentIndex + direction;
+
+        if (targetIndex < 0 || targetIndex >= cards.Count)
+        {
+            return false;
+        }
+
+        currentIndex = targetIndex;
+        SnapToIndex(currentIndex, direction, selectAfterMove);
+        return true;
+    }
+
+    private void SnapToIndex(int index, int direction, bool selectAfterMove = false)
     {
         if (cards.Count == 0)
         {
@@ -166,6 +169,8 @@ public class TournamentCarousel : MonoBehaviour
         {
             SetScrollPosition(0);
             PlayCardAnimations(0, direction);
+            if (selectAfterMove)
+                SelectCurrentTournament();
             return;
         }
 
@@ -188,7 +193,10 @@ public class TournamentCarousel : MonoBehaviour
             .OnComplete(() =>
             {
                 isSliding = false;
-                FocusPrimarySelection();
+                if (selectAfterMove)
+                    SelectCurrentTournament();
+                else
+                    FocusPrimarySelection();
             });
     }
 
