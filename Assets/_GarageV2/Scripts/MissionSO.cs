@@ -3,6 +3,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "MissionSO", menuName = "SO/Missions")]
 public class MissionSO : ScriptableObject
 {
+    [Header("UI")]
+    [Min(1)] public int missionNumber = 1;
+
     public string missionName;
     public Sprite preview;
     public RaceType raceType;

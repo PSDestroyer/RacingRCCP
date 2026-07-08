@@ -41,7 +41,7 @@ public class CarButton : MonoBehaviour
         CarIcon.sprite = carData.carsprite;
         CtrIcon.sprite = carData.CarClass;
         carText.text = carData.carName;
-        PowerText.text = carData.power+" HP";
+        //PowerText.text = carData.power+" HP";
         id = carData.id;
         if (carData.price != 0)
         {
@@ -111,7 +111,7 @@ public class CarButton : MonoBehaviour
         EnsureGraphicVisible(CtrIcon);
         EnsureGraphicVisible(carText);
         EnsureGraphicVisible(priceText);
-        EnsureGraphicVisible(PowerText);
+        //EnsureGraphicVisible(PowerText);
         EnsureGraphicVisible(AvaliableText);
     }
 

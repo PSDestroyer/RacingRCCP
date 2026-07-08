@@ -7,8 +7,10 @@ public class TournamentCard : MonoBehaviour
     [SerializeField] private TMP_Text descriptionText;
     [SerializeField] private Image icon;
     [SerializeField] private Image bgImage;
+    [SerializeField] private float backgroundPanDistance = 240f;
     
     private TournamentSO tournament;
+    private RectTransform backgroundRect;
     
     public TournamentSO Tournament => tournament;
 
@@ -34,6 +36,22 @@ public class TournamentCard : MonoBehaviour
         if (bgImage != null)
         {
             bgImage.sprite = tournament.backgroundImage;
+            backgroundRect = bgImage.rectTransform;
+            SetBackgroundOffsetNormalized(0f);
         }
+    }
+
+    public void SetBackgroundOffsetNormalized(float normalizedOffset)
+    {
+        if (backgroundRect == null)
+            backgroundRect = bgImage != null ? bgImage.rectTransform : null;
+
+        if (backgroundRect == null)
+            return;
+
+        float clamped = Mathf.Clamp01(normalizedOffset);
+        Vector2 anchoredPosition = backgroundRect.anchoredPosition;
+        anchoredPosition.x = Mathf.Lerp(0f, -backgroundPanDistance, clamped);
+        backgroundRect.anchoredPosition = anchoredPosition;
     }
 }

@@ -174,6 +174,7 @@ public class GamePlayManager : MonoBehaviour
     private Coroutine expRewardAnimationCoroutine;
     private Coroutine expSliderAnimationCoroutine;
     private Coroutine finishSummaryAnimationCoroutine;
+    private Coroutine finishContinueSelectionCoroutine;
     private ArcadeVP.WaypointCircuit runtimeRaceWaypointCircuit;
     private RCCP_AIWaypointsContainer runtimeRaceWaypoints;
     private readonly List<Waypoint_System> resolvedWaypointSystems = new List<Waypoint_System>();
@@ -2697,6 +2698,9 @@ public class GamePlayManager : MonoBehaviour
        if (raceStateText != null)
            raceStateText.text = stateText;
 
+       if (success)
+           CareerMissionProgress.MarkMissionCompleted(SelectedCareerMission.Tournament, SelectedCareerMission.Mission);
+
        ApplyMissionRewards();
        ShowFinishSummaryScreen();
    }
@@ -2719,6 +2723,9 @@ public class GamePlayManager : MonoBehaviour
 
        if (raceStateText != null)
            raceStateText.text = stateText;
+
+       if (success)
+           CareerMissionProgress.MarkMissionCompleted(SelectedCareerMission.Tournament, SelectedCareerMission.Mission);
 
        ApplyMissionRewards();
        ShowFinishSummaryScreen();
@@ -2840,6 +2847,12 @@ public class GamePlayManager : MonoBehaviour
 
        if (finishSummaryAnimationCoroutine != null)
            finishSummaryAnimationCoroutine = null;
+
+       if (finishContinueSelectionCoroutine != null)
+       {
+           StopCoroutine(finishContinueSelectionCoroutine);
+           finishContinueSelectionCoroutine = null;
+       }
    }
 
    public void ReturnToMenuFromFinish()
@@ -2918,7 +2931,10 @@ public class GamePlayManager : MonoBehaviour
            expProgressSlider.transform.localScale = Vector3.one;
 
        if (finishExpContinueButton != null)
+       {
            finishExpContinueButton.SetActive(true);
+           SelectFinishContinueButton(finishExpContinueButton);
+       }
 
        expAnimationCoroutine = null;
    }
@@ -2948,9 +2964,39 @@ public class GamePlayManager : MonoBehaviour
            yield return AnimateSummaryTime(stepDuration);
 
        if (finishSummaryContinueButton != null)
+       {
            finishSummaryContinueButton.SetActive(true);
+           SelectFinishContinueButton(finishSummaryContinueButton);
+       }
 
        finishSummaryAnimationCoroutine = null;
+   }
+
+   private void SelectFinishContinueButton(GameObject target)
+   {
+       if (target == null || EventSystem.current == null)
+           return;
+
+       if (finishContinueSelectionCoroutine != null)
+           StopCoroutine(finishContinueSelectionCoroutine);
+
+       finishContinueSelectionCoroutine = StartCoroutine(SelectFinishContinueButtonNextFrame(target));
+   }
+
+   private IEnumerator SelectFinishContinueButtonNextFrame(GameObject target)
+   {
+       yield return null;
+       yield return new WaitForEndOfFrame();
+
+       if (target == null || !target.activeInHierarchy || EventSystem.current == null)
+       {
+           finishContinueSelectionCoroutine = null;
+           yield break;
+       }
+
+       EventSystem.current.SetSelectedGameObject(null);
+       EventSystem.current.SetSelectedGameObject(target);
+       finishContinueSelectionCoroutine = null;
    }
 
    private void UpdateExpScreenUI(int displayedLevel, int displayedTotalExp, int displayedGainedExp, int displayedLevelUps, int displayedLevelProgress, int expRequirement)

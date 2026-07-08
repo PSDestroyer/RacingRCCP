@@ -34,7 +34,7 @@ public class TournamentCarousel : MonoBehaviour
 
     private void OnEnable()
     {
-        FocusPrimarySelection();
+        PreviewCurrentTournament();
     }
 
     private void Start()
@@ -42,7 +42,7 @@ public class TournamentCarousel : MonoBehaviour
         BuildCards();
         SetScrollPosition(0);
         PlayCardAnimations(0, 1);
-        FocusPrimarySelection();
+        PreviewCurrentTournament();
     }
 
     private void Update()
@@ -52,14 +52,11 @@ public class TournamentCarousel : MonoBehaviour
 
         if (Keyboard.current != null)
         {
-            if (Keyboard.current.leftArrowKey.wasPressedThisFrame || Keyboard.current.aKey.wasPressedThisFrame)
+            if (Keyboard.current.qKey.wasPressedThisFrame)
                 Previous();
 
-            if (Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.dKey.wasPressedThisFrame)
+            if (Keyboard.current.eKey.wasPressedThisFrame)
                 Next();
-
-            if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
-                SelectCurrentTournament();
         }
 
         if (Gamepad.current != null)
@@ -69,15 +66,6 @@ public class TournamentCarousel : MonoBehaviour
 
             if (Gamepad.current.rightShoulder.wasPressedThisFrame)
                 Next();
-
-            if (Gamepad.current.dpad.left.wasPressedThisFrame)
-                Previous();
-
-            if (Gamepad.current.dpad.right.wasPressedThisFrame)
-                Next();
-
-            if (Gamepad.current.buttonSouth.wasPressedThisFrame)
-                SelectCurrentTournament();
         }
     }
 
@@ -118,25 +106,22 @@ public class TournamentCarousel : MonoBehaviour
         careerUIController.OpenTournament(selectedTournament);
     }
 
+    public void SetMissionBackgroundPosition(float normalizedOffset)
+    {
+        if (cards.Count == 0 || currentIndex < 0 || currentIndex >= cards.Count)
+            return;
+
+        TournamentCard currentCard = cards[currentIndex];
+        if (currentCard != null)
+            currentCard.SetBackgroundOffsetNormalized(normalizedOffset);
+    }
+
     public void FocusPrimarySelection()
     {
         if (EventSystem.current == null)
             return;
 
-        GameObject target = null;
-
-        if (selectButton != null && selectButton.gameObject.activeInHierarchy && selectButton.IsInteractable())
-            target = selectButton.gameObject;
-        else if (nextButton != null && nextButton.gameObject.activeInHierarchy && nextButton.IsInteractable())
-            target = nextButton.gameObject;
-        else if (previousButton != null && previousButton.gameObject.activeInHierarchy && previousButton.IsInteractable())
-            target = previousButton.gameObject;
-
-        if (target == null)
-            return;
-
-        EventSystem.current.SetSelectedGameObject(null);
-        EventSystem.current.SetSelectedGameObject(target);
+        PreviewCurrentTournament();
     }
     
     private bool TryMove(int direction, bool selectAfterMove)
@@ -154,6 +139,7 @@ public class TournamentCarousel : MonoBehaviour
         }
 
         currentIndex = targetIndex;
+        PreviewCurrentTournament();
         SnapToIndex(currentIndex, direction, selectAfterMove);
         return true;
     }
@@ -195,8 +181,6 @@ public class TournamentCarousel : MonoBehaviour
                 isSliding = false;
                 if (selectAfterMove)
                     SelectCurrentTournament();
-                else
-                    FocusPrimarySelection();
             });
     }
 
@@ -258,5 +242,18 @@ public class TournamentCarousel : MonoBehaviour
         }
 
         return null;
+    }
+
+    private void PreviewCurrentTournament()
+    {
+        if (careerUIController == null || cards.Count == 0 || currentIndex < 0 || currentIndex >= cards.Count)
+            return;
+
+        TournamentSO selectedTournament = cards[currentIndex].Tournament;
+        if (selectedTournament != null)
+        {
+            SetMissionBackgroundPosition(0f);
+            careerUIController.PreviewTournament(selectedTournament);
+        }
     }
 }

@@ -13,4 +13,5 @@ public static class SaveKeys
     public static string Music = "Music";
     public static string Map = "Map";
     public static string Quality = "Quality";
+    public static string CareerMissionProgress = "CareerMissionProgress";
 }
