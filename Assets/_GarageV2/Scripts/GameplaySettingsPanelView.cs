@@ -41,7 +41,7 @@ public class GameplaySettingsPanelView : MonoBehaviour
         if (backButton == null)
         {
             Button[] buttons = existingRoot.GetComponentsInChildren<Button>(true);
-            backButton = buttons.FirstOrDefault(button => button.name.Contains("Back"));
+            backButton = buttons.FirstOrDefault(button => button.name.Contains("Back") || button.name.Contains("Close"));
         }
 
         if (titleText == null)
@@ -157,5 +157,11 @@ public class GameplaySettingsPanelView : MonoBehaviour
 
         if (SoundManager.Instance != null)
             SoundManager.Instance.SetMusicVolume(value);
+    }
+
+    public void RebuildNavigationCache()
+    {
+        // The gameplay pause flow uses the same Settings prefab as the menu.
+        // Leave Unity's built-in navigation untouched so it behaves identically.
     }
 }

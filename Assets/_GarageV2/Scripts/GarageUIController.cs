@@ -42,7 +42,6 @@ public class GarageUIController : MonoBehaviour
 
     private void Awake()
     {
-        
         panels.Clear();
 
         foreach (var entry in panelEntries)
@@ -136,7 +135,6 @@ public class GarageUIController : MonoBehaviour
         nextPanel.Show();
         ActivatePanelCamera(nextPanel.PanelCamera);
         UpdateBackButton();
-
         FocusCurrentPanelSelection();
         SoundManager.Instance.PlayButtonClick();
         isTransitioning = false;
@@ -194,4 +192,5 @@ public class GarageUIController : MonoBehaviour
             panel.PanelCamera.SetActive(panel.PanelCamera == targetCamera);
         }
     }
+
 }

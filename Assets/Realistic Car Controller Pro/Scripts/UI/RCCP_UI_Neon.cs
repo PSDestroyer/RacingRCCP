@@ -36,6 +36,7 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
     {
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
         playerVehicle.Customizer.NeonManager.UpgradeWithoutSave(material);
+        UpdateActionButton(playerVehicle);
 
     }
 
@@ -63,20 +64,34 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
         if (!playerVehicle || !playerVehicle.Customizer || !playerVehicle.Customizer.NeonManager)
             return;
 
-        if (playerVehicle.Customizer.NeonManager.FindMaterialIndex(material) !=
-            playerVehicle.Customizer.NeonManager.index)
-        {
-            RCCP_UI_PriceLabelUtility.SetPrice(priceText, price);
-        }
-        else
-        {
+        RCCP_CustomizationLoadout loadout = playerVehicle.Customizer.GetLoadout();
+        int materialIndex = playerVehicle.Customizer.NeonManager.FindMaterialIndex(material);
+
+        if (materialIndex == playerVehicle.Customizer.NeonManager.index)
+            RCCP_UI_PriceLabelUtility.SetEquipped(priceText, "In Use");
+        else if (loadout.IsNeonPurchased(materialIndex))
             RCCP_UI_PriceLabelUtility.SetPurchased(priceText, "Owned");
-        }
+        else
+            RCCP_UI_PriceLabelUtility.SetPrice(priceText, price);
     }
     private void OnDisable()
     {
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
         playerVehicle.Customizer.NeonManager.Initialize();
+        RCCP_UI_CustomizationActionButton.Clear();
+    }
+
+    private void UpdateActionButton(RCCP_CarController playerVehicle) {
+
+        if (!playerVehicle || !playerVehicle.Customizer || !playerVehicle.Customizer.NeonManager)
+            return;
+
+        RCCP_CustomizationLoadout loadout = playerVehicle.Customizer.GetLoadout();
+        int materialIndex = playerVehicle.Customizer.NeonManager.FindMaterialIndex(material);
+        bool isEquipped = materialIndex == playerVehicle.Customizer.NeonManager.index;
+        bool isPurchased = loadout.IsNeonPurchased(materialIndex);
+        RCCP_UI_CustomizationActionButton.RefreshForSelection(GetComponent<Button>(), isPurchased, isEquipped);
+
     }
 
     public void Upgrade() {
@@ -100,6 +115,28 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
         if (!playerVehicle.Customizer.NeonManager)
             return;
 
+        RCCP_CustomizationLoadout loadout = playerVehicle.Customizer.GetLoadout();
+        int materialIndex = playerVehicle.Customizer.NeonManager.FindMaterialIndex(material);
+
+        if (materialIndex == playerVehicle.Customizer.NeonManager.index)
+        {
+            var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "This item bought");
+            _yesNo.Notify(operation.Result);
+            SoundManager.Instance.PlayButtonClick();
+            UpdateActionButton(playerVehicle);
+            return;
+        }
+
+        if (loadout.IsNeonPurchased(materialIndex))
+        {
+            SoundManager.Instance.PlayButtonClick();
+            playerVehicle.Customizer.NeonManager.Upgrade(material);
+            Refresh();
+            UpdateActionButton(playerVehicle);
+            GetComponent<Button>().Select();
+            return;
+        }
+
         if (playerVehicle.Customizer.NeonManager.FindMaterialIndex(material) != playerVehicle.Customizer.NeonManager.index)
         {
             var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "BuyYes/No");
@@ -112,9 +149,10 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
                 {
                     _moneyManager.MoneyToTake(price);
                     SoundManager.Instance.PlayButtonClick();
+                    loadout.MarkNeonPurchased(materialIndex);
                     playerVehicle.Customizer.NeonManager.Upgrade(material);
-                    RCCP_UI_PriceLabelUtility.SetPurchased(priceText, "Owned");
                     Refresh();
+                    UpdateActionButton(playerVehicle);
                 }
                 else
                 {
@@ -129,16 +167,10 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
             }
             else
             {
+                UpdateActionButton(playerVehicle);
                 GetComponent<Button>().Select();
                 SoundManager.Instance.PlayButtonClick();
             }
-        }
-        else
-        {
-            var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "This item bought");
-            _yesNo.Notify(operation.Result);
-            SoundManager.Instance.PlayButtonClick();
-
         }
     }
 }

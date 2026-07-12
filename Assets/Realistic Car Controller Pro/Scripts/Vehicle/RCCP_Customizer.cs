@@ -252,6 +252,8 @@ public class RCCP_Customizer : RCCP_Component {
         if (loadout == null)
             loadout = new RCCP_CustomizationLoadout();
 
+        loadout.EnsurePurchaseState();
+
         //  Paint manager
         if (PaintManager)
             PaintManager.Initialize();
@@ -294,11 +296,13 @@ public class RCCP_Customizer : RCCP_Component {
 
         if (loadout != null) {
 
+            loadout.EnsurePurchaseState();
             return loadout;
 
         } else {
 
             loadout = new RCCP_CustomizationLoadout();
+            loadout.EnsurePurchaseState();
             return loadout;
 
         }
@@ -313,6 +317,8 @@ public class RCCP_Customizer : RCCP_Component {
         if (loadout == null)
             loadout = new RCCP_CustomizationLoadout();
 
+        loadout.EnsurePurchaseState();
+
         HalvaStudio.Save.SaveManager.Instance.SaveCustomizationLoadout(saveFileName, loadout);
     }
 
@@ -322,6 +328,11 @@ public class RCCP_Customizer : RCCP_Component {
     public void Load()
     {
         loadout = HalvaStudio.Save.SaveManager.Instance.LoadCustomizationLoadout(saveFileName);
+
+        if (loadout == null)
+            loadout = new RCCP_CustomizationLoadout();
+
+        loadout.EnsurePurchaseState();
     }
 
     /// <summary>

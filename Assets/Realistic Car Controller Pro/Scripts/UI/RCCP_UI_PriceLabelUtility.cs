@@ -22,6 +22,9 @@ public static class RCCP_UI_PriceLabelUtility {
         public Vector2 anchorMax;
         public Vector2 pivot;
         public Vector2 anchoredPosition;
+        public Vector2 sizeDelta;
+        public float fontSize;
+        public TextOverflowModes overflowMode;
         public readonly Dictionary<GameObject, bool> iconStates = new Dictionary<GameObject, bool>();
 
     }
@@ -36,10 +39,13 @@ public static class RCCP_UI_PriceLabelUtility {
         PriceLabelState state = GetState(priceText);
 
         priceText.text = price.ToString();
+        priceText.fontSize = state.fontSize;
+        priceText.overflowMode = state.overflowMode;
         priceText.alignment = state.alignment;
         priceText.color = state.color;
         RestorePosition(priceText, state);
         SetIconsActive(state, true);
+        RefreshText(priceText);
 
     }
 
@@ -51,10 +57,31 @@ public static class RCCP_UI_PriceLabelUtility {
         PriceLabelState state = GetState(priceText);
 
         priceText.text = string.IsNullOrEmpty(purchasedText) ? "Owned" : purchasedText;
+        priceText.fontSize = Mathf.Max(24f, state.fontSize * .8f);
+        priceText.overflowMode = TextOverflowModes.Overflow;
         priceText.alignment = TextAlignmentOptions.Center;
         priceText.color = new Color(0.35f, 1f, 0.25f, state.color.a);
         CenterBottomPosition(priceText, state);
         SetIconsActive(state, false);
+        RefreshText(priceText);
+
+    }
+
+    public static void SetEquipped(TMP_Text priceText, string equippedText) {
+
+        if (!priceText)
+            return;
+
+        PriceLabelState state = GetState(priceText);
+
+        priceText.text = string.IsNullOrEmpty(equippedText) ? "In Use" : equippedText;
+        priceText.fontSize = Mathf.Max(24f, state.fontSize * .8f);
+        priceText.overflowMode = TextOverflowModes.Overflow;
+        priceText.alignment = TextAlignmentOptions.Center;
+        priceText.color = new Color(0.35f, 1f, 0.25f, state.color.a);
+        CenterBottomPosition(priceText, state);
+        SetIconsActive(state, false);
+        RefreshText(priceText);
 
     }
 
@@ -71,12 +98,15 @@ public static class RCCP_UI_PriceLabelUtility {
             anchorMin = rectTransform.anchorMin,
             anchorMax = rectTransform.anchorMax,
             pivot = rectTransform.pivot,
-            anchoredPosition = rectTransform.anchoredPosition
+            anchoredPosition = rectTransform.anchoredPosition,
+            sizeDelta = rectTransform.sizeDelta,
+            fontSize = priceText.fontSize,
+            overflowMode = priceText.overflowMode
         };
 
-        Image[] icons = priceText.GetComponentsInChildren<Image>(true);
+        Graphic[] icons = priceText.GetComponentsInChildren<Graphic>(true);
 
-        foreach (Image icon in icons) {
+        foreach (Graphic icon in icons) {
 
             if (!icon || icon.gameObject == priceText.gameObject)
                 continue;
@@ -113,6 +143,11 @@ public static class RCCP_UI_PriceLabelUtility {
         rectTransform.pivot = new Vector2(.5f, .5f);
         rectTransform.anchoredPosition = new Vector2(0f, state.anchoredPosition.y);
 
+        RectTransform parentRect = rectTransform.parent as RectTransform;
+
+        if (parentRect)
+            rectTransform.sizeDelta = new Vector2(Mathf.Max(120f, parentRect.rect.width - 20f), state.sizeDelta.y);
+
     }
 
     private static void RestorePosition(TMP_Text priceText, PriceLabelState state) {
@@ -123,6 +158,17 @@ public static class RCCP_UI_PriceLabelUtility {
         rectTransform.anchorMax = state.anchorMax;
         rectTransform.pivot = state.pivot;
         rectTransform.anchoredPosition = state.anchoredPosition;
+        rectTransform.sizeDelta = state.sizeDelta;
+
+    }
+
+    private static void RefreshText(TMP_Text priceText) {
+
+        if (!priceText)
+            return;
+
+        priceText.havePropertiesChanged = true;
+        priceText.ForceMeshUpdate(true, true);
 
     }
 

@@ -8,6 +8,7 @@ public class UIPanel : MonoBehaviour
     [SerializeField] private GameObject defaultSelected;
     [SerializeField] private GameObject panelCamera;
 
+    public GameObject Root => root;
     public GameObject PanelCamera => panelCamera;
 
     public GameObject DefaultSelected

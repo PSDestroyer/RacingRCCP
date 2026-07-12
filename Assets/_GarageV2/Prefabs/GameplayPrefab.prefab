@@ -2257,11 +2257,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 9130687343406769223}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 351.95, y: 140}
-  m_SizeDelta: {x: 576.09, y: 52.3932}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0.000061035156, y: -320.9}
+  m_SizeDelta: {x: 576.0901, y: 52.39319}
+  m_Pivot: {x: 1, y: 1}
 --- !u!222 &4936964656736587737
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2317,8 +2317,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 52.64
-  m_fontSizeBase: 52.64
+  m_fontSize: 35
+  m_fontSizeBase: 35
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -3200,7 +3200,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
@@ -3400,7 +3400,7 @@ Transform:
   m_GameObject: {fileID: 4264560108541783126}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.031218523, y: 0.08470142, z: 6.271637}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4683,7 +4683,7 @@ MonoBehaviour:
   expGainText: {fileID: 2232253271959729510}
   expLevelRewardText: {fileID: 3264661708634337982}
   expProgressSlider: {fileID: 3055734772720134232}
-  finishExpContinueButton: {fileID: 1892310675896552862}
+  finishExpContinueButton: {fileID: 8795618848529055690}
   expAnimationDuration: 1.5
   expSliderPulseDuration: 0.2
   expSliderPulseScale: 0.08
@@ -4716,6 +4716,8 @@ MonoBehaviour:
   checkpointPrefab: {fileID: 0}
   checkpointVisualOffset: {x: 0, y: 2, z: 0}
   showOnlyNextCheckpoint: 1
+  gameplayMiniMap: {fileID: 0}
+  autoFindMiniMap: 1
   driftingNow: 0
   totalDriftPoints: 0
   currentDriftPoints: 0
@@ -4803,7 +4805,7 @@ RectTransform:
   - {fileID: 4718782708619691880}
   m_Father: {fileID: 8822412843706358499}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -23, y: -23}
   m_SizeDelta: {x: 0, y: 0}
@@ -6491,6 +6493,10 @@ PrefabInstance:
     - target: {fileID: 7242563728492524846, guid: 679e140928b0c964c92a4fd6d73669c7, type: 3}
       propertyPath: m_Name
       value: RCCP_Canvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 7242563728492524846, guid: 679e140928b0c964c92a4fd6d73669c7, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7242563728687965119, guid: 679e140928b0c964c92a4fd6d73669c7, type: 3}
       propertyPath: m_AnchorMax.y

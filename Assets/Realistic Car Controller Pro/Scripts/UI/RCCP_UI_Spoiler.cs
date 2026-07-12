@@ -38,6 +38,7 @@ public class RCCP_UI_Spoiler : RCCP_UIComponent , ISelectHandler{
     {
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
         playerVehicle.Customizer.SpoilerManager.UpgradeWithoutSave(index);
+        UpdateActionButton(playerVehicle);
 
     }
 
@@ -45,6 +46,7 @@ public class RCCP_UI_Spoiler : RCCP_UIComponent , ISelectHandler{
     {
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
         playerVehicle.Customizer.SpoilerManager.Initialize();
+        RCCP_UI_CustomizationActionButton.Clear();
     }
 
     public void OnClick() {
@@ -77,15 +79,27 @@ public class RCCP_UI_Spoiler : RCCP_UIComponent , ISelectHandler{
         if (!playerVehicle || !playerVehicle.Customizer || !playerVehicle.Customizer.SpoilerManager)
             return;
 
-        if (playerVehicle.Customizer.SpoilerManager.spoilerIndex != index)
-        {
-            RCCP_UI_PriceLabelUtility.SetPrice(priceText, price);
-        }
-        else
-        {
-            RCCP_UI_PriceLabelUtility.SetPurchased(priceText, "Owned");
-        }
+        RCCP_CustomizationLoadout loadout = playerVehicle.Customizer.GetLoadout();
 
+        if (playerVehicle.Customizer.SpoilerManager.spoilerIndex == index)
+            RCCP_UI_PriceLabelUtility.SetEquipped(priceText, "In Use");
+        else if (loadout.IsSpoilerPurchased(index))
+            RCCP_UI_PriceLabelUtility.SetPurchased(priceText, "Owned");
+        else
+            RCCP_UI_PriceLabelUtility.SetPrice(priceText, price);
+
+
+    }
+
+    private void UpdateActionButton(RCCP_CarController playerVehicle) {
+
+        if (!playerVehicle || !playerVehicle.Customizer || !playerVehicle.Customizer.SpoilerManager)
+            return;
+
+        RCCP_CustomizationLoadout loadout = playerVehicle.Customizer.GetLoadout();
+        bool isEquipped = playerVehicle.Customizer.SpoilerManager.spoilerIndex == index;
+        bool isPurchased = loadout.IsSpoilerPurchased(index);
+        RCCP_UI_CustomizationActionButton.RefreshForSelection(GetComponent<Button>(), isPurchased, isEquipped);
 
     }
 
@@ -105,6 +119,27 @@ public class RCCP_UI_Spoiler : RCCP_UIComponent , ISelectHandler{
         if (!playerVehicle.Customizer.SpoilerManager)
             return;
 
+        RCCP_CustomizationLoadout loadout = playerVehicle.Customizer.GetLoadout();
+
+        if (playerVehicle.Customizer.SpoilerManager.spoilerIndex == index)
+        {
+            var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "This item bought");
+            _yesNo.Notify(operation.Result);
+            SoundManager.Instance.PlayButtonClick();
+            UpdateActionButton(playerVehicle);
+            return;
+        }
+
+        if (loadout.IsSpoilerPurchased(index))
+        {
+            SoundManager.Instance.PlayButtonClick();
+            playerVehicle.Customizer.SpoilerManager.Upgrade(index);
+            Refresh();
+            UpdateActionButton(playerVehicle);
+            GetComponent<Button>().Select();
+            return;
+        }
+
         if (playerVehicle.Customizer.SpoilerManager.spoilerIndex != index)
         {
             var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "BuyYes/No");
@@ -117,8 +152,10 @@ public class RCCP_UI_Spoiler : RCCP_UIComponent , ISelectHandler{
                 {
                     _moneyManager.MoneyToTake(price);
                     SoundManager.Instance.PlayButtonClick();
+                    loadout.MarkSpoilerPurchased(index);
                     playerVehicle.Customizer.SpoilerManager.Upgrade(index);
                     Refresh();
+                    UpdateActionButton(playerVehicle);
                 }
                 else
                 {
@@ -133,16 +170,10 @@ public class RCCP_UI_Spoiler : RCCP_UIComponent , ISelectHandler{
             }
             else
             {
+                UpdateActionButton(playerVehicle);
                 GetComponent<Button>().Select();
                 SoundManager.Instance.PlayButtonClick();
             }
-        }
-        else
-        {
-            var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "This item bought");
-            _yesNo.Notify(operation.Result);
-            SoundManager.Instance.PlayButtonClick();
-
         }
     }
 }

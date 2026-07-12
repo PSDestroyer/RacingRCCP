@@ -149,6 +149,10 @@ public class GamePlayManager : MonoBehaviour
     public Vector3 checkpointVisualOffset = new Vector3(0f, 2f, 0f);
     public bool showOnlyNextCheckpoint = true;
 
+    [Header("MiniMap")]
+    public MiniMap gameplayMiniMap;
+    public bool autoFindMiniMap = true;
+
     private RaceRacer playerRacer = new RaceRacer { displayName = "Player" };
     private RaceRacer[] allRacers = Array.Empty<RaceRacer>();
     private GameObject[] checkpointVisuals = Array.Empty<GameObject>();
@@ -175,6 +179,7 @@ public class GamePlayManager : MonoBehaviour
     private Coroutine expSliderAnimationCoroutine;
     private Coroutine finishSummaryAnimationCoroutine;
     private Coroutine finishContinueSelectionCoroutine;
+    private Coroutine raceStateClearCoroutine;
     private ArcadeVP.WaypointCircuit runtimeRaceWaypointCircuit;
     private RCCP_AIWaypointsContainer runtimeRaceWaypoints;
     private readonly List<Waypoint_System> resolvedWaypointSystems = new List<Waypoint_System>();
@@ -310,6 +315,7 @@ public class GamePlayManager : MonoBehaviour
         else
             StartCoroutine(EnablePlayerControlNextFrame());
 
+        InitializeMiniMap();
         StartCoroutine(RemoveDuplicateEventSystemsAfterSceneSetup());
         
     }
@@ -421,6 +427,51 @@ public class GamePlayManager : MonoBehaviour
 
                 Destroy(eventSystem.gameObject);
         }
+    }
+
+    private void InitializeMiniMap()
+    {
+        if (gameplayMiniMap == null && autoFindMiniMap)
+            gameplayMiniMap = FindFirstObjectByType<MiniMap>(FindObjectsInactive.Include);
+
+        if (gameplayMiniMap == null)
+            return;
+
+        StartCoroutine(InitializeMiniMapNextFrame());
+    }
+
+    private IEnumerator InitializeMiniMapNextFrame()
+    {
+        yield return null;
+        yield return new WaitForEndOfFrame();
+
+        if (gameplayMiniMap == null)
+            yield break;
+
+        gameplayMiniMap.player1 = CarController != null ? CarController.transform : null;
+        gameplayMiniMap.player2 = null;
+        gameplayMiniMap.opponents = GetMiniMapOpponentTargets();
+        gameplayMiniMap.Init();
+    }
+
+    private Transform[] GetMiniMapOpponentTargets()
+    {
+        if (aiRacers == null || aiRacers.Length == 0)
+            return Array.Empty<Transform>();
+
+        List<Transform> targets = new List<Transform>();
+
+        for (int i = 0; i < aiRacers.Length; i++)
+        {
+            RaceRacer aiRacer = aiRacers[i];
+
+            if (aiRacer == null || aiRacer.racerTransform == null)
+                continue;
+
+            targets.Add(aiRacer.racerTransform);
+        }
+
+        return targets.ToArray();
     }
 
     private void InitializeDriftMode()
@@ -1559,7 +1610,6 @@ public class GamePlayManager : MonoBehaviour
     }
 
    private void Update() {
-
         MaintainPlayerControlForNonRaceMode();
 
         switch (RaceType)
@@ -2696,7 +2746,12 @@ public class GamePlayManager : MonoBehaviour
        SetRaceParticipantsControl(false);
 
        if (raceStateText != null)
+       {
            raceStateText.text = stateText;
+
+           if (success && stateText == "Winner")
+               ScheduleRaceStateClear(3f);
+       }
 
        if (success)
            CareerMissionProgress.MarkMissionCompleted(SelectedCareerMission.Tournament, SelectedCareerMission.Mission);
@@ -2760,6 +2815,8 @@ public class GamePlayManager : MonoBehaviour
 
    private void ShowFinishSummaryScreen()
    {
+       SetRaceUIVisible(false);
+
        if (finishSummaryScreen != null)
            finishSummaryScreen.SetActive(true);
 
@@ -2792,6 +2849,8 @@ public class GamePlayManager : MonoBehaviour
 
    public void OpenFinishExpScreen()
    {
+       SetRaceUIVisible(false);
+
        if (finishSummaryScreen != null)
            finishSummaryScreen.SetActive(false);
 
@@ -2853,6 +2912,14 @@ public class GamePlayManager : MonoBehaviour
            StopCoroutine(finishContinueSelectionCoroutine);
            finishContinueSelectionCoroutine = null;
        }
+
+       if (raceStateClearCoroutine != null)
+       {
+           StopCoroutine(raceStateClearCoroutine);
+           raceStateClearCoroutine = null;
+       }
+
+       SetRaceUIVisible(true);
    }
 
    public void ReturnToMenuFromFinish()
@@ -2985,18 +3052,76 @@ public class GamePlayManager : MonoBehaviour
 
    private IEnumerator SelectFinishContinueButtonNextFrame(GameObject target)
    {
-       yield return null;
-       yield return new WaitForEndOfFrame();
-
-       if (target == null || !target.activeInHierarchy || EventSystem.current == null)
+       for (int i = 0; i < 4; i++)
        {
-           finishContinueSelectionCoroutine = null;
-           yield break;
+           yield return null;
+           yield return new WaitForEndOfFrame();
+
+           if (target == null || !target.activeInHierarchy || EventSystem.current == null)
+           {
+               finishContinueSelectionCoroutine = null;
+               yield break;
+           }
+
+           Button button = target.GetComponent<Button>();
+           GameObject selectedTarget = button != null ? button.gameObject : target;
+
+           Canvas.ForceUpdateCanvases();
+           EventSystem.current.SetSelectedGameObject(null);
+           EventSystem.current.SetSelectedGameObject(selectedTarget);
+
+            if (button != null)
+                button.Select();
        }
 
-       EventSystem.current.SetSelectedGameObject(null);
-       EventSystem.current.SetSelectedGameObject(target);
        finishContinueSelectionCoroutine = null;
+   }
+
+   private void ScheduleRaceStateClear(float delay)
+   {
+       if (raceStateText == null)
+           return;
+
+       if (raceStateClearCoroutine != null)
+           StopCoroutine(raceStateClearCoroutine);
+
+       raceStateClearCoroutine = StartCoroutine(ClearRaceStateTextAfterDelay(delay));
+   }
+
+   private IEnumerator ClearRaceStateTextAfterDelay(float delay)
+   {
+       yield return new WaitForSeconds(delay);
+
+       if (raceStateText != null)
+           raceStateText.text = string.Empty;
+
+       raceStateClearCoroutine = null;
+   }
+
+   private void SetRaceUIVisible(bool visible)
+   {
+       SetUIElementVisible(currentLapText, visible);
+       SetUIElementVisible(racePositionText, visible);
+       SetUIElementVisible(raceStateText, visible);
+       SetUIElementVisible(eliminationTimerText, visible);
+
+       if (RCCP_SceneManager.Instance != null &&
+           RCCP_SceneManager.Instance.activePlayerCanvas != null)
+       {
+           RCCP_UIManager playerCanvas = RCCP_SceneManager.Instance.activePlayerCanvas;
+           playerCanvas.enabled = visible;
+
+           if (playerCanvas.dashboard != null)
+               playerCanvas.dashboard.SetActive(visible);
+       }
+   }
+
+   private void SetUIElementVisible(Component component, bool visible)
+   {
+       if (component == null || component.gameObject == null)
+           return;
+
+       component.gameObject.SetActive(visible);
    }
 
    private void UpdateExpScreenUI(int displayedLevel, int displayedTotalExp, int displayedGainedExp, int displayedLevelUps, int displayedLevelProgress, int expRequirement)
@@ -3670,6 +3795,7 @@ public class GamePlayManager : MonoBehaviour
        else if (raceStateText != null)
        {
            raceStateText.text = $"{racer.displayName} OUT";
+           ScheduleRaceStateClear(3f);
        }
    }
 

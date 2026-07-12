@@ -36,6 +36,7 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
     {
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
         playerVehicle.Customizer.WheelManager.UpdateWheelWithoutSave(wheelIndex);
+        UpdateActionButton(playerVehicle);
 
     }
     private void Start()
@@ -51,6 +52,7 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
     {
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
         playerVehicle.Customizer.WheelManager.Initialize();
+        RCCP_UI_CustomizationActionButton.Clear();
     }
 
     public void OnClick() {
@@ -66,10 +68,26 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
         if (!playerVehicle || !playerVehicle.Customizer || !playerVehicle.Customizer.WheelManager)
             return;
 
+        RCCP_CustomizationLoadout loadout = playerVehicle.Customizer.GetLoadout();
+
         if (playerVehicle.Customizer.WheelManager.wheelIndex == wheelIndex)
+            RCCP_UI_PriceLabelUtility.SetEquipped(priceText, "In Use");
+        else if (loadout.IsWheelPurchased(wheelIndex))
             RCCP_UI_PriceLabelUtility.SetPurchased(priceText, "Owned");
         else
             RCCP_UI_PriceLabelUtility.SetPrice(priceText, price);
+    }
+
+    private void UpdateActionButton(RCCP_CarController playerVehicle) {
+
+        if (!playerVehicle || !playerVehicle.Customizer || !playerVehicle.Customizer.WheelManager)
+            return;
+
+        RCCP_CustomizationLoadout loadout = playerVehicle.Customizer.GetLoadout();
+        bool isEquipped = playerVehicle.Customizer.WheelManager.wheelIndex == wheelIndex;
+        bool isPurchased = loadout.IsWheelPurchased(wheelIndex);
+        RCCP_UI_CustomizationActionButton.RefreshForSelection(GetComponent<Button>(), isPurchased, isEquipped);
+
     }
 
     private void RefreshWheelButtons()
@@ -100,6 +118,27 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
         if (!playerVehicle.Customizer.WheelManager)
             return;
 
+        RCCP_CustomizationLoadout loadout = playerVehicle.Customizer.GetLoadout();
+
+        if (playerVehicle.Customizer.WheelManager.wheelIndex == wheelIndex)
+        {
+            var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "This item bought");
+            _yesNo.Notify(operation.Result);
+            SoundManager.Instance.PlayButtonClick();
+            UpdateActionButton(playerVehicle);
+            return;
+        }
+
+        if (loadout.IsWheelPurchased(wheelIndex))
+        {
+            SoundManager.Instance.PlayButtonClick();
+            playerVehicle.Customizer.WheelManager.UpdateWheel(wheelIndex);
+            RefreshWheelButtons();
+            UpdateActionButton(playerVehicle);
+            GetComponent<Button>().Select();
+            return;
+        }
+
         if (playerVehicle.Customizer.WheelManager.wheelIndex != wheelIndex)
         {
             var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "BuyYes/No");
@@ -112,8 +151,10 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
                 {
                     _moneyManager.MoneyToTake(price);
                     SoundManager.Instance.PlayButtonClick();
+                    loadout.MarkWheelPurchased(wheelIndex);
                     playerVehicle.Customizer.WheelManager.UpdateWheel(wheelIndex);
                     RefreshWheelButtons();
+                    UpdateActionButton(playerVehicle);
                 }
                 else
                 {
@@ -128,16 +169,10 @@ public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
             }
             else
             {
+                UpdateActionButton(playerVehicle);
                 GetComponent<Button>().Select();
                 SoundManager.Instance.PlayButtonClick();
             }
-        }
-        else
-        {
-            var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "This item bought");
-            _yesNo.Notify(operation.Result);
-            SoundManager.Instance.PlayButtonClick();
-
         }
     }
 }

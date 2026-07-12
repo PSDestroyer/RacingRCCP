@@ -65,7 +65,117 @@ public class RCCP_CustomizationLoadout : IRCCP_LoadoutComponent {
 
     [Min(-1)] public int neonIndex = -1;
 
+    public List<int> purchasedSpoilers = new List<int>();
+    public List<int> purchasedSirens = new List<int>();
+    public List<int> purchasedWheels = new List<int>();
+    public List<int> purchasedNeons = new List<int>();
+    public List<int> purchasedDecalsFront = new List<int>();
+    public List<int> purchasedDecalsBack = new List<int>();
+    public List<int> purchasedDecalsLeft = new List<int>();
+    public List<int> purchasedDecalsRight = new List<int>();
+
     public RCCP_CustomizationData customizationData = new RCCP_CustomizationData();
+
+    public void EnsurePurchaseState() {
+
+        purchasedSpoilers ??= new List<int>();
+        purchasedSirens ??= new List<int>();
+        purchasedWheels ??= new List<int>();
+        purchasedNeons ??= new List<int>();
+        purchasedDecalsFront ??= new List<int>();
+        purchasedDecalsBack ??= new List<int>();
+        purchasedDecalsLeft ??= new List<int>();
+        purchasedDecalsRight ??= new List<int>();
+
+        AddPurchased(purchasedSpoilers, spoiler);
+        AddPurchased(purchasedSirens, siren);
+        AddPurchased(purchasedWheels, wheel);
+        AddPurchased(purchasedNeons, neonIndex);
+        AddPurchased(purchasedDecalsFront, decalIndexFront);
+        AddPurchased(purchasedDecalsBack, decalIndexBack);
+        AddPurchased(purchasedDecalsLeft, decalIndexLeft);
+        AddPurchased(purchasedDecalsRight, decalIndexRight);
+
+    }
+
+    public bool IsSpoilerPurchased(int index) {
+        EnsurePurchaseState();
+        return index >= 0 && purchasedSpoilers.Contains(index);
+    }
+
+    public bool IsSirenPurchased(int index) {
+        EnsurePurchaseState();
+        return index >= 0 && purchasedSirens.Contains(index);
+    }
+
+    public bool IsWheelPurchased(int index) {
+        EnsurePurchaseState();
+        return index >= 0 && purchasedWheels.Contains(index);
+    }
+
+    public bool IsNeonPurchased(int index) {
+        EnsurePurchaseState();
+        return index >= 0 && purchasedNeons.Contains(index);
+    }
+
+    public bool IsDecalPurchased(int location, int index) {
+
+        EnsurePurchaseState();
+
+        if (index < 0)
+            return false;
+
+        return GetDecalPurchaseList(location).Contains(index);
+
+    }
+
+    public void MarkSpoilerPurchased(int index) {
+        EnsurePurchaseState();
+        AddPurchased(purchasedSpoilers, index);
+    }
+
+    public void MarkSirenPurchased(int index) {
+        EnsurePurchaseState();
+        AddPurchased(purchasedSirens, index);
+    }
+
+    public void MarkWheelPurchased(int index) {
+        EnsurePurchaseState();
+        AddPurchased(purchasedWheels, index);
+    }
+
+    public void MarkNeonPurchased(int index) {
+        EnsurePurchaseState();
+        AddPurchased(purchasedNeons, index);
+    }
+
+    public void MarkDecalPurchased(int location, int index) {
+
+        EnsurePurchaseState();
+        AddPurchased(GetDecalPurchaseList(location), index);
+
+    }
+
+    private List<int> GetDecalPurchaseList(int location) {
+
+        return location switch {
+            0 => purchasedDecalsFront,
+            1 => purchasedDecalsBack,
+            2 => purchasedDecalsLeft,
+            3 => purchasedDecalsRight,
+            _ => purchasedDecalsFront
+        };
+
+    }
+
+    private void AddPurchased(List<int> targetList, int index) {
+
+        if (targetList == null || index < 0 || targetList.Contains(index))
+            return;
+
+        targetList.Add(index);
+
+    }
 
     public void UpdateLoadout(MonoBehaviour component) {
 
