@@ -3155,11 +3155,11 @@ public class GamePlayManager : MonoBehaviour
        {
            float t = Mathf.Clamp01(time / duration);
            int displayedValue = Mathf.RoundToInt(Mathf.Lerp(0f, missionRewardEarned, t));
-           finishRewardText.text = $"{displayedValue:N0}<sprite index=0>";
+           finishRewardText.text = $"{displayedValue:N0}";
            yield return null;
        }
 
-       finishRewardText.text = $"{missionRewardEarned:N0}<sprite index=0>";
+       finishRewardText.text = $"{missionRewardEarned:N0}";
    }
 
    private IEnumerator AnimateSummaryPrimaryStat(float duration)
