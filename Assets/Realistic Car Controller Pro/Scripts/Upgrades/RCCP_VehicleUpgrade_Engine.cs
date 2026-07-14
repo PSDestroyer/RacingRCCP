@@ -43,6 +43,20 @@ public class RCCP_VehicleUpgrade_Engine : RCCP_Component {
     [Range(1f, 2f)] public float efficiency = 1.15f;
 
     /// <summary>
+    /// Engine level that unlocks turbo for non-turbo vehicles. Set to 0 to disable.
+    /// </summary>
+    [Range(0, 5)] public int turboUnlockLevel = 4;
+
+    /// <summary>
+    /// Default turbo state of the vehicle.
+    /// </summary>
+    [HideInInspector] public bool defTurboCharged;
+
+    private bool turboStateCached = false;
+
+    private readonly float[] levelMultipliers = { 1f, 1.04f, 1.08f, 1.13f, 1.18f, 1.25f };
+
+    /// <summary>
     /// Updates engine torque and initializes it.
     /// </summary>
     public void Initialize() {
@@ -58,7 +72,8 @@ public class RCCP_VehicleUpgrade_Engine : RCCP_Component {
         if (defEngine <= 0)
             defEngine = CarController.Engine.maximumTorqueAsNM;
 
-        CarController.Engine.maximumTorqueAsNM = Mathf.Lerp(defEngine, defEngine * efficiency, EngineLevel / 5f);
+        CarController.Engine.maximumTorqueAsNM = defEngine * GetLevelMultiplier();
+        ApplyTurboState();
 
     }
 
@@ -78,7 +93,8 @@ public class RCCP_VehicleUpgrade_Engine : RCCP_Component {
         if (defEngine <= 0)
             defEngine = CarController.Engine.maximumTorqueAsNM;
 
-        CarController.Engine.maximumTorqueAsNM = Mathf.Lerp(defEngine, defEngine * efficiency, EngineLevel / 5f);
+        CarController.Engine.maximumTorqueAsNM = defEngine * GetLevelMultiplier();
+        ApplyTurboState();
 
     }
 
@@ -102,6 +118,37 @@ public class RCCP_VehicleUpgrade_Engine : RCCP_Component {
             defEngine = CarController.Engine.maximumTorqueAsNM;
 
         CarController.Engine.maximumTorqueAsNM = defEngine;
+        ApplyTurboState();
+
+    }
+
+    private float GetLevelMultiplier() {
+
+        return levelMultipliers[Mathf.Clamp(EngineLevel, 0, levelMultipliers.Length - 1)];
+
+    }
+
+    private void ApplyTurboState() {
+
+        if (!CarController.Engine)
+            return;
+
+        CacheDefaultTurboState();
+
+        if (turboUnlockLevel <= 0)
+            CarController.Engine.turboCharged = defTurboCharged;
+        else
+            CarController.Engine.turboCharged = defTurboCharged || EngineLevel >= turboUnlockLevel;
+
+    }
+
+    private void CacheDefaultTurboState() {
+
+        if (turboStateCached)
+            return;
+
+        defTurboCharged = CarController.Engine.turboCharged;
+        turboStateCached = true;
 
     }
 

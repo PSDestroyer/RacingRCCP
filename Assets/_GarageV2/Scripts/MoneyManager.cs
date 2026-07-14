@@ -22,7 +22,7 @@ public class MoneyManager : MonoBehaviour
     public Slider expProgressSlider;
 
     [Header("EXP")]
-    public int expPerLevel = 10000;
+    public int expPerLevel = 2500;
 
     [Header("Money")]
     public int money;

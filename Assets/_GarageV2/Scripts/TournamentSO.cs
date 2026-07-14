@@ -8,6 +8,7 @@ public class TournamentSO : ScriptableObject
     public Sprite icon;
     public Sprite backgroundImage;
     public string description;
+    public TournamentSO prerequisiteTournament;
 
     public List<MissionSO> missions;
 }

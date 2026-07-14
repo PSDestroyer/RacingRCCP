@@ -77,6 +77,8 @@ public class TournamentCarousel : MonoBehaviour
         }
         cards.Clear();
 
+        SortTournamentsByProgression();
+
         foreach (TournamentSO tournament in tournaments)
         {
             TournamentCard card = Instantiate(cardPrefab, content);
@@ -103,6 +105,9 @@ public class TournamentCarousel : MonoBehaviour
         }
 
         TournamentSO selectedTournament = cards[currentIndex].Tournament;
+        if (!CareerMissionProgress.IsTournamentUnlocked(selectedTournament))
+            return;
+
         careerUIController.OpenTournament(selectedTournament);
     }
 
@@ -252,8 +257,41 @@ public class TournamentCarousel : MonoBehaviour
         TournamentSO selectedTournament = cards[currentIndex].Tournament;
         if (selectedTournament != null)
         {
+            if (selectButton != null)
+                selectButton.interactable = CareerMissionProgress.IsTournamentUnlocked(selectedTournament);
+
             SetMissionBackgroundPosition(0f);
             careerUIController.PreviewTournament(selectedTournament);
         }
+    }
+
+    private void SortTournamentsByProgression()
+    {
+        if (tournaments == null || tournaments.Count <= 1)
+            return;
+
+        tournaments.Sort((left, right) =>
+        {
+            int leftOrder = GetTournamentOrder(left);
+            int rightOrder = GetTournamentOrder(right);
+            return leftOrder.CompareTo(rightOrder);
+        });
+    }
+
+    private int GetTournamentOrder(TournamentSO tournament)
+    {
+        if (tournament == null)
+            return int.MaxValue;
+
+        string tournamentName = tournament.tournamentName != null ? tournament.tournamentName.ToLowerInvariant() : string.Empty;
+        string assetName = tournament.name != null ? tournament.name.ToLowerInvariant() : string.Empty;
+
+        if (tournamentName.Contains("racing") || assetName.Contains("racing"))
+            return 0;
+
+        if (tournamentName.Contains("offroad") || assetName.Contains("offroad"))
+            return 1;
+
+        return 10;
     }
 }

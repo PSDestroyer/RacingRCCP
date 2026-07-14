@@ -41,6 +41,8 @@ public class RCCP_VehicleUpgrade_Handling : RCCP_Component {
     /// </summary>
     [Range(1f, 2f)] public float efficiency = 1.2f;
 
+    private readonly float[] levelMultipliers = { 1f, 1.03f, 1.07f, 1.11f, 1.16f, 1.22f };
+
     /// <summary>
     /// Updates handling and initializes it.
     /// </summary>
@@ -57,7 +59,7 @@ public class RCCP_VehicleUpgrade_Handling : RCCP_Component {
         if (defHandling <= 0)
             defHandling = CarController.Stability.tractionHelperStrength;
 
-        CarController.Stability.tractionHelperStrength = Mathf.Lerp(defHandling, defHandling * efficiency, HandlingLevel / 5f);
+        CarController.Stability.tractionHelperStrength = defHandling * GetLevelMultiplier();
 
     }
 
@@ -77,7 +79,7 @@ public class RCCP_VehicleUpgrade_Handling : RCCP_Component {
         if (defHandling <= 0)
             defHandling = CarController.Stability.tractionHelperStrength;
 
-        CarController.Stability.tractionHelperStrength = Mathf.Lerp(defHandling, defHandling * efficiency, HandlingLevel / 5f);
+        CarController.Stability.tractionHelperStrength = defHandling * GetLevelMultiplier();
 
     }
 
@@ -101,6 +103,12 @@ public class RCCP_VehicleUpgrade_Handling : RCCP_Component {
             defHandling = CarController.Stability.tractionHelperStrength;
 
         CarController.Stability.tractionHelperStrength = defHandling;
+
+    }
+
+    private float GetLevelMultiplier() {
+
+        return levelMultipliers[Mathf.Clamp(HandlingLevel, 0, levelMultipliers.Length - 1)];
 
     }
 

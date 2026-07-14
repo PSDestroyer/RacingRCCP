@@ -91,6 +91,9 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     public float uprightAssistSeconds = 2.5f;
     public float wallStuckSeconds = 1.4f;
     public float hardResetStuckSeconds = 5f;
+    public float routeRecoveryHeight = 2.25f;
+    public float routeRecoveryGroundProbeHeight = 12f;
+    public float routeRecoveryGroundProbeDistance = 35f;
 
     public RCCP_Inputs inputs = new RCCP_Inputs();
 
@@ -98,6 +101,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     private float steerVelocity;
     private float resyncTimer;
     private float stuckTimer;
+    private float totalStuckTimer;
     private float reverseTimer;
     private float upsideDownTimer;
     private float wallStuckTimer;
@@ -188,6 +192,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         steerVelocity = 0f;
         resyncTimer = 0f;
         stuckTimer = 0f;
+        totalStuckTimer = 0f;
         reverseTimer = 0f;
         upsideDownTimer = 0f;
         wallStuckTimer = 0f;
@@ -497,8 +502,15 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     private void HandleRecovery() {
 
         bool wantsToMove = inputs.throttleInput > .2f;
+        bool isBarelyMoving = car.speed < stuckSpeedKph;
 
-        if (wantsToMove && car.speed < stuckSpeedKph)
+        if (isBarelyMoving) {
+            totalStuckTimer += Time.fixedDeltaTime;
+        } else {
+            totalStuckTimer = 0f;
+        }
+
+        if (wantsToMove && isBarelyMoving)
             stuckTimer += Time.fixedDeltaTime;
         else
             stuckTimer = 0f;
@@ -507,6 +519,11 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
             wallStuckTimer += Time.fixedDeltaTime;
         else
             wallStuckTimer = 0f;
+
+        if (totalStuckTimer >= hardResetStuckSeconds) {
+            RecoverToRoute();
+            return;
+        }
 
         if (stuckTimer >= stuckSeconds) {
             reverseTimer = Mathf.Max(reverseTimer, reverseStuckSeconds);
@@ -549,7 +566,8 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         if (waypointCircuit == null || car == null)
             return;
 
-        ArcadeVP.WaypointCircuit.RoutePoint routePoint = waypointCircuit.GetRoutePoint(progressDistance);
+        float recoveryDistance = progressDistance + Mathf.Max(minLookAheadDistance, 10f);
+        ArcadeVP.WaypointCircuit.RoutePoint routePoint = waypointCircuit.GetRoutePoint(recoveryDistance);
         Vector3 forward = Flatten(routePoint.direction).normalized;
 
         if (forward.sqrMagnitude < .001f)
@@ -559,10 +577,12 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
         if (frontStaticEscapeSide != 0f) {
             Vector3 routeRight = new Vector3(forward.z, 0f, -forward.x).normalized;
-            offset = routeRight * frontStaticEscapeSide * 1.25f;
+            offset = routeRight * frontStaticEscapeSide * 2.25f;
         }
 
-        transform.SetPositionAndRotation(routePoint.position + offset + Vector3.up * .55f, Quaternion.LookRotation(forward, Vector3.up));
+        Vector3 recoveryPosition = routePoint.position + offset;
+        recoveryPosition = GetGroundedRecoveryPosition(recoveryPosition);
+        transform.SetPositionAndRotation(recoveryPosition, Quaternion.LookRotation(forward, Vector3.up));
 
         if (car.Rigid != null) {
             car.Rigid.linearVelocity = Vector3.zero;
@@ -571,10 +591,25 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         }
 
         stuckTimer = 0f;
+        totalStuckTimer = 0f;
         wallStuckTimer = 0f;
-        reverseTimer = reverseStuckSeconds;
+        reverseTimer = 0f;
+        inputs.Clear();
+        car.Inputs.OverrideInputs(inputs);
         progressDistance = FindClosestDistanceOnCircuit(transform.position);
         currentWaypointIndex = FindClosestCircuitWaypoint(transform.position);
+
+    }
+
+    private Vector3 GetGroundedRecoveryPosition(Vector3 routePosition) {
+
+        Vector3 rayOrigin = routePosition + Vector3.up * routeRecoveryGroundProbeHeight;
+        float rayDistance = routeRecoveryGroundProbeHeight + routeRecoveryGroundProbeDistance;
+
+        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, rayDistance, Physics.AllLayers, QueryTriggerInteraction.Ignore))
+            return hit.point + Vector3.up * routeRecoveryHeight;
+
+        return routePosition + Vector3.up * routeRecoveryHeight;
 
     }
 

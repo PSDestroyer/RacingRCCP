@@ -33,7 +33,8 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
     public TMP_Text levelText;
     public TMP_Text UpgText;
     
-    [Min(0)] public int price = 50;
+    [Min(0)] public int price = 150;
+    [SerializeField] private int[] levelPrices = { 150, 300, 550, 900, 1400 };
     [SerializeField] private YesNo _yesNo;
     [SerializeField] private TMP_Text priceText;
     [SerializeField] private MoneyManager _moneyManager;
@@ -75,7 +76,9 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
         }
 
         UpgText.text = upgradeClass.ToString();
-        priceText.text = price + "";
+
+        if (priceText)
+            priceText.text = GetCurrentPrice(playerVehicle).ToString();
     }
 
     public void OnClick()
@@ -136,6 +139,9 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
 
         }
 
+        if (priceText)
+            priceText.text = GetCurrentPrice(playerVehicle).ToString();
+
     }
     public async void YesNo()
     {
@@ -150,7 +156,7 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
         if (!playerVehicle.Customizer)
             return;
 
-        if (!playerVehicle.Customizer.WheelManager)
+        if (!playerVehicle.Customizer.UpgradeManager)
             return;
 
         switch (upgradeClass) {
@@ -201,9 +207,11 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
 
             if (result)
             {
-                if (SaveManager.Instance.saveData.money >= price)
+                int currentPrice = GetCurrentPrice(playerVehicle);
+
+                if (SaveManager.Instance.saveData.money >= currentPrice)
                 {
-                    _moneyManager.MoneyToTake(price);
+                    _moneyManager.MoneyToTake(currentPrice);
                     SoundManager.Instance.PlayButtonClick();
                     Buy();
                 }
@@ -225,6 +233,41 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
             }
         }
     
+    private int GetCurrentPrice(RCCP_CarController playerVehicle) {
+
+        int currentLevel = GetCurrentLevel(playerVehicle);
+
+        if (levelPrices != null && levelPrices.Length > 0) {
+            int priceIndex = Mathf.Clamp(currentLevel, 0, levelPrices.Length - 1);
+            return Mathf.Max(0, levelPrices[priceIndex]);
+        }
+
+        return Mathf.Max(0, price);
+
+    }
+
+    private int GetCurrentLevel(RCCP_CarController playerVehicle) {
+
+        if (!playerVehicle || !playerVehicle.Customizer || !playerVehicle.Customizer.UpgradeManager)
+            return 0;
+
+        switch (upgradeClass) {
+
+            case UpgradeClass.Engine:
+                return playerVehicle.Customizer.UpgradeManager.EngineLevel;
+            case UpgradeClass.Handling:
+                return playerVehicle.Customizer.UpgradeManager.HandlingLevel;
+            case UpgradeClass.Brake:
+                return playerVehicle.Customizer.UpgradeManager.BrakeLevel;
+            case UpgradeClass.Speed:
+                return playerVehicle.Customizer.UpgradeManager.SpeedLevel;
+            default:
+                return 0;
+
+        }
+
+    }
+
     }
 
 

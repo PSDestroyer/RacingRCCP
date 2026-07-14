@@ -28,6 +28,9 @@ public static class CareerMissionProgress
 
     public static bool IsMissionUnlocked(TournamentSO tournament, int missionIndex)
     {
+        if (!IsTournamentUnlocked(tournament))
+            return false;
+
         if (tournament == null || tournament.missions == null || missionIndex < 0 || missionIndex >= tournament.missions.Count)
             return false;
 
@@ -43,5 +46,31 @@ public static class CareerMissionProgress
 
         MissionSO previousMission = tournament.missions[missionIndex - 1];
         return previousMission != null && IsMissionCompleted(tournament, previousMission);
+    }
+
+    public static bool IsTournamentUnlocked(TournamentSO tournament)
+    {
+        if (tournament == null)
+            return false;
+
+        if (tournament.prerequisiteTournament == null)
+            return true;
+
+        return IsTournamentCompleted(tournament.prerequisiteTournament);
+    }
+
+    public static bool IsTournamentCompleted(TournamentSO tournament)
+    {
+        if (tournament == null || tournament.missions == null || tournament.missions.Count == 0)
+            return false;
+
+        for (int i = 0; i < tournament.missions.Count; i++)
+        {
+            MissionSO mission = tournament.missions[i];
+            if (mission == null || !IsMissionCompleted(tournament, mission))
+                return false;
+        }
+
+        return true;
     }
 }

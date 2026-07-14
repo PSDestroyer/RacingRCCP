@@ -82,11 +82,13 @@ public class CareerUIController : MonoBehaviour
             Destroy(child.gameObject);
         }
 
+        bool isTournamentLocked = !CareerMissionProgress.IsTournamentUnlocked(tournament);
+
         for (int i = 0; i < tournament.missions.Count; i++)
         {
             MissionSO mission = tournament.missions[i];
             bool isCompleted = CareerMissionProgress.IsMissionCompleted(tournament, mission);
-            bool isLocked = !CareerMissionProgress.IsMissionUnlocked(tournament, i);
+            bool isLocked = isTournamentLocked || !CareerMissionProgress.IsMissionUnlocked(tournament, i);
             MissionButton button = Instantiate(missionButtonPrefab, missionContent);
             button.Setup(mission, this, isLocked, isCompleted);
             missionButtons.Add(button);
@@ -125,6 +127,9 @@ public class CareerUIController : MonoBehaviour
     public void StartMission(MissionSO mission)
     {
         if (mission == null || currentTournament == null)
+            return;
+
+        if (!CareerMissionProgress.IsTournamentUnlocked(currentTournament))
             return;
 
         int missionIndex = currentTournament.missions != null ? currentTournament.missions.IndexOf(mission) : -1;

@@ -42,6 +42,8 @@ public class RCCP_VehicleUpgrade_Brake : RCCP_Component {
     /// </summary>
     [Range(1f, 2f)] public float efficiency = 1.2f;
 
+    private readonly float[] levelMultipliers = { 1f, 1.05f, 1.10f, 1.16f, 1.22f, 1.30f };
+
     /// <summary>
     /// Updates brake torque and initializes it.
     /// </summary>
@@ -59,7 +61,7 @@ public class RCCP_VehicleUpgrade_Brake : RCCP_Component {
             defBrake = CarController.FrontAxle.maxBrakeTorque;
 
         for (int i = 0; i < CarController.AxleManager.Axles.Count; i++)
-            CarController.AxleManager.Axles[i].maxBrakeTorque = Mathf.Lerp(defBrake, defBrake * efficiency, BrakeLevel / 5f);
+            CarController.AxleManager.Axles[i].maxBrakeTorque = defBrake * GetLevelMultiplier();
 
     }
 
@@ -80,7 +82,7 @@ public class RCCP_VehicleUpgrade_Brake : RCCP_Component {
             defBrake = CarController.FrontAxle.maxBrakeTorque;
 
         for (int i = 0; i < CarController.AxleManager.Axles.Count; i++)
-            CarController.AxleManager.Axles[i].maxBrakeTorque = Mathf.Lerp(defBrake, defBrake * efficiency, BrakeLevel / 5f);
+            CarController.AxleManager.Axles[i].maxBrakeTorque = defBrake * GetLevelMultiplier();
 
     }
 
@@ -93,6 +95,12 @@ public class RCCP_VehicleUpgrade_Brake : RCCP_Component {
 
         CarController.FrontAxle.maxBrakeTorque = defBrake;
         CarController.RearAxle.maxBrakeTorque = defBrake;
+
+    }
+
+    private float GetLevelMultiplier() {
+
+        return levelMultipliers[Mathf.Clamp(BrakeLevel, 0, levelMultipliers.Length - 1)];
 
     }
 

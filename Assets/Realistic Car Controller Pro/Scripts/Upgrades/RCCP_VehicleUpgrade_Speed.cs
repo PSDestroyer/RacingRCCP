@@ -42,6 +42,8 @@ public class RCCP_VehicleUpgrade_Speed : RCCP_Component {
     /// </summary>
     [Range(1f, 2f)] public float efficiency = 1.1f;
 
+    private readonly float[] levelMultipliers = { 1f, 1.03f, 1.06f, 1.10f, 1.14f, 1.18f };
+
     /// <summary>
     /// Updates maximum speed of the engine component and initializes it.
     /// </summary>
@@ -58,7 +60,7 @@ public class RCCP_VehicleUpgrade_Speed : RCCP_Component {
         if (defMaxSpeed <= 0)
             defMaxSpeed = CarController.Engine.maximumSpeed;
 
-        CarController.Engine.maximumSpeed = Mathf.Lerp(defMaxSpeed, defMaxSpeed * efficiency, SpeedLevel / 5f);
+        CarController.Engine.maximumSpeed = defMaxSpeed * GetLevelMultiplier();
         CarController.Engine.UpdateMaximumSpeed();
 
     }
@@ -79,7 +81,7 @@ public class RCCP_VehicleUpgrade_Speed : RCCP_Component {
         if (defMaxSpeed <= 0)
             defMaxSpeed = CarController.Engine.maximumSpeed;
 
-        CarController.Engine.maximumSpeed = Mathf.Lerp(defMaxSpeed, defMaxSpeed * efficiency, SpeedLevel / 5f);
+        CarController.Engine.maximumSpeed = defMaxSpeed * GetLevelMultiplier();
         CarController.Engine.UpdateMaximumSpeed();
 
     }
@@ -93,6 +95,12 @@ public class RCCP_VehicleUpgrade_Speed : RCCP_Component {
 
         CarController.Engine.maximumSpeed = defMaxSpeed;
         CarController.Engine.UpdateMaximumSpeed();
+
+    }
+
+    private float GetLevelMultiplier() {
+
+        return levelMultipliers[Mathf.Clamp(SpeedLevel, 0, levelMultipliers.Length - 1)];
 
     }
 
