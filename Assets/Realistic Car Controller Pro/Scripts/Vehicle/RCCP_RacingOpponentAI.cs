@@ -266,10 +266,11 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
         if (routeRight.sqrMagnitude > .01f) {
             float cornerT = Mathf.InverseLerp(mediumCornerAngle, sharpCornerAngle, cornerAngle);
-            float laneLimit = Mathf.Lerp(1.1f, maxLaneOffsetInCorners, cornerT);
+            float laneLimit = Mathf.Lerp(.45f, maxLaneOffsetInCorners, cornerT);
             float offset = Mathf.Clamp(laneOffset + personalityLaneOffset, -laneLimit, laneLimit);
             offset += GetCornerLineOffset(currentPoint.direction, midPoint.direction, speedPoint.direction, routeRight, cornerT);
-            offset += GetTrafficOffset(cornerT);
+            offset += GetTrafficOffset(cornerT) * Mathf.Lerp(1f, .35f, cornerT);
+            offset = Mathf.Clamp(offset, -laneLimit, laneLimit);
             target += routeRight * offset;
         }
 
