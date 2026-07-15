@@ -11,7 +11,8 @@ public enum UIPanelType
     Upgrade,
     Play,
     CareerMissions,
-    Settings
+    Settings,
+    Controls
 }
 
 public class GarageUIController : MonoBehaviour
@@ -31,6 +32,8 @@ public class GarageUIController : MonoBehaviour
 
     [Header("Navigation")]
     [SerializeField] private Button back;
+    [Header("Runtime Panels")]
+    [SerializeField] private string controlsPanelResourcePath = "UI/Controls";
     // [SerializeField] private PlayerInput playerInput;
 
     private readonly Dictionary<UIPanelType, UIPanel> panels = new();
@@ -61,9 +64,54 @@ public class GarageUIController : MonoBehaviour
             panels.Add(entry.type, entry.panel);
             entry.panel.Hide();
         }
+
+        RegisterRuntimePanel(UIPanelType.Controls, controlsPanelResourcePath);
         
         if (back != null)
             back.gameObject.SetActive(false);
+    }
+
+    private void RegisterRuntimePanel(UIPanelType type, string resourcePath)
+    {
+        if (panels.ContainsKey(type) || string.IsNullOrWhiteSpace(resourcePath))
+            return;
+
+        GameObject instance = FindExistingRuntimePanel(type.ToString());
+
+        if (instance == null)
+        {
+            GameObject prefab = Resources.Load<GameObject>(resourcePath);
+            if (prefab == null)
+            {
+                Debug.LogWarning($"Runtime panel prefab not found in Resources: {resourcePath}", this);
+                return;
+            }
+
+            instance = Instantiate(prefab, transform);
+            instance.name = prefab.name;
+        }
+
+        UIPanel panel = instance.GetComponent<UIPanel>();
+        if (panel == null)
+            panel = instance.AddComponent<UIPanel>();
+
+        panel.SetRoot(instance);
+        panel.Hide();
+        panels.Add(type, panel);
+    }
+
+    private GameObject FindExistingRuntimePanel(string panelName)
+    {
+        foreach (Transform child in transform)
+        {
+            if (child == null)
+                continue;
+
+            if (child.name == panelName)
+                return child.gameObject;
+        }
+
+        return null;
     }
 
     private void OnEnable()
@@ -178,8 +226,8 @@ public class GarageUIController : MonoBehaviour
     {
         if (back == null)
             return;
-        bool showBackButton = hasCurrentPanel && currentPanel != UIPanelType.MainHub;
-        back.gameObject.SetActive(showBackButton);
+
+        back.gameObject.SetActive(false);
     }
 
     private void ActivatePanelCamera(GameObject targetCamera)

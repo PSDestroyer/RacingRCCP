@@ -11,6 +11,17 @@ public class UIPanel : MonoBehaviour
     public GameObject Root => root;
     public GameObject PanelCamera => panelCamera;
 
+    private void Awake()
+    {
+        if (root == null)
+            root = gameObject;
+    }
+
+    public void SetRoot(GameObject rootObject)
+    {
+        root = rootObject != null ? rootObject : gameObject;
+    }
+
     public GameObject DefaultSelected
     {
         get
@@ -36,11 +47,17 @@ public class UIPanel : MonoBehaviour
 
     public virtual void Show()
     {
+        if (root == null)
+            root = gameObject;
+
         root.SetActive(true);
     }
 
     public virtual void Hide()
     {
+        if (root == null)
+            root = gameObject;
+
         root.SetActive(false);
     }
 }

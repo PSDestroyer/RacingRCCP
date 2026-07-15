@@ -47,6 +47,12 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     public float straightSteerDeadZone = .045f;
     public float straightSteerAssist = .35f;
 
+    [Header("Steering Stability")]
+    public float steeringAntiWobbleSpeedKph = 22f;
+    public float antiWobbleDeadZone = .075f;
+    [Range(0f, 1f)] public float antiWobbleFlipDamping = .45f;
+    public float sensorSteerSmoothTime = .08f;
+
     [Header("Racing Line")]
     public float laneOffset = 0f;
     public float maxLaneOffsetInCorners = .35f;
@@ -106,6 +112,8 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     private float upsideDownTimer;
     private float wallStuckTimer;
     private float sensorSteer;
+    private float smoothedSensorSteer;
+    private float sensorSteerVelocity;
     private float sensorBrake;
     private float sensorSpeedLimit;
     private bool trafficBlocked;
@@ -170,7 +178,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
         RouteFrame route = GetRouteFrame();
         UpdateDriverConsistency();
-        float targetSteer = CalculateSteer(route.targetPoint, route.direction, route.cornerAngle) + sensorSteer;
+        float targetSteer = CalculateSteer(route.targetPoint, route.direction, route.cornerAngle) + GetStableSensorSteer();
         float targetSpeed = CalculateTargetSpeed(route.cornerAngle, route.previewCornerAngle, Mathf.Abs(targetSteer));
         targetSpeed = Mathf.Min(targetSpeed, sensorSpeedLimit);
 
@@ -196,6 +204,8 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         reverseTimer = 0f;
         upsideDownTimer = 0f;
         wallStuckTimer = 0f;
+        smoothedSensorSteer = 0f;
+        sensorSteerVelocity = 0f;
         trafficSideBias = 0f;
         trafficBiasTimer = 0f;
         frontStaticBlocked = false;
@@ -455,6 +465,7 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     private void ApplyInputs(float targetSteer, float targetSpeed) {
 
         targetSteer = Mathf.Clamp(targetSteer + mistakeSteerOffset, -1f, 1f);
+        targetSteer = StabilizeSteerCommand(targetSteer);
 
         if (!frontStaticBlocked && frontVehicleUrgency < .05f && Mathf.Abs(targetSteer) < .18f) {
             targetSteer = Mathf.Abs(targetSteer) < straightSteerDeadZone
@@ -497,6 +508,41 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         inputs.nosInput = 0f;
 
         car.Inputs.OverrideInputs(inputs);
+
+    }
+
+    private float GetStableSensorSteer() {
+
+        bool needsImmediateAvoidance = frontStaticBlocked || trafficBlocked || frontVehicleUrgency > .05f || sensorBrake > .05f;
+
+        if (needsImmediateAvoidance) {
+            smoothedSensorSteer = sensorSteer;
+            sensorSteerVelocity = 0f;
+            return sensorSteer;
+        }
+
+        smoothedSensorSteer = Mathf.SmoothDamp(smoothedSensorSteer, sensorSteer, ref sensorSteerVelocity, sensorSteerSmoothTime);
+        return smoothedSensorSteer;
+
+    }
+
+    private float StabilizeSteerCommand(float targetSteer) {
+
+        bool needsImmediateSteer = frontStaticBlocked || trafficBlocked || frontVehicleUrgency > .05f || reverseTimer > 0f;
+
+        if (needsImmediateSteer || car == null || car.speed < steeringAntiWobbleSpeedKph)
+            return targetSteer;
+
+        if (Mathf.Abs(targetSteer) < antiWobbleDeadZone)
+            return 0f;
+
+        bool isSmallCorrection = Mathf.Abs(targetSteer) < .32f && Mathf.Abs(currentSteer) < .32f;
+        bool isChangingSide = Mathf.Sign(targetSteer) != Mathf.Sign(currentSteer) && Mathf.Abs(currentSteer) > antiWobbleDeadZone;
+
+        if (isSmallCorrection && isChangingSide)
+            targetSteer *= antiWobbleFlipDamping;
+
+        return targetSteer;
 
     }
 

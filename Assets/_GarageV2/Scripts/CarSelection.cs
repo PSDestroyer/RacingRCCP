@@ -322,8 +322,8 @@ public class CarSelection : MonoBehaviour
 
     public void UpdateStats()
     {
-        Name.text = GlobalCarData._carlists[indexcar].carName;
-        NameShadow.text = GlobalCarData._carlists[indexcar].carName;
+        Name.text = GlobalCarData._carlists[indexcar].displayName;
+        NameShadow.text = GlobalCarData._carlists[indexcar].displayName;
         PowerSlider.value = GlobalCarData._carlists[indexcar].power;
         PowerText.text = GlobalCarData._carlists[indexcar].power.ToString();
         SpeedSlider.value = GlobalCarData._carlists[indexcar].speed;

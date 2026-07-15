@@ -143,11 +143,26 @@ public class GamePlayManager : MonoBehaviour
     public float spawnRowSpacing = 8f;
     public float spawnColumnSpacing = 4f;
     public int spawnCarsPerRow = 2;
+    public string[] opponentDisplayNames = {
+        "Rex",
+        "Vega",
+        "Blaze",
+        "Axel",
+        "Rook",
+        "Nova",
+        "Diesel",
+        "Storm"
+    };
     
     [Header("Checkpoint Visuals")]
     public GameObject checkpointPrefab;
     public Vector3 checkpointVisualOffset = new Vector3(0f, 2f, 0f);
     public bool showOnlyNextCheckpoint = true;
+
+    [Header("Player Recovery")]
+    public float playerRouteRespawnHeight = 3f;
+    public float playerRouteRespawnForwardOffset = 2f;
+    public float playerRouteRespawnCooldown = 0.6f;
 
     [Header("MiniMap")]
     public MiniMap gameplayMiniMap;
@@ -184,6 +199,8 @@ public class GamePlayManager : MonoBehaviour
     private RCCP_AIWaypointsContainer runtimeRaceWaypoints;
     private readonly List<Waypoint_System> resolvedWaypointSystems = new List<Waypoint_System>();
     private readonly List<ArcadeVP.WaypointCircuit> runtimeOpponentWaypointCircuits = new List<ArcadeVP.WaypointCircuit>();
+    private InputAction playerRouteRespawnAction;
+    private float lastPlayerRouteRespawnTime = -999f;
 
     [Header("Drifting Settings")]
     public bool driftingNow = false;
@@ -395,6 +412,121 @@ public class GamePlayManager : MonoBehaviour
             optionalMap.Enable();
     }
 
+    private void EnablePlayerRouteRespawnInput()
+    {
+        if (playerRouteRespawnAction != null)
+            return;
+
+        playerRouteRespawnAction = new InputAction("Player Route Respawn", InputActionType.Button, "<Gamepad>/rightStickPress");
+        playerRouteRespawnAction.performed += RespawnPlayerOnRouteCtx;
+        playerRouteRespawnAction.Enable();
+    }
+
+    private void DisablePlayerRouteRespawnInput()
+    {
+        if (playerRouteRespawnAction == null)
+            return;
+
+        playerRouteRespawnAction.performed -= RespawnPlayerOnRouteCtx;
+        playerRouteRespawnAction.Disable();
+        playerRouteRespawnAction.Dispose();
+        playerRouteRespawnAction = null;
+    }
+
+    private void RespawnPlayerOnRouteCtx(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed)
+            return;
+
+        RespawnPlayerOnRoute();
+    }
+
+    public void RespawnPlayerOnRoute()
+    {
+        if (CarController == null || missionResultsShown)
+            return;
+
+        if (Time.unscaledTime - lastPlayerRouteRespawnTime < playerRouteRespawnCooldown)
+            return;
+
+        lastPlayerRouteRespawnTime = Time.unscaledTime;
+
+        ArcadeVP.WaypointCircuit raceCircuit = GetRaceWaypointCircuit();
+        Pose respawnPose = GetPlayerRouteRespawnPose(raceCircuit);
+        Transform carTransform = CarController.transform;
+
+        if (CarController.Rigid != null)
+        {
+            CarController.Rigid.linearVelocity = Vector3.zero;
+            CarController.Rigid.angularVelocity = Vector3.zero;
+            CarController.Rigid.isKinematic = false;
+            CarController.Rigid.position = respawnPose.position;
+            CarController.Rigid.rotation = respawnPose.rotation;
+        }
+
+        carTransform.SetPositionAndRotation(respawnPose.position, respawnPose.rotation);
+
+        if (CarController.Rigid != null)
+            CarController.Rigid.WakeUp();
+
+        ResetPlayerVehicleForMission();
+        SyncPlayerRaceProgressAfterRespawn(raceCircuit);
+    }
+
+    private Pose GetPlayerRouteRespawnPose(ArcadeVP.WaypointCircuit raceCircuit)
+    {
+        if (raceCircuit == null || raceCircuit.Length <= 0f || CarController == null)
+        {
+            if (SpawnPoint != null)
+                return new Pose(SpawnPoint.position + Vector3.up * playerRouteRespawnHeight, SpawnPoint.rotation);
+
+            Transform carTransform = CarController != null ? CarController.transform : transform;
+            return new Pose(carTransform.position + Vector3.up * playerRouteRespawnHeight, carTransform.rotation);
+        }
+
+        float hintDistance = playerRacer != null && playerRacer.progressInitialized
+            ? playerRacer.currentCircuitDistance
+            : FindClosestDistanceAlongRaceRoute(CarController.transform.position);
+
+        float routeDistance = FindClosestDistanceAlongRaceRoute(CarController.transform.position, hintDistance);
+        ArcadeVP.WaypointCircuit.RoutePoint routePoint = raceCircuit.GetRoutePoint(routeDistance + playerRouteRespawnForwardOffset);
+        Vector3 forward = routePoint.direction;
+        forward.y = 0f;
+
+        if (forward.sqrMagnitude < 0.001f)
+            forward = CarController.transform.forward;
+
+        forward.Normalize();
+        Vector3 position = routePoint.position + Vector3.up * playerRouteRespawnHeight;
+        position = GetGroundedPlayerRespawnPosition(position);
+
+        return new Pose(position, Quaternion.LookRotation(forward, Vector3.up));
+    }
+
+    private Vector3 GetGroundedPlayerRespawnPosition(Vector3 routePosition)
+    {
+        Vector3 rayOrigin = routePosition + Vector3.up * 25f;
+
+        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, 80f, Physics.AllLayers, QueryTriggerInteraction.Ignore))
+            return hit.point + Vector3.up * playerRouteRespawnHeight;
+
+        return routePosition;
+    }
+
+    private void SyncPlayerRaceProgressAfterRespawn(ArcadeVP.WaypointCircuit raceCircuit)
+    {
+        if (playerRacer == null || CarController == null || raceCircuit == null)
+            return;
+
+        float routeDistance = FindClosestDistanceAlongRaceRoute(CarController.transform.position, playerRacer.currentCircuitDistance);
+        playerRacer.racerTransform = CarController.transform;
+        playerRacer.currentCircuitDistance = routeDistance;
+        playerRacer.startCircuitDistance = routeDistance;
+        playerRacer.currentWaypointIndex = GetNextWaypointIndexFromCircuitDistance(routeDistance);
+        playerRacer.progressInitialized = false;
+        playerRacer.checkpointProgressInitialized = false;
+    }
+
     private IEnumerator RemoveDuplicateEventSystemsAfterSceneSetup()
     {
         yield return null;
@@ -506,11 +638,13 @@ public class GamePlayManager : MonoBehaviour
     private void OnEnable()
     {
         RCCP_Events.OnRCCPCollision += OnCarCollision;
+        EnablePlayerRouteRespawnInput();
     }
 
     private void OnDisable()
     {
         RCCP_Events.OnRCCPCollision -= OnCarCollision;
+        DisablePlayerRouteRespawnInput();
     }
 
     private void ApplyCurrentMapSettings()
@@ -571,7 +705,11 @@ public class GamePlayManager : MonoBehaviour
 
     public void InstancePlayer()
     {
-        string playerPrefabLocation = GlobalCarData._carlists[SaveManager.Instance.saveData.currentCar].carPrefabLocation;
+        CarSO selectedCar = GetCurrentCarSO();
+        if (selectedCar == null)
+            return;
+
+        string playerPrefabLocation = selectedCar.carPrefabLocation;
         GameObject playerPrefab = Resources.Load<GameObject>(playerPrefabLocation);
 
         if (playerPrefab == null)
@@ -583,7 +721,59 @@ public class GamePlayManager : MonoBehaviour
         player = Instantiate(playerPrefab, SpawnPoint);
         CarController = player.GetComponent<RCCP_CarController>();
         if (CarController != null)
+        {
+            PrepareGameplayCameraProfileBeforeRegister(selectedCar);
             RCCP.RegisterPlayerVehicle(CarController, true, true);
+            ApplyGameplayCameraProfile(selectedCar);
+            StartCoroutine(ApplyGameplayCameraProfileNextFrame(selectedCar));
+        }
+    }
+
+    private CarSO GetCurrentCarSO()
+    {
+        if (SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+            return null;
+
+        if (GlobalCarData._carlists == null || GlobalCarData._carlists.Count == 0)
+            return null;
+
+        int carIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._carlists.Count - 1);
+        return GlobalCarData._carlists[carIndex];
+    }
+
+    private IEnumerator ApplyGameplayCameraProfileNextFrame(CarSO selectedCar)
+    {
+        yield return null;
+        ApplyGameplayCameraProfile(selectedCar);
+    }
+
+    private void ApplyGameplayCameraProfile(CarSO selectedCar)
+    {
+        if (selectedCar == null || !selectedCar.overrideGameplayCamera)
+            return;
+
+        RCCP_Camera gameplayCamera = RCCP_SceneManager.Instance != null ? RCCP_SceneManager.Instance.activePlayerCamera : null;
+        if (gameplayCamera == null)
+            return;
+
+        gameplayCamera.cameraMode = RCCP_Camera.CameraMode.TPS;
+        gameplayCamera.TPSAutoFocus = selectedCar.gameplayCameraAutoFocus;
+        gameplayCamera.TPSDistance = selectedCar.gameplayCameraDistance;
+        gameplayCamera.TPSHeight = selectedCar.gameplayCameraHeight;
+        gameplayCamera.TPSPitch = selectedCar.gameplayCameraPitch;
+        gameplayCamera.TPSOffset = selectedCar.gameplayCameraOffset;
+    }
+
+    private void PrepareGameplayCameraProfileBeforeRegister(CarSO selectedCar)
+    {
+        if (selectedCar == null || !selectedCar.overrideGameplayCamera)
+            return;
+
+        RCCP_Camera gameplayCamera = RCCP_SceneManager.Instance != null ? RCCP_SceneManager.Instance.activePlayerCamera : null;
+        if (gameplayCamera == null)
+            return;
+
+        gameplayCamera.TPSAutoFocus = selectedCar.gameplayCameraAutoFocus;
     }
 
     public void SetUpRaceStyle(int type)
@@ -661,8 +851,8 @@ public class GamePlayManager : MonoBehaviour
             if (aiRacer == null)
                 continue;
 
-            if (string.IsNullOrWhiteSpace(aiRacer.displayName))
-                aiRacer.displayName = $"AI {i + 1}";
+            if (string.IsNullOrWhiteSpace(aiRacer.displayName) || IsGeneratedOpponentName(aiRacer.displayName))
+                aiRacer.displayName = GetOpponentDisplayName(i);
 
             if (aiRacer.aiDriver != null)
             {
@@ -827,7 +1017,7 @@ public class GamePlayManager : MonoBehaviour
 
             aiRacers[i] = new RaceRacer
             {
-                displayName = $"AI {i + 1}",
+                displayName = GetOpponentDisplayName(i),
                 racerTransform = opponentObject.transform,
                 aiDriver = null,
                 racingAI = racingAI,
@@ -848,7 +1038,13 @@ public class GamePlayManager : MonoBehaviour
             RCCP_SceneManager.Instance.registerLastVehicleAsPlayer = previousRegisterLastVehicleAsPlayer;
 
         if (CarController != null)
+        {
+            CarSO selectedCar = GetCurrentCarSO();
+            PrepareGameplayCameraProfileBeforeRegister(selectedCar);
             RCCP.RegisterPlayerVehicle(CarController, true, true);
+            ApplyGameplayCameraProfile(selectedCar);
+            StartCoroutine(ApplyGameplayCameraProfileNextFrame(selectedCar));
+        }
 
         StartCoroutine(RefreshOpponentsAfterSpawn());
     }
@@ -865,6 +1061,33 @@ public class GamePlayManager : MonoBehaviour
     {
         float[] offsets = { -.3f, .3f, 0f, -.15f, .15f };
         return offsets[Mathf.Abs(opponentIndex) % offsets.Length];
+    }
+
+    private string GetOpponentDisplayName(int opponentIndex)
+    {
+        if (opponentDisplayNames == null || opponentDisplayNames.Length == 0)
+            return $"Racer {opponentIndex + 1}";
+
+        int safeIndex = Mathf.Abs(opponentIndex) % opponentDisplayNames.Length;
+        string displayName = opponentDisplayNames[safeIndex];
+
+        if (string.IsNullOrWhiteSpace(displayName))
+            displayName = $"Racer {opponentIndex + 1}";
+
+        if (opponentIndex >= opponentDisplayNames.Length)
+            displayName = $"{displayName} {opponentIndex + 1}";
+
+        return displayName;
+    }
+
+    private bool IsGeneratedOpponentName(string displayName)
+    {
+        if (string.IsNullOrWhiteSpace(displayName))
+            return true;
+
+        string trimmedName = displayName.Trim();
+        return trimmedName.StartsWith("AI ", StringComparison.OrdinalIgnoreCase)
+            || trimmedName.StartsWith("Racer ", StringComparison.OrdinalIgnoreCase);
     }
 
     private void ConfigureOpponentRacingAI(RCCP_RacingOpponentAI racingAI, int opponentIndex)
@@ -3163,10 +3386,11 @@ public class GamePlayManager : MonoBehaviour
        if (expLevelRewardText != null)
        {
            int displayedLevelReward = displayedLevelUps * levelUpMoneyReward;
+           expLevelRewardText.richText = true;
            expLevelRewardText.gameObject.SetActive(displayedLevelReward > 0);
 
            if (displayedLevelReward > 0)
-               expLevelRewardText.text = $"Level Up Reward  +{displayedLevelReward:N0}<sprite index=0>";
+               expLevelRewardText.text = $"Level Up Reward  +{displayedLevelReward:N0}  <color=#FFD21F>CR</color>";
        }
 
        if (expProgressSlider != null)
@@ -3987,6 +4211,7 @@ public class GamePlayManager : MonoBehaviour
 
    private void OnDestroy()
    {
+       DisablePlayerRouteRespawnInput();
        ClearCheckpointVisuals();
        ClearSpawnedOpponents();
    }

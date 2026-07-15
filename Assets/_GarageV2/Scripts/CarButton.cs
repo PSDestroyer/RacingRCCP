@@ -40,7 +40,7 @@ public class CarButton : MonoBehaviour
         CacheButtonVisuals();
         CarIcon.sprite = carData.carsprite;
         CtrIcon.sprite = carData.CarClass;
-        carText.text = carData.carName;
+        carText.text = carData.displayName;
         //PowerText.text = carData.power+" HP";
         id = carData.id;
         if (carData.price != 0)
