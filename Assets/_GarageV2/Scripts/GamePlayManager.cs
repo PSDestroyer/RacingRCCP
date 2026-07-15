@@ -3797,7 +3797,10 @@ public class GamePlayManager : MonoBehaviour
        if (rankedRacers.Count == 0)
            return string.Empty;
 
-       List<string> leaderboardLines = new List<string>(rankedRacers.Count);
+       List<string> leaderboardLines = new List<string>(rankedRacers.Count + 1)
+       {
+           "Leaderboard:"
+       };
 
        for (int i = 0; i < rankedRacers.Count; i++)
        {

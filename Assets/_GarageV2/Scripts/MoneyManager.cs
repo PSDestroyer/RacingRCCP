@@ -18,6 +18,7 @@ public class MoneyManager : MonoBehaviour
     public TextMeshProUGUI moneyText;
     public TextMeshProUGUI accname;
     public TextMeshProUGUI levelText;
+    public TextMeshProUGUI lvlText;
     public TextMeshProUGUI expText;
     public Slider expProgressSlider;
 
@@ -31,6 +32,7 @@ public class MoneyManager : MonoBehaviour
 
     private void Start()
     {
+        FindLvlTextIfNeeded();
         LoadData();
         RefreshFuelState();
         SetUpNik();
@@ -165,6 +167,7 @@ public class MoneyManager : MonoBehaviour
 
     private void UpdateText()
     {
+        FindLvlTextIfNeeded();
         SaveMoney();
 
         if (moneyText != null)
@@ -177,6 +180,9 @@ public class MoneyManager : MonoBehaviour
         if (levelText != null)
             levelText.text = $"Level {currentLevel}";
 
+        if (lvlText != null)
+            lvlText.text = $"LVL:{currentLevel}";
+
         if (expText != null)
             expText.text = $"{exp % safeExpPerLevel:N0}/{safeExpPerLevel:N0} EXP";
 
@@ -185,6 +191,22 @@ public class MoneyManager : MonoBehaviour
 
         if (useFuel && fuelText != null)
             fuelText.text = fuel + "/" + maxFuel;
+    }
+
+    private void FindLvlTextIfNeeded()
+    {
+        if (lvlText != null)
+            return;
+
+        TextMeshProUGUI[] texts = GetComponentsInChildren<TextMeshProUGUI>(true);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            if (texts[i] != null && texts[i].name == "LvlText")
+            {
+                lvlText = texts[i];
+                return;
+            }
+        }
     }
 
     private void saveTime(DateTime time)
