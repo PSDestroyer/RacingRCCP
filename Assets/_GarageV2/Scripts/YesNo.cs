@@ -9,6 +9,8 @@ using UnityEngine.UI;
 
 public class YesNo : MonoBehaviour
 {
+    public const string NotEnoughMoneyMessage = "Not enough money";
+
     [Header("Yes/No")] 
     [SerializeField]private GameObject YesNoPanelObject;
     [SerializeField] private Button YesButton;
@@ -79,6 +81,11 @@ public class YesNo : MonoBehaviour
     public void Notify(string info)
     {
         StartCoroutine(Notificationtime(info));
+    }
+
+    public void NotifyNotEnoughMoney()
+    {
+        Notify(NotEnoughMoneyMessage);
     }
 
     IEnumerator Notificationtime(string info)

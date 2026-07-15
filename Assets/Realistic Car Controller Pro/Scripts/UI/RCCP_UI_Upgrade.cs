@@ -217,8 +217,7 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
                 }
                 else
                 {
-                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "No money");
-                    _yesNo.Notify(operation.Result);
+                    _yesNo.NotifyNotEnoughMoney();
                     SoundManager.Instance.PlayButtonError();
                     Debug.Log("dont have enought Money");
                 }

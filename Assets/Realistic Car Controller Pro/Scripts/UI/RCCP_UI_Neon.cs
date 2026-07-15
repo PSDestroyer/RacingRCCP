@@ -156,8 +156,7 @@ public class RCCP_UI_Neon : RCCP_UIComponent ,ISelectHandler
                 }
                 else
                 {
-                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "No money");
-                    _yesNo.Notify(operation.Result);
+                    _yesNo.NotifyNotEnoughMoney();
                     SoundManager.Instance.PlayButtonError();
                     Debug.Log("dont have enought Money");
                 }

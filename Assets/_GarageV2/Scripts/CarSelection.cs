@@ -40,6 +40,11 @@ public class CarSelection : MonoBehaviour
     public TMP_Text Name;
     public TMP_Text NameShadow;
     public TMP_Text PriceText;
+    [Header("Stats Scaling")]
+    [SerializeField] private float powerSliderMax = 400f;
+    [SerializeField] private float speedSliderMax = 420f;
+    [SerializeField] private float steeringSliderMax = 100f;
+    [SerializeField] private float brakeSliderMax = 4000f;
 
     
     
@@ -57,10 +62,12 @@ public class CarSelection : MonoBehaviour
     private bool navigationSubscribed;
     private int lastNavigationFrame = -1;
     private bool navigationInputHeld;
-    private void Start()
+  private void Start()
   {
    GlobalCarData._buttonList.Clear();
    ConfigureVerticalScrollView();
+   EnsureStarterCarBought();
+   ConfigureStatsLabels();
 
    ClearSelectedObjectIfInside(spawninPanel);
 
@@ -206,7 +213,7 @@ public class CarSelection : MonoBehaviour
                 }
                 else
                 {
-                    yesNo.Notify("No money");
+                    yesNo.NotifyNotEnoughMoney();
                     SM.PlayButtonError();
                     Debug.Log("dont have enought Money");
                 }
@@ -324,6 +331,7 @@ public class CarSelection : MonoBehaviour
     {
         Name.text = GlobalCarData._carlists[indexcar].displayName;
         NameShadow.text = GlobalCarData._carlists[indexcar].displayName;
+        ConfigureStatsSliders();
         PowerSlider.value = GlobalCarData._carlists[indexcar].power;
         PowerText.text = GlobalCarData._carlists[indexcar].power.ToString();
         SpeedSlider.value = GlobalCarData._carlists[indexcar].speed;
@@ -334,8 +342,84 @@ public class CarSelection : MonoBehaviour
         BrakeText.text = GlobalCarData._carlists[indexcar].brake.ToString();
         Traction.text = TractionText[GlobalCarData._carlists[indexcar].traction].ToString();
         if (PriceText != null)
-            PriceText.text = GlobalCarData._carlists[indexcar].price.ToString();
+            PriceText.text = GlobalCarData._carlists[indexcar].price <= 0 ? "FREE" : GlobalCarData._carlists[indexcar].price.ToString();
         Turbo.gameObject.SetActive(GlobalCarData._carlists[indexcar].turbo);
+    }
+
+    private void EnsureStarterCarBought()
+    {
+        if (SaveManager.Instance == null || SaveManager.Instance.saveData == null || GlobalCarData._carlists == null || GlobalCarData._carlists.Count == 0)
+            return;
+
+        CarSO starterCar = GlobalCarData._carlists[0];
+
+        if (starterCar == null || SaveManager.Instance.IsCarBought(starterCar.carName))
+            return;
+
+        SaveManager.Instance.SaveCar(starterCar.carName, true, starterCar.power, starterCar.speed, starterCar.turbo, starterCar.color, starterCar.steerAngle, starterCar.traction, starterCar.brake);
+        SaveManager.Instance.Save();
+    }
+
+    private void ConfigureStatsSliders()
+    {
+        ConfigureSlider(PowerSlider, powerSliderMax);
+        ConfigureSlider(SpeedSlider, speedSliderMax);
+        ConfigureSlider(SteerSlider, steeringSliderMax);
+        ConfigureSlider(BrakeSlider, brakeSliderMax);
+    }
+
+    private void ConfigureSlider(Slider slider, float maxValue)
+    {
+        if (slider == null)
+            return;
+
+        slider.minValue = 0f;
+        slider.maxValue = Mathf.Max(1f, maxValue);
+    }
+
+    private void ConfigureStatsLabels()
+    {
+        SetSliderLabel(PowerSlider, "Power");
+        SetSliderLabel(SpeedSlider, "Speed");
+        SetSliderLabel(SteerSlider, "Steering");
+        SetSliderLabel(BrakeSlider, "Brake");
+    }
+
+    private void SetSliderLabel(Slider slider, string label)
+    {
+        if (slider == null)
+            return;
+
+        TMP_Text labelText = null;
+        Transform labelTransform = slider.transform.Find("Name");
+
+        if (labelTransform != null)
+            labelText = labelTransform.GetComponent<TMP_Text>();
+
+        if (labelText == null)
+        {
+            TMP_Text[] labels = slider.GetComponentsInChildren<TMP_Text>(true);
+
+            foreach (TMP_Text candidate in labels)
+            {
+                if (candidate != PowerText && candidate != SpeedText && candidate != SteerText && candidate != BrakeText)
+                {
+                    labelText = candidate;
+                    break;
+                }
+            }
+        }
+
+        if (labelText == null)
+            return;
+
+        foreach (MonoBehaviour component in labelText.GetComponents<MonoBehaviour>())
+        {
+            if (component != null && component.GetType().Name == "LocalizeStringEvent")
+                component.enabled = false;
+        }
+
+        labelText.text = label;
     }
 
 
@@ -672,9 +756,30 @@ public class CarSelection : MonoBehaviour
         {
             controller.canControl = false;
             controller.engineRunning = false;
+            PrepareMenuPreviewCar(controller);
 
             if (RCCP_SceneManager.Instance != null)
                 RCCP_SceneManager.Instance.RegisterPlayer(controller, false, false);
+        }
+    }
+
+    private void PrepareMenuPreviewCar(RCCP_CarController controller)
+    {
+        if (controller == null)
+            return;
+
+        controller.SetCanControl(false);
+        controller.externalControl = false;
+
+        if (controller.Inputs != null)
+            controller.Inputs.OverrideInputs(new RCCP_Inputs());
+
+        Rigidbody carRigidbody = controller.Rigid != null ? controller.Rigid : controller.GetComponent<Rigidbody>();
+
+        if (carRigidbody != null)
+        {
+            carRigidbody.linearVelocity = Vector3.zero;
+            carRigidbody.angularVelocity = Vector3.zero;
         }
     }
 }

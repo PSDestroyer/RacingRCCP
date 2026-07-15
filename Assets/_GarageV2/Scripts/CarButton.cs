@@ -49,7 +49,7 @@ public class CarButton : MonoBehaviour
         }
         else
         { 
-            priceText.text = "Free!";
+            priceText.text = "FREE";
         }
         carSelection = carSelections;
         // animator = GetComponent<Animator>();

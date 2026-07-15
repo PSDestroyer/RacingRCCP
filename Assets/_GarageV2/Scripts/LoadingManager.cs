@@ -10,6 +10,8 @@ public class LoadingManager : Singleton<LoadingManager>
     public static LoadingManager Instance { get; private set; }
 
     [Header("UI")]
+    [SerializeField] private bool preferPrefabLoadingScreen = true;
+    [SerializeField] private GameObject loadingScreenPrefab;
     [SerializeField] private GameObject loadingRoot;
     [SerializeField] private Slider progressSlider;
     [SerializeField] private TMP_Text progressText;
@@ -33,6 +35,8 @@ public class LoadingManager : Singleton<LoadingManager>
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        EnsureLoadingUI();
 
         if (loadingRoot != null)
             loadingRoot.SetActive(false);
@@ -125,6 +129,8 @@ public class LoadingManager : Singleton<LoadingManager>
 
     private void ShowLoadingUI()
     {
+        EnsureLoadingUI();
+
         if (loadingRoot != null)
             loadingRoot.SetActive(true);
 
@@ -156,5 +162,28 @@ public class LoadingManager : Singleton<LoadingManager>
 
         if (progressText != null)
             progressText.text = $"{progress01 * 100f:0}%";
+    }
+
+    private void EnsureLoadingUI()
+    {
+        if (loadingScreenPrefab == null)
+            loadingScreenPrefab = Resources.Load<GameObject>("UI/LoadingScreen");
+
+        if (!preferPrefabLoadingScreen && loadingRoot != null)
+            return;
+
+        if (loadingRoot != null && (loadingScreenPrefab == null || loadingRoot.name == loadingScreenPrefab.name))
+            return;
+
+        if (loadingScreenPrefab == null)
+            return;
+
+        if (loadingRoot != null)
+            loadingRoot.SetActive(false);
+
+        GameObject instance = Instantiate(loadingScreenPrefab, transform);
+        instance.name = loadingScreenPrefab.name;
+        loadingRoot = instance;
+        loadingCanvasGroup = instance.GetComponent<CanvasGroup>();
     }
 }

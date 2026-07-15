@@ -149,6 +149,7 @@ public class GameplayPauseMenuController : MonoBehaviour
         Time.timeScale = 1f;
         isPaused = false;
         settingsOpen = false;
+        SetVehicleAudioPaused(false);
 
         if (LoadingManager.Instance != null)
         {
@@ -229,6 +230,7 @@ public class GameplayPauseMenuController : MonoBehaviour
     private void ApplyPausedState()
     {
         Time.timeScale = 0f;
+        SetVehicleAudioPaused(true);
 
         if (gameplayManager != null && gameplayManager.CarController != null)
             gameplayManager.CarController.SetCanControl(false);
@@ -237,12 +239,19 @@ public class GameplayPauseMenuController : MonoBehaviour
     private void RestoreGameplayState()
     {
         Time.timeScale = 1f;
+        SetVehicleAudioPaused(false);
 
         if (gameplayManager != null && gameplayManager.CarController != null)
         {
             gameplayManager.CarController.externalControl = false;
-            gameplayManager.CarController.SetCanControl(true);
+            gameplayManager.CarController.SetCanControl(gameplayManager.IsRaceStartedForPause());
         }
+    }
+
+    private void SetVehicleAudioPaused(bool paused)
+    {
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.SetVehicleAudioPaused(paused);
     }
 
     private void ShowPauseMenu()

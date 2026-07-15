@@ -58,6 +58,9 @@ public class RCCP_CinematicCamera : RCCP_Singleton<RCCP_CinematicCamera> {
 
     private void Update() {
 
+        if (Time.timeScale <= 0f)
+            return;
+
         // If current camera is null, return.
         if (!RCCP_SceneManager.Instance.activePlayerCamera)
             return;

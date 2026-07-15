@@ -8546,6 +8546,7 @@ MonoBehaviour:
     mouseInput: {x: 0, y: 0}
   inputActionsInstance: {fileID: 0}
   overrideInputs: 0
+  suppressGameplayActionEvents: 0
 --- !u!4 &320580633
 Transform:
   m_ObjectHideFlags: 0
@@ -12477,9 +12478,11 @@ MonoBehaviour:
   GlobalaudioMixer: {fileID: 24100000, guid: 36d0d4312c6244626a2c14af6a673f2b, type: 2}
   sfxMixerGroup: {fileID: -7574041355198895289, guid: 36d0d4312c6244626a2c14af6a673f2b, type: 2}
   musicMixerGroup: {fileID: -4595695844948916146, guid: 36d0d4312c6244626a2c14af6a673f2b, type: 2}
-  buttonClickClip: {fileID: 8300000, guid: 17550b365ac51f2418915bf82b519630, type: 3}
+  buttonClickClip: {fileID: 8300000, guid: efab02ce0f19ebd4984b356ccd4b80a2, type: 3}
   buttonErrorClip: {fileID: 8300000, guid: fe7d483597e1b604a8f6f21f68b9df07, type: 3}
   NewCarClip: {fileID: 8300000, guid: 823e15bf810982849a39b4368dfdaf27, type: 3}
+  autoBindButtonClickSounds: 1
+  buttonBindRefreshInterval: 0.5
 --- !u!4 &489148149
 Transform:
   m_ObjectHideFlags: 0
@@ -27865,6 +27868,60 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1052380129}
   m_CullTransparentMesh: 1
+--- !u!1 &1055502118
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1055502120}
+  - component: {fileID: 1055502119}
+  m_Layer: 0
+  m_Name: LoadingManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1055502119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1055502118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5388058b09a9e42a8aaa7200202477cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dontDestroy: 1
+  preferPrefabLoadingScreen: 1
+  loadingScreenPrefab: {fileID: 100000, guid: 73fc9a5ab81d4c85aa7b1e915c671b9b, type: 3}
+  loadingRoot: {fileID: 0}
+  progressSlider: {fileID: 0}
+  progressText: {fileID: 0}
+  loadingCanvasGroup: {fileID: 0}
+  minimumLoadTime: 0.5
+  progressSmoothSpeed: 2
+  pauseAudioDuringLoad: 1
+--- !u!4 &1055502120
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1055502118}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1210.2565, y: 591.9396, z: 3249.445}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1056523028
 GameObject:
   m_ObjectHideFlags: 0
@@ -50890,6 +50947,10 @@ MonoBehaviour:
   Name: {fileID: 1685349916}
   NameShadow: {fileID: 1685349916}
   PriceText: {fileID: 768511189}
+  powerSliderMax: 400
+  speedSliderMax: 420
+  steeringSliderMax: 100
+  brakeSliderMax: 4000
   scrollRect: {fileID: 24927296}
 --- !u!1 &1886149943
 GameObject:
@@ -59976,3 +60037,4 @@ SceneRoots:
   - {fileID: 1550416632}
   - {fileID: 1313208799}
   - {fileID: 2137325195}
+  - {fileID: 1055502120}
