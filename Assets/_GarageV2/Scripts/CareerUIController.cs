@@ -25,6 +25,8 @@ public class CareerUIController : MonoBehaviour
     [SerializeField] private float contentPaddingRight = 24f;
     [SerializeField] private float contentPaddingTop = 12f;
     [SerializeField] private float contentPaddingBottom = 12f;
+    [SerializeField] private float gamepadStickNavigationDeadzone = 0.55f;
+    [SerializeField] private float missionNavigationCooldown = 0.18f;
 
     private Coroutine selectMissionCoroutine;
     private readonly List<MissionButton> missionButtons = new();
@@ -38,6 +40,7 @@ public class CareerUIController : MonoBehaviour
     private Tween missionScrollTween;
     private Sequence missionRefreshSequence;
     private TournamentSO currentTournament;
+    private float lastMissionNavigationTime = -10f;
 
     public void OpenTournament(TournamentSO tournament, bool openDedicatedPanel = false)
     {
@@ -469,26 +472,14 @@ public class CareerUIController : MonoBehaviour
         if (currentIndex < 0)
             currentIndex = Mathf.Clamp(lastTrackedMissionIndex, 0, missionButtons.Count - 1);
 
-        int targetIndex = -1;
-
-        if (Gamepad.current != null)
-        {
-            if (Gamepad.current.dpad.right.wasPressedThisFrame)
-                targetIndex = currentIndex + 1;
-            else if (Gamepad.current.dpad.left.wasPressedThisFrame)
-                targetIndex = currentIndex - 1;
-        }
-
-        if (targetIndex < 0 && Keyboard.current != null)
-        {
-            if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
-                targetIndex = currentIndex + 1;
-            else if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
-                targetIndex = currentIndex - 1;
-        }
-
-        if (targetIndex < 0)
+        int direction = GetMissionNavigationDirection();
+        if (direction == 0)
             return;
+
+        if (Time.unscaledTime - lastMissionNavigationTime < missionNavigationCooldown)
+            return;
+
+        int targetIndex = currentIndex + direction;
 
         targetIndex = Mathf.Clamp(targetIndex, 0, missionButtons.Count - 1);
         if (targetIndex == currentIndex)
@@ -498,6 +489,45 @@ public class CareerUIController : MonoBehaviour
             return;
 
         TryFocusMissionAtIndex(targetIndex);
+        lastMissionNavigationTime = Time.unscaledTime;
+    }
+
+    private int GetMissionNavigationDirection()
+    {
+        if (Gamepad.current != null)
+        {
+            if (Gamepad.current.dpad.right.wasPressedThisFrame)
+                return 1;
+
+            if (Gamepad.current.dpad.left.wasPressedThisFrame)
+                return -1;
+
+            Vector2 stick = GetNavigationStickValue();
+            if (Mathf.Abs(stick.x) >= gamepadStickNavigationDeadzone && Mathf.Abs(stick.x) > Mathf.Abs(stick.y))
+                return stick.x > 0f ? 1 : -1;
+        }
+
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
+                return 1;
+
+            if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
+                return -1;
+        }
+
+        return 0;
+    }
+
+    private static Vector2 GetNavigationStickValue()
+    {
+        if (Gamepad.current == null)
+            return Vector2.zero;
+
+        Vector2 leftStick = Gamepad.current.leftStick.ReadValue();
+        Vector2 rightStick = Gamepad.current.rightStick.ReadValue();
+
+        return rightStick.sqrMagnitude > leftStick.sqrMagnitude ? rightStick : leftStick;
     }
 
     private bool IsMissionButtonObject(GameObject selectedObject)

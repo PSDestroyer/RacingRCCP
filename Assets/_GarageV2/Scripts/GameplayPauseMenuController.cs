@@ -23,6 +23,8 @@ public class GameplayPauseMenuController : MonoBehaviour
     [SerializeField] private float uiMoveRepeatRate = 0.2f;
     [SerializeField] private float menuMoveCooldown = 0.18f;
     [SerializeField] private float settingsMoveCooldown = 0.18f;
+    [SerializeField] private float gamepadStickNavigationDeadzone = 0.55f;
+    [SerializeField] private float pauseSettingsPanelScale = 1.28f;
 
     private GameplayPauseMenuView pauseMenuInstance;
     private GameplaySettingsPanelView settingsPanelInstance;
@@ -328,6 +330,7 @@ public class GameplayPauseMenuController : MonoBehaviour
         {
             settingsPanelInstance.Initialize();
             settingsPanelInstance.SetTitle(settingsTitle);
+            settingsPanelInstance.transform.localScale = Vector3.one * pauseSettingsPanelScale;
         }
     }
 
@@ -425,7 +428,7 @@ public class GameplayPauseMenuController : MonoBehaviour
         if (direction == Vector2.zero && !submitPressed)
             return;
 
-        if (Time.unscaledTime - lastSettingsMoveTime < settingsMoveCooldown)
+        if (!submitPressed && Time.unscaledTime - lastSettingsMoveTime < settingsMoveCooldown)
             return;
 
         GameObject selectedObject = EventSystem.current.currentSelectedGameObject;
@@ -490,9 +493,29 @@ public class GameplayPauseMenuController : MonoBehaviour
 
             if (Gamepad.current.dpad.right.wasPressedThisFrame)
                 return Vector2.right;
+
+            Vector2 stick = GetNavigationStickValue();
+            if (stick.sqrMagnitude >= gamepadStickNavigationDeadzone * gamepadStickNavigationDeadzone)
+            {
+                if (Mathf.Abs(stick.x) > Mathf.Abs(stick.y))
+                    return stick.x > 0f ? Vector2.right : Vector2.left;
+
+                return stick.y > 0f ? Vector2.up : Vector2.down;
+            }
         }
 
         return Vector2.zero;
+    }
+
+    private static Vector2 GetNavigationStickValue()
+    {
+        if (Gamepad.current == null)
+            return Vector2.zero;
+
+        Vector2 leftStick = Gamepad.current.leftStick.ReadValue();
+        Vector2 rightStick = Gamepad.current.rightStick.ReadValue();
+
+        return rightStick.sqrMagnitude > leftStick.sqrMagnitude ? rightStick : leftStick;
     }
 
     private void MoveSelection(List<Selectable> focusables, Vector2 direction)

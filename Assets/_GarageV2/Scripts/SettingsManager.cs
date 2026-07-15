@@ -1,6 +1,8 @@
 using System;
 using HalvaStudio.Save;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class SettingsManager : MonoBehaviour
@@ -9,26 +11,28 @@ public class SettingsManager : MonoBehaviour
     public Slider vehicle;
     public Slider music;
     [SerializeField] private bool managePreviewVehicleState = true;
+    [SerializeField] private bool handleSelectedButtonSubmit = true;
 
     private RCCP_CarController lockedVehicle;
     private bool vehicleStateLocked;
     private bool previousCanControl;
     private bool previousExternalControl;
     private bool previousRigidbodyKinematic;
-    private RCCP_InputManager lockedInputManager;
-    private RCCP_Inputs previousInputManagerInputs;
-    private bool inputManagerStateLocked;
-    private bool previousInputManagerOverride;
-    private bool previousSuppressGameplayActionEvents;
+    private int lastHandledSubmitFrame = -1;
 
     private void Start()
     {
         RefreshUIFromSave();
     }
 
+    private void Update()
+    {
+        if (handleSelectedButtonSubmit && WasSubmitPressed())
+            PressSelectedControl();
+    }
+
     private void OnEnable()
     {
-        LockRCCPInputManager();
         LockVehicleInput();
     }
 
@@ -71,8 +75,6 @@ public class SettingsManager : MonoBehaviour
 
     private void RestoreVehicleInput()
     {
-        RestoreRCCPInputManager();
-
         if (!vehicleStateLocked)
             return;
 
@@ -91,44 +93,6 @@ public class SettingsManager : MonoBehaviour
 
         lockedVehicle = null;
         vehicleStateLocked = false;
-    }
-
-    private void LockRCCPInputManager()
-    {
-        if (inputManagerStateLocked)
-            return;
-
-        lockedInputManager = RCCP_InputManager.Instance;
-        if (lockedInputManager == null)
-            return;
-
-        previousInputManagerInputs = lockedInputManager.inputs;
-        previousInputManagerOverride = lockedInputManager.overrideInputs;
-        previousSuppressGameplayActionEvents = lockedInputManager.suppressGameplayActionEvents;
-
-        lockedInputManager.suppressGameplayActionEvents = true;
-        lockedInputManager.OverrideInputs(new RCCP_Inputs());
-        inputManagerStateLocked = true;
-    }
-
-    private void RestoreRCCPInputManager()
-    {
-        if (!inputManagerStateLocked)
-            return;
-
-        if (lockedInputManager != null)
-        {
-            lockedInputManager.suppressGameplayActionEvents = previousSuppressGameplayActionEvents;
-
-            if (previousInputManagerOverride && previousInputManagerInputs != null)
-                lockedInputManager.OverrideInputs(previousInputManagerInputs);
-            else
-                lockedInputManager.DisableOverrideInputs();
-        }
-
-        lockedInputManager = null;
-        previousInputManagerInputs = null;
-        inputManagerStateLocked = false;
     }
 
     public void RefreshUIFromSave()
@@ -156,12 +120,59 @@ public class SettingsManager : MonoBehaviour
     {
         SoundManager.Instance.SetSfxVolume(value);
     }
+
     public void OnSetVehicleVolume(float value)
     {
         SoundManager.Instance.SetVehicleVolume(value);
     }
+
     public void OnSetMusicVolume(float value)
     {
         SoundManager.Instance.SetMusicVolume(value);
+    }
+
+    private void PressSelectedControl()
+    {
+        if (EventSystem.current == null || Time.frameCount == lastHandledSubmitFrame)
+            return;
+
+        GameObject selected = EventSystem.current.currentSelectedGameObject;
+        if (selected == null || !selected.transform.IsChildOf(transform))
+            return;
+
+        Selectable selectable = selected.GetComponent<Selectable>() ?? selected.GetComponentInParent<Selectable>();
+        if (selectable == null || !selectable.IsActive() || !selectable.IsInteractable())
+            return;
+
+        lastHandledSubmitFrame = Time.frameCount;
+
+        RCCP_UI_DashboardButton dashboardButton = selectable.GetComponent<RCCP_UI_DashboardButton>();
+        if (dashboardButton != null && dashboardButton.isActiveAndEnabled)
+        {
+            dashboardButton.OnSubmit(new BaseEventData(EventSystem.current));
+            return;
+        }
+
+        ExecuteEvents.Execute(selectable.gameObject, new BaseEventData(EventSystem.current), ExecuteEvents.submitHandler);
+
+        PointerEventData pointerEventData = new PointerEventData(EventSystem.current)
+        {
+            button = PointerEventData.InputButton.Left,
+            pointerPress = selectable.gameObject,
+            rawPointerPress = selectable.gameObject
+        };
+
+        ExecuteEvents.Execute(selectable.gameObject, pointerEventData, ExecuteEvents.pointerClickHandler);
+    }
+
+    private static bool WasSubmitPressed()
+    {
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
+                return true;
+        }
+
+        return Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame;
     }
 }

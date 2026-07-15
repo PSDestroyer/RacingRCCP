@@ -9,6 +9,7 @@
 
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -29,9 +30,13 @@ public class RCCP_UI_DashboardButton : RCCP_UIComponent, ISubmitHandler {
     /// </summary>
     public GameObject imageOn;
 
+    private Button button;
+    private int lastSubmitFrame = -1;
+
     private void OnEnable() {
 
         CheckImage();
+        BindButtonClick();
         RCCP_Events.OnVehicleChanged += RCCP_SceneManager_OnVehicleChanged;
 
     }
@@ -43,6 +48,41 @@ public class RCCP_UI_DashboardButton : RCCP_UIComponent, ISubmitHandler {
     }
 
     public void OnSubmit(BaseEventData eventData) {
+
+        if (Time.frameCount == lastSubmitFrame)
+            return;
+
+        lastSubmitFrame = Time.frameCount;
+
+        bool previousSuppressGameplayActionEvents = false;
+        bool hasInputManager = RCCP_InputManager.Instance != null;
+
+        if (hasInputManager) {
+
+            previousSuppressGameplayActionEvents = RCCP_InputManager.Instance.suppressGameplayActionEvents;
+            RCCP_InputManager.Instance.suppressGameplayActionEvents = false;
+
+        }
+
+        try {
+
+            Submit();
+
+        } finally {
+
+            if (hasInputManager && RCCP_InputManager.Instance)
+                RCCP_InputManager.Instance.suppressGameplayActionEvents = previousSuppressGameplayActionEvents;
+
+        }
+
+    }
+
+    private void Submit() {
+
+        if (TryToggleVehicleSettingDirectly()) {
+            CheckImage();
+            return;
+        }
 
         switch (buttonType) {
 
@@ -152,6 +192,73 @@ public class RCCP_UI_DashboardButton : RCCP_UIComponent, ISubmitHandler {
 
     }
 
+    private bool TryToggleVehicleSettingDirectly() {
+
+        RCCP_CarController vehicle = RCCPSceneManager.activePlayerVehicle;
+        if (!vehicle)
+            return false;
+
+        switch (buttonType) {
+
+            case ButtonType.ABS:
+                if (!vehicle.Stability)
+                    return false;
+                vehicle.Stability.ABS = !vehicle.Stability.ABS;
+                return true;
+
+            case ButtonType.ESP:
+                if (!vehicle.Stability)
+                    return false;
+                vehicle.Stability.ESP = !vehicle.Stability.ESP;
+                return true;
+
+            case ButtonType.TCS:
+                if (!vehicle.Stability)
+                    return false;
+                vehicle.Stability.TCS = !vehicle.Stability.TCS;
+                return true;
+
+            case ButtonType.SteeringHelper:
+                if (!vehicle.Stability)
+                    return false;
+                vehicle.Stability.steeringHelper = !vehicle.Stability.steeringHelper;
+                return true;
+
+            case ButtonType.TractionHelper:
+                if (!vehicle.Stability)
+                    return false;
+                vehicle.Stability.tractionHelper = !vehicle.Stability.tractionHelper;
+                return true;
+
+            case ButtonType.AngularDragHelper:
+                if (!vehicle.Stability)
+                    return false;
+                vehicle.Stability.angularDragHelper = !vehicle.Stability.angularDragHelper;
+                return true;
+
+        }
+
+        return false;
+
+    }
+
+    private void BindButtonClick() {
+
+        button = GetComponent<Button>();
+        if (!button)
+            return;
+
+        button.onClick.RemoveListener(OnButtonClick);
+        button.onClick.AddListener(OnButtonClick);
+
+    }
+
+    private void OnButtonClick() {
+
+        OnSubmit(null);
+
+    }
+
     private void CheckImage() {
 
         if (!imageOn)
@@ -253,6 +360,9 @@ public class RCCP_UI_DashboardButton : RCCP_UIComponent, ISubmitHandler {
     }
 
     private void OnDisable() {
+
+        if (button)
+            button.onClick.RemoveListener(OnButtonClick);
 
         RCCP_Events.OnVehicleChanged -= RCCP_SceneManager_OnVehicleChanged;
 

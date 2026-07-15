@@ -13954,6 +13954,8 @@ MonoBehaviour:
   contentPaddingRight: 8
   contentPaddingTop: 8
   contentPaddingBottom: 8
+  gamepadStickNavigationDeadzone: 0.55
+  missionNavigationCooldown: 0.18
 --- !u!1 &567962563
 GameObject:
   m_ObjectHideFlags: 0
@@ -36153,6 +36155,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1396717050}
   m_CullTransparentMesh: 1
+--- !u!1 &1398997276 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3815613825364048488, guid: 4ec1795b72163184197237f0e013bd35, type: 3}
+  m_PrefabInstance: {fileID: 2879145133547984964}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1399289499
 GameObject:
   m_ObjectHideFlags: 0
@@ -50151,6 +50158,21 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7289178239014753828, guid: 4ec1795b72163184197237f0e013bd35, type: 3}
   m_PrefabInstance: {fileID: 2879145133547984964}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1853820099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1398997276}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 380fd18cd60714c92a5a785dee9f914a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  root: {fileID: 1398997276}
+  defaultSelected: {fileID: 0}
+  panelCamera: {fileID: 0}
 --- !u!1 &1855332962
 GameObject:
   m_ObjectHideFlags: 0
@@ -59066,7 +59088,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3815613825364048488, guid: 4ec1795b72163184197237f0e013bd35, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1853820099}
   m_SourcePrefab: {fileID: 100100000, guid: 4ec1795b72163184197237f0e013bd35, type: 3}
 --- !u!1001 &5430500538613938547
 PrefabInstance:

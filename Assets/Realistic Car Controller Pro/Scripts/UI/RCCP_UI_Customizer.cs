@@ -41,6 +41,8 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
     public Button neonsButton;     //  Neons button.
 
     private Dictionary<Button, Sprite> normalButtonSprites;
+    private bool openedCustomizationOnce;
+    private GameObject lastOpenedPanel;
 
     private void Awake() {
 
@@ -54,6 +56,9 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
 
         if (activeMenu)
             activeMenu.SetActive(true);
+
+        if (activeMenu)
+            lastOpenedPanel = activeMenu;
 
         SetSelectedCustomizationButton(activeMenu);
         SelectFirstPanelItem(activeMenu);
@@ -91,8 +96,16 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
     {
         CacheNormalButtonSprites();
         RefreshButtons();
-        SetSelectedCustomizationButton(GetActiveCustomizationPanel());
-        SelectFirstPanelItem(GetActiveCustomizationPanel());
+
+        GameObject targetPanel = GetPanelToOpenOnEnable();
+
+        if (targetPanel)
+            OpenCustomizationPanel(targetPanel);
+        else
+        {
+            SetSelectedCustomizationButton(GetActiveCustomizationPanel());
+            SelectFirstPanelItem(GetActiveCustomizationPanel());
+        }
     }
 
     private void Update()
@@ -239,6 +252,71 @@ public class RCCP_UI_Customizer : RCCP_UIComponent {
             return neons;
 
         return null;
+
+    }
+
+    private GameObject GetPanelToOpenOnEnable() {
+
+        if (!openedCustomizationOnce) {
+
+            openedCustomizationOnce = true;
+            GameObject wheelsPanel = GetAvailablePanel(wheels, wheelsButton);
+            if (wheelsPanel)
+                return wheelsPanel;
+
+        }
+
+        if (lastOpenedPanel && IsPanelAvailable(lastOpenedPanel))
+            return lastOpenedPanel;
+
+        GameObject activePanel = GetActiveCustomizationPanel();
+        if (activePanel && IsPanelAvailable(activePanel))
+            return activePanel;
+
+        List<CustomizationTab> tabs = GetAvailableTabs();
+        return tabs.Count > 0 ? tabs[0].panel : null;
+
+    }
+
+    private GameObject GetAvailablePanel(GameObject panel, Button button) {
+
+        return IsPanelAvailable(panel, button) ? panel : null;
+
+    }
+
+    private bool IsPanelAvailable(GameObject panel) {
+
+        if (panel == paints)
+            return IsPanelAvailable(panel, paintsButton);
+
+        if (panel == wheels)
+            return IsPanelAvailable(panel, wheelsButton);
+
+        if (panel == customization)
+            return IsPanelAvailable(panel, customizationButton);
+
+        if (panel == upgrades)
+            return IsPanelAvailable(panel, upgradesButton);
+
+        if (panel == spoilers)
+            return IsPanelAvailable(panel, spoilersButton);
+
+        if (panel == sirens)
+            return IsPanelAvailable(panel, sirensButton);
+
+        if (panel == decals)
+            return IsPanelAvailable(panel, decalsButton);
+
+        if (panel == neons)
+            return IsPanelAvailable(panel, neonsButton);
+
+        return false;
+
+    }
+
+    private bool IsPanelAvailable(GameObject panel, Button button) {
+
+        return panel && button && button.gameObject.activeInHierarchy && button.interactable;
 
     }
 

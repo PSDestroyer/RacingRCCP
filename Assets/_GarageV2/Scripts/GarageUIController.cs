@@ -76,19 +76,23 @@ public class GarageUIController : MonoBehaviour
         if (panels.ContainsKey(type) || string.IsNullOrWhiteSpace(resourcePath))
             return;
 
-        GameObject instance = FindExistingRuntimePanel(type.ToString());
+        GameObject prefab = Resources.Load<GameObject>(resourcePath);
+        GameObject instance = null;
 
-        if (instance == null)
+        if (prefab != null)
         {
-            GameObject prefab = Resources.Load<GameObject>(resourcePath);
-            if (prefab == null)
+            instance = Instantiate(prefab, transform);
+            instance.name = prefab.name;
+        }
+        else
+        {
+            instance = FindExistingRuntimePanel(type.ToString());
+
+            if (instance == null)
             {
                 Debug.LogWarning($"Runtime panel prefab not found in Resources: {resourcePath}", this);
                 return;
             }
-
-            instance = Instantiate(prefab, transform);
-            instance.name = prefab.name;
         }
 
         UIPanel panel = instance.GetComponent<UIPanel>();
