@@ -52,6 +52,9 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     public float antiWobbleDeadZone = .075f;
     [Range(0f, 1f)] public float antiWobbleFlipDamping = .45f;
     public float sensorSteerSmoothTime = .08f;
+    public float antiWobbleWindow = .75f;
+    public float antiWobbleHoldTime = .22f;
+    public int antiWobbleFlipThreshold = 2;
 
     [Header("Racing Line")]
     public float laneOffset = 0f;
@@ -114,6 +117,10 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
     private float sensorSteer;
     private float smoothedSensorSteer;
     private float sensorSteerVelocity;
+    private float lastSteerCommandSign;
+    private float lastSteerFlipTime;
+    private float antiWobbleHoldTimer;
+    private int steerFlipCount;
     private float sensorBrake;
     private float sensorSpeedLimit;
     private bool trafficBlocked;
@@ -206,6 +213,10 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         wallStuckTimer = 0f;
         smoothedSensorSteer = 0f;
         sensorSteerVelocity = 0f;
+        lastSteerCommandSign = 0f;
+        lastSteerFlipTime = 0f;
+        antiWobbleHoldTimer = 0f;
+        steerFlipCount = 0;
         trafficSideBias = 0f;
         trafficBiasTimer = 0f;
         frontStaticBlocked = false;
@@ -530,8 +541,10 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
 
         bool needsImmediateSteer = frontStaticBlocked || trafficBlocked || frontVehicleUrgency > .05f || reverseTimer > 0f;
 
-        if (needsImmediateSteer || car == null || car.speed < steeringAntiWobbleSpeedKph)
+        if (needsImmediateSteer || car == null || car.speed < steeringAntiWobbleSpeedKph) {
+            antiWobbleHoldTimer = 0f;
             return targetSteer;
+        }
 
         if (Mathf.Abs(targetSteer) < antiWobbleDeadZone)
             return 0f;
@@ -539,7 +552,31 @@ public class RCCP_RacingOpponentAI : MonoBehaviour {
         bool isSmallCorrection = Mathf.Abs(targetSteer) < .32f && Mathf.Abs(currentSteer) < .32f;
         bool isChangingSide = Mathf.Sign(targetSteer) != Mathf.Sign(currentSteer) && Mathf.Abs(currentSteer) > antiWobbleDeadZone;
 
-        if (isSmallCorrection && isChangingSide)
+        float commandSign = Mathf.Sign(targetSteer);
+
+        if (!isSmallCorrection) {
+            steerFlipCount = 0;
+            antiWobbleHoldTimer = 0f;
+            lastSteerCommandSign = commandSign;
+            return targetSteer;
+        }
+
+        if (lastSteerCommandSign != 0f && commandSign != lastSteerCommandSign) {
+            steerFlipCount = Time.time - lastSteerFlipTime <= antiWobbleWindow ? steerFlipCount + 1 : 1;
+            lastSteerFlipTime = Time.time;
+
+            if (steerFlipCount >= antiWobbleFlipThreshold)
+                antiWobbleHoldTimer = antiWobbleHoldTime;
+        }
+
+        lastSteerCommandSign = commandSign;
+
+        if (antiWobbleHoldTimer > 0f) {
+            antiWobbleHoldTimer -= Time.fixedDeltaTime;
+            return 0f;
+        }
+
+        if (isChangingSide)
             targetSteer *= antiWobbleFlipDamping;
 
         return targetSteer;
