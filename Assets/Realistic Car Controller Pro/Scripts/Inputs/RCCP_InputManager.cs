@@ -79,6 +79,11 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// </summary>
     public bool overrideInputs = false;
 
+    /// <summary>
+    /// Suppresses one-shot gameplay action events while UI panels are consuming the same buttons.
+    /// </summary>
+    public bool suppressGameplayActionEvents = false;
+
     // Input action map references cached for performance
     private InputActionMap drivingMap;
     private InputActionMap cameraMap;
@@ -526,10 +531,19 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
 
     // Public Methods for Event Triggering
 
+    private bool ShouldSuppressGameplayActionEvents() {
+
+        return suppressGameplayActionEvents;
+
+    }
+
     /// <summary>
     /// Triggers gear shift up event
     /// </summary>
     public void GearShiftUp() {
+
+        if (ShouldSuppressGameplayActionEvents())
+            return;
 
         OnGearShiftedUp?.Invoke();
 
@@ -540,6 +554,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// </summary>
     public void GearShiftDown() {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnGearShiftedDown?.Invoke();
 
     }
@@ -548,6 +565,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// Triggers gear shift to neutral event
     /// </summary>
     public void GearShiftToN() {
+
+        if (ShouldSuppressGameplayActionEvents())
+            return;
 
         OnGearShiftedToN?.Invoke();
 
@@ -559,6 +579,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// <param name="transmissionType">New transmission type</param>
     public void ToggleGear(RCCP_Gearbox.TransmissionType transmissionType) {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnGearToggle?.Invoke(transmissionType);
 
     }
@@ -569,6 +592,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// <param name="semiAutomaticDNRPGear">New gear position</param>
     public void AutomaticGear(RCCP_Gearbox.SemiAutomaticDNRPGear semiAutomaticDNRPGear) {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnAutomaticGear?.Invoke(semiAutomaticDNRPGear);
 
     }
@@ -577,6 +603,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// Triggers camera change event
     /// </summary>
     public void ChangeCamera() {
+
+        if (ShouldSuppressGameplayActionEvents())
+            return;
 
         OnChangedCamera?.Invoke();
 
@@ -587,6 +616,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// </summary>
     public void LowBeamHeadlights() {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnPressedLowBeamLights?.Invoke();
 
     }
@@ -595,6 +627,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// Triggers high beam headlights toggle event
     /// </summary>
     public void HighBeamHeadlights() {
+
+        if (ShouldSuppressGameplayActionEvents())
+            return;
 
         OnPressedHighBeamLights?.Invoke();
 
@@ -605,6 +640,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// </summary>
     public void IndicatorLeftlights() {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnPressedLeftIndicatorLights?.Invoke();
 
     }
@@ -614,6 +652,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// </summary>
     public void IndicatorRightlights() {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnPressedRightIndicatorLights?.Invoke();
 
     }
@@ -622,6 +663,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// Triggers hazard lights toggle event
     /// </summary>
     public void Indicatorlights() {
+
+        if (ShouldSuppressGameplayActionEvents())
+            return;
 
         OnPressedIndicatorLights?.Invoke();
 
@@ -633,6 +677,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// <param name="state">True when looking back, false otherwise</param>
     public void LookBackCamera(bool state) {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnLookBackCamera?.Invoke(state);
 
     }
@@ -643,6 +690,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// <param name="state">True when holding orbit, false otherwise</param>
     public void HoldOrbitCamera(bool state) {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnHoldOrbitCamera?.Invoke(state);
 
     }
@@ -651,6 +701,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// Triggers engine start event
     /// </summary>
     public void StartEngine() {
+
+        if (ShouldSuppressGameplayActionEvents())
+            return;
 
         OnStartEngine?.Invoke();
 
@@ -661,6 +714,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// </summary>
     public void StopEngine() {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnStopEngine?.Invoke();
 
     }
@@ -669,6 +725,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// Triggers steering helper toggle event
     /// </summary>
     public void SteeringHelper() {
+
+        if (ShouldSuppressGameplayActionEvents())
+            return;
 
         OnSteeringHelper?.Invoke();
 
@@ -679,6 +738,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// </summary>
     public void TractionHelper() {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnTractionHelper?.Invoke();
 
     }
@@ -687,6 +749,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// Triggers angular drag helper toggle event
     /// </summary>
     public void AngularDragHelper() {
+
+        if (ShouldSuppressGameplayActionEvents())
+            return;
 
         OnAngularDragHelper?.Invoke();
 
@@ -697,6 +762,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// </summary>
     public void ABS() {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnABS?.Invoke();
 
     }
@@ -706,6 +774,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// </summary>
     public void ESP() {
 
+        if (ShouldSuppressGameplayActionEvents())
+            return;
+
         OnESP?.Invoke();
 
     }
@@ -714,6 +785,9 @@ public class RCCP_InputManager : RCCP_Singleton<RCCP_InputManager> {
     /// Triggers TCS toggle event
     /// </summary>
     public void TCS() {
+
+        if (ShouldSuppressGameplayActionEvents())
+            return;
 
         OnTCS?.Invoke();
 
