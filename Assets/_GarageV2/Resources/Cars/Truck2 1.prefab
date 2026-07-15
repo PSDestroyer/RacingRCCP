@@ -1240,6 +1240,8 @@ MonoBehaviour:
   checkedSetup: 0
   defEngine: 0
   efficiency: 1.2
+  turboUnlockLevel: 4
+  defTurboCharged: 0
 --- !u!1 &455136433156253177
 GameObject:
   m_ObjectHideFlags: 0
@@ -87068,93 +87070,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &8363501032904741258
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7451963871034740503}
-  - component: {fileID: 7530278518759398129}
-  m_Layer: 8
-  m_Name: RCCP_Damage
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &7451963871034740503
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8363501032904741258}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7872832962755794343}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7530278518759398129
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8363501032904741258}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f95c4c42b9de13642bad92adfddf7432, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  completeSetup: 0
-  checkedSetup: 0
-  saveName: Truck2
-  meshFilters: []
-  lights: []
-  parts: []
-  wheels: []
-  automaticInstallation: 1
-  damageFilter:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  maximumDamage: 0.75
-  processInactiveGameobjects: 0
-  meshDeformation: 1
-  deformationRadius: 0.75
-  deformationMultiplier: 1
-  originalMeshData: []
-  damagedMeshData: []
-  originalWheelData: []
-  damagedWheelData: []
-  damageData:
-    originalMeshData: []
-    damagedMeshData: []
-    originalWheelData: []
-    damagedWheelData: []
-    lightData: 
-  repairNow: 0
-  repaired: 1
-  deformingNow: 0
-  deformed: 0
-  recalculateNormals: 0
-  recalculateBounds: 0
-  wheelDamage: 1
-  wheelDamageRadius: 2
-  wheelDamageMultiplier: 1
-  wheelDetachment: 1
-  lightDamage: 1
-  lightDamageRadius: 0.75
-  lightDamageMultiplier: 1
-  partDamage: 1
-  partDamageRadius: 1
-  partDamageMultiplier: 1
-  octrees: []
 --- !u!1 &8368742004335622101
 GameObject:
   m_ObjectHideFlags: 0
@@ -107584,7 +107499,6 @@ Transform:
   - {fileID: 9023725072533594402}
   - {fileID: 4158717622592113160}
   - {fileID: 8726750526532467467}
-  - {fileID: 7451963871034740503}
   - {fileID: 3701680846605822102}
   - {fileID: 2642010477214864430}
   m_Father: {fileID: 0}

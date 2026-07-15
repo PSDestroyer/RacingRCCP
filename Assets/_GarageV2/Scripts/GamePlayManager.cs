@@ -89,6 +89,8 @@ public class GamePlayManager : MonoBehaviour
     [Header("Finish Summary UI")]
     public GameObject finishSummaryScreen;
     public TMP_Text finishTitleText;
+    public Color finishCompleteTitleColor = Color.green;
+    public Color finishFailedTitleColor = Color.red;
     public TMP_Text finishModeText;
     public TMP_Text finishPositionText;
     public TMP_Text finishRewardText;
@@ -126,6 +128,10 @@ public class GamePlayManager : MonoBehaviour
 
     [Header("Race Start")]
     public bool useCountdown = true;
+    public bool useCinematicRaceIntro = true;
+    public float cinematicRaceIntroDuration = 7f;
+    public float cinematicRaceIntroDistance = 16f;
+    public float cinematicRaceIntroLeftOffset = 3f;
     public float countdownStepDuration = 1f;
     public float goTextDuration = 1f;
 
@@ -195,6 +201,7 @@ public class GamePlayManager : MonoBehaviour
     private Coroutine finishSummaryAnimationCoroutine;
     private Coroutine finishContinueSelectionCoroutine;
     private Coroutine raceStateClearCoroutine;
+    private Coroutine raceStartFlowCoroutine;
     private ArcadeVP.WaypointCircuit runtimeRaceWaypointCircuit;
     private RCCP_AIWaypointsContainer runtimeRaceWaypoints;
     private readonly List<Waypoint_System> resolvedWaypointSystems = new List<Waypoint_System>();
@@ -452,7 +459,8 @@ public class GamePlayManager : MonoBehaviour
         lastPlayerRouteRespawnTime = Time.unscaledTime;
 
         ArcadeVP.WaypointCircuit raceCircuit = GetRaceWaypointCircuit();
-        Pose respawnPose = GetPlayerRouteRespawnPose(raceCircuit);
+        bool preserveCheckpointProgress;
+        Pose respawnPose = GetPlayerRouteRespawnPose(raceCircuit, out preserveCheckpointProgress);
         Transform carTransform = CarController.transform;
 
         if (CarController.Rigid != null)
@@ -470,11 +478,19 @@ public class GamePlayManager : MonoBehaviour
             CarController.Rigid.WakeUp();
 
         ResetPlayerVehicleForMission();
-        SyncPlayerRaceProgressAfterRespawn(raceCircuit);
+        SyncPlayerRaceProgressAfterRespawn(raceCircuit, preserveCheckpointProgress);
     }
 
-    private Pose GetPlayerRouteRespawnPose(ArcadeVP.WaypointCircuit raceCircuit)
+    private Pose GetPlayerRouteRespawnPose(ArcadeVP.WaypointCircuit raceCircuit, out bool preserveCheckpointProgress)
     {
+        preserveCheckpointProgress = false;
+
+        if (TryGetLastPassedCheckpointRespawnPose(out Pose checkpointPose))
+        {
+            preserveCheckpointProgress = true;
+            return checkpointPose;
+        }
+
         if (raceCircuit == null || raceCircuit.Length <= 0f || CarController == null)
         {
             if (SpawnPoint != null)
@@ -503,6 +519,36 @@ public class GamePlayManager : MonoBehaviour
         return new Pose(position, Quaternion.LookRotation(forward, Vector3.up));
     }
 
+    private bool TryGetLastPassedCheckpointRespawnPose(out Pose respawnPose)
+    {
+        respawnPose = default;
+
+        Checkpoint_Manager checkpointManager = ResolveCheckpointManager();
+        if (checkpointManager == null || checkpointManager.checkpoints == null || checkpointManager.checkpoints.Count == 0)
+            return false;
+
+        if (playerRacer == null || !playerRacer.checkpointProgressInitialized || playerRacer.currentCheckpointIndex < 0)
+            return false;
+
+        int checkpointIndex = Mathf.Clamp(playerRacer.currentCheckpointIndex, 0, checkpointManager.checkpoints.Count - 1);
+        Transform checkpoint = checkpointManager.checkpoints[checkpointIndex];
+        if (checkpoint == null)
+            return false;
+
+        Vector3 forward = checkpoint.forward;
+        forward.y = 0f;
+
+        if (forward.sqrMagnitude < 0.001f)
+            forward = CarController != null ? CarController.transform.forward : transform.forward;
+
+        forward.Normalize();
+
+        Vector3 position = checkpoint.position + Vector3.up * playerRouteRespawnHeight;
+        position = GetGroundedPlayerRespawnPosition(position);
+        respawnPose = new Pose(position, Quaternion.LookRotation(forward, Vector3.up));
+        return true;
+    }
+
     private Vector3 GetGroundedPlayerRespawnPosition(Vector3 routePosition)
     {
         Vector3 rayOrigin = routePosition + Vector3.up * 25f;
@@ -513,7 +559,7 @@ public class GamePlayManager : MonoBehaviour
         return routePosition;
     }
 
-    private void SyncPlayerRaceProgressAfterRespawn(ArcadeVP.WaypointCircuit raceCircuit)
+    private void SyncPlayerRaceProgressAfterRespawn(ArcadeVP.WaypointCircuit raceCircuit, bool preserveCheckpointProgress)
     {
         if (playerRacer == null || CarController == null || raceCircuit == null)
             return;
@@ -524,7 +570,11 @@ public class GamePlayManager : MonoBehaviour
         playerRacer.startCircuitDistance = routeDistance;
         playerRacer.currentWaypointIndex = GetNextWaypointIndexFromCircuitDistance(routeDistance);
         playerRacer.progressInitialized = false;
-        playerRacer.checkpointProgressInitialized = false;
+
+        if (!preserveCheckpointProgress)
+            playerRacer.checkpointProgressInitialized = false;
+        else if (HasCheckpointProgressSource())
+            playerRacer.currentWaypointIndex = playerRacer.nextCheckpointIndex;
     }
 
     private IEnumerator RemoveDuplicateEventSystemsAfterSceneSetup()
@@ -912,10 +962,36 @@ public class GamePlayManager : MonoBehaviour
         SetRaceParticipantsControl(false);
         raceStarted = false;
 
+        if (raceStartFlowCoroutine != null)
+            StopCoroutine(raceStartFlowCoroutine);
+
+        raceStartFlowCoroutine = StartCoroutine(RaceStartFlowCoroutine());
+    }
+
+    private IEnumerator RaceStartFlowCoroutine()
+    {
+        if (useCinematicRaceIntro && cinematicRaceIntroDuration > 0f)
+            yield return StartCoroutine(RaceIntroCinematicCoroutine());
+
         if (useCountdown)
-            StartCoroutine(RaceCountdownCoroutine());
+            yield return StartCoroutine(RaceCountdownCoroutine());
         else
             StartRaceNow();
+
+        raceStartFlowCoroutine = null;
+    }
+
+    private IEnumerator RaceIntroCinematicCoroutine()
+    {
+        if (raceStateText != null)
+            raceStateText.text = string.Empty;
+
+        yield return null;
+
+        ApplyRaceIntroCinematicSettings();
+        SetGameplayCameraMode(RCCP_Camera.CameraMode.CINEMATIC);
+        yield return new WaitForSeconds(cinematicRaceIntroDuration);
+        RestoreStandardGameplayCamera();
     }
 
     private IEnumerator RaceCountdownCoroutine()
@@ -938,6 +1014,34 @@ public class GamePlayManager : MonoBehaviour
 
         if (raceStateText != null && !playerRacer.finished)
             raceStateText.text = string.Empty;
+    }
+
+    private void SetGameplayCameraMode(RCCP_Camera.CameraMode cameraMode)
+    {
+        RCCP_Camera gameplayCamera = RCCP_SceneManager.Instance != null ? RCCP_SceneManager.Instance.activePlayerCamera : null;
+        if (gameplayCamera == null)
+            return;
+
+        gameplayCamera.ChangeCamera(cameraMode);
+    }
+
+    private void ApplyRaceIntroCinematicSettings()
+    {
+        RCCP_CinematicCamera cinematicCamera = RCCP_CinematicCamera.Instance;
+        if (cinematicCamera == null)
+            return;
+
+        cinematicCamera.followDistance = cinematicRaceIntroDistance;
+        cinematicCamera.leftOffset = cinematicRaceIntroLeftOffset;
+    }
+
+    private void RestoreStandardGameplayCamera()
+    {
+        RCCP_Camera gameplayCamera = RCCP_SceneManager.Instance != null ? RCCP_SceneManager.Instance.activePlayerCamera : null;
+        if (gameplayCamera != null)
+            gameplayCamera.ChangeCamera(RCCP_Camera.CameraMode.TPS);
+
+        ApplyGameplayCameraProfile(GetCurrentCarSO());
     }
 
     private void StartRaceNow()
@@ -3079,7 +3183,10 @@ public class GamePlayManager : MonoBehaviour
            finishExpScreen.SetActive(false);
 
        if (finishTitleText != null)
-           finishTitleText.text = missionSucceeded ? "Mission Complete" : "Mission Failed";
+       {
+           finishTitleText.text = missionSucceeded ? "Complete" : "Failed";
+           finishTitleText.color = missionSucceeded ? finishCompleteTitleColor : finishFailedTitleColor;
+       }
 
        if (finishModeText != null)
            finishModeText.text = GetRaceModeDisplayName();
@@ -3411,11 +3518,16 @@ public class GamePlayManager : MonoBehaviour
        {
            float t = Mathf.Clamp01(time / duration);
            int displayedValue = Mathf.RoundToInt(Mathf.Lerp(0f, missionRewardEarned, t));
-           finishRewardText.text = $"{displayedValue:N0}";
+           finishRewardText.text = FormatFinishRewardText(displayedValue);
            yield return null;
        }
 
-       finishRewardText.text = $"{missionRewardEarned:N0}";
+       finishRewardText.text = FormatFinishRewardText(missionRewardEarned);
+   }
+
+   private string FormatFinishRewardText(int reward)
+   {
+       return $"Reward: {reward:N0}  <color=#FFD21F>CR</color>";
    }
 
    private IEnumerator AnimateSummaryPrimaryStat(float duration)
@@ -3438,11 +3550,11 @@ public class GamePlayManager : MonoBehaviour
        {
            float t = Mathf.Clamp01(time / duration);
            float displayedTime = Mathf.Lerp(0f, missionTime, t);
-           finishTimeText.text = FormatRaceTime(displayedTime);
+           finishTimeText.text = $"Time: {FormatRaceTime(displayedTime)}";
            yield return null;
        }
 
-       finishTimeText.text = FormatRaceTime(missionTime);
+       finishTimeText.text = $"Time: {FormatRaceTime(missionTime)}";
    }
 
    private string GetAnimatedFinishPrimaryStatText(float normalizedTime)

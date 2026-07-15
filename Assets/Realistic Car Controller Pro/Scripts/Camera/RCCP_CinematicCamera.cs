@@ -32,6 +32,16 @@ public class RCCP_CinematicCamera : RCCP_Singleton<RCCP_CinematicCamera> {
     /// </summary>
     [Min(0f)] public float targetFOV = 60f;
 
+    /// <summary>
+    /// Follow distance behind the target vehicle.
+    /// </summary>
+    [Min(0f)] public float followDistance = 16f;
+
+    /// <summary>
+    /// Horizontal offset relative to the target vehicle. Positive values move the camera to the vehicle's left side.
+    /// </summary>
+    public float leftOffset = 3f;
+
     private void Start() {
 
         // If pivot is not selected in Inspector Panel, create it.
@@ -66,7 +76,8 @@ public class RCCP_CinematicCamera : RCCP_Singleton<RCCP_CinematicCamera> {
 
         // Calculating target position.
         targetPosition = target.position;
-        targetPosition -= transform.rotation * Vector3.forward * 10f;
+        targetPosition -= transform.rotation * Vector3.forward * followDistance;
+        targetPosition -= target.right * leftOffset;
 
         // Assigning transform.position to targetPosition.
         transform.position = targetPosition;
