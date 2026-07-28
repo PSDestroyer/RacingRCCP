@@ -2,6 +2,9 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Components;
+using UnityEngine.Localization.Settings;
 
 public class MissionButton : MonoBehaviour, ISelectHandler
 {
@@ -23,6 +26,24 @@ public class MissionButton : MonoBehaviour, ISelectHandler
     public bool IsLocked => isLocked;
     public bool IsCompleted => isCompleted;
 
+    private void Awake()
+    {
+        DisableStaticLocalizer(nameText);
+        DisableStaticLocalizer(typeText);
+        DisableStaticLocalizer(rewardText);
+    }
+
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        RefreshLocalizedText();
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+    }
+
     public void Setup(MissionSO mission, CareerUIController controller, bool isLocked, bool isCompleted)
     {
         this.mission = mission;
@@ -33,14 +54,7 @@ public class MissionButton : MonoBehaviour, ISelectHandler
         if (missionNumberText != null)
             missionNumberText.text = mission.missionNumber.ToString("00");
 
-        if (nameText != null)
-            nameText.text = UILocalization.GetKnownText(mission.missionName);
-
-        if (typeText != null)
-            typeText.text = UILocalization.GetKnownText(mission.raceType.ToString());
-
-        if (rewardText != null)
-            rewardText.text = mission.rewardMoney + " coins";
+        RefreshLocalizedText();
 
         if (lockIcon != null)
             lockIcon.gameObject.SetActive(isLocked && !isCompleted);
@@ -53,6 +67,36 @@ public class MissionButton : MonoBehaviour, ISelectHandler
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(OnClick);
         }
+    }
+
+    private void OnLocaleChanged(Locale _)
+    {
+        RefreshLocalizedText();
+    }
+
+    private void RefreshLocalizedText()
+    {
+        if (mission == null)
+            return;
+
+        if (nameText != null)
+            nameText.text = UILocalization.GetKnownText(mission.missionName);
+
+        if (typeText != null)
+            typeText.text = UILocalization.GetKnownText(mission.raceType.ToString());
+
+        if (rewardText != null)
+            rewardText.text = mission.rewardMoney + " CR";
+    }
+
+    private static void DisableStaticLocalizer(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        LocalizeStringEvent localizer = text.GetComponent<LocalizeStringEvent>();
+        if (localizer != null)
+            localizer.enabled = false;
     }
 
     private void OnClick()

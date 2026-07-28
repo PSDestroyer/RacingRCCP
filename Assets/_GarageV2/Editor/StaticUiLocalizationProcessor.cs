@@ -20,7 +20,7 @@ using UnityEngine.UI;
 public static class StaticUiLocalizationProcessor
 {
     private const string TableName = "UI";
-    private const string AutoRunEditorKey = "RacingRCCP.StaticUiLocalizationProcessor.v15";
+    private const string AutoRunEditorKey = "RacingRCCP.StaticUiLocalizationProcessor.v21";
     private const long LegacyCustomizationId = 298409691963392;
     private const long DuplicateCustomizationId = 45208391306436608;
 
@@ -118,6 +118,30 @@ public static class StaticUiLocalizationProcessor
         R("controls.respawn", "Respawn", "Zurücksetzen", "Reaparecer", "Réapparaître", "Ricomparsa", "復帰", "재시작"),
         R("ui.choose_style", "CHOOSE YOUR STYLE", "WÄHLE DEINEN STIL", "ELIGE TU ESTILO", "CHOISISSEZ VOTRE STYLE", "SCEGLI IL TUO STILE", "スタイルを選択", "스타일 선택"),
         R("ui.complete", "Complete", "Abgeschlossen", "Completado", "Terminé", "Completato", "完了", "완료"),
+        R("ui.failed", "FAILED", "FEHLGESCHLAGEN", "FALLIDO", "ÉCHEC", "FALLITO", "失敗", "실패"),
+        R("ui.finish", "FINISH", "ZIEL", "META", "ARRIVÉE", "TRAGUARDO", "フィニッシュ", "피니시"),
+        R("ui.winner", "WINNER", "SIEGER", "GANADOR", "VAINQUEUR", "VINCITORE", "勝者", "우승"),
+        R("ui.eliminated", "ELIMINATED", "AUSGESCHIEDEN", "ELIMINADO", "ÉLIMINÉ", "ELIMINATO", "脱落", "탈락"),
+        R("ui.go", "GO!", "LOS!", "¡YA!", "PARTEZ !", "VIA!", "スタート！", "출발!"),
+        R("ui.survivors_format", "SURVIVORS {0}/{1}", "VERBLEIBEND {0}/{1}", "SUPERVIVIENTES {0}/{1}", "SURVIVANTS {0}/{1}", "SUPERSTITI {0}/{1}", "生存者 {0}/{1}", "생존자 {0}/{1}"),
+        R("ui.racer_out_format", "{0} OUT", "{0} AUS", "{0} ELIMINADO", "{0} ÉLIMINÉ", "{0} FUORI", "{0} 脱落", "{0} 탈락"),
+        R("ui.position_format", "POSITION  {0}/{1}", "POSITION  {0}/{1}", "POSICIÓN  {0}/{1}", "POSITION  {0}/{1}", "POSIZIONE  {0}/{1}", "順位  {0}/{1}", "순위  {0}/{1}"),
+        R("ui.time_format", "TIME: {0}", "ZEIT: {0}", "TIEMPO: {0}", "TEMPS : {0}", "TEMPO: {0}", "タイム：{0}", "시간: {0}"),
+        R("ui.reward_format", "REWARD: {0:N0}  <color=#FFD21F>CR</color>", "BELOHNUNG: {0:N0}  <color=#FFD21F>CR</color>", "RECOMPENSA: {0:N0}  <color=#FFD21F>CR</color>", "RÉCOMPENSE : {0:N0}  <color=#FFD21F>CR</color>", "RICOMPENSA: {0:N0}  <color=#FFD21F>CR</color>", "報酬：{0:N0}  <color=#FFD21F>CR</color>", "보상: {0:N0}  <color=#FFD21F>CR</color>"),
+        R("ui.exp_total_format", "{0:N0} EXP", "{0:N0} EP", "{0:N0} EXP", "{0:N0} EXP", "{0:N0} EXP", "経験値 {0:N0}", "경험치 {0:N0}"),
+        R("ui.exp_gain_format", "+{0:N0} EXP", "+{0:N0} EP", "+{0:N0} EXP", "+{0:N0} EXP", "+{0:N0} EXP", "経験値 +{0:N0}", "경험치 +{0:N0}"),
+        R("ui.level_up_reward_format", "LEVEL UP REWARD  +{0:N0}  <color=#FFD21F>CR</color>", "STUFENAUFSTIEG  +{0:N0}  <color=#FFD21F>CR</color>", "RECOMPENSA DE NIVEL  +{0:N0}  <color=#FFD21F>CR</color>", "RÉCOMPENSE DE NIVEAU  +{0:N0}  <color=#FFD21F>CR</color>", "PREMIO DI LIVELLO  +{0:N0}  <color=#FFD21F>CR</color>", "レベルアップ報酬  +{0:N0}  <color=#FFD21F>CR</color>", "레벨 업 보상  +{0:N0}  <color=#FFD21F>CR</color>"),
+        R("race.classic", "CLASSIC RACE", "KLASSISCHES RENNEN", "CARRERA CLÁSICA", "COURSE CLASSIQUE", "GARA CLASSICA", "クラシックレース", "클래식 레이스"),
+        R("race.elimination", "ELIMINATION", "ELIMINIERUNG", "ELIMINACIÓN", "ÉLIMINATION", "ELIMINAZIONE", "エリミネーション", "엘리미네이션"),
+        R("race.no_brake", "NO BRAKE CHALLENGE", "OHNE-BREMSE-CHALLENGE", "DESAFÍO SIN FRENOS", "DÉFI SANS FREINS", "SFIDA SENZA FRENI", "ノーブレーキチャレンジ", "노 브레이크 챌린지"),
+        R("race.drift_score", "DRIFT SCORE", "DRIFTPUNKTE", "PUNTUACIÓN DE DERRAPE", "SCORE DE DRIFT", "PUNTEGGIO DRIFT", "ドリフトスコア", "드리프트 점수"),
+        R("race.target_drift", "TARGET DRIFT", "ZIEL-DRIFT", "DERRAPE OBJETIVO", "OBJECTIF DRIFT", "OBIETTIVO DRIFT", "ターゲットドリフト", "목표 드리프트"),
+        R("race.combo_master", "COMBO MASTER", "KOMBO-MEISTER", "MAESTRO DEL COMBO", "MAÎTRE DU COMBO", "MAESTRO COMBO", "コンボマスター", "콤보 마스터"),
+        R("race.free_drift", "FREE DRIFT", "FREIES DRIFTEN", "DERRAPE LIBRE", "DRIFT LIBRE", "DRIFT LIBERO", "フリードリフト", "프리 드리프트"),
+        R("race.checkpoint_missed", "CHECKPOINT MISSED", "CHECKPOINT VERPASST", "PUNTO DE CONTROL OMITIDO", "CHECKPOINT MANQUÉ", "CHECKPOINT MANCATO", "チェックポイント通過失敗", "체크포인트 놓침"),
+        R("race.wrong_direction", "WRONG DIRECTION", "FALSCHE RICHTUNG", "DIRECCIÓN INCORRECTA", "MAUVAISE DIRECTION", "DIREZIONE ERRATA", "逆走", "역주행"),
+        R("race.you_missed_checkpoint", "YOU MISSED THE CHECKPOINT", "DU HAST DEN CHECKPOINT VERPASST", "TE SALTASTE EL PUNTO DE CONTROL", "VOUS AVEZ MANQUÉ LE CHECKPOINT", "HAI MANCATO IL CHECKPOINT", "チェックポイントを逃しました", "체크포인트를 놓쳤습니다"),
+        R("race.respawn_in_format", "RESPAWN IN {0}", "RESPAWN IN {0}", "REAPARICIÓN EN {0}", "RÉAPPARITION DANS {0}", "RIENTRO TRA {0}", "{0}秒後に復帰", "{0}초 후 복귀"),
         R("ui.paused", "Paused", "Pausiert", "En pausa", "En pause", "In pausa", "一時停止中", "일시 정지"),
         R("ui.restart", "Restart", "Neu starten", "Reiniciar", "Recommencer", "Riavvia", "リスタート", "다시 시작"),
         R("ui.quit", "Quit", "Beenden", "Salir", "Quitter", "Esci", "終了", "종료"),
@@ -128,6 +152,7 @@ public static class StaticUiLocalizationProcessor
         R("ui.gearbox", "Gearbox", "Getriebe", "Caja de cambios", "Boîte de vitesses", "Cambio", "ギアボックス", "변속기"),
         R("ui.grip", "Grip", "Grip", "Agarre", "Adhérence", "Aderenza", "グリップ", "그립"),
         R("ui.drift", "Drift", "Drift", "Derrape", "Drift", "Drift", "ドリフト", "드리프트"),
+        R("ui.offroad", "Offroad", "Gelände", "Todoterreno", "Tout-terrain", "Fuoristrada", "オフロード", "오프로드"),
         R("ui.racing", "Racing", "Rennen", "Carreras", "Course", "Gara", "レース", "레이싱"),
         R("ui.behaviors", "Behaviors", "Verhalten", "Comportamientos", "Comportements", "Comportamenti", "挙動", "동작"),
         R("ui.mobile_controller", "Mobile Controller", "Mobile Steuerung", "Control móvil", "Commandes tactiles", "Comandi touch", "モバイル操作", "모바일 조작"),
@@ -135,6 +160,8 @@ public static class StaticUiLocalizationProcessor
         R("ui.next_tour", "Next tour", "Nächste Runde", "Siguiente ronda", "Tour suivant", "Giro successivo", "次のラウンド", "다음 라운드"),
         R("ui.previous_tour", "Previous tour", "Vorherige Runde", "Ronda anterior", "Tour précédent", "Giro precedente", "前のラウンド", "이전 라운드"),
         R("ui.leaderboard", "Leaderboard", "Bestenliste", "Clasificación", "Classement", "Classifica", "ランキング", "순위표"),
+        R("ui.lap_format", "LAP {0}/{1}", "RUNDE {0}/{1}", "VUELTA {0}/{1}", "TOUR {0}/{1}", "GIRO {0}/{1}", "ラップ {0}/{1}", "랩 {0}/{1}"),
+        R("ui.no_brake_lap_format", "NO BRAKE  LAP {0}/{1}", "OHNE BREMSE  RUNDE {0}/{1}", "SIN FRENOS  VUELTA {0}/{1}", "SANS FREINS  TOUR {0}/{1}", "SENZA FRENI  GIRO {0}/{1}", "ブレーキなし  ラップ {0}/{1}", "브레이크 없이  랩 {0}/{1}"),
         R("ui.preparing_track", "Preparing Track", "Strecke wird vorbereitet", "Preparando pista", "Préparation du circuit", "Preparazione pista", "コース準備中", "트랙 준비 중"),
         R("shop.subtitle", "TRUCK SALON", "TRUCK-SALON", "SALÓN DE CAMIONES", "SALON DE CAMIONS", "SALONE TRUCK", "トラックショップ", "트럭 상점"),
         R("customization.subtitle", "CUSTOMIZE YOUR TRUCK", "TRUCK ANPASSEN", "PERSONALIZA TU CAMIÓN", "PERSONNALISEZ VOTRE CAMION", "PERSONALIZZA IL TRUCK", "トラックをカスタマイズ", "트럭 꾸미기"),

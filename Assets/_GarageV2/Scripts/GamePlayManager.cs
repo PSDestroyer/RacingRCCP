@@ -134,6 +134,13 @@ public class GamePlayManager : MonoBehaviour
     public float countdownStepDuration = 1f;
     public float goTextDuration = 1f;
 
+    [Header("Route Warnings")]
+    public float wrongDirectionMinimumSpeedKmh = 12f;
+    public float wrongDirectionDetectionDelay = 1.2f;
+    [Range(-1f, 0f)] public float wrongDirectionDotThreshold = -0.25f;
+    public float routeWarningDisplayDuration = 1.6f;
+    [Min(1)] public int missedCheckpointRespawnCountdown = 3;
+
     [Header("Opponent Spawning")]
     public bool autoSpawnOpponents = true;
     public int opponentCount = 3;
@@ -206,6 +213,12 @@ public class GamePlayManager : MonoBehaviour
     private readonly List<Waypoint_System> resolvedWaypointSystems = new List<Waypoint_System>();
     private InputAction playerRouteRespawnAction;
     private float lastPlayerRouteRespawnTime = -999f;
+    private float routeWarningsEnabledTime;
+    private float wrongDirectionTimer;
+    private float activeRouteWarningUntil;
+    private string activeRouteWarningText = string.Empty;
+    private int lastUnexpectedCheckpointIndex = -1;
+    private Coroutine missedCheckpointRespawnCoroutine;
 
     [Header("Drifting Settings")]
     public bool driftingNow = false;
@@ -995,7 +1008,7 @@ public class GamePlayManager : MonoBehaviour
         }
 
         if (raceStateText != null)
-            raceStateText.text = "GO";
+            raceStateText.text = UILocalization.Get("ui.go", "GO!");
 
         StartRaceNow();
         yield return new WaitForSeconds(goTextDuration);
@@ -1035,9 +1048,167 @@ public class GamePlayManager : MonoBehaviour
     private void StartRaceNow()
     {
         raceStarted = true;
+        routeWarningsEnabledTime = Time.unscaledTime + goTextDuration;
+        wrongDirectionTimer = 0f;
+        activeRouteWarningUntil = 0f;
+        activeRouteWarningText = string.Empty;
+        lastUnexpectedCheckpointIndex = -1;
         eliminationTimer = eliminationInterval;
         SetRaceParticipantsControl(true);
         RefreshOpponentDrivers(true);
+    }
+
+    private void UpdatePlayerRouteWarnings()
+    {
+        if (!raceStarted || missionResultsShown || playerRacer == null || playerRacer.finished ||
+            CarController == null || Time.unscaledTime < routeWarningsEnabledTime)
+            return;
+
+        if (missedCheckpointRespawnCoroutine != null)
+            return;
+
+        CheckMissedCheckpoint();
+        CheckWrongDirection();
+
+        if (!string.IsNullOrEmpty(activeRouteWarningText) &&
+            Time.unscaledTime >= activeRouteWarningUntil)
+        {
+            if (raceStateText != null && raceStateText.text == activeRouteWarningText)
+                raceStateText.text = string.Empty;
+
+            activeRouteWarningText = string.Empty;
+        }
+    }
+
+    private void CheckMissedCheckpoint()
+    {
+        Checkpoint_Manager checkpointManager = ResolveCheckpointManager();
+        if (checkpointManager == null || checkpointManager.checkpoints == null ||
+            checkpointManager.checkpoints.Count < 2 || !playerRacer.checkpointProgressInitialized)
+            return;
+
+        int unexpectedIndex = -1;
+        for (int index = 0; index < checkpointManager.checkpoints.Count; index++)
+        {
+            if (index == playerRacer.nextCheckpointIndex || index == playerRacer.currentCheckpointIndex)
+                continue;
+
+            Transform checkpoint = checkpointManager.checkpoints[index];
+            if (checkpoint != null && IsInsideCheckpoint(checkpoint, CarController.transform.position))
+            {
+                unexpectedIndex = index;
+                break;
+            }
+        }
+
+        if (unexpectedIndex < 0)
+        {
+            lastUnexpectedCheckpointIndex = -1;
+            return;
+        }
+
+        if (unexpectedIndex == lastUnexpectedCheckpointIndex)
+            return;
+
+        lastUnexpectedCheckpointIndex = unexpectedIndex;
+        missedCheckpointRespawnCoroutine = StartCoroutine(MissedCheckpointRespawnCoroutine());
+    }
+
+    private IEnumerator MissedCheckpointRespawnCoroutine()
+    {
+        if (CarController != null)
+        {
+            CarController.SetCanControl(false);
+
+            if (CarController.Inputs != null)
+                CarController.Inputs.OverrideInputs(new RCCP_Inputs());
+        }
+
+        int countdown = Mathf.Max(1, missedCheckpointRespawnCountdown);
+        while (countdown > 0 && raceStarted && !missionResultsShown && !playerRacer.finished)
+        {
+            if (raceStateText != null)
+            {
+                raceStateText.text = UILocalization.Get(
+                    "race.you_missed_checkpoint",
+                    "YOU MISSED THE CHECKPOINT");
+                raceStateText.text += "\n" + string.Format(
+                    UILocalization.Get("race.respawn_in_format", "RESPAWN IN {0}"),
+                    countdown);
+            }
+
+            yield return new WaitForSecondsRealtime(1f);
+            countdown--;
+        }
+
+        if (raceStarted && !missionResultsShown && !playerRacer.finished)
+            RespawnPlayerOnRoute();
+
+        if (CarController != null)
+        {
+            if (CarController.Inputs != null)
+                CarController.Inputs.DisableOverrideInputs();
+
+            CarController.SetCanControl(raceStarted && !missionResultsShown);
+        }
+
+        if (raceStateText != null)
+            raceStateText.text = string.Empty;
+
+        activeRouteWarningText = string.Empty;
+        wrongDirectionTimer = 0f;
+        lastUnexpectedCheckpointIndex = -1;
+        routeWarningsEnabledTime = Time.unscaledTime + 0.75f;
+        missedCheckpointRespawnCoroutine = null;
+    }
+
+    private void CheckWrongDirection()
+    {
+        Rigidbody rigidbody = CarController.Rigid;
+        ArcadeVP.WaypointCircuit circuit = GetRaceWaypointCircuit();
+        if (rigidbody == null || circuit == null || circuit.Length <= 0f)
+        {
+            wrongDirectionTimer = 0f;
+            return;
+        }
+
+        Vector3 velocity = rigidbody.linearVelocity;
+        velocity.y = 0f;
+        float speedKmh = velocity.magnitude * 3.6f;
+        float routeDistance = FindClosestDistanceAlongRaceRoute(
+            CarController.transform.position,
+            playerRacer.progressInitialized ? playerRacer.currentCircuitDistance : (float?)null);
+        Vector3 routeDirection = circuit.GetRoutePoint(routeDistance + 2f).direction;
+        routeDirection.y = 0f;
+
+        bool movingWrongWay = speedKmh >= wrongDirectionMinimumSpeedKmh &&
+                              routeDirection.sqrMagnitude > 0.001f &&
+                              Vector3.Dot(velocity.normalized, routeDirection.normalized) <= wrongDirectionDotThreshold;
+
+        if (!movingWrongWay)
+        {
+            wrongDirectionTimer = 0f;
+            return;
+        }
+
+        wrongDirectionTimer += Time.unscaledDeltaTime;
+        if (wrongDirectionTimer >= wrongDirectionDetectionDelay)
+            ShowRouteWarning(UILocalization.Get("race.wrong_direction", "WRONG DIRECTION"));
+    }
+
+    private void ShowRouteWarning(string warning)
+    {
+        if (raceStateText == null || string.IsNullOrWhiteSpace(warning))
+            return;
+
+        // Countdown, finish, and elimination messages have priority.
+        if (!string.IsNullOrEmpty(raceStateText.text) &&
+            raceStateText.text != activeRouteWarningText)
+            return;
+
+        activeRouteWarningText = warning;
+        activeRouteWarningUntil = Time.unscaledTime + routeWarningDisplayDuration;
+        raceStateText.text = warning;
     }
 
     private void SetRaceParticipantsControl(bool state)
@@ -1847,6 +2018,7 @@ public class GamePlayManager : MonoBehaviour
 
        ApplyPlayerBrakeRestrictions();
        UpdatePlayerRaceProgress();
+       UpdatePlayerRouteWarnings();
        UpdateAIRaceProgress();
        UpdateEliminationMode();
        UpdateCheckpointVisuals();
@@ -2400,16 +2572,22 @@ public class GamePlayManager : MonoBehaviour
        if (currentLapText != null)
        {
            if (RaceType == RaceType.Elimination)
-               currentLapText.text = $"Survivors {GetActiveRacerCount()}/{allRacers.Length}";
+               currentLapText.text = string.Format(
+                   UILocalization.Get("ui.survivors_format", "SURVIVORS {0}/{1}"),
+                   GetActiveRacerCount(), allRacers.Length);
            else if (RaceType == RaceType.NoBrakeChallenge)
            {
                int shownLap = Mathf.Min(playerRacer.completedLaps + 1, totalRaceLaps);
-               currentLapText.text = $"No Brake  Lap {shownLap}/{totalRaceLaps}";
+               currentLapText.text = string.Format(
+                   UILocalization.Get("ui.no_brake_lap_format", "NO BRAKE  LAP {0}/{1}"),
+                   shownLap, totalRaceLaps);
            }
            else
            {
                int shownLap = Mathf.Min(playerRacer.completedLaps + 1, totalRaceLaps);
-               currentLapText.text = $"Lap {shownLap}/{totalRaceLaps}";
+               currentLapText.text = string.Format(
+                   UILocalization.Get("ui.lap_format", "LAP {0}/{1}"),
+                   shownLap, totalRaceLaps);
            }
        }
 
@@ -2775,7 +2953,7 @@ public class GamePlayManager : MonoBehaviour
 
        if (raceStateText != null)
        {
-           raceStateText.text = stateText;
+           raceStateText.text = GetLocalizedRaceState(stateText);
 
            if (success && stateText == "Winner")
                ScheduleRaceStateClear(3f);
@@ -2805,7 +2983,7 @@ public class GamePlayManager : MonoBehaviour
            scoreText.gameObject.SetActive(false);
 
        if (raceStateText != null)
-           raceStateText.text = stateText;
+           raceStateText.text = GetLocalizedRaceState(stateText);
 
        if (success)
            CareerMissionProgress.MarkMissionCompleted(SelectedCareerMission.Tournament, SelectedCareerMission.Mission);
@@ -2853,7 +3031,9 @@ public class GamePlayManager : MonoBehaviour
 
        if (finishTitleText != null)
        {
-           finishTitleText.text = missionSucceeded ? "Complete" : "Failed";
+           finishTitleText.text = missionSucceeded
+               ? UILocalization.Get("ui.complete", "COMPLETE")
+               : UILocalization.Get("ui.failed", "FAILED");
            finishTitleText.color = missionSucceeded ? finishCompleteTitleColor : finishFailedTitleColor;
        }
 
@@ -3158,13 +3338,19 @@ public class GamePlayManager : MonoBehaviour
    private void UpdateExpScreenUI(int displayedLevel, int displayedTotalExp, int displayedGainedExp, int displayedLevelUps, int displayedLevelProgress, int expRequirement)
    {
        if (expLevelText != null)
-           expLevelText.text = $"Level {displayedLevel}";
+           expLevelText.text = string.Format(
+               UILocalization.Get("ui.level", "LEVEL {0}"),
+               displayedLevel);
 
        if (expTotalText != null)
-           expTotalText.text = $"{displayedTotalExp:N0} EXP";
+           expTotalText.text = string.Format(
+               UILocalization.Get("ui.exp_total_format", "{0:N0} EXP"),
+               displayedTotalExp);
 
        if (expGainText != null)
-           expGainText.text = $"+{displayedGainedExp:N0} EXP";
+           expGainText.text = string.Format(
+               UILocalization.Get("ui.exp_gain_format", "+{0:N0} EXP"),
+               displayedGainedExp);
 
        if (expLevelRewardText != null)
        {
@@ -3173,7 +3359,9 @@ public class GamePlayManager : MonoBehaviour
            expLevelRewardText.gameObject.SetActive(displayedLevelReward > 0);
 
            if (displayedLevelReward > 0)
-               expLevelRewardText.text = $"Level Up Reward  +{displayedLevelReward:N0}  <color=#FFD21F>CR</color>";
+               expLevelRewardText.text = string.Format(
+                   UILocalization.Get("ui.level_up_reward_format", "LEVEL UP REWARD  +{0:N0}  <color=#FFD21F>CR</color>"),
+                   displayedLevelReward);
        }
 
        if (expProgressSlider != null)
@@ -3196,7 +3384,9 @@ public class GamePlayManager : MonoBehaviour
 
    private string FormatFinishRewardText(int reward)
    {
-       return $"Reward: {reward:N0}  <color=#FFD21F>CR</color>";
+       return string.Format(
+           UILocalization.Get("ui.reward_format", "REWARD: {0:N0}  <color=#FFD21F>CR</color>"),
+           reward);
    }
 
    private IEnumerator AnimateSummaryPrimaryStat(float duration)
@@ -3219,11 +3409,15 @@ public class GamePlayManager : MonoBehaviour
        {
            float t = Mathf.Clamp01(time / duration);
            float displayedTime = Mathf.Lerp(0f, missionTime, t);
-           finishTimeText.text = $"Time: {FormatRaceTime(displayedTime)}";
+           finishTimeText.text = string.Format(
+               UILocalization.Get("ui.time_format", "TIME: {0}"),
+               FormatRaceTime(displayedTime));
            yield return null;
        }
 
-       finishTimeText.text = $"Time: {FormatRaceTime(missionTime)}";
+       finishTimeText.text = string.Format(
+           UILocalization.Get("ui.time_format", "TIME: {0}"),
+           FormatRaceTime(missionTime));
    }
 
    private string GetAnimatedFinishPrimaryStatText(float normalizedTime)
@@ -3233,7 +3427,9 @@ public class GamePlayManager : MonoBehaviour
        if (IsRaceMode())
        {
            int displayedPosition = Mathf.Max(1, Mathf.RoundToInt(Mathf.Lerp(1f, GetPlayerRacePosition(), clampedTime)));
-           return $"Position  {displayedPosition}/{GetTotalRaceParticipantCount()}";
+           return string.Format(
+               UILocalization.Get("ui.position_format", "POSITION  {0}/{1}"),
+               displayedPosition, GetTotalRaceParticipantCount());
        }
 
        if (RaceType == RaceType.ComboMaster)
@@ -3348,7 +3544,9 @@ public class GamePlayManager : MonoBehaviour
    private string GetFinishPrimaryStatText()
    {
        if (IsRaceMode())
-           return $"Position  {GetPlayerRacePosition()}/{GetTotalRaceParticipantCount()}";
+           return string.Format(
+               UILocalization.Get("ui.position_format", "POSITION  {0}/{1}"),
+               GetPlayerRacePosition(), GetTotalRaceParticipantCount());
 
        if (RaceType == RaceType.ComboMaster)
            return $"Best Combo  x{currentDriftDisplayedScore:0.0}";
@@ -3377,19 +3575,19 @@ public class GamePlayManager : MonoBehaviour
        switch (RaceType)
        {
            case RaceType.Racing:
-               return "Classic Race";
+               return UILocalization.Get("race.classic", "CLASSIC RACE");
            case RaceType.Elimination:
-               return "Elimination";
+               return UILocalization.Get("race.elimination", "ELIMINATION");
            case RaceType.NoBrakeChallenge:
-               return "No Brake Challenge";
+               return UILocalization.Get("race.no_brake", "NO BRAKE CHALLENGE");
            case RaceType.DriftScore:
-               return "Drift Score";
+               return UILocalization.Get("race.drift_score", "DRIFT SCORE");
            case RaceType.TargetDrift:
-               return "Target Drift";
+               return UILocalization.Get("race.target_drift", "TARGET DRIFT");
            case RaceType.ComboMaster:
-               return "Combo Master";
+               return UILocalization.Get("race.combo_master", "COMBO MASTER");
            case RaceType.FreeDrift:
-               return "Free Drift";
+               return UILocalization.Get("race.free_drift", "FREE DRIFT");
            default:
                return RaceType.ToString();
        }
@@ -3468,7 +3666,7 @@ public class GamePlayManager : MonoBehaviour
 
        List<string> leaderboardLines = new List<string>(rankedRacers.Count + 1)
        {
-           "Leaderboard:"
+           UILocalization.Get("ui.leaderboard", "LEADERBOARD") + ":"
        };
 
        for (int i = 0; i < rankedRacers.Count; i++)
@@ -3834,8 +4032,27 @@ public class GamePlayManager : MonoBehaviour
        }
        else if (raceStateText != null)
        {
-           raceStateText.text = $"{racer.displayName} OUT";
+           raceStateText.text = string.Format(
+               UILocalization.Get("ui.racer_out_format", "{0} OUT"),
+               racer.displayName);
            ScheduleRaceStateClear(3f);
+       }
+   }
+
+   private string GetLocalizedRaceState(string stateText)
+   {
+       switch (stateText)
+       {
+           case "Finish":
+               return UILocalization.Get("ui.finish", "FINISH");
+           case "Winner":
+               return UILocalization.Get("ui.winner", "WINNER");
+           case "Eliminated":
+               return UILocalization.Get("ui.eliminated", "ELIMINATED");
+           case "Failed":
+               return UILocalization.Get("ui.failed", "FAILED");
+           default:
+               return stateText;
        }
    }
 

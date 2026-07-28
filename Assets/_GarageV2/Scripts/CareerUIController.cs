@@ -8,6 +8,9 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using DG.Tweening;
 using DG.Tweening.Core;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Components;
+using UnityEngine.Localization.Settings;
 
 public class CareerUIController : MonoBehaviour
 {
@@ -41,6 +44,32 @@ public class CareerUIController : MonoBehaviour
     private Sequence missionRefreshSequence;
     private TournamentSO currentTournament;
     private float lastMissionNavigationTime = -10f;
+
+    private void Awake()
+    {
+        if (TitleText != null)
+        {
+            LocalizeStringEvent localizer = TitleText.GetComponent<LocalizeStringEvent>();
+            if (localizer != null)
+                localizer.enabled = false;
+        }
+    }
+
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+    }
+
+    private void OnLocaleChanged(Locale _)
+    {
+        if (TitleText != null && currentTournament != null)
+            TitleText.text = UILocalization.GetKnownText(currentTournament.tournamentName);
+    }
 
     public void OpenTournament(TournamentSO tournament, bool openDedicatedPanel = false)
     {

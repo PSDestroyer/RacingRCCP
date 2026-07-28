@@ -230,6 +230,18 @@ public static class UILocalization
             case "racing": key = "ui.racing"; break;
             case "drift": key = "ui.drift"; break;
             case "grip": key = "ui.grip"; break;
+            case "offroad": key = "ui.offroad"; break;
+            case "elimination": key = "race.elimination"; break;
+            case "no brake challenge":
+            case "nobrakechallenge": key = "race.no_brake"; break;
+            case "drift score":
+            case "driftscore": key = "race.drift_score"; break;
+            case "target drift":
+            case "targetdrift": key = "race.target_drift"; break;
+            case "combo master":
+            case "combomaster": key = "race.combo_master"; break;
+            case "free drift":
+            case "freedrift": key = "race.free_drift"; break;
             case "next tour": key = "ui.next_tour"; break;
             case "previous tour": key = "ui.previous_tour"; break;
             case "leaderboard": key = "ui.leaderboard"; break;
