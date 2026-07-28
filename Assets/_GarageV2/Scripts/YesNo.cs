@@ -85,6 +85,7 @@ public class YesNo : MonoBehaviour
 
     public void NotifyNotEnoughMoney()
     {
+        GameHaptics.Error();
         Notify(UILocalization.Get("No money", NotEnoughMoneyMessage));
     }
 

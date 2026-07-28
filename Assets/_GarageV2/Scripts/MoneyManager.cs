@@ -72,6 +72,8 @@ public class MoneyManager : MonoBehaviour
         money = Mathf.Max(0, money - totake);
         SaveMoney();
         UpdateText();
+        if (totake > 0)
+            GameHaptics.Success();
     }
 
     public void MoneyToAdd(int toadd)

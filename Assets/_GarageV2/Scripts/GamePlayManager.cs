@@ -219,6 +219,8 @@ public class GamePlayManager : MonoBehaviour
     private string activeRouteWarningText = string.Empty;
     private int lastUnexpectedCheckpointIndex = -1;
     private Coroutine missedCheckpointRespawnCoroutine;
+    private bool nitroHapticsActive;
+    private int lastHapticGear = int.MinValue;
 
     [Header("Drifting Settings")]
     public bool driftingNow = false;
@@ -699,14 +701,20 @@ public class GamePlayManager : MonoBehaviour
     private void OnEnable()
     {
         RCCP_Events.OnRCCPCollision += OnCarCollision;
+        RCCP_InputManager.OnGearShiftedUp += OnGearShiftHaptic;
+        RCCP_InputManager.OnGearShiftedDown += OnGearShiftHaptic;
         EnablePlayerRouteRespawnInput();
     }
 
     private void OnDisable()
     {
         RCCP_Events.OnRCCPCollision -= OnCarCollision;
+        RCCP_InputManager.OnGearShiftedUp -= OnGearShiftHaptic;
+        RCCP_InputManager.OnGearShiftedDown -= OnGearShiftHaptic;
         DisablePlayerRouteRespawnInput();
     }
+
+    private void OnGearShiftHaptic() => GameHaptics.GearShift();
 
     private void ApplyCurrentMapSettings()
     {
@@ -1004,12 +1012,14 @@ public class GamePlayManager : MonoBehaviour
             if (raceStateText != null)
                 raceStateText.text = countdownTexts[i];
 
+            GameHaptics.StartTick();
             yield return new WaitForSeconds(countdownStepDuration);
         }
 
         if (raceStateText != null)
             raceStateText.text = UILocalization.Get("ui.go", "GO!");
 
+        GameHaptics.StartGo();
         StartRaceNow();
         yield return new WaitForSeconds(goTextDuration);
 
@@ -1111,6 +1121,7 @@ public class GamePlayManager : MonoBehaviour
             return;
 
         lastUnexpectedCheckpointIndex = unexpectedIndex;
+        GameHaptics.CheckpointMissed();
         missedCheckpointRespawnCoroutine = StartCoroutine(MissedCheckpointRespawnCoroutine());
     }
 
@@ -1137,12 +1148,16 @@ public class GamePlayManager : MonoBehaviour
                     countdown);
             }
 
+            GameHaptics.RespawnTick();
             yield return new WaitForSecondsRealtime(1f);
             countdown--;
         }
 
         if (raceStarted && !missionResultsShown && !playerRacer.finished)
+        {
             RespawnPlayerOnRoute();
+            GameHaptics.Respawn();
+        }
 
         if (CarController != null)
         {
@@ -1885,6 +1900,7 @@ public class GamePlayManager : MonoBehaviour
            driftElapsedTime += Time.deltaTime;
 
        UpdateDriftUI();
+       UpdateDrivingHaptics();
 
        if (!IsDriftScoringMode())
            return;
@@ -2017,12 +2033,56 @@ public class GamePlayManager : MonoBehaviour
            raceElapsedTime += Time.deltaTime;
 
        ApplyPlayerBrakeRestrictions();
+       UpdateDrivingHaptics();
        UpdatePlayerRaceProgress();
        UpdatePlayerRouteWarnings();
        UpdateAIRaceProgress();
        UpdateEliminationMode();
        UpdateCheckpointVisuals();
        UpdateRaceUI();
+   }
+
+   private void UpdateDrivingHaptics()
+   {
+       if (CarController == null || CarController.Rigid == null)
+           return;
+
+       float low = 0f;
+       float high = 0f;
+       float speedKmh = CarController.Rigid.linearVelocity.magnitude * 3.6f;
+
+       if (CarController.currentGear != lastHapticGear)
+       {
+           if (lastHapticGear != int.MinValue)
+               GameHaptics.GearShift();
+           lastHapticGear = CarController.currentGear;
+       }
+
+       if (driftingNow) { low = .18f; high = .3f; }
+       bool nitroActive = CarController.nosInput_P > .1f;
+       if (nitroActive && !nitroHapticsActive)
+           GameHaptics.Pulse(.45f, .75f, .22f);
+       nitroHapticsActive = nitroActive;
+       if (nitroActive) { low = Mathf.Max(low, .3f); high = Mathf.Max(high, .48f); }
+       if ((CarController.brakeInput_P > .75f || CarController.handbrakeInput_P > .5f) && speedKmh > 25f)
+       { low = Mathf.Max(low, .24f); high = Mathf.Max(high, .36f); }
+
+       if (Physics.Raycast(CarController.transform.position + Vector3.up, Vector3.down,
+               out RaycastHit hit, 3f, Physics.AllLayers, QueryTriggerInteraction.Ignore))
+       {
+           string surface = (hit.collider.name + " " +
+                             (hit.collider.sharedMaterial != null ? hit.collider.sharedMaterial.name : string.Empty)).ToLowerInvariant();
+           if (hit.collider is TerrainCollider || surface.Contains("gravel") || surface.Contains("dirt") ||
+               surface.Contains("grass") || surface.Contains("offroad"))
+           {
+               float strength = Mathf.InverseLerp(10f, 100f, speedKmh);
+               low = Mathf.Max(low, .12f * strength);
+               high = Mathf.Max(high, .25f * strength);
+           }
+       }
+
+       if (low > 0f || high > 0f)
+           GameHaptics.Continuous(low, high);
    }
 
     private void UpdatePlayerRaceProgress()
@@ -2949,6 +3009,12 @@ public class GamePlayManager : MonoBehaviour
        missionSucceeded = success;
        missionResultsShown = true;
        raceStarted = false;
+       if (stateText == "Eliminated")
+           GameHaptics.Eliminated();
+       else if (success)
+           GameHaptics.Victory();
+       else
+           GameHaptics.Defeat();
        SetRaceParticipantsControl(false);
 
        if (raceStateText != null)
@@ -2972,6 +3038,10 @@ public class GamePlayManager : MonoBehaviour
            return;
 
        missionSucceeded = success;
+       if (success)
+           GameHaptics.Victory();
+       else
+           GameHaptics.Defeat();
        missionResultsShown = true;
        driftModeFinished = true;
        canScore = false;
@@ -3180,6 +3250,7 @@ public class GamePlayManager : MonoBehaviour
 
            if (displayedLevelUps > previousDisplayedLevelUps)
            {
+               GameHaptics.Success();
                previousDisplayedLevelUps = displayedLevelUps;
 
                if (expSliderAnimationCoroutine != null)
@@ -4163,13 +4234,16 @@ public class GamePlayManager : MonoBehaviour
    
    private void OnCarCollision(RCCP_CarController car, Collision collision)
    {
-       if (IsRaceMode())
-           return;
-
        if (car != CarController)
            return;
 
        if (collision.relativeVelocity.magnitude < 2f)
+           return;
+
+       float impact = Mathf.InverseLerp(2f, 25f, collision.relativeVelocity.magnitude);
+       GameHaptics.Pulse(Mathf.Lerp(.18f, .85f, impact), Mathf.Lerp(.3f, 1f, impact), Mathf.Lerp(.1f, .4f, impact));
+
+       if (IsRaceMode())
            return;
 
        driftingNow = false;
