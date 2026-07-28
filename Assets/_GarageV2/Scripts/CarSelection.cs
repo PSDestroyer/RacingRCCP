@@ -21,6 +21,7 @@ public class CarSelection : MonoBehaviour
   [SerializeField] public GameObject player;
   private static int indexcar;
   private GameObject PlayerCar1;
+    private int previewCarIndex = -1;
     public GarageUIController CanvasManager;
     private bool litenered;
     public PlayerInput playerInput;
@@ -99,7 +100,7 @@ public class CarSelection : MonoBehaviour
           yield break;
 
       Canvas.ForceUpdateCanvases();
-      int savedIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._buttonList.Count - 1);
+      int savedIndex = ResolveSelectedOwnedCarIndex();
       ScrollToSelectedButton(GlobalCarData._buttonList[savedIndex]);
 
   }
@@ -111,7 +112,7 @@ public class CarSelection : MonoBehaviour
       if (GlobalCarData._buttonList == null || GlobalCarData._buttonList.Count == 0)
           yield break;
 
-      int savedIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._buttonList.Count - 1);
+      int savedIndex = ResolveSelectedOwnedCarIndex();
       OnPressedButton(savedIndex);
       FocusCarButton(savedIndex);
   }
@@ -129,7 +130,7 @@ public class CarSelection : MonoBehaviour
     }
 
     litenered = true;
-    int savedIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._buttonList.Count - 1);
+    int savedIndex = ResolveSelectedOwnedCarIndex();
     OnPressedButton(savedIndex);
     FocusCarButton(savedIndex);
 
@@ -172,8 +173,6 @@ public class CarSelection : MonoBehaviour
         {
             selecttext.text = "Select";
             selecttextJP.text = "Select";
-            
-            SaveManager.Instance.saveData.currentCar = indexcar;
         }
         else
         {
@@ -431,12 +430,63 @@ public class CarSelection : MonoBehaviour
   }
   public void loadmaincar()
   {
-      int savedCarIndex = SaveManager.Instance.saveData.currentCar;
+      if (GlobalCarData._carlists == null || GlobalCarData._carlists.Count == 0 || SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+          return;
+
+      int savedCarIndex = ResolveSelectedOwnedCarIndex();
       indexcar = savedCarIndex;
 
-      if (player == null || indexcar != savedCarIndex)
-      {
+      if (player == null || previewCarIndex != savedCarIndex)
           ReplacePreviewCar(savedCarIndex);
+
+      UpdateStats();
+      UpdateSelectionVisuals(savedCarIndex);
+  }
+
+  private int ResolveSelectedOwnedCarIndex()
+  {
+      if (GlobalCarData._carlists == null || GlobalCarData._carlists.Count == 0 || SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+          return 0;
+
+      int savedIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._carlists.Count - 1);
+      CarSO savedCar = GlobalCarData._carlists[savedIndex];
+
+      if (savedCar != null && SaveManager.Instance.IsCarBought(savedCar.carName))
+          return savedIndex;
+
+      for (int i = 0; i < GlobalCarData._carlists.Count; i++)
+      {
+          CarSO candidate = GlobalCarData._carlists[i];
+          if (candidate != null && SaveManager.Instance.IsCarBought(candidate.carName))
+          {
+              SaveManager.Instance.saveData.currentCar = i;
+              SaveManager.Instance.Save();
+              return i;
+          }
+      }
+
+      return 0;
+  }
+
+  private void UpdateSelectionVisuals(int selectedIndex)
+  {
+      if (GlobalCarData._buttonList == null)
+          return;
+
+      for (int i = 0; i < GlobalCarData._buttonList.Count; i++)
+      {
+          Button button = GlobalCarData._buttonList[i];
+          if (button == null)
+              continue;
+
+          CarButton carButton = button.GetComponent<CarButton>();
+          if (carButton == null)
+              continue;
+
+          if (i == selectedIndex)
+              carButton.isPressed();
+          else
+              carButton.UnPressed();
       }
   }
   public void Navigations(InputAction.CallbackContext ctx)
@@ -511,7 +561,7 @@ public class CarSelection : MonoBehaviour
   {
       if (litenered && GlobalCarData._buttonList != null && GlobalCarData._buttonList.Count > 0)
       {
-          int savedIndex = Mathf.Clamp(SaveManager.Instance.saveData.currentCar, 0, GlobalCarData._buttonList.Count - 1);
+          int savedIndex = ResolveSelectedOwnedCarIndex();
           OnPressedButton(savedIndex);
           FocusCarButton(savedIndex);
       }
@@ -749,6 +799,7 @@ public class CarSelection : MonoBehaviour
         }
 
         player = Instantiate(carPrefab, spawnCarPoint);
+        previewCarIndex = carId;
 
         RCCP_CarController controller = player.GetComponent<RCCP_CarController>();
 

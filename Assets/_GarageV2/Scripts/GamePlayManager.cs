@@ -21,7 +21,6 @@ public class GamePlayManager : MonoBehaviour
         public string displayName = "Racer";
         public Transform racerTransform;
         public RCCP_AI aiDriver;
-        public RCCP_RacingOpponentAI racingAI;
 
         [NonSerialized] public int currentWaypointIndex;
         [NonSerialized] public int completedLaps;
@@ -205,7 +204,6 @@ public class GamePlayManager : MonoBehaviour
     private ArcadeVP.WaypointCircuit runtimeRaceWaypointCircuit;
     private RCCP_AIWaypointsContainer runtimeRaceWaypoints;
     private readonly List<Waypoint_System> resolvedWaypointSystems = new List<Waypoint_System>();
-    private readonly List<ArcadeVP.WaypointCircuit> runtimeOpponentWaypointCircuits = new List<ArcadeVP.WaypointCircuit>();
     private InputAction playerRouteRespawnAction;
     private float lastPlayerRouteRespawnTime = -999f;
 
@@ -910,18 +908,8 @@ public class GamePlayManager : MonoBehaviour
                 aiRacer.racerTransform = aiRacer.aiDriver.transform;
             }
 
-            if (aiRacer.racingAI != null)
-            {
-                aiRacer.racerTransform = aiRacer.racingAI.transform;
-                ConfigureOpponentRacingAI(aiRacer.racingAI, i);
-                aiRacer.currentWaypointIndex = aiRacer.racingAI.currentWaypointIndex;
-                aiRacer.currentCircuitDistance = aiRacer.racingAI.progressDistance;
-            }
-            else
-            {
-                aiRacer.currentWaypointIndex = GetClosestWaypointIndex(aiRacer.racerTransform);
-                aiRacer.currentCircuitDistance = raceCircuit != null && aiRacer.racerTransform != null ? FindClosestDistanceAlongRaceRoute(aiRacer.racerTransform.position) : 0f;
-            }
+            aiRacer.currentWaypointIndex = GetClosestWaypointIndex(aiRacer.racerTransform);
+            aiRacer.currentCircuitDistance = raceCircuit != null && aiRacer.racerTransform != null ? FindClosestDistanceAlongRaceRoute(aiRacer.racerTransform.position) : 0f;
 
             aiRacer.completedLaps = 0;
             aiRacer.finished = false;
@@ -1110,21 +1098,26 @@ public class GamePlayManager : MonoBehaviour
                 continue;
 
             spawnedOpponentObjects.Add(opponentObject);
-            RemoveLegacyOpponentAI(opponentObject);
+            RCCP_RacingOpponentAI oldRacingAI = opponentObject.GetComponent<RCCP_RacingOpponentAI>();
+            if (oldRacingAI != null)
+            {
+                oldRacingAI.enabled = false;
+                Destroy(oldRacingAI);
+            }
 
-            RCCP_RacingOpponentAI racingAI = opponentObject.GetComponent<RCCP_RacingOpponentAI>();
+            EnsureOpponentNavMeshAgent(opponentObject);
+            RCCP_AI aiDriver = opponentObject.GetComponent<RCCP_AI>();
 
-            if (racingAI == null)
-                racingAI = opponentObject.AddComponent<RCCP_RacingOpponentAI>();
+            if (aiDriver == null)
+                aiDriver = opponentObject.AddComponent<RCCP_AI>();
 
-            ConfigureOpponentRacingAI(racingAI, i);
+            ConfigureOpponentMainAI(aiDriver);
 
             aiRacers[i] = new RaceRacer
             {
                 displayName = GetOpponentDisplayName(i),
                 racerTransform = opponentObject.transform,
-                aiDriver = null,
-                racingAI = racingAI,
+                aiDriver = aiDriver,
                 currentWaypointIndex = 0,
                 completedLaps = 0,
                 finished = false,
@@ -1194,272 +1187,6 @@ public class GamePlayManager : MonoBehaviour
             || trimmedName.StartsWith("Racer ", StringComparison.OrdinalIgnoreCase);
     }
 
-    private void ConfigureOpponentRacingAI(RCCP_RacingOpponentAI racingAI, int opponentIndex)
-    {
-        if (racingAI == null)
-            return;
-
-        MissionSO mission = SelectedCareerMission.Mission;
-        RCCP_AIArcadePreset.Difficulty difficulty = mission != null && mission.useMissionAISettings
-            ? mission.opponentDifficulty
-            : GetOpponentDifficulty(opponentIndex);
-
-        racingAI.car = racingAI.GetComponent<RCCP_CarController>();
-        racingAI.waypointsContainer = runtimeRaceWaypoints;
-        racingAI.waypointCircuit = GetOpponentWaypointCircuit(opponentIndex);
-        racingAI.playerTarget = CarController != null ? CarController.transform : null;
-        racingAI.laneOffset = GetOpponentRacingLineOffset(opponentIndex);
-        racingAI.obstacleLayers = new LayerMask { value = Physics.AllLayers };
-        racingAI.vehicleLayers = new LayerMask { value = Physics.AllLayers };
-        ApplyBaseRacingAISetup(racingAI);
-
-        RCCP_AIArcadePreset preset = GetRacingAIPreset(mission, opponentIndex);
-
-        if (preset != null)
-            ApplyRacingAIPreset(racingAI, preset);
-
-        ApplyRacingAIDifficulty(racingAI, difficulty);
-
-        if (mission != null && mission.useMissionAISettings && mission.rubberBandStrength > 0f)
-        {
-            float strength = Mathf.Clamp(mission.rubberBandStrength, 0f, .5f);
-            racingAI.behindPlayerSpeedMultiplier = Mathf.Max(racingAI.behindPlayerSpeedMultiplier, 1f + strength * 1.15f);
-            racingAI.aheadPlayerSpeedMultiplier = Mathf.Min(racingAI.aheadPlayerSpeedMultiplier, 1f - strength * .45f);
-        }
-
-        ApplyOpponentRecoverySettings(racingAI);
-    }
-
-    private void ApplyBaseRacingAISetup(RCCP_RacingOpponentAI racingAI)
-    {
-        if (racingAI == null)
-            return;
-
-        racingAI.lookAheadForTargetOffset = 6f;
-        racingAI.lookAheadForTargetFactor = .13f;
-        racingAI.lookAheadForSpeedOffset = 36f;
-        racingAI.lookAheadForSpeedFactor = .22f;
-        racingAI.brakePreviewDistance = 32f;
-        racingAI.brakePreviewFactor = .22f;
-        racingAI.minLookAheadDistance = 5f;
-        racingAI.maxLookAheadDistance = 22f;
-        racingAI.insideCornerOffset = .22f;
-        racingAI.maxLaneOffsetInCorners = .08f;
-        racingAI.laneVariationRange = .12f;
-        racingAI.steeringSensitivity = 1.45f;
-        racingAI.steeringSmoothTime = .16f;
-        racingAI.maxSteerChangePerSecond = 5.8f;
-        racingAI.highSpeedSteerLimit = .82f;
-        racingAI.straightSteerDeadZone = .075f;
-        racingAI.straightSteerAssist = .55f;
-        racingAI.antiWobbleDeadZone = .09f;
-        racingAI.antiWobbleFlipDamping = .25f;
-        racingAI.antiWobbleHoldTime = .25f;
-        racingAI.antiWobbleFlipThreshold = 2;
-        racingAI.sensorSteerSmoothTime = .12f;
-        racingAI.frontSensorDistance = 16f;
-        racingAI.sideSensorDistance = 5f;
-        racingAI.obstacleBrake = .42f;
-        racingAI.vehicleBrake = .06f;
-        racingAI.vehicleSteerStrength = .28f;
-        racingAI.minimumTrafficSpeedKph = 24f;
-        racingAI.trafficLaneOffset = 1.35f;
-        racingAI.trafficBiasDuration = 2.2f;
-        racingAI.overtakeSpeedBonusKph = 12f;
-        racingAI.overtakeBrakeReduction = .45f;
-        racingAI.playerBrake = .16f;
-        racingAI.playerRespectSpeedKph = 34f;
-        racingAI.cornerBrakeAggression = 1.65f;
-        racingAI.paceVariation = .04f;
-        racingAI.mistakeChance = .03f;
-        racingAI.mistakeStrength = .06f;
-        racingAI.mistakeDuration = 1.25f;
-        racingAI.stuckSpeedKph = 6f;
-        racingAI.stuckSeconds = 1.25f;
-        racingAI.reverseStuckSeconds = .75f;
-        racingAI.wallStuckSeconds = .8f;
-        racingAI.hardResetStuckSeconds = 3f;
-        racingAI.routeRecoveryHeight = 2.25f;
-        racingAI.routeRecoveryGroundProbeHeight = 12f;
-        racingAI.routeRecoveryGroundProbeDistance = 35f;
-    }
-
-    private void ApplyOpponentRecoverySettings(RCCP_RacingOpponentAI racingAI)
-    {
-        if (racingAI == null)
-            return;
-
-        racingAI.stuckSpeedKph = 6f;
-        racingAI.stuckSeconds = 1.25f;
-        racingAI.reverseStuckSeconds = .75f;
-        racingAI.wallStuckSeconds = .8f;
-        racingAI.hardResetStuckSeconds = 3f;
-        racingAI.routeRecoveryHeight = 2.25f;
-        racingAI.routeRecoveryGroundProbeHeight = 12f;
-        racingAI.routeRecoveryGroundProbeDistance = 35f;
-    }
-
-    private RCCP_AIArcadePreset.Difficulty GetOpponentDifficulty(int opponentIndex)
-    {
-        if (opponentDifficulties == null || opponentDifficulties.Length == 0)
-            return RCCP_AIArcadePreset.Difficulty.Medium;
-
-        return opponentDifficulties[Mathf.Abs(opponentIndex) % opponentDifficulties.Length];
-    }
-
-    private RCCP_AIArcadePreset GetRacingAIPreset(MissionSO mission, int opponentIndex)
-    {
-        if (mission != null && mission.useMissionAISettings && mission.opponentAIPresets != null && mission.opponentAIPresets.Length > 0)
-            return mission.opponentAIPresets[Mathf.Abs(opponentIndex) % mission.opponentAIPresets.Length];
-
-        if (opponentAIPresets != null && opponentAIPresets.Length > 0)
-            return opponentAIPresets[Mathf.Abs(opponentIndex) % opponentAIPresets.Length];
-
-        return null;
-    }
-
-    private void ApplyRacingAIPreset(RCCP_RacingOpponentAI racingAI, RCCP_AIArcadePreset preset)
-    {
-        if (racingAI == null || preset == null)
-            return;
-
-        racingAI.maxSpeedKph = preset.maxSpeedKph;
-        racingAI.acceleration = preset.acceleration;
-        racingAI.steeringSensitivity = preset.steeringSensitivity;
-        racingAI.brakeSensitivity = preset.brakeSensitivity;
-        racingAI.maxLookAheadDistance = Mathf.Min(preset.straightLookAhead, 24f);
-        racingAI.minLookAheadDistance = Mathf.Min(preset.sharpCornerLookAhead, racingAI.maxLookAheadDistance);
-        racingAI.sharpCornerSpeedKph = preset.sharpCornerSpeed;
-        racingAI.brakePreviewDistance = Mathf.Max(14f, preset.cornerDetectionDistance * .34f);
-        racingAI.cornerBrakeAggression = Mathf.Clamp(preset.cornerBrakingDistance / 26f, 1f, 1.8f);
-        racingAI.frontSensorDistance = Mathf.Max(10f, preset.avoidanceDistance);
-        racingAI.obstacleBrake = Mathf.Clamp01(preset.avoidanceBrake);
-        racingAI.behindPlayerSpeedMultiplier = 1f + preset.rubberBandStrength;
-        racingAI.aheadPlayerSpeedMultiplier = 1f - preset.rubberBandStrength * .35f;
-        racingAI.stuckSeconds = preset.stuckSeconds;
-        racingAI.paceVariation = preset.paceVariation;
-        racingAI.mistakeChance = preset.mistakeChance;
-        racingAI.mistakeStrength = Mathf.Clamp(preset.mistakeChance * 2f, .01f, .16f);
-    }
-
-    private void ApplyRacingAIDifficulty(RCCP_RacingOpponentAI racingAI, RCCP_AIArcadePreset.Difficulty difficulty)
-    {
-        switch (difficulty)
-        {
-            case RCCP_AIArcadePreset.Difficulty.Easy:
-                racingAI.maxSpeedKph = 170f;
-                racingAI.acceleration = .86f;
-                racingAI.mediumCornerSpeedKph = 82f;
-                racingAI.sharpCornerSpeedKph = 32f;
-                racingAI.brakePreviewDistance = 36f;
-                racingAI.brakePreviewFactor = .22f;
-                racingAI.cornerBrakeAggression = 1.7f;
-                racingAI.insideCornerOffset = .14f;
-                racingAI.maxLaneOffsetInCorners = .05f;
-                racingAI.steeringSensitivity = 1.35f;
-                racingAI.steeringSmoothTime = .18f;
-                racingAI.maxSteerChangePerSecond = 5.2f;
-                racingAI.highSpeedSteerLimit = .78f;
-                racingAI.paceVariation = .08f;
-                racingAI.mistakeChance = .1f;
-                racingAI.mistakeStrength = .12f;
-                racingAI.mistakeDuration = 1.45f;
-                racingAI.trafficLaneOffset = 1.05f;
-                racingAI.trafficBiasDuration = 1.5f;
-                racingAI.overtakeSpeedBonusKph = 10f;
-                racingAI.overtakeBrakeReduction = .55f;
-                racingAI.wallSlowSpeedKph = 38f;
-                racingAI.behindPlayerSpeedMultiplier = 1.18f;
-                racingAI.aheadPlayerSpeedMultiplier = .91f;
-                break;
-
-            case RCCP_AIArcadePreset.Difficulty.Medium:
-                racingAI.maxSpeedKph = 192f;
-                racingAI.acceleration = .94f;
-                racingAI.mediumCornerSpeedKph = 92f;
-                racingAI.sharpCornerSpeedKph = 38f;
-                racingAI.brakePreviewDistance = 32f;
-                racingAI.brakePreviewFactor = .2f;
-                racingAI.cornerBrakeAggression = 1.55f;
-                racingAI.insideCornerOffset = .2f;
-                racingAI.maxLaneOffsetInCorners = .08f;
-                racingAI.steeringSensitivity = 1.45f;
-                racingAI.steeringSmoothTime = .16f;
-                racingAI.maxSteerChangePerSecond = 5.8f;
-                racingAI.highSpeedSteerLimit = .82f;
-                racingAI.paceVariation = .04f;
-                racingAI.mistakeChance = .03f;
-                racingAI.mistakeStrength = .06f;
-                racingAI.mistakeDuration = 1.25f;
-                racingAI.trafficLaneOffset = 1.2f;
-                racingAI.trafficBiasDuration = 1.85f;
-                racingAI.overtakeSpeedBonusKph = 14f;
-                racingAI.overtakeBrakeReduction = .42f;
-                racingAI.wallSlowSpeedKph = 42f;
-                racingAI.behindPlayerSpeedMultiplier = 1.28f;
-                racingAI.aheadPlayerSpeedMultiplier = .94f;
-                break;
-
-            case RCCP_AIArcadePreset.Difficulty.Hard:
-                racingAI.maxSpeedKph = 212f;
-                racingAI.acceleration = .98f;
-                racingAI.mediumCornerSpeedKph = 104f;
-                racingAI.sharpCornerSpeedKph = 44f;
-                racingAI.brakePreviewDistance = 28f;
-                racingAI.brakePreviewFactor = .18f;
-                racingAI.cornerBrakeAggression = 1.42f;
-                racingAI.insideCornerOffset = .26f;
-                racingAI.maxLaneOffsetInCorners = .11f;
-                racingAI.steeringSensitivity = 1.55f;
-                racingAI.steeringSmoothTime = .145f;
-                racingAI.maxSteerChangePerSecond = 6.4f;
-                racingAI.highSpeedSteerLimit = .86f;
-                racingAI.paceVariation = .025f;
-                racingAI.mistakeChance = .015f;
-                racingAI.mistakeStrength = .035f;
-                racingAI.mistakeDuration = .95f;
-                racingAI.trafficLaneOffset = 1.45f;
-                racingAI.trafficBiasDuration = 2.2f;
-                racingAI.overtakeSpeedBonusKph = 18f;
-                racingAI.overtakeBrakeReduction = .32f;
-                racingAI.wallSlowSpeedKph = 44f;
-                racingAI.behindPlayerSpeedMultiplier = 1.34f;
-                racingAI.aheadPlayerSpeedMultiplier = .96f;
-                break;
-
-            case RCCP_AIArcadePreset.Difficulty.Expert:
-                racingAI.maxSpeedKph = 235f;
-                racingAI.acceleration = 1f;
-                racingAI.mediumCornerSpeedKph = 116f;
-                racingAI.sharpCornerSpeedKph = 50f;
-                racingAI.brakePreviewDistance = 25f;
-                racingAI.brakePreviewFactor = .16f;
-                racingAI.cornerBrakeAggression = 1.3f;
-                racingAI.insideCornerOffset = .32f;
-                racingAI.maxLaneOffsetInCorners = .14f;
-                racingAI.steeringSensitivity = 1.65f;
-                racingAI.steeringSmoothTime = .13f;
-                racingAI.maxSteerChangePerSecond = 7f;
-                racingAI.highSpeedSteerLimit = .9f;
-                racingAI.paceVariation = .015f;
-                racingAI.mistakeChance = .005f;
-                racingAI.mistakeStrength = .02f;
-                racingAI.mistakeDuration = .8f;
-                racingAI.trafficLaneOffset = 1.6f;
-                racingAI.trafficBiasDuration = 2.5f;
-                racingAI.overtakeSpeedBonusKph = 22f;
-                racingAI.overtakeBrakeReduction = .24f;
-                racingAI.wallSlowSpeedKph = 48f;
-                racingAI.behindPlayerSpeedMultiplier = 1.38f;
-                racingAI.aheadPlayerSpeedMultiplier = .98f;
-                break;
-
-            default:
-                ApplyRacingAIDifficulty(racingAI, RCCP_AIArcadePreset.Difficulty.Medium);
-                break;
-        }
-    }
-
     private void RefreshOpponentDrivers(bool canControl)
     {
         if (aiRacers == null)
@@ -1469,37 +1196,24 @@ public class GamePlayManager : MonoBehaviour
         {
             RaceRacer aiRacer = aiRacers[i];
 
-            if (aiRacer == null || (aiRacer.aiDriver == null && aiRacer.racingAI == null))
+            if (aiRacer == null || aiRacer.racerTransform == null)
                 continue;
 
-            if (aiRacer.racerTransform != null)
-                RemoveLegacyOpponentAI(aiRacer.racerTransform.gameObject);
-
             RCCP_AI aiDriver = aiRacer.aiDriver;
-            if (aiDriver != null)
-                aiDriver.enabled = false;
+            EnsureOpponentNavMeshAgent(aiRacer.racerTransform.gameObject);
 
-            RCCP_RacingOpponentAI racingAI = aiRacer.racingAI;
+            if (aiDriver == null)
+                aiDriver = aiRacer.racerTransform.GetComponent<RCCP_AI>();
 
-            if (racingAI == null && aiRacer.racerTransform != null)
-                racingAI = aiRacer.racerTransform.GetComponent<RCCP_RacingOpponentAI>();
+            if (aiDriver == null)
+                aiDriver = aiRacer.racerTransform.gameObject.AddComponent<RCCP_AI>();
 
-            if (racingAI == null && aiRacer.racerTransform != null)
-                racingAI = aiRacer.racerTransform.gameObject.AddComponent<RCCP_RacingOpponentAI>();
+            aiRacer.aiDriver = aiDriver;
+            ConfigureOpponentMainAI(aiDriver);
+            aiDriver.enabled = canControl;
+            aiDriver.Reload();
 
-            aiRacer.racingAI = racingAI;
-
-            if (racingAI != null)
-            {
-                ConfigureOpponentRacingAI(racingAI, i);
-                racingAI.enabled = canControl;
-                racingAI.Reload();
-            }
-
-            RCCP_CarController aiCarController = racingAI != null ? racingAI.car : null;
-
-            if (aiCarController == null && aiRacer.racerTransform != null)
-                aiCarController = aiRacer.racerTransform.GetComponent<RCCP_CarController>();
+            RCCP_CarController aiCarController = aiDriver.CarController;
 
             if (aiCarController == null)
                 continue;
@@ -1514,22 +1228,47 @@ public class GamePlayManager : MonoBehaviour
         }
     }
 
-    private void RemoveLegacyOpponentAI(GameObject opponentObject)
+    private void ConfigureOpponentMainAI(RCCP_AI aiDriver)
     {
-        if (opponentObject == null)
+        if (aiDriver == null)
             return;
 
-        RCCP_AI legacyAI = opponentObject.GetComponent<RCCP_AI>();
-        if (legacyAI != null)
-            Destroy(legacyAI);
+        aiDriver.behaviour = RCCP_AI.BehaviourType.RaceWaypoints;
+        aiDriver.waypointsContainer = runtimeRaceWaypoints;
+        aiDriver.target = null;
+        aiDriver.rubberBandTarget = CarController != null ? CarController.transform : null;
+        aiDriver.useRubberBanding = true;
+        aiDriver.behindPlayerBrakeMultiplier = 1.2f;
+        aiDriver.rubberBandMinimumCornerSpeed = 40f;
+    }
 
-        NavMeshAgent navMeshAgent = opponentObject.GetComponent<NavMeshAgent>();
-        if (navMeshAgent != null)
-            Destroy(navMeshAgent);
+    private NavMeshAgent EnsureOpponentNavMeshAgent(GameObject opponentObject)
+    {
+        if (opponentObject == null)
+            return null;
 
-        RCCP_AIDynamicObstacleAvoidance dynamicAvoidance = opponentObject.GetComponent<RCCP_AIDynamicObstacleAvoidance>();
-        if (dynamicAvoidance != null)
-            Destroy(dynamicAvoidance);
+        NavMeshAgent agent = opponentObject.GetComponentInChildren<NavMeshAgent>(true);
+
+        if (agent == null)
+        {
+            GameObject agentObject = new GameObject("NavMeshAgent");
+            agentObject.transform.SetParent(opponentObject.transform, false);
+            agent = agentObject.AddComponent<NavMeshAgent>();
+        }
+
+        agent.transform.localPosition = Vector3.zero;
+        agent.transform.localRotation = Quaternion.identity;
+        agent.updatePosition = false;
+        agent.updateRotation = false;
+        agent.radius = 1.2f;
+        agent.height = 3f;
+        agent.speed = 60f;
+        agent.acceleration = 40f;
+        agent.angularSpeed = 720f;
+        agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+        agent.enabled = true;
+
+        return agent;
     }
 
     private void ConfigureOpponentDamage(RCCP_CarController aiCarController)
@@ -1580,18 +1319,10 @@ public class GamePlayManager : MonoBehaviour
 
     private ArcadeVP.WaypointCircuit GetOpponentWaypointCircuit(int opponentIndex)
     {
-        EnsureRaceWaypointSources();
-
-        if (runtimeOpponentWaypointCircuits.Count == 0)
-            return GetRaceWaypointCircuit();
-
-        int safeIndex = Mathf.Abs(opponentIndex) % runtimeOpponentWaypointCircuits.Count;
-        ArcadeVP.WaypointCircuit circuit = runtimeOpponentWaypointCircuits[safeIndex];
-
-        if (circuit != null)
-            circuit.RebuildRoute();
-
-        return circuit != null ? circuit : GetRaceWaypointCircuit();
+        // Every opponent must follow the same route used by race progress and
+        // checkpoints. Selecting a circuit by opponent index made steering and
+        // progress correction fight each other when a scene contained two paths.
+        return GetRaceWaypointCircuit();
     }
 
     private void EnsureRaceWaypointSources()
@@ -1626,7 +1357,6 @@ public class GamePlayManager : MonoBehaviour
 
         runtimeRaceWaypoints.GetAllWaypoints();
 
-        BuildOpponentWaypointCircuits();
     }
 
     private List<Pose> BuildProgressRoutePoses()
@@ -1774,85 +1504,32 @@ public class GamePlayManager : MonoBehaviour
     private List<Waypoint_System> GetResolvedWaypointSystems()
     {
         List<Waypoint_System> result = new List<Waypoint_System>();
-        IEnumerable<Waypoint_System> waypointSystems = Enumerable.Empty<Waypoint_System>();
+        Waypoint_System selectedSystem = externalWaypointSystem;
 
-        if (externalWaypointRoot != null)
-        {
-            waypointSystems = externalWaypointRoot
+        if (!IsValidRaceWaypointSystem(selectedSystem) && externalWaypointRoot != null)
+            selectedSystem = externalWaypointRoot
                 .GetComponentsInChildren<Waypoint_System>(true)
-                .OrderBy(system => GetHierarchyOrderKey(system.transform));
-        }
-        else if (externalWaypointSystem != null)
-        {
-            Transform parent = externalWaypointSystem.transform.parent;
+                .Where(IsValidRaceWaypointSystem)
+                .OrderBy(system => GetHierarchyOrderKey(system.transform))
+                .FirstOrDefault();
 
-            if (parent != null)
-            {
-                waypointSystems = parent
-                    .GetComponentsInChildren<Waypoint_System>(true)
-                    .Where(system => system.transform.parent == parent)
-                    .OrderBy(system => system.transform.GetSiblingIndex());
-            }
-            else
-            {
-                waypointSystems = new[] { externalWaypointSystem };
-            }
-        }
-        else
-        {
-            Waypoint_System foundSystem = FindFirstObjectByType<Waypoint_System>(FindObjectsInactive.Include);
+        if (!IsValidRaceWaypointSystem(selectedSystem))
+            selectedSystem = FindObjectsByType<Waypoint_System>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .Where(IsValidRaceWaypointSystem)
+                .OrderBy(system => GetHierarchyOrderKey(system.transform))
+                .FirstOrDefault();
 
-            if (foundSystem != null)
-                waypointSystems = new[] { foundSystem };
-        }
-
-        foreach (Waypoint_System system in waypointSystems)
-        {
-            if (system == null || system.waypoints == null)
-                continue;
-
-            if (system.waypoints.Count < 2)
-                continue;
-
-            if (result.Contains(system))
-                continue;
-
-            result.Add(system);
-        }
+        if (selectedSystem != null)
+            result.Add(selectedSystem);
 
         return result;
     }
 
-    private void BuildOpponentWaypointCircuits()
+    private bool IsValidRaceWaypointSystem(Waypoint_System system)
     {
-        for (int i = 0; i < runtimeOpponentWaypointCircuits.Count; i++)
-        {
-            if (runtimeOpponentWaypointCircuits[i] != null)
-                Destroy(runtimeOpponentWaypointCircuits[i].gameObject);
-        }
-
-        runtimeOpponentWaypointCircuits.Clear();
-
-        if (resolvedWaypointSystems.Count == 0)
-            return;
-
-        for (int i = 0; i < resolvedWaypointSystems.Count; i++)
-        {
-            Waypoint_System system = resolvedWaypointSystems[i];
-
-            if (system == null || system.waypoints == null || system.waypoints.Count < 2)
-                continue;
-
-            GameObject circuitObject = new GameObject($"Runtime_OpponentCircuit_{i + 1}");
-            circuitObject.transform.SetParent(transform);
-            ArcadeVP.WaypointCircuit circuit = circuitObject.AddComponent<ArcadeVP.WaypointCircuit>();
-            circuit.waypointList.items = system.waypoints.Where(waypoint => waypoint != null).ToArray();
-            circuit.RebuildRoute();
-            runtimeOpponentWaypointCircuits.Add(circuit);
-        }
-
-        if (runtimeOpponentWaypointCircuits.Count == 0 && runtimeRaceWaypointCircuit != null)
-            runtimeOpponentWaypointCircuits.Add(runtimeRaceWaypointCircuit);
+        return system != null
+            && system.waypoints != null
+            && system.waypoints.Count(waypoint => waypoint != null) >= 2;
     }
 
     private string GetHierarchyOrderKey(Transform target)
@@ -1950,14 +1627,6 @@ public class GamePlayManager : MonoBehaviour
             Destroy(runtimeRaceWaypointCircuit.gameObject);
             runtimeRaceWaypointCircuit = null;
         }
-
-        for (int i = 0; i < runtimeOpponentWaypointCircuits.Count; i++)
-        {
-            if (runtimeOpponentWaypointCircuits[i] != null)
-                Destroy(runtimeOpponentWaypointCircuits[i].gameObject);
-        }
-
-        runtimeOpponentWaypointCircuits.Clear();
 
         if (runtimeRaceWaypoints != null)
         {
@@ -4194,9 +3863,6 @@ public class GamePlayManager : MonoBehaviour
 
        if (ReferenceEquals(racer, playerRacer))
            return CarController;
-
-       if (racer.racingAI != null && racer.racingAI.car != null)
-           return racer.racingAI.car;
 
        if (racer.aiDriver != null && racer.aiDriver.CarController != null)
            return racer.aiDriver.CarController;

@@ -211,6 +211,9 @@ public class GarageUIController : MonoBehaviour
         if (currentPanel == UIPanelType.MainHub)
             return;
 
+        if (currentPanel == UIPanelType.Shop && carSelection != null)
+            carSelection.loadmaincar();
+
         if (history.Count == 0)
         {
             OpenPanel(UIPanelType.MainHub, false);

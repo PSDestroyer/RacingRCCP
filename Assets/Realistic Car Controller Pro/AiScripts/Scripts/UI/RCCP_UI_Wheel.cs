@@ -1,0 +1,144 @@
+//----------------------------------------------
+//        Realistic Car Controller Pro
+//
+// Copyright 2014 - 2025 BoneCracker Games
+// https://www.bonecrackergames.com
+// Ekrem Bugra Ozdoganlar
+//
+//----------------------------------------------
+
+using System;
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using HalvaStudio.Save;
+using TMPro;
+using UnityEngine.EventSystems;
+using UnityEngine.Localization.Settings;
+using UnityEngine.UI;
+
+/// <summary>
+/// UI change wheel button.
+/// </summary>
+[AddComponentMenu("BoneCracker Games/Realistic Car Controller Pro/UI/Modification/RCCP UI Wheel Button")]
+public class RCCP_UI_Wheel : RCCP_UIComponent, ISelectHandler {
+
+    /// <summary>
+    /// Index of the target wheel. 
+    /// </summary>
+    [Min(0)] public int wheelIndex = 0;
+    [Min(0)] public int price = 50;
+    [SerializeField] private YesNo _yesNo;
+    [SerializeField] private TMP_Text priceText;
+    [SerializeField] private MoneyManager _moneyManager;
+    [SerializeField] private List<RCCP_UI_Wheel> comp = new List<RCCP_UI_Wheel>();
+
+    public void OnSelect(BaseEventData baseEventData)
+    {
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
+        playerVehicle.Customizer.WheelManager.UpdateWheelWithoutSave(wheelIndex);
+
+    }
+    private void Start()
+    {
+        Initialize();
+    }
+    private void OnDisable()
+    {
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
+        playerVehicle.Customizer.WheelManager.Initialize();
+    }
+
+    public void OnClick() {
+
+        YesNo();
+
+    }
+
+    public void Refresh()
+    {
+        for (int i = 0; i < comp.Count; i++)
+        {
+            if (comp[i] != null)
+                comp[i].Initialize();
+        }
+    }
+
+    private void Initialize()
+    {
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
+
+        if (playerVehicle == null || playerVehicle.Customizer == null || playerVehicle.Customizer.WheelManager == null)
+        {
+            priceText.text = price + " <sprite index=0>";
+            return;
+        }
+
+        if (playerVehicle.Customizer.WheelManager.wheelIndex != wheelIndex)
+        {
+            priceText.text = price + " <sprite index=0>";
+        }
+        else
+        {
+            var purch = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "Purchased");
+            priceText.text = purch.Result;
+        }
+    }
+
+    public async void YesNo()
+    {
+        //  Finding the player vehicle.
+        RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
+
+        //  If no player vehicle found, return.
+        if (!playerVehicle)
+            return;
+
+        //  If player vehicle doesn't have the customizer component, return.
+        if (!playerVehicle.Customizer)
+            return;
+
+        if (!playerVehicle.Customizer.WheelManager)
+            return;
+
+        if (playerVehicle.Customizer.WheelManager.wheelIndex != wheelIndex)
+        {
+            var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "BuyYes/No");
+
+            bool result = await _yesNo.ShowYesNoPanelAsync(buystring.Result + "?");
+
+            if (result)
+            {
+                if (SaveManager.Instance.saveData.money >= price)
+                {
+                    _moneyManager.MoneyToTake(price);
+                    SoundManager.Instance.PlayButtonClick();
+                    playerVehicle.Customizer.WheelManager.UpdateWheel(wheelIndex);
+                    Refresh();
+                }
+                else
+                {
+                    var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "No money");
+                    _yesNo.Notify(operation.Result);
+                    SoundManager.Instance.PlayButtonError();
+                    Debug.Log("dont have enought Money");
+                }
+
+                GetComponent<Button>().Select();
+
+            }
+            else
+            {
+                GetComponent<Button>().Select();
+                SoundManager.Instance.PlayButtonClick();
+            }
+        }
+        else
+        {
+            var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI", "This item bought");
+            _yesNo.Notify(operation.Result);
+            SoundManager.Instance.PlayButtonClick();
+
+        }
+    }
+}
