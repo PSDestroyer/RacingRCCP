@@ -13,6 +13,7 @@ using System.Collections;
 using System.Collections.Generic;
 using HalvaStudio.Save;
 using TMPro;
+using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
 /// <summary>
@@ -40,6 +41,8 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
     [SerializeField] private MoneyManager _moneyManager;
 
     private void OnEnable() {
+
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
 
         //  Finding the player vehicle.
         RCCP_CarController playerVehicle = RCCPSceneManager.activePlayerVehicle;
@@ -75,10 +78,46 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
 
         }
 
-        UpgText.text = upgradeClass.ToString();
+        RefreshUpgradeLabel();
 
         if (priceText)
             priceText.text = GetCurrentPrice(playerVehicle).ToString();
+    }
+
+    private void OnDisable() {
+
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+
+    }
+
+    private void OnLocaleChanged(Locale _) {
+
+        RefreshUpgradeLabel();
+
+    }
+
+    private void RefreshUpgradeLabel() {
+
+        if (!UpgText)
+            return;
+
+        switch (upgradeClass) {
+
+            case UpgradeClass.Engine:
+                UpgText.text = UILocalization.Get("upgrade.engine", "Engine");
+                break;
+            case UpgradeClass.Handling:
+                UpgText.text = UILocalization.Get("upgrade.handling", "Handling");
+                break;
+            case UpgradeClass.Brake:
+                UpgText.text = UILocalization.Get("upgrade.brake", "Brake");
+                break;
+            case UpgradeClass.Speed:
+                UpgText.text = UILocalization.Get("upgrade.speed", "Speed");
+                break;
+
+        }
+
     }
 
     public void OnClick()
@@ -268,5 +307,4 @@ public class RCCP_UI_Upgrade : RCCP_UIComponent {
     }
 
     }
-
 

@@ -20,7 +20,7 @@ using UnityEngine.UI;
 public static class StaticUiLocalizationProcessor
 {
     private const string TableName = "UI";
-    private const string AutoRunEditorKey = "RacingRCCP.StaticUiLocalizationProcessor.v13";
+    private const string AutoRunEditorKey = "RacingRCCP.StaticUiLocalizationProcessor.v15";
     private const long LegacyCustomizationId = 298409691963392;
     private const long DuplicateCustomizationId = 45208391306436608;
 
@@ -35,6 +35,10 @@ public static class StaticUiLocalizationProcessor
         R("Settings", "Settings", "Einstellungen", "Ajustes", "Paramètres", "Impostazioni", "設定", "설정"),
         R("Shop", "Shop", "Shop", "Tienda", "Boutique", "Negozio", "ショップ", "상점"),
         R("menu.customization", "Customization", "Anpassung", "Personalización", "Personnalisation", "Personalizzazione", "カスタマイズ", "커스터마이징"),
+        R("customization.wheels", "Wheels", "Räder", "Ruedas", "Roues", "Ruote", "ホイール", "휠"),
+        R("customization.neon", "Neon", "Neon", "Neón", "Néon", "Neon", "ネオン", "네온"),
+        R("customization.spoilers", "Spoilers", "Spoiler", "Alerones", "Ailerons", "Spoiler", "スポイラー", "스포일러"),
+        R("customization.upgrade", "Upgrade", "Verbessern", "Mejorar", "Améliorer", "Potenzia", "アップグレード", "업그레이드"),
         R("Drive", "Drive:", "Fahren:", "Conducir:", "Conduire :", "Guida:", "ドライブ：", "주행:"),
         R("CarClass", "Class", "Klasse", "Clase", "Classe", "Classe", "クラス", "등급"),
         R("Power", "Power", "Leistung", "Potencia", "Puissance", "Potenza", "パワー", "출력"),
@@ -93,6 +97,9 @@ public static class StaticUiLocalizationProcessor
         R("ui.front", "Front", "Vorne", "Delante", "Avant", "Anteriore", "フロント", "전면"),
         R("ui.rear", "Rear", "Hinten", "Trasera", "Arrière", "Posteriore", "リア", "후면"),
         R("upgrade.engine", "Engine", "Motor", "Motor", "Moteur", "Motore", "エンジン", "엔진"),
+        R("upgrade.handling", "Handling", "Handling", "Manejo", "Tenue de route", "Maneggevolezza", "ハンドリング", "핸들링"),
+        R("upgrade.brake", "Brake", "Bremsen", "Frenos", "Freinage", "Freni", "ブレーキ", "브레이크"),
+        R("upgrade.speed", "Speed", "Geschwindigkeit", "Velocidad", "Vitesse", "Velocità", "スピード", "속도"),
         R("ui.free", "FREE", "KOSTENLOS", "GRATIS", "GRATUIT", "GRATIS", "無料", "무료"),
         R("ui.selected", "SELECTED", "AUSGEWÄHLT", "SELECCIONADO", "SÉLECTIONNÉ", "SELEZIONATO", "選択中", "선택됨"),
         R("ui.buy_action", "BUY!", "KAUFEN!", "¡COMPRAR!", "ACHETER !", "ACQUISTA!", "購入！", "구매!"),
