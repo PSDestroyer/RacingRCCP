@@ -33,6 +33,7 @@ public class GameplayPauseMenuController : MonoBehaviour
     private readonly List<Selectable> pauseFocusables = new();
     private float lastMenuMoveTime = -10f;
     private float lastSettingsMoveTime = -10f;
+    private InputSystemUIInputModule uiInputModule;
 
     public bool IsPaused => isPaused;
 
@@ -54,7 +55,7 @@ public class GameplayPauseMenuController : MonoBehaviour
             pauseMenuInstance.HomeButton.onClick.RemoveListener(ReturnHome);
         }
 
-        if (settingsPanelInstance != null)
+        if (settingsPanelInstance != null && settingsPanelInstance.BackButton != null)
             settingsPanelInstance.BackButton.onClick.RemoveListener(BackFromSettings);
 
         RestoreGameplayState();
@@ -215,11 +216,29 @@ public class GameplayPauseMenuController : MonoBehaviour
 
     private bool WasBackPressed()
     {
+        if (IsNintendoGamepad())
+            return Gamepad.current.buttonSouth.wasPressedThisFrame;
+
+        if (uiInputModule != null &&
+            uiInputModule.cancel != null &&
+            uiInputModule.cancel.action != null &&
+            uiInputModule.cancel.action.WasPressedThisFrame())
+            return true;
+
         return Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame;
     }
 
     private bool WasSubmitPressed()
     {
+        if (IsNintendoGamepad())
+            return Gamepad.current.buttonEast.wasPressedThisFrame;
+
+        if (uiInputModule != null &&
+            uiInputModule.submit != null &&
+            uiInputModule.submit.action != null &&
+            uiInputModule.submit.action.WasPressedThisFrame())
+            return true;
+
         if (Keyboard.current != null)
         {
             if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
@@ -227,6 +246,29 @@ public class GameplayPauseMenuController : MonoBehaviour
         }
 
         return Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame;
+    }
+
+    private static bool IsNintendoGamepad()
+    {
+        if (Gamepad.current == null)
+            return false;
+
+#if UNITY_SWITCH
+        return true;
+#else
+        string layout = Gamepad.current.layout;
+        if (string.IsNullOrWhiteSpace(layout))
+            return false;
+
+        if (InputSystem.IsFirstLayoutBasedOnSecond(layout, "SwitchProControllerHID") ||
+            InputSystem.IsFirstLayoutBasedOnSecond(layout, "NPad"))
+            return true;
+
+        string normalizedLayout = layout.ToLowerInvariant();
+        return normalizedLayout.Contains("switch") ||
+               normalizedLayout.Contains("npad") ||
+               normalizedLayout.Contains("nintendo");
+#endif
     }
 
     private void ApplyPausedState()
@@ -264,6 +306,7 @@ public class GameplayPauseMenuController : MonoBehaviour
         if (pauseMenuInstance != null)
         {
             pauseMenuInstance.Show();
+            SetNavigationEventsEnabled(false);
             SelectObject(pauseMenuInstance.DefaultSelected);
         }
     }
@@ -331,6 +374,10 @@ public class GameplayPauseMenuController : MonoBehaviour
             settingsPanelInstance.Initialize();
             settingsPanelInstance.SetTitle(settingsTitle);
             settingsPanelInstance.transform.localScale = Vector3.one * pauseSettingsPanelScale;
+
+            SettingsManager settingsManager = settingsPanelInstance.GetComponentInChildren<SettingsManager>(true);
+            if (settingsManager != null)
+                settingsManager.SetSelectedButtonSubmitHandling(false);
         }
     }
 
@@ -375,6 +422,7 @@ public class GameplayPauseMenuController : MonoBehaviour
         if (eventSystem?.currentInputModule is not InputSystemUIInputModule inputModule)
             return;
 
+        uiInputModule = inputModule;
         inputModule.moveRepeatDelay = uiMoveRepeatDelay;
         inputModule.moveRepeatRate = uiMoveRepeatRate;
     }
@@ -405,6 +453,12 @@ public class GameplayPauseMenuController : MonoBehaviour
     {
         if (!isPaused || settingsOpen || pauseFocusables.Count == 0)
             return;
+
+        if (WasSubmitPressed())
+        {
+            SubmitCurrentSelection();
+            return;
+        }
 
         Vector2 direction = GetNavigationDirection();
         if (direction == Vector2.zero)
@@ -444,7 +498,7 @@ public class GameplayPauseMenuController : MonoBehaviour
 
         if (submitPressed)
         {
-            ExecuteEvents.Execute(current.gameObject, new BaseEventData(EventSystem.current), ExecuteEvents.submitHandler);
+            SubmitSelectable(current);
             lastSettingsMoveTime = Time.unscaledTime;
             return;
         }
@@ -599,6 +653,33 @@ public class GameplayPauseMenuController : MonoBehaviour
         float delta = direction == Vector2.left ? -step : step;
         slider.SetValueWithoutNotify(Mathf.Clamp(slider.value + delta, slider.minValue, slider.maxValue));
         slider.onValueChanged?.Invoke(slider.value);
+    }
+
+    private void SubmitCurrentSelection()
+    {
+        if (EventSystem.current == null)
+            return;
+
+        GameObject selectedObject = EventSystem.current.currentSelectedGameObject;
+        Selectable selected = selectedObject != null
+            ? selectedObject.GetComponent<Selectable>() ?? selectedObject.GetComponentInParent<Selectable>()
+            : null;
+
+        SubmitSelectable(selected);
+    }
+
+    private static void SubmitSelectable(Selectable selectable)
+    {
+        if (selectable == null ||
+            !selectable.IsActive() ||
+            !selectable.IsInteractable() ||
+            EventSystem.current == null)
+            return;
+
+        ExecuteEvents.Execute(
+            selectable.gameObject,
+            new BaseEventData(EventSystem.current),
+            ExecuteEvents.submitHandler);
     }
 
     private static bool IsInDirection(Vector2 delta, Vector2 direction)

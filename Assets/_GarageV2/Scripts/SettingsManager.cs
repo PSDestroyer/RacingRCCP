@@ -21,6 +21,11 @@ public class SettingsManager : MonoBehaviour
     private bool previousRigidbodyKinematic;
     private int lastHandledSubmitFrame = -1;
 
+    public void SetSelectedButtonSubmitHandling(bool enabled)
+    {
+        handleSelectedButtonSubmit = enabled;
+    }
+
     private void Start()
     {
         RefreshUIFromSave();
