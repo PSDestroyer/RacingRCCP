@@ -85,7 +85,7 @@ public class YesNo : MonoBehaviour
 
     public void NotifyNotEnoughMoney()
     {
-        Notify(NotEnoughMoneyMessage);
+        Notify(UILocalization.Get("No money", NotEnoughMoneyMessage));
     }
 
     IEnumerator Notificationtime(string info)

@@ -12,7 +12,7 @@ public class TournamentButton : MonoBehaviour
     {
         if (tournament != null && nameText != null)
         {
-            nameText.text = tournament.tournamentName;
+            nameText.text = UILocalization.GetKnownText(tournament.tournamentName);
         }
 
         if (tournament != null && icon != null)

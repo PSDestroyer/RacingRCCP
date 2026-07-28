@@ -5,6 +5,8 @@ using HalvaStudio.Save;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 public class CarButton : MonoBehaviour 
@@ -21,6 +23,7 @@ public class CarButton : MonoBehaviour
     private Sprite normalSprite;
     [NonSerialized] private int id;
     [NonSerialized] private CarSelection carSelection;
+    [NonSerialized] private CarSO carData;
     // [NonSerialized] private Animator animator;
 
     private void Awake()
@@ -36,6 +39,7 @@ public class CarButton : MonoBehaviour
 
     public void SetUpButton(CarSO carData,CarSelection carSelections)
     {
+        this.carData = carData;
         NormalizeVisuals();
         CacheButtonVisuals();
         CarIcon.sprite = carData.carsprite;
@@ -47,25 +51,48 @@ public class CarButton : MonoBehaviour
         {
             priceText.text = carData.price.ToString() +"";
         }
-        else
-        { 
-            priceText.text = "FREE";
-        }
         carSelection = carSelections;
+        RefreshLocalizedText();
         // animator = GetComponent<Animator>();
+    }
+
+    private void RefreshLocalizedText()
+    {
+        if (carData == null)
+            return;
+
+        if (carData.price == 0)
+            priceText.text = UILocalization.Get("ui.free", "FREE");
+
         if (SaveManager.Instance.IsCarBought(carData.carName))
         {
-            AvaliableText.text = "Purchased";
+            AvaliableText.text = UILocalization.Get("Purchased", "Purchased");
             if (carData.id == SaveManager.Instance.saveData.currentCar)
             {
-                AvaliableText.text = "Selected";
+                AvaliableText.text = UILocalization.Get("ui.selected", "SELECTED");
  
             }
         }
         else
         {
-            AvaliableText.text = /*"<color=#DFA93B>*/"Buy! ";//+GlobalCarData._carlists[id].price+"<sprite index=0>";
+            AvaliableText.text = UILocalization.Get("ui.buy_action", "BUY!");
         }
+    }
+
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        RefreshLocalizedText();
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+    }
+
+    private void OnLocaleChanged(Locale _)
+    {
+        RefreshLocalizedText();
     }
 
     

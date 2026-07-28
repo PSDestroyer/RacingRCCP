@@ -8,6 +8,8 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 public class CarSelection : MonoBehaviour
 {
@@ -171,13 +173,13 @@ public class CarSelection : MonoBehaviour
     UpdateCurrentCar();
         if (SaveManager.Instance.IsCarBought(GlobalCarData._carlists[indexcar].carName))
         {
-            selecttext.text = "Select";
-            selecttextJP.text = "Select";
+            selecttext.text = UILocalization.Get("Select", "Select");
+            selecttextJP.text = UILocalization.Get("Select", "Select");
         }
         else
         {
-            selecttext.text = "Buy";//+GlobalCarData._carlists[id].price+"<sprite index=0>";
-            selecttextJP.text = "Buy";//+GlobalCarData._carlists[id].price+"<sprite index=0>";
+            selecttext.text = UILocalization.Get("BuyYes/No", "Buy");
+            selecttextJP.text = UILocalization.Get("BuyYes/No", "Buy");
 
         }
   }
@@ -196,7 +198,7 @@ public class CarSelection : MonoBehaviour
     public async void BuyCar()
     {
         RemoveEvents();
-        bool result = await yesNo.ShowYesNoPanelAsync("Buy / Select?");
+        bool result = await yesNo.ShowYesNoPanelAsync(UILocalization.Get("shop.buy_select_confirm", "Buy / Select?"));
 
         if (result)
         {
@@ -204,7 +206,7 @@ public class CarSelection : MonoBehaviour
                 {
                     moneyManager.MoneyToTake( GlobalCarData._carlists[indexcar].price);
                     SaveManager.Instance.SaveCar(GlobalCarData._carlists[indexcar].carName,true, GlobalCarData._carlists[indexcar].power,GlobalCarData._carlists[indexcar].speed,GlobalCarData._carlists[indexcar].turbo,GlobalCarData._carlists[indexcar].color,GlobalCarData._carlists[indexcar].steerAngle,GlobalCarData._carlists[indexcar].traction,GlobalCarData._carlists[indexcar].brake);
-                    selecttext.text = "Select";
+                    selecttext.text = UILocalization.Get("Select", "Select");
                     SaveManager.Instance.saveData.currentCar = indexcar;
                     SaveManager.Instance.Save();
                     SM.PlayNewCarClip();
@@ -341,7 +343,9 @@ public class CarSelection : MonoBehaviour
         BrakeText.text = GlobalCarData._carlists[indexcar].brake.ToString();
         Traction.text = TractionText[GlobalCarData._carlists[indexcar].traction].ToString();
         if (PriceText != null)
-            PriceText.text = GlobalCarData._carlists[indexcar].price <= 0 ? "FREE" : GlobalCarData._carlists[indexcar].price.ToString();
+            PriceText.text = GlobalCarData._carlists[indexcar].price <= 0
+                ? UILocalization.Get("ui.free", "FREE")
+                : GlobalCarData._carlists[indexcar].price.ToString();
         Turbo.gameObject.SetActive(GlobalCarData._carlists[indexcar].turbo);
     }
 
@@ -378,10 +382,10 @@ public class CarSelection : MonoBehaviour
 
     private void ConfigureStatsLabels()
     {
-        SetSliderLabel(PowerSlider, "Power");
-        SetSliderLabel(SpeedSlider, "Speed");
-        SetSliderLabel(SteerSlider, "Steering");
-        SetSliderLabel(BrakeSlider, "Brake");
+        SetSliderLabel(PowerSlider, UILocalization.Get("Power", "Power"));
+        SetSliderLabel(SpeedSlider, UILocalization.Get("ui.speed", "Speed"));
+        SetSliderLabel(SteerSlider, UILocalization.Get("Steering", "Steering"));
+        SetSliderLabel(BrakeSlider, UILocalization.Get("Brake", "Brake"));
     }
 
     private void SetSliderLabel(Slider slider, string label)
@@ -559,6 +563,7 @@ public class CarSelection : MonoBehaviour
 
   private void OnEnable()
   {
+      LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
       if (litenered && GlobalCarData._buttonList != null && GlobalCarData._buttonList.Count > 0)
       {
           int savedIndex = ResolveSelectedOwnedCarIndex();
@@ -592,12 +597,36 @@ public class CarSelection : MonoBehaviour
 
   private void OnDisable()
   {
+      LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
       RemoveEvents();
   }
 
   private void OnDestroy()
   {
+      LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
       RemoveEvents();
+  }
+
+  private void OnLocaleChanged(Locale _)
+  {
+      ConfigureStatsLabels();
+
+      if (GlobalCarData._carlists == null || GlobalCarData._carlists.Count == 0)
+          return;
+
+      indexcar = Mathf.Clamp(indexcar, 0, GlobalCarData._carlists.Count - 1);
+      UpdateStats();
+
+      bool owned = SaveManager.Instance != null &&
+                   SaveManager.Instance.IsCarBought(GlobalCarData._carlists[indexcar].carName);
+      string action = owned
+          ? UILocalization.Get("Select", "Select")
+          : UILocalization.Get("BuyYes/No", "Buy");
+
+      if (selecttext != null)
+          selecttext.text = action;
+      if (selecttextJP != null)
+          selecttextJP.text = action;
   }
 
   private void RemoveEvents()

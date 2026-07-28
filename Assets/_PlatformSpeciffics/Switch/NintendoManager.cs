@@ -49,6 +49,25 @@ namespace _Assets._PlatformSpeciffics.Switch
             return userId;
         }
 
+        /// <summary>
+        /// Returns the highest-priority language supported by the application,
+        /// according to the language preferences configured on the console.
+        /// </summary>
+        public static string GetDesiredLanguage()
+        {
+            string desiredLanguage = nn.oe.Language.GetDesired();
+
+            if (string.IsNullOrEmpty(desiredLanguage))
+                return string.Empty;
+
+            desiredLanguage = desiredLanguage.Trim();
+            int nullTerminatorIndex = desiredLanguage.IndexOf('\0');
+
+            if (nullTerminatorIndex >= 0)
+                desiredLanguage = desiredLanguage.Substring(0, nullTerminatorIndex);
+
+            return desiredLanguage;
+        }
 
     }
 #endif

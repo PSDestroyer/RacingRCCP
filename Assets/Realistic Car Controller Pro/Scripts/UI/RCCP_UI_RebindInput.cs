@@ -283,7 +283,7 @@ public class RCCP_UI_RebindInput : RCCP_UIComponent {
         // If we have no rebind overlay and no callback but we have a binding text label,
         // temporarily set the binding text label to "<Waiting>".
         if (m_RebindOverlay == null && m_RebindText == null && m_RebindStartEvent == null && m_BindingText != null)
-            m_BindingText.text = "<Waiting...>";
+            m_BindingText.text = UILocalization.Get("input.waiting", "<Waiting...>");
 
         // Give listeners a chance to act on the rebind starting.
         m_RebindStartEvent?.Invoke(this, m_RebindOperation);
@@ -406,4 +406,3 @@ public class RCCP_UI_RebindInput : RCCP_UIComponent {
     public class InteractiveRebindEvent : UnityEvent<RCCP_UI_RebindInput, InputActionRebindingExtensions.RebindingOperation> {
     }
 }
-

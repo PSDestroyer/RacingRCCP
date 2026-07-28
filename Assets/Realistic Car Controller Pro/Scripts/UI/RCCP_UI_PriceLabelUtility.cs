@@ -56,7 +56,7 @@ public static class RCCP_UI_PriceLabelUtility {
 
         PriceLabelState state = GetState(priceText);
 
-        priceText.text = string.IsNullOrEmpty(purchasedText) ? "Owned" : purchasedText;
+        priceText.text = UILocalization.Get("ui.owned", string.IsNullOrEmpty(purchasedText) ? "Owned" : purchasedText);
         priceText.fontSize = Mathf.Max(24f, state.fontSize * .8f);
         priceText.overflowMode = TextOverflowModes.Overflow;
         priceText.alignment = TextAlignmentOptions.Center;
@@ -74,7 +74,7 @@ public static class RCCP_UI_PriceLabelUtility {
 
         PriceLabelState state = GetState(priceText);
 
-        priceText.text = string.IsNullOrEmpty(equippedText) ? "In Use" : equippedText;
+        priceText.text = UILocalization.Get("ui.in_use", string.IsNullOrEmpty(equippedText) ? "In Use" : equippedText);
         priceText.fontSize = Mathf.Max(24f, state.fontSize * .8f);
         priceText.overflowMode = TextOverflowModes.Overflow;
         priceText.alignment = TextAlignmentOptions.Center;

@@ -34,10 +34,10 @@ public class MissionButton : MonoBehaviour, ISelectHandler
             missionNumberText.text = mission.missionNumber.ToString("00");
 
         if (nameText != null)
-            nameText.text = mission.missionName;
+            nameText.text = UILocalization.GetKnownText(mission.missionName);
 
         if (typeText != null)
-            typeText.text = mission.raceType.ToString();
+            typeText.text = UILocalization.GetKnownText(mission.raceType.ToString());
 
         if (rewardText != null)
             rewardText.text = mission.rewardMoney + " coins";

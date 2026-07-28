@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using TMPro;
 
 public class SettingsManager : MonoBehaviour
 {
@@ -152,6 +153,11 @@ public class SettingsManager : MonoBehaviour
             dashboardButton.OnSubmit(new BaseEventData(EventSystem.current));
             return;
         }
+
+        // InputSystemUIInputModule already submits TMP_Dropdown. Submitting it
+        // again here opens and closes the list during the same button press.
+        if (selectable is TMP_Dropdown)
+            return;
 
         ExecuteEvents.Execute(selectable.gameObject, new BaseEventData(EventSystem.current), ExecuteEvents.submitHandler);
 

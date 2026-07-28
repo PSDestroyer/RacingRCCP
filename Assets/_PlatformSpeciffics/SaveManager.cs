@@ -162,6 +162,7 @@ namespace HalvaStudio.Save
             public float musicLevel = 0.4f;
             public bool vibrationsState = true;
             public bool indicatorState;
+            public string languageCode;
 
             public int currentLevel;
             public int MaxLevel;

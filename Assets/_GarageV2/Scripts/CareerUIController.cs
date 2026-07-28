@@ -49,7 +49,7 @@ public class CareerUIController : MonoBehaviour
 
         if (TitleText != null)
         {
-            TitleText.text = tournament.tournamentName;
+            TitleText.text = UILocalization.GetKnownText(tournament.tournamentName);
         }
 
         BuildMissionList(tournament);

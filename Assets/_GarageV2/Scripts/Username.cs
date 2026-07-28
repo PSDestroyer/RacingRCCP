@@ -52,12 +52,13 @@ public class Username : MonoBehaviour
 
     IEnumerator LoadGame()
     {
-        Saving.text = "Saving .";
+        string savingText = UILocalization.Get("Saving", "Saving");
+        Saving.text = savingText + " .";
         Saving.gameObject.SetActive(true);
         yield return new WaitForSeconds(1);
-        Saving.text = "Saving ..";
+        Saving.text = savingText + " ..";
         yield return new WaitForSeconds(1);
-        Saving.text = "Saving ...";
+        Saving.text = savingText + " ...";
         yield return new WaitForSeconds(1);
         SaveManager.Instance.Save();
       

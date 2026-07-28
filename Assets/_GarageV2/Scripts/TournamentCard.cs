@@ -20,12 +20,12 @@ public class TournamentCard : MonoBehaviour
 
         if (nameText != null)
         {
-            nameText.text = tournament.tournamentName;
+            nameText.text = UILocalization.GetKnownText(tournament.tournamentName);
         }
 
         if (descriptionText != null)
         {
-            descriptionText.text = tournament.description;
+            descriptionText.text = UILocalization.GetKnownText(tournament.description);
         }
 
         if (icon != null)

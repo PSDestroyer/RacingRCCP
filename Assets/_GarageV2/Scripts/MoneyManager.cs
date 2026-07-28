@@ -3,6 +3,8 @@ using System.Globalization;
 using HalvaStudio.Save;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 public class MoneyManager : MonoBehaviour
@@ -36,6 +38,21 @@ public class MoneyManager : MonoBehaviour
         LoadData();
         RefreshFuelState();
         SetUpNik();
+        UpdateText();
+    }
+
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+    }
+
+    private void OnLocaleChanged(Locale _)
+    {
         UpdateText();
     }
 
@@ -178,10 +195,10 @@ public class MoneyManager : MonoBehaviour
         exp = Mathf.Max(0, exp);
 
         if (levelText != null)
-            levelText.text = $"Level {currentLevel}";
+            levelText.text = string.Format(UILocalization.Get("ui.level", "Level {0}"), currentLevel);
 
         if (lvlText != null)
-            lvlText.text = $"LVL:{currentLevel}";
+            lvlText.text = string.Format(UILocalization.Get("ui.level_short", "LVL:{0}"), currentLevel);
 
         if (expText != null)
             expText.text = $"{exp % safeExpPerLevel:N0}/{safeExpPerLevel:N0} EXP";
