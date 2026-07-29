@@ -75,7 +75,7 @@ public class RCCP_AI : RCCP_Component {
 
     [Header("Waypoint Settings")]
     [Tooltip("Distance in meters at which a waypoint is considered reached.")]
-    public float waypointReachThreshold = 25f;
+    public float waypointReachThreshold = 32.5f;
 
     [Tooltip("Additional look-ahead distance in meters when racing.")]
     public float raceLookAhead = 36f;

@@ -62,7 +62,7 @@ public class GamePlayManager : MonoBehaviour
     public Checkpoint_Manager externalCheckpointManager;
     public RaceRacer[] aiRacers;
     public int totalRaceLaps = 3;
-    public float waypointReachDistance = 20f;
+    public float waypointReachDistance = 26f;
     public TMP_Text currentLapText;
     public TMP_Text racePositionText;
     public TMP_Text raceStateText;
