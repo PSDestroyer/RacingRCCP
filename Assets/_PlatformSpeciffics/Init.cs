@@ -9,21 +9,28 @@ public class Init : MonoBehaviour
     private void Awake()
     {
         Debug.Log("INIT SCENE AWAKE!");
-#if UNITY_EDITOR
-        Debug.Log("Nintendo Initialize!");
-#else
+#if UNITY_SWITCH && !UNITY_EDITOR
         NintendoSave.Initialize();
+#else
+        Debug.Log("Nintendo initialization is skipped outside a Switch build.");
 #endif
     }
 
     private void Start()
     {
-        //LoadingScreen.LoadScene("Menu");
-        if(SaveManager.Instance.saveData.PlayerName== null)
-        UnityEngine.SceneManagement.SceneManager.LoadScene(1);
-        else
-            UnityEngine.SceneManagement.SceneManager.LoadScene(2);
+#if UNITY_SWITCH && !UNITY_EDITOR
+        string nickname = NintendoManager.GetNickname();
 
+        if (!string.IsNullOrWhiteSpace(nickname) &&
+            SaveManager.Instance != null &&
+            SaveManager.Instance.saveData != null)
+        {
+            SaveManager.Instance.saveData.PlayerName = nickname;
+            SaveManager.Instance.Save(true);
+        }
+#endif
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene(1);
     }
 
 }

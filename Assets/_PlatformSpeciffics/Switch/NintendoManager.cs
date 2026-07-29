@@ -50,6 +50,31 @@ namespace _Assets._PlatformSpeciffics.Switch
         }
 
         /// <summary>
+        /// Returns the nickname of the currently opened Nintendo user.
+        /// </summary>
+        public static string GetNickname()
+        {
+            nn.account.Nickname nickname = new nn.account.Nickname();
+            nn.Result result = nn.account.Account.GetNickname(ref nickname, userId);
+
+            if (!result.IsSuccess())
+            {
+                Debug.LogError($"Failed to read Nintendo user nickname: {result}");
+                return string.Empty;
+            }
+
+            string value = nickname.name;
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            int nullTerminatorIndex = value.IndexOf('\0');
+            if (nullTerminatorIndex >= 0)
+                value = value.Substring(0, nullTerminatorIndex);
+
+            return value.Trim();
+        }
+
+        /// <summary>
         /// Returns the highest-priority language supported by the application,
         /// according to the language preferences configured on the console.
         /// </summary>
