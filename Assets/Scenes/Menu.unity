@@ -6507,7 +6507,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &234500952
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6515,16 +6515,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 234500951}
-  m_LocalRotation: {x: 0.05787682, y: 0.31753865, z: -0.019421486, w: 0.94627815}
-  m_LocalPosition: {x: 0, y: 0, z: 36.3}
-  m_LocalScale: {x: 0.66666996, y: 0.66667014, z: 0.66666996}
+  m_LocalRotation: {x: -0.04470676, y: -0.37751737, z: 0.018252833, w: -0.9247426}
+  m_LocalPosition: {x: 0, y: 0, z: 35.540466}
+  m_LocalScale: {x: 0.66667, y: 0.66667014, z: 0.66667}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1879532869}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 54.56, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -648.4, y: -358.4}
+  m_AnchoredPosition: {x: -9.704321, y: 1.5308597}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &234500953
@@ -35679,12 +35679,12 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 34
+  m_fontSize: 17
   m_fontSizeBase: 34
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -40096,7 +40096,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
+  m_fontSize: 18.4
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -46451,7 +46451,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4279768289
   m_fontColor: {r: 0.88235295, g: 0.078431375, b: 0.09411765, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -46464,12 +46464,12 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 15
+  m_fontSize: 13.2
   m_fontSizeBase: 15
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -51267,6 +51267,7 @@ GameObject:
   - component: {fileID: 1879532870}
   - component: {fileID: 1879532872}
   - component: {fileID: 1879532873}
+  - component: {fileID: 1879532874}
   m_Layer: 5
   m_Name: CarShop
   m_TagString: Untagged
@@ -51286,7 +51287,6 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 234500952}
   - {fileID: 1863022011}
   - {fileID: 1991869989}
   - {fileID: 1737226477}
@@ -51398,6 +51398,19 @@ MonoBehaviour:
   steeringSliderMax: 100
   brakeSliderMax: 4000
   scrollRect: {fileID: 24927296}
+--- !u!114 &1879532874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1879532868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f691084493ec4a63a4fa0782dac33929, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelCamera: {fileID: 234500952}
 --- !u!1 &1886149943
 GameObject:
   m_ObjectHideFlags: 0
@@ -59099,6 +59112,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: NintendoSprites
       objectReference: {fileID: 0}
+    - target: {fileID: 4052242948577884820, guid: ca528874e500d2745b04a1d8e1eb0c29, type: 3}
+      propertyPath: m_fontSize
+      value: 27.65
+      objectReference: {fileID: 0}
     - target: {fileID: 5154868718636204394, guid: ca528874e500d2745b04a1d8e1eb0c29, type: 3}
       propertyPath: m_Pivot.x
       value: 1
@@ -59178,6 +59195,10 @@ PrefabInstance:
     - target: {fileID: 5154868718636204394, guid: ca528874e500d2745b04a1d8e1eb0c29, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8941278603231235904, guid: ca528874e500d2745b04a1d8e1eb0c29, type: 3}
+      propertyPath: m_fontSize
+      value: 27.65
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -60071,6 +60092,7 @@ SceneRoots:
   - {fileID: 33471957}
   - {fileID: 160684137}
   - {fileID: 2035771863}
+  - {fileID: 234500952}
   - {fileID: 1079078128}
   - {fileID: 1103276683}
   - {fileID: 1249187974}
