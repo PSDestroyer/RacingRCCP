@@ -211,6 +211,25 @@ public class RCCP_AI : RCCP_Component {
     [Tooltip("Enable stuck detection and recovery.")]
     public bool checkStuck = true;
 
+    [Header("Rollover Recovery")]
+    [Tooltip("Enable automatic recovery when the AI remains on its side or roof.")]
+    public bool recoverWhenRolledOver = true;
+
+    [Tooltip("Up-vector dot threshold below which the vehicle is considered rolled over.")]
+    [Range(-1f, 1f)] public float rolledOverUpDotThreshold = .45f;
+
+    [Tooltip("Maximum speed at which rollover recovery is allowed.")]
+    public float rolledOverMaxSpeedKph = 8f;
+
+    [Tooltip("Time the vehicle must remain rolled over before a recovery attempt.")]
+    public float rolledOverRecoveryDelay = 2f;
+
+    [Tooltip("Height above the detected ground used for local upright recovery.")]
+    public float uprightRecoveryHeight = 1.5f;
+
+    [Tooltip("Height above the detected ground used when moving the AI back to its route.")]
+    public float routeRespawnHeight = 2.25f;
+
     #endregion
 
     #region Runtime State
@@ -238,6 +257,9 @@ public class RCCP_AI : RCCP_Component {
     private RCCP_WheelCollider[] rubberBandWheels;
     private float[] defaultWheelGrip;
     private bool rubberBandStatsCached;
+    private float rolledOverTimer;
+    private float uprightStableTimer;
+    private int rolloverRecoveryAttempts;
 
     private float[] defaultSteerSpeedOfAxle;
     private bool[] defaultInputStates;
@@ -304,6 +326,9 @@ public class RCCP_AI : RCCP_Component {
 
         if (checkStuck)
             HandleStuckVehicle();
+
+        if (recoverWhenRolledOver)
+            HandleRolloverRecovery();
 
         ApplyObstacleAvoidance();
 
@@ -1083,6 +1108,152 @@ public class RCCP_AI : RCCP_Component {
 
     }
 
+    private void HandleRolloverRecovery() {
+
+        if (!CarController.canControl || CarController.Rigid == null) {
+            rolledOverTimer = 0f;
+            uprightStableTimer = 0f;
+            return;
+        }
+
+        float uprightDot = Vector3.Dot(CarController.transform.up, Vector3.up);
+        bool isRolledOver = uprightDot < rolledOverUpDotThreshold &&
+                            CarController.absoluteSpeed <= rolledOverMaxSpeedKph;
+
+        if (!isRolledOver) {
+            rolledOverTimer = 0f;
+
+            if (uprightDot > .75f) {
+                uprightStableTimer += Time.fixedDeltaTime;
+
+                if (uprightStableTimer >= 3f) {
+                    rolloverRecoveryAttempts = 0;
+                    uprightStableTimer = 3f;
+                }
+            } else {
+                uprightStableTimer = 0f;
+            }
+
+            return;
+        }
+
+        uprightStableTimer = 0f;
+        rolledOverTimer += Time.fixedDeltaTime;
+
+        if (rolledOverTimer < Mathf.Max(.25f, rolledOverRecoveryDelay))
+            return;
+
+        bool moveBackToRoute = rolloverRecoveryAttempts > 0;
+        RecoverRolledOverVehicle(moveBackToRoute);
+        rolloverRecoveryAttempts++;
+        rolledOverTimer = 0f;
+
+    }
+
+    private void RecoverRolledOverVehicle(bool moveBackToRoute) {
+
+        Transform vehicleTransform = CarController.transform;
+        Vector3 recoveryPosition = vehicleTransform.position;
+        Vector3 routeForward = GetRecoveryRouteForward();
+
+        if (moveBackToRoute)
+            recoveryPosition = GetRouteRespawnPosition(routeForward);
+
+        float recoveryHeight = moveBackToRoute ? routeRespawnHeight : uprightRecoveryHeight;
+        recoveryPosition = GetGroundedRecoveryPosition(recoveryPosition, recoveryHeight);
+        Quaternion recoveryRotation = Quaternion.LookRotation(routeForward, Vector3.up);
+
+        vehicleTransform.SetPositionAndRotation(recoveryPosition, recoveryRotation);
+        CarController.Rigid.linearVelocity = Vector3.zero;
+        CarController.Rigid.angularVelocity = Vector3.zero;
+        CarController.Rigid.WakeUp();
+
+        reverseNow = false;
+        stuckTimer = 0f;
+        pidIntegral = 0f;
+        lastSpeedError = 0f;
+        inputs.Clear();
+
+        if (CarController.Inputs != null) {
+            CarController.Inputs.autoReverse = false;
+            CarController.Inputs.OverrideInputs(inputs);
+        }
+
+        if (_agent != null && _agent.isActiveAndEnabled)
+            _agent.nextPosition = recoveryPosition;
+
+    }
+
+    private Vector3 GetRecoveryRouteForward() {
+
+        Vector3 forward = Vector3.ProjectOnPlane(CarController.transform.forward, Vector3.up).normalized;
+
+        if (waypointsContainer != null &&
+            waypointsContainer.waypoints != null &&
+            waypointsContainer.waypoints.Count > 1) {
+            int count = waypointsContainer.waypoints.Count;
+            int nextIndex = Mathf.Clamp(currentWaypointIndex, 0, count - 1);
+            int previousIndex = (nextIndex - 1 + count) % count;
+            RCCP_Waypoint previous = waypointsContainer.waypoints[previousIndex];
+            RCCP_Waypoint next = waypointsContainer.waypoints[nextIndex];
+
+            if (previous != null && next != null) {
+                Vector3 segmentForward = Vector3.ProjectOnPlane(
+                    next.transform.position - previous.transform.position,
+                    Vector3.up).normalized;
+
+                if (segmentForward.sqrMagnitude > .001f)
+                    forward = segmentForward;
+            }
+        }
+
+        return forward.sqrMagnitude > .001f ? forward : Vector3.forward;
+
+    }
+
+    private Vector3 GetRouteRespawnPosition(Vector3 routeForward) {
+
+        if (waypointsContainer == null ||
+            waypointsContainer.waypoints == null ||
+            waypointsContainer.waypoints.Count == 0)
+            return CarController.transform.position;
+
+        int count = waypointsContainer.waypoints.Count;
+        int nextIndex = Mathf.Clamp(currentWaypointIndex, 0, count - 1);
+        int previousIndex = (nextIndex - 1 + count) % count;
+        RCCP_Waypoint previous = waypointsContainer.waypoints[previousIndex];
+
+        return previous != null
+            ? previous.transform.position + routeForward * 3f
+            : CarController.transform.position;
+
+    }
+
+    private Vector3 GetGroundedRecoveryPosition(Vector3 position, float height) {
+
+        Vector3 rayOrigin = position + Vector3.up * 12f;
+        RaycastHit[] hits = Physics.RaycastAll(
+            rayOrigin,
+            Vector3.down,
+            40f,
+            Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction.Ignore);
+
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        for (int i = 0; i < hits.Length; i++) {
+            Collider hitCollider = hits[i].collider;
+
+            if (hitCollider == null || hitCollider.transform.IsChildOf(CarController.transform))
+                continue;
+
+            return hits[i].point + Vector3.up * Mathf.Max(.5f, height);
+        }
+
+        return position + Vector3.up * Mathf.Max(.5f, height);
+
+    }
+
     #endregion
 
     #region Obstacle Avoidance
@@ -1121,6 +1292,9 @@ public class RCCP_AI : RCCP_Component {
         stopNow = false;
         reverseNow = false;
         currentBrakeZone = null;
+        rolledOverTimer = 0f;
+        uprightStableTimer = 0f;
+        rolloverRecoveryAttempts = 0;
 
     }
 
