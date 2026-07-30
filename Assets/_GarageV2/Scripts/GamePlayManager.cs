@@ -40,6 +40,8 @@ public class GamePlayManager : MonoBehaviour
         [NonSerialized] public int currentCheckpointIndex;
         [NonSerialized] public int nextCheckpointIndex;
         [NonSerialized] public bool checkpointProgressInitialized;
+        [NonSerialized] public Vector3 previousCheckpointPosition;
+        [NonSerialized] public bool hasPreviousCheckpointPosition;
     }
 
     private struct PathProgressInfo
@@ -574,20 +576,42 @@ public class GamePlayManager : MonoBehaviour
 
     private void SyncPlayerRaceProgressAfterRespawn(ArcadeVP.WaypointCircuit raceCircuit, bool preserveCheckpointProgress)
     {
-        if (playerRacer == null || CarController == null || raceCircuit == null)
+        if (playerRacer == null || CarController == null)
             return;
 
-        float routeDistance = FindClosestDistanceAlongRaceRoute(CarController.transform.position, playerRacer.currentCircuitDistance);
         playerRacer.racerTransform = CarController.transform;
-        playerRacer.currentCircuitDistance = routeDistance;
-        playerRacer.startCircuitDistance = routeDistance;
-        playerRacer.currentWaypointIndex = GetNextWaypointIndexFromCircuitDistance(routeDistance);
+
+        if (raceCircuit != null && raceCircuit.Length > 0f)
+        {
+            // A respawn can move the player farther back than the local hinted
+            // route search range. Search the entire circuit so ranking follows
+            // the new physical position instead of the pre-respawn progress.
+            float routeDistance = FindClosestDistanceAlongRaceRoute(CarController.transform.position);
+            playerRacer.currentCircuitDistance = routeDistance;
+            playerRacer.startCircuitDistance = routeDistance;
+            playerRacer.currentWaypointIndex = GetNextWaypointIndexFromCircuitDistance(routeDistance);
+        }
+
         playerRacer.progressInitialized = false;
 
-        if (!preserveCheckpointProgress)
-            playerRacer.checkpointProgressInitialized = false;
-        else if (HasCheckpointProgressSource())
+        if (preserveCheckpointProgress && HasCheckpointProgressSource())
+        {
+            // Keep the last legitimately passed checkpoint, but immediately
+            // recalculate distance, race progress, and leaderboard position
+            // from the respawned transform.
             playerRacer.currentWaypointIndex = playerRacer.nextCheckpointIndex;
+            playerRacer.previousCheckpointPosition = CarController.transform.position;
+            playerRacer.hasPreviousCheckpointPosition = true;
+            UpdateRacerCheckpointProgress(playerRacer);
+        }
+        else
+        {
+            playerRacer.checkpointProgressInitialized = false;
+            playerRacer.hasPreviousCheckpointPosition = false;
+            UpdateRacerRaceProgress(playerRacer);
+        }
+
+        UpdateRaceUI();
     }
 
     private IEnumerator RemoveDuplicateEventSystemsAfterSceneSetup()
@@ -2213,6 +2237,7 @@ public class GamePlayManager : MonoBehaviour
 
        List<Transform> checkpoints = checkpointManager.checkpoints;
        int checkpointCount = checkpoints.Count;
+       Vector3 currentPosition = racer.racerTransform.position;
 
        if (!racer.checkpointProgressInitialized)
        {
@@ -2221,13 +2246,25 @@ public class GamePlayManager : MonoBehaviour
            racer.nextCheckpointIndex = 0;
            racer.completedLaps = 0;
            racer.lapCountingArmed = false;
+           racer.previousCheckpointPosition = currentPosition;
+           racer.hasPreviousCheckpointPosition = true;
+       }
+
+       if (!racer.hasPreviousCheckpointPosition)
+       {
+           racer.previousCheckpointPosition = currentPosition;
+           racer.hasPreviousCheckpointPosition = true;
        }
 
        for (int guard = 0; guard < checkpointCount; guard++)
        {
            Transform nextCheckpoint = checkpoints[racer.nextCheckpointIndex];
 
-           if (nextCheckpoint == null || !IsInsideCheckpoint(nextCheckpoint, racer.racerTransform.position))
+           bool reachedCheckpoint = nextCheckpoint != null &&
+               (IsInsideCheckpoint(nextCheckpoint, currentPosition) ||
+                DidCrossCheckpoint(nextCheckpoint, racer.previousCheckpointPosition, currentPosition));
+
+           if (!reachedCheckpoint)
                break;
 
            racer.currentCheckpointIndex = racer.nextCheckpointIndex;
@@ -2247,13 +2284,14 @@ public class GamePlayManager : MonoBehaviour
 
        Transform targetCheckpoint = checkpoints[racer.nextCheckpointIndex];
        racer.distanceToNextWaypoint = targetCheckpoint != null
-           ? Vector3.Distance(racer.racerTransform.position, targetCheckpoint.position)
+           ? Vector3.Distance(currentPosition, targetCheckpoint.position)
            : 0f;
        racer.currentWaypointIndex = racer.nextCheckpointIndex;
        racer.sharedRankingProgress = racer.currentCheckpointIndex >= 0
            ? racer.currentCheckpointIndex + (100000f - Mathf.Min(racer.distanceToNextWaypoint, 100000f)) / 100000f
            : -1f;
        racer.raceProgress = racer.completedLaps + Mathf.Max(0f, racer.sharedRankingProgress / checkpointCount);
+       racer.previousCheckpointPosition = currentPosition;
    }
 
    private bool IsInsideCheckpoint(Transform checkpoint, Vector3 worldPosition)
@@ -2277,6 +2315,51 @@ public class GamePlayManager : MonoBehaviour
 
        Vector3 closestPoint = checkpointCollider.ClosestPoint(worldPosition);
        return (closestPoint - worldPosition).sqrMagnitude <= 0.01f;
+   }
+
+   private bool DidCrossCheckpoint(Transform checkpoint, Vector3 previousPosition, Vector3 currentPosition)
+   {
+       if (checkpoint == null)
+           return false;
+
+       Vector3 movement = currentPosition - previousPosition;
+       if (movement.sqrMagnitude <= 0.0001f)
+           return false;
+
+       Collider checkpointCollider = checkpoint.GetComponent<Collider>();
+
+       if (checkpointCollider is BoxCollider boxCollider)
+       {
+           Vector3 localStart = checkpoint.InverseTransformPoint(previousPosition);
+           Vector3 localEnd = checkpoint.InverseTransformPoint(currentPosition);
+           Vector3 localMovement = localEnd - localStart;
+           float localDistance = localMovement.magnitude;
+
+           if (localDistance <= 0.0001f)
+               return false;
+
+           Bounds localBounds = new Bounds(boxCollider.center, boxCollider.size);
+           if (localBounds.Contains(localStart) || localBounds.Contains(localEnd))
+               return true;
+
+           Ray localRay = new Ray(localStart, localMovement / localDistance);
+           return localBounds.IntersectRay(localRay, out float hitDistance) &&
+                  hitDistance <= localDistance;
+       }
+
+       if (checkpointCollider != null)
+       {
+           float worldDistance = movement.magnitude;
+           Ray worldRay = new Ray(previousPosition, movement / worldDistance);
+           return checkpointCollider.bounds.IntersectRay(worldRay, out float hitDistance) &&
+                  hitDistance <= worldDistance;
+       }
+
+       Vector3 segment = currentPosition - previousPosition;
+       float segmentLengthSqr = segment.sqrMagnitude;
+       float t = Mathf.Clamp01(Vector3.Dot(checkpoint.position - previousPosition, segment) / segmentLengthSqr);
+       Vector3 closestPoint = previousPosition + segment * t;
+       return Vector3.Distance(closestPoint, checkpoint.position) <= waypointReachDistance;
    }
 
    private bool HasCheckpointProgressSource()
