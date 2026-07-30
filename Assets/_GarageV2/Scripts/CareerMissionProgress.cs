@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using HalvaStudio.Save;
 using UnityEngine;
 
 public static class CareerMissionProgress
@@ -14,16 +16,59 @@ public static class CareerMissionProgress
         if (tournament == null || mission == null)
             return false;
 
-        return PlayerPrefs.GetInt(GetMissionKey(tournament, mission), 0) == 1;
+        string missionKey = GetMissionKey(tournament, mission);
+        List<string> completedMissions = GetCompletedMissions();
+
+        if (completedMissions == null)
+            return false;
+
+        if (completedMissions.Contains(missionKey))
+            return true;
+
+#if UNITY_EDITOR
+        // One-time migration for progress created by the previous PlayerPrefs system.
+        if (PlayerPrefs.GetInt(missionKey, 0) == 1)
+        {
+            completedMissions.Add(missionKey);
+            SaveManager.Instance.Save();
+            PlayerPrefs.DeleteKey(missionKey);
+            PlayerPrefs.Save();
+            return true;
+        }
+#endif
+
+        return false;
     }
 
-    public static void MarkMissionCompleted(TournamentSO tournament, MissionSO mission)
+    public static void MarkMissionCompleted(TournamentSO tournament, MissionSO mission, bool saveImmediately = true)
     {
         if (tournament == null || mission == null)
             return;
 
-        PlayerPrefs.SetInt(GetMissionKey(tournament, mission), 1);
-        PlayerPrefs.Save();
+        List<string> completedMissions = GetCompletedMissions();
+
+        if (completedMissions == null)
+            return;
+
+        string missionKey = GetMissionKey(tournament, mission);
+        if (completedMissions.Contains(missionKey))
+            return;
+
+        completedMissions.Add(missionKey);
+
+        if (saveImmediately)
+            SaveManager.Instance.Save(true);
+    }
+
+    private static List<string> GetCompletedMissions()
+    {
+        if (SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+            return null;
+
+        if (SaveManager.Instance.saveData.completedCareerMissions == null)
+            SaveManager.Instance.saveData.completedCareerMissions = new List<string>();
+
+        return SaveManager.Instance.saveData.completedCareerMissions;
     }
 
     public static bool IsMissionUnlocked(TournamentSO tournament, int missionIndex)

@@ -21,19 +21,31 @@ namespace HalvaStudio.Save
 
         private void Load()
         {
-            if (saveData == null)
-            {
-                saveData = new SaveData();
-            }
-            if (saveData.carDetails == null || saveData.carDetails.Count == 0)
-            {
-                saveData.carDetails = new SaveData().carDetails; // Assign default values
-            }
 #if UNITY_EDITOR
             saveData = (SaveData)LoadEditor(typeof(SaveData));
 #else
             saveData = (SaveData)LoadSwitch(typeof(SaveData));
 #endif
+            NormalizeLoadedData();
+        }
+
+        private void NormalizeLoadedData()
+        {
+            if (saveData == null)
+                saveData = new SaveData();
+
+            if (saveData.carDetails == null || saveData.carDetails.Count == 0)
+                saveData.carDetails = new SaveData().carDetails;
+
+            if (saveData.customizationLoadouts == null)
+                saveData.customizationLoadouts = new Dictionary<string, RCCP_CustomizationLoadout>();
+
+            if (saveData.completedCareerMissions == null)
+                saveData.completedCareerMissions = new List<string>();
+
+            saveData.money = Mathf.Max(0, saveData.money);
+            saveData.exp = Mathf.Max(0, saveData.exp);
+            saveData.currentLevel = Mathf.Max(1, saveData.currentLevel);
         }
 
         public void Save(bool forceSave = false)
@@ -164,13 +176,14 @@ namespace HalvaStudio.Save
             public bool indicatorState;
             public string languageCode;
 
-            public int currentLevel;
+            public int currentLevel = 1;
             public int MaxLevel;
             public int GiftCount;
             public float averagRating;
             public int[] rating;
 
             public Dictionary<string, CarSpecs> carDetails = new Dictionary<string, CarSpecs>();
+            public List<string> completedCareerMissions = new List<string>();
 
             // NOU
             // public RCCP_CustomizationLoadout customizationLoadout;
@@ -184,6 +197,7 @@ namespace HalvaStudio.Save
                 };
 
                 customizationLoadouts = new Dictionary<string, RCCP_CustomizationLoadout>();
+                completedCareerMissions = new List<string>();
 
             }
 

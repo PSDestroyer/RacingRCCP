@@ -3115,7 +3115,7 @@ public class GamePlayManager : MonoBehaviour
        }
 
        if (success)
-           CareerMissionProgress.MarkMissionCompleted(SelectedCareerMission.Tournament, SelectedCareerMission.Mission);
+           CareerMissionProgress.MarkMissionCompleted(SelectedCareerMission.Tournament, SelectedCareerMission.Mission, false);
 
        ApplyMissionRewards();
        ShowFinishSummaryScreen();
@@ -3145,7 +3145,7 @@ public class GamePlayManager : MonoBehaviour
            raceStateText.text = GetLocalizedRaceState(stateText);
 
        if (success)
-           CareerMissionProgress.MarkMissionCompleted(SelectedCareerMission.Tournament, SelectedCareerMission.Mission);
+           CareerMissionProgress.MarkMissionCompleted(SelectedCareerMission.Tournament, SelectedCareerMission.Mission, false);
 
        ApplyMissionRewards();
        ShowFinishSummaryScreen();
@@ -3175,7 +3175,9 @@ public class GamePlayManager : MonoBehaviour
        SaveManager.Instance.saveData.exp = missionFinalExpTotal;
        SaveManager.Instance.saveData.currentLevel = missionFinalLevel;
        AddMoneyToPlayer(missionRewardEarned + missionLevelRewardEarned);
-       SaveManager.Instance.Save();
+       // Career progress, EXP, player level and rewards must reach Nintendo storage
+       // together even when another save happened shortly before the race ended.
+       SaveManager.Instance.Save(true);
    }
 
    private void ShowFinishSummaryScreen()
