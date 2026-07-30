@@ -1463,10 +1463,16 @@ public class GamePlayManager : MonoBehaviour
         {
             GameObject agentObject = new GameObject("NavMeshAgent");
             agentObject.transform.SetParent(opponentObject.transform, false);
+            agentObject.transform.localRotation = Quaternion.identity;
+
+            if (NavMesh.SamplePosition(opponentObject.transform.position, out NavMeshHit spawnHit, 30f, NavMesh.AllAreas))
+                agentObject.transform.position = spawnHit.position;
+            else
+                agentObject.transform.localPosition = Vector3.zero;
+
             agent = agentObject.AddComponent<NavMeshAgent>();
         }
 
-        agent.transform.localPosition = Vector3.zero;
         agent.transform.localRotation = Quaternion.identity;
         agent.updatePosition = false;
         agent.updateRotation = false;

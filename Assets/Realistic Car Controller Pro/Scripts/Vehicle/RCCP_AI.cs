@@ -49,10 +49,16 @@ public class RCCP_AI : RCCP_Component {
             if (_agent != null) {
                 _agent.gameObject.SetActive(true);
             } else {
-                _agent = new GameObject("Agent").AddComponent<NavMeshAgent>();
-                _agent.transform.SetParent(transform);
-                _agent.transform.localPosition = Vector3.zero;
-                _agent.transform.localRotation = Quaternion.identity;
+                GameObject agentObject = new GameObject("Agent");
+                agentObject.transform.SetParent(transform, false);
+                agentObject.transform.localRotation = Quaternion.identity;
+
+                if (NavMesh.SamplePosition(transform.position, out NavMeshHit spawnHit, Mathf.Max(1f, navMeshPlacementSearchDistance), NavMesh.AllAreas))
+                    agentObject.transform.position = spawnHit.position;
+                else
+                    agentObject.transform.localPosition = Vector3.zero;
+
+                _agent = agentObject.AddComponent<NavMeshAgent>();
                 ConfigureAgent(_agent);
             }
             return _agent;
@@ -79,6 +85,9 @@ public class RCCP_AI : RCCP_Component {
 
     [Tooltip("Additional look-ahead distance in meters when racing.")]
     public float raceLookAhead = 36f;
+
+    [Tooltip("Maximum distance used to project the vehicle onto the NavMesh. Increase this for scenes where the vehicle spawn is high above the road.")]
+    [Min(1f)] public float navMeshPlacementSearchDistance = 30f;
 
     [Header("Driving Settings")]
     [Tooltip("Friction coefficient for safe cornering speed calculation.")]
@@ -443,6 +452,12 @@ public class RCCP_AI : RCCP_Component {
     /// </summary>
     private void UpdateDestination() {
 
+        // The vehicle pivot can be several metres above the baked road. Project the
+        // agent onto the road before requesting a path, otherwise SetDestination
+        // continuously fails with "agent has not been placed on a NavMesh".
+        if (!SyncAgentToNavMesh())
+            return;
+
         switch (behaviour) {
 
             case BehaviourType.FollowWaypoints:
@@ -463,8 +478,34 @@ public class RCCP_AI : RCCP_Component {
 
         }
 
-        // Sync agent position with vehicle
-        Agent.nextPosition = transform.position;
+    }
+
+    /// <summary>
+    /// Keeps the pathfinding agent on the closest baked road below/around the car.
+    /// </summary>
+    private bool SyncAgentToNavMesh() {
+
+        NavMeshAgent agent = Agent;
+
+        if (agent == null || !agent.isActiveAndEnabled)
+            return false;
+
+        float placementSearchDistance = Mathf.Max(1f, navMeshPlacementSearchDistance);
+        float searchDistance = agent.isOnNavMesh
+            ? Mathf.Min(6f, placementSearchDistance)
+            : placementSearchDistance;
+
+        if (!NavMesh.SamplePosition(transform.position, out NavMeshHit hit, searchDistance, agent.areaMask))
+            return false;
+
+        if (!agent.isOnNavMesh) {
+            if (!agent.Warp(hit.position))
+                return false;
+        } else {
+            agent.nextPosition = hit.position;
+        }
+
+        return agent.isOnNavMesh;
 
     }
 
