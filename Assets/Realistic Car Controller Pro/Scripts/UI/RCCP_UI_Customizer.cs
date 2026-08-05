@@ -13,6 +13,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine;
+using UnityEngine.EventSystems;
 
 /// <summary>
 /// RCCP UI Canvas that manages the event systems, panels, gauges, images and texts related to the vehicle and player.
@@ -36,6 +37,18 @@ public class RCCP_UI_Customizer : RCCP_UIComponent
     public GameObject decals;     //  Decals panel.
     public GameObject neons;     //  Neons panel.
 
+    [Header("Garage Navigation")]
+    [Tooltip("Panel used to choose which customization submenu to open.")]
+    public GameObject selectTypePanel;
+    [Tooltip("Optional shared UI that is only visible inside a customization submenu.")]
+    public Transform submenuSharedPanel;
+    [Tooltip("Show the shared stats panel while a customization submenu is open.")]
+    public bool showStatsInSubmenu = true;
+    [Tooltip("Button selected when returning to the type selection panel.")]
+    public GameObject defaultTypeSelection;
+
+    private bool isCustomizationSubmenuOpen;
+
     [Header("Customization Buttons")]
     public Button paintsButton;        //  Painting button.
     public Button wheelsButton;        //  Wheels button.
@@ -50,8 +63,49 @@ public class RCCP_UI_Customizer : RCCP_UIComponent
 
         CloseCustomizationPanels();
 
-        if (activeMenu && IsPanelAvailable(activeMenu))
+        if (activeMenu && IsPanelAvailable(activeMenu)) {
+            if (selectTypePanel)
+                selectTypePanel.SetActive(false);
+
+            if (submenuSharedPanel)
+                submenuSharedPanel.gameObject.SetActive(showStatsInSubmenu);
+
             activeMenu.SetActive(true);
+
+            isCustomizationSubmenuOpen = true;
+            SelectFirstAvailable(activeMenu);
+        }
+
+    }
+
+    /// <summary>
+    /// Resets the upgrade screen to the type-selection level.
+    /// </summary>
+    public void ShowTypeSelection() {
+
+        CloseCustomizationPanels();
+        isCustomizationSubmenuOpen = false;
+
+        if (submenuSharedPanel)
+            submenuSharedPanel.gameObject.SetActive(false);
+
+        if (selectTypePanel)
+            selectTypePanel.SetActive(true);
+
+        SelectGameObject(defaultTypeSelection);
+
+    }
+
+    /// <summary>
+    /// Returns true when Back was consumed by an open customization submenu.
+    /// </summary>
+    public bool HandleBack() {
+
+        if (!isCustomizationSubmenuOpen)
+            return false;
+
+        ShowTypeSelection();
+        return true;
 
     }
 
@@ -214,6 +268,26 @@ public class RCCP_UI_Customizer : RCCP_UIComponent
             return customizer.NeonManager != null;
 
         return false;
+    }
+
+    private static void SelectFirstAvailable(GameObject panel) {
+
+        if (!panel)
+            return;
+
+        Selectable selectable = panel.GetComponentInChildren<Selectable>(true);
+        SelectGameObject(selectable ? selectable.gameObject : null);
+
+    }
+
+    private static void SelectGameObject(GameObject target) {
+
+        if (!target || !target.activeInHierarchy || EventSystem.current == null)
+            return;
+
+        EventSystem.current.SetSelectedGameObject(null);
+        EventSystem.current.SetSelectedGameObject(target);
+
     }
 /*
     private void Update() {

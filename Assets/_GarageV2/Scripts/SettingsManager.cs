@@ -9,6 +9,8 @@ public class SettingsManager : MonoBehaviour
     public Slider music;
     public Toggle vibrationToggle;
     public Toggle easyDriftModeToggle;
+    [Tooltip("When enabled, vehicle speed is displayed in miles per hour instead of kilometres per hour.")]
+    public Toggle useMilesToggle;
     public bool controlVehicleWhileSettingsOpen = false;
 
     private void Start()
@@ -30,16 +32,27 @@ public class SettingsManager : MonoBehaviour
 
         if (easyDriftModeToggle != null)
             easyDriftModeToggle.isOn = SaveManager.Instance.saveData.easyDriftMode;
+
+        if (useMilesToggle != null)
+            useMilesToggle.SetIsOnWithoutNotify(SaveManager.Instance.saveData.useMiles);
+
+        ApplySpeedUnit(SaveManager.Instance.saveData.useMiles);
     }
 
     private void OnEnable()
     {
+        if (useMilesToggle != null)
+            useMilesToggle.onValueChanged.AddListener(OnSetUseMiles);
+
         if (controlVehicleWhileSettingsOpen)
             SetVehicleSettingsState(false);
     }
 
     private void OnDisable()
     {
+        if (useMilesToggle != null)
+            useMilesToggle.onValueChanged.RemoveListener(OnSetUseMiles);
+
         if (controlVehicleWhileSettingsOpen)
             SetVehicleSettingsState(true);
 
@@ -85,6 +98,23 @@ public class SettingsManager : MonoBehaviour
             return;
 
         SaveManager.Instance.saveData.easyDriftMode = value;
+    }
+
+    public void OnSetUseMiles(bool value)
+    {
+        if (SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+            return;
+
+        SaveManager.Instance.saveData.useMiles = value;
+        ApplySpeedUnit(value);
+    }
+
+    private static void ApplySpeedUnit(bool useMiles)
+    {
+        RCCP_Settings runtimeSettings = RCCP_RuntimeSettings.RCCPSettingsInstance;
+
+        if (runtimeSettings != null)
+            runtimeSettings.useMPH = useMiles;
     }
 
     private void SetVehicleSettingsState(bool state)

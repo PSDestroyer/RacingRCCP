@@ -11,6 +11,19 @@ using UnityEngine.Localization.Settings;
 
 public class CarSelection : MonoBehaviour
 {
+  [Serializable]
+  public struct StatNormalizationRange
+  {
+      public float minimum;
+      public float maximum;
+
+      public StatNormalizationRange(float minimum, float maximum)
+      {
+          this.minimum = minimum;
+          this.maximum = maximum;
+      }
+  }
+
   public struct CarDisplayStats
   {
       public int power;
@@ -53,6 +66,12 @@ public class CarSelection : MonoBehaviour
     public TMP_Text Name;
     public TMP_Text NameShadow;
 
+    [Header("Stat normalization (displayed as 1-10)")]
+    [SerializeField] private StatNormalizationRange powerRange = new StatNormalizationRange(100f, 550f);
+    [SerializeField] private StatNormalizationRange speedRange = new StatNormalizationRange(180f, 330f);
+    [SerializeField] private StatNormalizationRange steeringRange = new StatNormalizationRange(25f, 60f);
+    [SerializeField] private StatNormalizationRange brakeRange = new StatNormalizationRange(4000f, 11000f);
+
     
     
     [Header("Scrollbar")]
@@ -67,8 +86,10 @@ public class CarSelection : MonoBehaviour
     private float lastMoveTime = 0f;
     private float moveCooldown = 0.2f; // Adjust this value as needed
     private Vector2 targetNormPos;
-    private void Start()
+  private void Start()
   {
+   ConfigureStatSliders();
+
    if (SM == null)
        SM = SoundManager.Instance;
    GlobalCarData._buttonList.Clear();
@@ -163,14 +184,14 @@ public class CarSelection : MonoBehaviour
         RemoveEvents();
         var buystring = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","BuyYes/No");
         CarSO currentCar = GlobalCarData._carlists[indexcar];
-        CarDisplayStats displayStats = GetDisplayCarStats(currentCar);
-        bool result = await yesNo.ShowBuyYesNoPanelAsync(buystring.Result+"?",GlobalCarData._carlists[indexcar].carName,GlobalCarData._carlists[indexcar].carInfo,"<sprite index=0> "+GlobalCarData._carlists[indexcar].price, displayStats.power.ToString(),GlobalCarData._carlists[indexcar].CarClass,GlobalCarData._carlists[indexcar].carsprite);
+        CarDisplayStats rawStats = GetRawCarStats(currentCar);
+        bool result = await yesNo.ShowBuyYesNoPanelAsync(buystring.Result+"?",GlobalCarData._carlists[indexcar].carName,GlobalCarData._carlists[indexcar].carInfo,"<sprite index=0> "+GlobalCarData._carlists[indexcar].price, rawStats.power.ToString(),GlobalCarData._carlists[indexcar].CarClass,GlobalCarData._carlists[indexcar].carsprite);
 
         if (result)
         {
             if (GlobalCarData._carlists[indexcar].price <= SaveManager.Instance.saveData.money)
                 {
-                    CarDisplayStats carStats = GetDisplayCarStats(GlobalCarData._carlists[indexcar]);
+                    CarDisplayStats carStats = GetRawCarStats(GlobalCarData._carlists[indexcar]);
                     moneyManager.MoneyToTake( GlobalCarData._carlists[indexcar].price);
                     SaveManager.Instance.SaveCar(GlobalCarData._carlists[indexcar].carName,true, carStats.power, carStats.speed, carStats.turbo, GlobalCarData._carlists[indexcar].color, carStats.steer, carStats.traction, carStats.brake);
                     var operation = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("UI","Select");
@@ -305,6 +326,7 @@ public class CarSelection : MonoBehaviour
     public void UpdateStats()
     {
         CarSO currentCar = GlobalCarData._carlists[indexcar];
+        CarDisplayStats rawStats = GetRawCarStats(currentCar);
         CarDisplayStats displayStats = GetDisplayCarStats(currentCar);
 
         Name.text = currentCar.carName;
@@ -316,7 +338,7 @@ public class CarSelection : MonoBehaviour
         PowerSlider.value = displayStats.power;
         PowerText.text = displayStats.power.ToString();
         if (PowerTextDuplicate != null)
-            PowerTextDuplicate.text = $"{displayStats.power} HP";
+            PowerTextDuplicate.text = $"{rawStats.power} HP";
         SpeedSlider.value = displayStats.speed;
         SpeedText.text = displayStats.speed.ToString();
         SteerSlider.value = displayStats.steer;
@@ -431,6 +453,34 @@ public class CarSelection : MonoBehaviour
 
   public CarDisplayStats GetDisplayCarStats(CarSO carData)
   {
+      CarDisplayStats rawStats = GetRawCarStats(carData);
+
+      if (carData != null && carData.useCustomDisplayStats)
+      {
+          return new CarDisplayStats
+          {
+              power = Mathf.Clamp(carData.acceleration, 1, 10),
+              speed = Mathf.Clamp(carData.speed, 1, 10),
+              steer = Mathf.Clamp(carData.handling, 1, 10),
+              brake = Mathf.Clamp(carData.brakes, 1, 10),
+              traction = rawStats.traction,
+              turbo = rawStats.turbo
+          };
+      }
+
+      return new CarDisplayStats
+      {
+          power = NormalizeStat(rawStats.power, powerRange),
+          speed = NormalizeStat(rawStats.speed, speedRange),
+          steer = NormalizeStat(rawStats.steer, steeringRange),
+          brake = NormalizeStat(rawStats.brake, brakeRange),
+          traction = rawStats.traction,
+          turbo = rawStats.turbo
+      };
+  }
+
+  private CarDisplayStats GetRawCarStats(CarSO carData)
+  {
       CarDisplayStats stats = new CarDisplayStats();
 
       if (carData == null)
@@ -450,6 +500,31 @@ public class CarSelection : MonoBehaviour
       }
 
       return BuildStatsFromCarPrefab(carData);
+  }
+
+  private static int NormalizeStat(float rawValue, StatNormalizationRange range)
+  {
+      float maximum = Mathf.Max(range.minimum + 0.001f, range.maximum);
+      float normalized = Mathf.InverseLerp(range.minimum, maximum, rawValue);
+      return Mathf.Clamp(Mathf.RoundToInt(Mathf.Lerp(1f, 10f, normalized)), 1, 10);
+  }
+
+  private void ConfigureStatSliders()
+  {
+      ConfigureStatSlider(PowerSlider);
+      ConfigureStatSlider(SpeedSlider);
+      ConfigureStatSlider(SteerSlider);
+      ConfigureStatSlider(BrakeSlider);
+  }
+
+  private static void ConfigureStatSlider(Slider slider)
+  {
+      if (slider == null)
+          return;
+
+      slider.minValue = 1f;
+      slider.maxValue = 10f;
+      slider.wholeNumbers = true;
   }
 
   private CarDisplayStats BuildStatsFromCarPrefab(CarSO carData)

@@ -26,6 +26,7 @@ public class GarageUIController : MonoBehaviour
     [Header("Panels")]
     [SerializeField] private CarSelection carSelection;
     [SerializeField] private MapSelect mapSelect;
+    [SerializeField] private RCCP_UI_Customizer carUpgradeCustomizer;
     [SerializeField] private List<PanelEntry> panelEntries;
     [SerializeField] private UIPanelType startPanel = UIPanelType.MainHub;
 
@@ -117,6 +118,10 @@ public class GarageUIController : MonoBehaviour
         hasCurrentPanel = true;
 
         nextPanel.Show();
+
+        if (newPanel == UIPanelType.Upgrade && carUpgradeCustomizer != null)
+            carUpgradeCustomizer.ShowTypeSelection();
+
         UpdateBackButton();
 
         GameObject selected = nextPanel.DefaultSelected;
@@ -152,6 +157,9 @@ public class GarageUIController : MonoBehaviour
         EnsureMapSelectReference();
 
         if (currentPanel == UIPanelType.Play && mapSelect != null && mapSelect.HandleBack())
+            return;
+
+        if (currentPanel == UIPanelType.Upgrade && carUpgradeCustomizer != null && carUpgradeCustomizer.HandleBack())
             return;
 
         if (history.Count == 0)

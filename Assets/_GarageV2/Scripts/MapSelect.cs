@@ -1,410 +1,626 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using HalvaStudio.Save;
+using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+/// <summary>
+/// One-screen level carousel. Every MapSO found in Resources/SO/MapSo is one level.
+/// </summary>
 public class MapSelect : MonoBehaviour
 {
-    [Serializable]
-    public class MissionData
+    private const string MapResourcesPath = "SO/MapSo";
+
+    [Header("Header")]
+    [SerializeField] private bool autoBuildInterfaceIfMissing = true;
+    [SerializeField] private string championshipTitle = "Bronze Championship";
+    [SerializeField] private TMP_Text championshipTitleText;
+
+    [Header("Selected level")]
+    [SerializeField] private TMP_Text levelNameText;
+    [SerializeField] private TMP_Text gameModeText;
+    [SerializeField] private TMP_Text gameTargetText;
+    [SerializeField] private TMP_Text rewardText;
+    [SerializeField] private Image levelImage;
+
+    [Header("Navigation")]
+    [SerializeField] private PlayerInput playerInput;
+    [SerializeField] private Button previousButton;
+    [SerializeField] private Button nextButton;
+    [SerializeField] private Button startButton;
+    [SerializeField] private bool wrapNavigation = true;
+
+    [Header("Page indicators")]
+    [SerializeField] private Transform indicatorContainer;
+    [SerializeField] private Image indicatorPrefab;
+    [SerializeField] private Color indicatorColor = new Color(0.35f, 0.75f, 0.95f, 1f);
+    [SerializeField] private Color selectedIndicatorColor = new Color(0f, 0.55f, 0.8f, 1f);
+
+    [Header("Progress")]
+    [SerializeField] private bool unlockAllLevelsForTesting;
+
+    private readonly List<MapSO> levels = new List<MapSO>();
+    private readonly List<Image> indicators = new List<Image>();
+    private int selectedLevelIndex;
+    private bool isStartingLevel;
+
+    public IReadOnlyList<MapSO> Levels => levels;
+    public MapSO SelectedLevel => IsValidIndex(selectedLevelIndex) ? levels[selectedLevelIndex] : null;
+
+    private void Awake()
     {
-        public string missionName;
-        public Sprite missionImage;
-        public MapSO mapSo;
+        if (autoBuildInterfaceIfMissing && !HasRequiredInterface())
+            BuildRuntimeInterface();
+
+        LoadLevels();
+        RegisterButtonListeners();
     }
-
-    [Serializable]
-    public class TrackData
-    {
-        public string trackName;
-        public Sprite trackImage;
-        public int trackMapId = -1;
-        public List<MissionData> missions = new List<MissionData>(4);
-    }
-
-    [Serializable]
-    public class MapData
-    {
-        public string mapName;
-        public List<TrackData> tracks = new List<TrackData>(4);
-    }
-
-    public List<MapData> maps = new List<MapData>(4);
-    [Header("Debug")]
-    [SerializeField] private bool unlockAllLevelsForTesting = false;
-    public GameObject MapPanel;
-    public GameObject TrackPanel;
-    public GameObject MissionPanel;
-    public GameObject PlayPanel;
-
-    public TrackPanel trackPanelController;
-    public MissionPanel missionPanelController;
-
-    private int selectedMapIndex = -1;
-    private int selectedTrackIndex = -1;
-    private int selectedMissionIndex = -1;
 
     private void Start()
     {
-        EnsureMissionProgressInitialized();
-        ResetPanels();
+        // InputManager can initialize after this component's OnEnable depending on scene order.
+        RegisterInputActions();
     }
 
     private void OnEnable()
     {
-        EnsureMissionProgressInitialized();
-        ResetPanels();
+        RegisterInputActions();
+        EnsureProgressInitialized();
+
+        if (levels.Count == 0)
+            LoadLevels();
+
+        RestoreSelectedLevel();
+        RebuildIndicators();
+        RefreshView();
+        RequestSelection(startButton != null ? startButton.gameObject : null);
     }
 
-    public void SelectMap(int mapIndex)
+    private void OnDestroy()
     {
-        if (mapIndex < 0 || mapIndex >= maps.Count)
+        UnregisterButtonListeners();
+    }
+
+    private void OnDisable()
+    {
+        UnregisterInputActions();
+        isStartingLevel = false;
+    }
+
+    public void PreviousLevel()
+    {
+        ChangeLevel(-1);
+    }
+
+    public void NextLevel()
+    {
+        ChangeLevel(1);
+    }
+
+    public void SelectLevel(int index)
+    {
+        if (!IsValidIndex(index))
             return;
 
-        selectedMapIndex = mapIndex;
-        selectedTrackIndex = -1;
-        selectedMissionIndex = -1;
-
-        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
-        {
-            SaveManager.Instance.saveData.selectedMapName = maps[mapIndex].mapName;
-            SaveManager.Instance.saveData.selectedTrackName = string.Empty;
-            SaveManager.Instance.saveData.selectedMapIndex = mapIndex;
-            SaveManager.Instance.saveData.selectedTrackIndex = -1;
-            SaveManager.Instance.saveData.selectedMissionIndex = -1;
-            SaveManager.Instance.saveData.currentMapTrackCount = maps[mapIndex].tracks != null ? maps[mapIndex].tracks.Count : 0;
-            SaveManager.Instance.saveData.currentTrackMissionCount = 0;
-            SaveManager.Instance.saveData.currentMissionMapId = -1;
-            SaveManager.Instance.saveData.currentMissionRaceType = -1;
-            SaveManager.Instance.Save();
-        }
-
-        ShowTrackStep();
-
-        if (trackPanelController != null)
-            trackPanelController.ShowTracks(this, maps[mapIndex].tracks);
-
-        RequestSelection(trackPanelController != null ? trackPanelController.GetFirstSelectableTrackButton() : null, TrackPanel);
-
+        selectedLevelIndex = index;
+        SaveSelectedLevel();
+        RefreshView();
         PlayClick();
     }
 
-    public void SelectTrack(int trackIndex)
+    public void StartSelectedLevel()
     {
-        if (selectedMapIndex < 0 || selectedMapIndex >= maps.Count)
+        if (isStartingLevel)
             return;
 
-        List<TrackData> tracks = maps[selectedMapIndex].tracks;
+        MapSO level = SelectedLevel;
 
-        if (trackIndex < 0 || trackIndex >= tracks.Count)
+        if (level == null || !IsLevelUnlocked(selectedLevelIndex))
             return;
 
-        if (!IsTrackUnlocked(selectedMapIndex, trackIndex))
-            return;
-
-        selectedTrackIndex = trackIndex;
-        selectedMissionIndex = -1;
-
-        TrackData selectedTrack = tracks[trackIndex];
-        GlobalCarData.thismap = GlobalCarData.GetMapById(selectedTrack.trackMapId);
-
-        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
+        if (string.IsNullOrWhiteSpace(level.sceneName))
         {
-            SaveManager.Instance.saveData.selectedTrackName = selectedTrack.trackName;
-            SaveManager.Instance.saveData.selectedTrackIndex = trackIndex;
-            SaveManager.Instance.saveData.selectedMissionIndex = -1;
-            SaveManager.Instance.saveData.currentMapTrackCount = tracks.Count;
-            SaveManager.Instance.saveData.currentTrackMissionCount = selectedTrack.missions != null ? selectedTrack.missions.Count : 0;
-            SaveManager.Instance.saveData.currentMap = selectedTrack.trackMapId;
-            SaveManager.Instance.saveData.currentMissionMapId = selectedTrack.trackMapId;
-            SaveManager.Instance.saveData.currentMissionRaceType = -1;
-            SaveManager.Instance.Save();
+            Debug.LogError($"MapSO '{level.name}' has no Scene Name assigned.", level);
+            return;
         }
 
-        ShowMissionStep();
-
-        if (missionPanelController != null)
-            missionPanelController.ShowMissions(this, selectedTrack.missions);
-
-        RequestSelection(missionPanelController != null ? missionPanelController.GetFirstSelectableMissionButton() : null, MissionPanel);
-
+        isStartingLevel = true;
+        GlobalCarData.thismap = level;
+        SetUpRaceStyle(level.raceType);
+        SaveSelectedLevel();
         PlayClick();
+
+        if (LoadingManager.Instance != null)
+            LoadingManager.Instance.LoadScene(level.sceneName);
+        else
+            SceneManager.LoadScene(level.sceneName);
     }
 
-    public void SelectMission(int missionIndex)
+    /// <summary>
+    /// The carousel has no internal submenu, so GarageUIController handles Back directly.
+    /// </summary>
+    public bool HandleBack()
     {
-        if (selectedMapIndex < 0 || selectedMapIndex >= maps.Count)
+        return false;
+    }
+
+    private void LoadLevels()
+    {
+        levels.Clear();
+        levels.AddRange(Resources.LoadAll<MapSO>(MapResourcesPath)
+            .Where(level => level != null)
+            .OrderBy(level => level.id)
+            .ThenBy(level => level.name));
+
+        GlobalCarData._maplists = new List<MapSO>(levels);
+        selectedLevelIndex = Mathf.Clamp(selectedLevelIndex, 0, Mathf.Max(0, levels.Count - 1));
+    }
+
+    private void ChangeLevel(int direction)
+    {
+        if (levels.Count == 0 || direction == 0)
             return;
 
-        if (selectedTrackIndex < 0 || selectedTrackIndex >= maps[selectedMapIndex].tracks.Count)
+        int nextIndex = selectedLevelIndex + direction;
+
+        if (wrapNavigation)
+            nextIndex = (nextIndex % levels.Count + levels.Count) % levels.Count;
+        else
+            nextIndex = Mathf.Clamp(nextIndex, 0, levels.Count - 1);
+
+        SelectLevel(nextIndex);
+        RequestSelection(startButton != null ? startButton.gameObject : null);
+    }
+
+    private void OnNavigate(InputAction.CallbackContext context)
+    {
+        if (!context.performed)
             return;
 
-        List<MissionData> missions = maps[selectedMapIndex].tracks[selectedTrackIndex].missions;
+        Vector2 navigation = context.ReadValue<Vector2>();
 
-        if (missionIndex < 0 || missionIndex >= missions.Count)
+        if (Mathf.Abs(navigation.x) < .5f || Mathf.Abs(navigation.x) <= Mathf.Abs(navigation.y))
             return;
 
-        if (!IsMissionUnlocked(selectedMapIndex, selectedTrackIndex, missionIndex))
-            return;
+        if (navigation.x < 0f)
+            PreviousLevel();
+        else
+            NextLevel();
+    }
 
-        MissionData mission = missions[missionIndex];
+    private void OnSubmit(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+            StartSelectedLevel();
+    }
 
-        if (mission == null || mission.mapSo == null)
-            return;
-        SetUpRaceStyle(mission.mapSo.raceType);
-        
-        selectedMissionIndex = missionIndex;
-        GlobalCarData.thismap = mission.mapSo;
+    private void RefreshView()
+    {
+        MapSO level = SelectedLevel;
+        bool hasLevel = level != null;
+        bool unlocked = hasLevel && IsLevelUnlocked(selectedLevelIndex);
 
-        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
+        if (championshipTitleText != null)
+            championshipTitleText.text = championshipTitle;
+
+        if (levelNameText != null)
+            levelNameText.text = hasLevel ? GetLevelName(level) : "No levels found";
+
+        if (gameModeText != null)
+            gameModeText.text = hasLevel ? GetModeText(level.raceType) : "-";
+
+        if (gameTargetText != null)
+            gameTargetText.text = hasLevel ? GetTargetText(level) : "-";
+
+        if (rewardText != null)
+            rewardText.text = hasLevel ? level.price.ToString() : "0";
+
+        if (levelImage != null)
         {
-            SaveManager.Instance.saveData.selectedMissionIndex = missionIndex;
-            SaveManager.Instance.saveData.currentMapTrackCount = maps[selectedMapIndex].tracks.Count;
-            SaveManager.Instance.saveData.currentTrackMissionCount = missions.Count;
-            SaveManager.Instance.saveData.currentMap = mission.mapSo.id;
-            SaveManager.Instance.saveData.currentMissionMapId = mission.mapSo.id;
-            SaveManager.Instance.saveData.currentMissionRaceType = (int)mission.mapSo.raceType;
-            SaveManager.Instance.Save();
-
-            
-            
-            if (!string.IsNullOrWhiteSpace(SaveManager.Instance.saveData.selectedTrackName) && LoadingManager.Instance != null)
-            {
-                LoadingManager.Instance.LoadScene(SaveManager.Instance.saveData.selectedTrackName);
-                PlayClick();
-                return;
-            }
-
-            if (!string.IsNullOrWhiteSpace(SaveManager.Instance.saveData.selectedTrackName))
-            {
-                SceneManager.LoadScene(SaveManager.Instance.saveData.selectedTrackName);
-                PlayClick();
-                return;
-            }
+            levelImage.sprite = hasLevel ? level.mapsprite : null;
+            levelImage.enabled = levelImage.sprite != null;
         }
 
-    }
-    public void SetUpRaceStyle(RaceType raceType)
-    {
-        SetUpRaceStyle(GetDrivingStyleIndex(raceType));
+        if (startButton != null)
+            startButton.interactable = unlocked && !string.IsNullOrWhiteSpace(level.sceneName);
+
+        if (previousButton != null)
+            previousButton.interactable = levels.Count > 1 && (wrapNavigation || selectedLevelIndex > 0);
+
+        if (nextButton != null)
+            nextButton.interactable = levels.Count > 1 && (wrapNavigation || selectedLevelIndex < levels.Count - 1);
+
+        RefreshIndicators();
     }
 
-    public void SetUpRaceStyle(int type)
+    private void RebuildIndicators()
     {
-        // 0  = Balanced
-        // 1  = Drift
-        // 2  = Race
-        // 3  = Arcade
-        if (RCCP_Settings.Instance == null || RCCP_Settings.Instance.behaviorTypes == null || RCCP_Settings.Instance.behaviorTypes.Length == 0)
+        indicators.Clear();
+
+        if (indicatorContainer == null)
             return;
 
-        int safeBehaviorIndex = Mathf.Clamp(type, 0, RCCP_Settings.Instance.behaviorTypes.Length - 1);
-        RCCP_Settings.Instance.behaviorSelectedIndex = safeBehaviorIndex;
+        for (int i = indicatorContainer.childCount - 1; i >= 0; i--)
+        {
+            Transform child = indicatorContainer.GetChild(i);
+
+            if (indicatorPrefab == null || child.gameObject != indicatorPrefab.gameObject)
+                Destroy(child.gameObject);
+        }
+
+        if (indicatorPrefab != null)
+            indicatorPrefab.gameObject.SetActive(false);
+
+        for (int i = 0; i < levels.Count; i++)
+        {
+            int capturedIndex = i;
+            Image indicator;
+
+            if (indicatorPrefab != null)
+            {
+                indicator = Instantiate(indicatorPrefab, indicatorContainer);
+            }
+            else
+            {
+                GameObject indicatorObject = new GameObject($"Level Indicator {i + 1}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+                indicatorObject.transform.SetParent(indicatorContainer, false);
+                indicator = indicatorObject.GetComponent<Image>();
+                RectTransform indicatorRect = indicatorObject.GetComponent<RectTransform>();
+                indicatorRect.sizeDelta = new Vector2(24f, 24f);
+            }
+
+            indicator.gameObject.SetActive(true);
+            indicators.Add(indicator);
+
+            Button indicatorButton = indicator.GetComponent<Button>();
+            if (indicatorButton != null)
+                indicatorButton.onClick.AddListener(() => SelectLevel(capturedIndex));
+        }
+    }
+
+    private void RefreshIndicators()
+    {
+        for (int i = 0; i < indicators.Count; i++)
+        {
+            if (indicators[i] != null)
+                indicators[i].color = i == selectedLevelIndex ? selectedIndicatorColor : indicatorColor;
+        }
+    }
+
+    private bool IsLevelUnlocked(int index)
+    {
+        if (unlockAllLevelsForTesting || index == 0)
+            return true;
+
+        return SaveManager.Instance == null || SaveManager.Instance.IsMissionUnlocked(0, 0, index);
+    }
+
+    private void RestoreSelectedLevel()
+    {
+        if (SaveManager.Instance == null || SaveManager.Instance.saveData == null || levels.Count == 0)
+        {
+            selectedLevelIndex = 0;
+            return;
+        }
+
+        int savedId = SaveManager.Instance.saveData.currentMissionMapId;
+        int foundIndex = levels.FindIndex(level => level.id == savedId);
+        selectedLevelIndex = foundIndex >= 0 ? foundIndex : 0;
+    }
+
+    private void SaveSelectedLevel()
+    {
+        MapSO level = SelectedLevel;
+
+        if (level == null || SaveManager.Instance == null || SaveManager.Instance.saveData == null)
+            return;
+
+        SaveManager.SaveData data = SaveManager.Instance.saveData;
+        data.selectedMapName = GetLevelName(level);
+        data.selectedTrackName = level.sceneName;
+        // The existing save progression is reused as one virtual map, one virtual track,
+        // and one mission entry per MapSO level.
+        data.selectedMapIndex = 0;
+        data.selectedTrackIndex = 0;
+        data.selectedMissionIndex = selectedLevelIndex;
+        data.currentMapTrackCount = 1;
+        data.currentTrackMissionCount = levels.Count;
+        data.currentMap = level.id;
+        data.currentMissionMapId = level.id;
+        data.currentMissionRaceType = (int)level.raceType;
+        SaveManager.Instance.Save();
+    }
+
+    private void EnsureProgressInitialized()
+    {
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.EnsureMissionProgressInitialized();
+    }
+
+    private static string GetLevelName(MapSO level)
+    {
+        return !string.IsNullOrWhiteSpace(level.mapName) ? level.mapName : level.name;
+    }
+
+    private static string GetModeText(RaceType raceType)
+    {
+        return raceType.ToString();
+    }
+
+    private static string GetTargetText(MapSO level)
+    {
+        switch (level.raceType)
+        {
+            case RaceType.Racing:
+                return $"{Mathf.Max(1, level.raceLaps)} laps";
+            case RaceType.Elimination:
+                return $"Survive every {level.eliminationInterval:0}s";
+            case RaceType.NoBrakeChallenge:
+                return $"Finish under {level.limitedBrakeBronzeTime:0}s";
+            case RaceType.TimeAttack:
+                return $"Finish under {level.timeAttackBronzeTime}s";
+            case RaceType.ChaseRace:
+                return $"Catch the target in {Mathf.Max(1, level.chaseLapLimit)} laps";
+            case RaceType.DriftScore:
+                return $"Score {level.driftBronzeTarget}";
+            case RaceType.PerfectDrift:
+                return $"Drift for {level.perfectDriftBronzeTime:0}s";
+            case RaceType.TargetDrift:
+                return $"Score {level.targetDriftScore}";
+            case RaceType.ComboMaster:
+                return $"Reach x{level.comboBronzeTarget:0.#}";
+            case RaceType.FreeDrift:
+                return "Free drive";
+            default:
+                return level.target.ToString();
+        }
+    }
+
+    private void SetUpRaceStyle(RaceType raceType)
+    {
+        int behaviorIndex = GetDrivingStyleIndex(raceType);
+        RCCP_Settings settings = RCCP_RuntimeSettings.RCCPSettingsInstance;
+
+        if (settings == null || settings.behaviorTypes == null || settings.behaviorTypes.Length == 0)
+            return;
+
+        behaviorIndex = Mathf.Clamp(behaviorIndex, 0, settings.behaviorTypes.Length - 1);
+        settings.behaviorSelectedIndex = behaviorIndex;
 
         if (RCCP_SceneManager.Instance != null)
-            RCCP_SceneManager.Instance.SetBehavior(safeBehaviorIndex);
-
-        // Debug.Log(RCCP_Settings.Instance.behaviorTypes[type].behaviorName.ToString()); // Test Debug style
+            RCCP_SceneManager.Instance.SetBehavior(behaviorIndex);
     }
 
-    private int GetDrivingStyleIndex(RaceType raceType)
+    private static int GetDrivingStyleIndex(RaceType raceType)
     {
         switch (raceType)
         {
-            case RaceType.Racing:
-            case RaceType.Elimination:
-            case RaceType.NoBrakeChallenge:
-            case RaceType.TimeAttack:
-            case RaceType.ChaseRace:
-                return 2;
-
             case RaceType.FreeDrift:
             case RaceType.DriftScore:
             case RaceType.PerfectDrift:
             case RaceType.TargetDrift:
             case RaceType.ComboMaster:
                 return 1;
-
+            case RaceType.Racing:
+            case RaceType.Elimination:
+            case RaceType.NoBrakeChallenge:
+            case RaceType.TimeAttack:
+            case RaceType.ChaseRace:
+                return 2;
             default:
                 return 0;
         }
     }
 
-    public bool IsTrackUnlocked(int mapIndex, int trackIndex)
+    private bool IsValidIndex(int index)
     {
-        if (unlockAllLevelsForTesting)
-            return true;
-
-        return SaveManager.Instance == null || SaveManager.Instance.IsTrackUnlocked(mapIndex, trackIndex);
+        return index >= 0 && index < levels.Count;
     }
 
-    public bool IsMissionUnlocked(int mapIndex, int trackIndex, int missionIndex)
+    private void RegisterButtonListeners()
     {
-        if (unlockAllLevelsForTesting)
-            return true;
-
-        return SaveManager.Instance == null || SaveManager.Instance.IsMissionUnlocked(mapIndex, trackIndex, missionIndex);
+        if (previousButton != null)
+            previousButton.onClick.AddListener(PreviousLevel);
+        if (nextButton != null)
+            nextButton.onClick.AddListener(NextLevel);
+        if (startButton != null)
+            startButton.onClick.AddListener(StartSelectedLevel);
     }
 
-    public bool IsMissionCompleted(int mapIndex, int trackIndex, int missionIndex)
+    private void UnregisterButtonListeners()
     {
-        return SaveManager.Instance != null && SaveManager.Instance.IsMissionCompleted(mapIndex, trackIndex, missionIndex);
+        if (previousButton != null)
+            previousButton.onClick.RemoveListener(PreviousLevel);
+        if (nextButton != null)
+            nextButton.onClick.RemoveListener(NextLevel);
+        if (startButton != null)
+            startButton.onClick.RemoveListener(StartSelectedLevel);
     }
 
-    public string GetMissionMedalText(int mapIndex, int trackIndex, int missionIndex)
+    private void RegisterInputActions()
     {
-        if (SaveManager.Instance == null)
-            return string.Empty;
+        InputAction navigateAction = GetInputAction("Navigate");
+        InputAction submitAction = GetInputAction("Submit");
 
-        return SaveManager.Instance.GetMissionMedal(mapIndex, trackIndex, missionIndex);
-    }
-
-    public bool HandleBack()
-    {
-        if (MissionPanel != null && MissionPanel.activeSelf)
+        if (navigateAction != null)
         {
-            selectedMissionIndex = -1;
-
-            if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
-            {
-                SaveManager.Instance.saveData.selectedMissionIndex = -1;
-                SaveManager.Instance.saveData.currentMissionRaceType = -1;
-                SaveManager.Instance.Save();
-            }
-
-            ShowTrackStep();
-            RequestSelection(trackPanelController != null ? trackPanelController.GetFirstSelectableTrackButton() : null, TrackPanel);
-            PlayClick();
-            return true;
+            navigateAction.performed -= OnNavigate;
+            navigateAction.performed += OnNavigate;
         }
 
-        if (TrackPanel != null && TrackPanel.activeSelf)
+        if (submitAction != null)
         {
-            selectedTrackIndex = -1;
-            selectedMissionIndex = -1;
-
-            if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
-            {
-                SaveManager.Instance.saveData.selectedTrackName = string.Empty;
-                SaveManager.Instance.saveData.selectedTrackIndex = -1;
-                SaveManager.Instance.saveData.selectedMissionIndex = -1;
-                SaveManager.Instance.saveData.currentMissionMapId = -1;
-                SaveManager.Instance.saveData.currentMissionRaceType = -1;
-                SaveManager.Instance.Save();
-            }
-
-            ResetPanels();
-            RequestSelection(GetFirstSelectableInPanel(MapPanel), MapPanel);
-            PlayClick();
-            return true;
+            submitAction.performed -= OnSubmit;
+            submitAction.performed += OnSubmit;
         }
-
-        return false;
     }
 
-    private void ResetPanels()
+    private void UnregisterInputActions()
     {
-        if (MapPanel != null)
-            MapPanel.SetActive(true);
+        InputAction navigateAction = GetInputAction("Navigate");
+        InputAction submitAction = GetInputAction("Submit");
 
-        if (TrackPanel != null)
-            TrackPanel.SetActive(false);
+        if (navigateAction != null)
+            navigateAction.performed -= OnNavigate;
 
-        if (MissionPanel != null)
-            MissionPanel.SetActive(false);
-
-        if (PlayPanel != null)
-            PlayPanel.SetActive(false);
-
-        RequestSelection(GetFirstSelectableInPanel(MapPanel), MapPanel);
+        if (submitAction != null)
+            submitAction.performed -= OnSubmit;
     }
 
-    private void ShowTrackStep()
+    private InputAction GetInputAction(string actionName)
     {
-        if (MapPanel != null)
-            MapPanel.SetActive(false);
+        if (playerInput == null && InputManager.Instance != null)
+            playerInput = InputManager.Instance.GetPlayerInput();
 
-        if (TrackPanel != null)
-            TrackPanel.SetActive(true);
+        if (playerInput == null || playerInput.actions == null)
+            return null;
 
-        if (MissionPanel != null)
-            MissionPanel.SetActive(false);
-
-        if (PlayPanel != null)
-            PlayPanel.SetActive(false);
+        return playerInput.actions.FindAction(actionName, false);
     }
 
-    private void ShowMissionStep()
+    private void RequestSelection(GameObject target)
     {
-        if (MapPanel != null)
-            MapPanel.SetActive(false);
-
-        if (TrackPanel != null)
-            TrackPanel.SetActive(false);
-
-        if (MissionPanel != null)
-            MissionPanel.SetActive(true);
-
-        if (PlayPanel != null)
-            PlayPanel.SetActive(false);
+        if (target != null)
+            StartCoroutine(SelectNextFrame(target));
     }
 
-    private void RequestSelection(GameObject preferredTarget, GameObject panelRoot)
-    {
-        StartCoroutine(SelectPanelButtonNextFrame(preferredTarget, panelRoot));
-    }
-
-    private IEnumerator SelectPanelButtonNextFrame(GameObject preferredTarget, GameObject panelRoot)
+    private static IEnumerator SelectNextFrame(GameObject target)
     {
         yield return null;
 
-        if (EventSystem.current == null)
-            yield break;
-
-        GameObject selectedObject = preferredTarget != null && preferredTarget.activeInHierarchy
-            ? preferredTarget
-            : GetFirstSelectableInPanel(panelRoot);
-
-        if (selectedObject == null)
+        if (target == null || !target.activeInHierarchy || EventSystem.current == null)
             yield break;
 
         EventSystem.current.SetSelectedGameObject(null);
-        EventSystem.current.SetSelectedGameObject(selectedObject);
+        EventSystem.current.SetSelectedGameObject(target);
     }
 
-    private GameObject GetFirstSelectableInPanel(GameObject panelRoot)
-    {
-        if (panelRoot == null)
-            return null;
-
-        Button[] buttons = panelRoot.GetComponentsInChildren<Button>(true);
-
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            Button button = buttons[i];
-
-            if (button == null || !button.gameObject.activeInHierarchy || !button.interactable)
-                continue;
-
-            return button.gameObject;
-        }
-
-        return null;
-    }
-
-    private void PlayClick()
+    private static void PlayClick()
     {
         if (SoundManager.Instance != null)
             SoundManager.Instance.PlayButtonClick();
     }
 
-    private void EnsureMissionProgressInitialized()
+    private bool HasRequiredInterface()
     {
-        if (SaveManager.Instance != null)
-            SaveManager.Instance.EnsureMissionProgressInitialized();
+        return levelNameText != null && gameModeText != null && gameTargetText != null &&
+               rewardText != null && levelImage != null && previousButton != null &&
+               nextButton != null && startButton != null && indicatorContainer != null;
+    }
+
+    private void BuildRuntimeInterface()
+    {
+        for (int i = transform.childCount - 1; i >= 0; i--)
+            transform.GetChild(i).gameObject.SetActive(false);
+
+        GameObject root = CreateUIObject("Level Carousel", transform);
+        RectTransform rootRect = root.GetComponent<RectTransform>();
+        Stretch(rootRect);
+
+        Image background = root.AddComponent<Image>();
+        background.color = new Color(0.08f, 0.08f, 0.08f, 0.96f);
+
+        championshipTitleText = CreateText("Championship Title", root.transform, "Championship", 42f, TextAlignmentOptions.Center);
+        SetAnchors(championshipTitleText.rectTransform, new Vector2(.22f, .84f), new Vector2(.78f, .97f));
+
+        GameObject card = CreateUIObject("Selected Level Card", root.transform);
+        Image cardImage = card.AddComponent<Image>();
+        cardImage.color = new Color(0.10f, 0.10f, 0.10f, .98f);
+        SetAnchors(card.GetComponent<RectTransform>(), new Vector2(.15f, .20f), new Vector2(.85f, .82f));
+
+        levelNameText = CreateText("Level Name", card.transform, "Level", 34f, TextAlignmentOptions.Center);
+        SetAnchors(levelNameText.rectTransform, new Vector2(.05f, .84f), new Vector2(.95f, .98f));
+
+        levelImage = CreateUIObject("Level Picture", card.transform).AddComponent<Image>();
+        levelImage.preserveAspect = true;
+        SetAnchors(levelImage.rectTransform, new Vector2(.37f, .20f), new Vector2(.72f, .80f));
+
+        CreateInfoRow(card.transform, "Game Mode Label", "GAME MODE", .66f, out gameModeText);
+        CreateInfoRow(card.transform, "Game Target Label", "GAME TARGET", .48f, out gameTargetText);
+        CreateInfoRow(card.transform, "Reward Label", "REWARD", .30f, out rewardText);
+
+        previousButton = CreateButton("Previous Level", root.transform, "<", null);
+        SetAnchors(previousButton.GetComponent<RectTransform>(), new Vector2(.05f, .42f), new Vector2(.13f, .60f));
+
+        nextButton = CreateButton("Next Level", root.transform, ">", null);
+        SetAnchors(nextButton.GetComponent<RectTransform>(), new Vector2(.87f, .42f), new Vector2(.95f, .60f));
+
+        startButton = CreateButton("Start Level", card.transform, "START", null);
+        SetAnchors(startButton.GetComponent<RectTransform>(), new Vector2(.75f, .28f), new Vector2(.94f, .72f));
+
+        GameObject indicatorRoot = CreateUIObject("Level Indicators", root.transform);
+        indicatorContainer = indicatorRoot.transform;
+        SetAnchors(indicatorRoot.GetComponent<RectTransform>(), new Vector2(.18f, .07f), new Vector2(.82f, .16f));
+        HorizontalLayoutGroup layout = indicatorRoot.AddComponent<HorizontalLayoutGroup>();
+        layout.spacing = 12f;
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.childControlWidth = false;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
+    }
+
+    private static void CreateInfoRow(Transform parent, string objectName, string label, float verticalPosition, out TMP_Text valueText)
+    {
+        TMP_Text labelText = CreateText(objectName, parent, label, 22f, TextAlignmentOptions.Left);
+        SetAnchors(labelText.rectTransform, new Vector2(.05f, verticalPosition), new Vector2(.22f, verticalPosition + .13f));
+
+        valueText = CreateText($"{label} Value", parent, "-", 24f, TextAlignmentOptions.Left);
+        SetAnchors(valueText.rectTransform, new Vector2(.21f, verticalPosition), new Vector2(.36f, verticalPosition + .13f));
+    }
+
+    private static GameObject CreateUIObject(string objectName, Transform parent)
+    {
+        GameObject result = new GameObject(objectName, typeof(RectTransform));
+        result.layer = parent.gameObject.layer;
+        result.transform.SetParent(parent, false);
+        return result;
+    }
+
+    private static TextMeshProUGUI CreateText(string objectName, Transform parent, string value, float fontSize, TextAlignmentOptions alignment)
+    {
+        GameObject textObject = CreateUIObject(objectName, parent);
+        TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
+        text.text = value;
+        text.fontSize = fontSize;
+        text.alignment = alignment;
+        text.color = Color.white;
+        text.enableAutoSizing = true;
+        text.fontSizeMin = 12f;
+        text.fontSizeMax = fontSize;
+        return text;
+    }
+
+    private static Button CreateButton(string objectName, Transform parent, string label, UnityEngine.Events.UnityAction callback)
+    {
+        GameObject buttonObject = CreateUIObject(objectName, parent);
+        Image image = buttonObject.AddComponent<Image>();
+        image.color = new Color(0f, .55f, .8f, 1f);
+        Button button = buttonObject.AddComponent<Button>();
+        button.targetGraphic = image;
+        if (callback != null)
+            button.onClick.AddListener(callback);
+
+        TextMeshProUGUI text = CreateText("Label", buttonObject.transform, label, 28f, TextAlignmentOptions.Center);
+        Stretch(text.rectTransform);
+        return button;
+    }
+
+    private static void SetAnchors(RectTransform rect, Vector2 minimum, Vector2 maximum)
+    {
+        rect.anchorMin = minimum;
+        rect.anchorMax = maximum;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+    }
+
+    private static void Stretch(RectTransform rect)
+    {
+        SetAnchors(rect, Vector2.zero, Vector2.one);
     }
 }

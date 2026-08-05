@@ -34,6 +34,9 @@ namespace HalvaStudio.Save
 #else
             saveData = (SaveData)LoadSwitch(typeof(SaveData));
 #endif
+
+            if (saveData != null && RCCP_RuntimeSettings.RCCPSettingsInstance != null)
+                RCCP_RuntimeSettings.RCCPSettingsInstance.useMPH = saveData.useMiles;
         }
 
         public void Save(bool forceSave = false)
@@ -172,6 +175,7 @@ namespace HalvaStudio.Save
             public float musicLevel = 0.4f;
             public bool vibrationsState = true;
             public bool easyDriftMode = false;
+            public bool useMiles = false;
             public bool indicatorState;
             public string inputRebindsJson = string.Empty;
 

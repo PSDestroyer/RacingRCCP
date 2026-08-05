@@ -10,7 +10,10 @@ public class GameplayMangerCarHud : MonoBehaviour
 
     [Header("Speed")]
     public TMP_Text speedKmhText;
+    public TMP_Text speedUnitText;
     public string speedSuffix = " KM/H";
+    public string kilometresUnit = "km/h";
+    public string milesUnit = "mph";
 
     [Header("Gear")]
     public TMP_Text currentGearText;
@@ -36,6 +39,10 @@ public class GameplayMangerCarHud : MonoBehaviour
 
     private RCCP_CarController currentCar;
     private RCCP_Stability currentStability;
+
+    private bool UseMiles => HalvaStudio.Save.SaveManager.Instance != null &&
+                             HalvaStudio.Save.SaveManager.Instance.saveData != null &&
+                             HalvaStudio.Save.SaveManager.Instance.saveData.useMiles;
 
     private void Start()
     {
@@ -75,6 +82,8 @@ public class GameplayMangerCarHud : MonoBehaviour
 
     private void UpdateHud()
     {
+        UpdateSpeedUnitText();
+
         if (currentCar == null)
         {
             SetDefaultHud();
@@ -90,7 +99,7 @@ public class GameplayMangerCarHud : MonoBehaviour
     private void SetDefaultHud()
     {
         if (speedKmhText != null)
-            speedKmhText.text = $"0{speedSuffix}";
+            speedKmhText.text = $"0{GetSpeedSuffix()}";
 
         if (currentGearText != null)
         {
@@ -114,8 +123,23 @@ public class GameplayMangerCarHud : MonoBehaviour
         if (speedKmhText == null)
             return;
 
-        int speedValue = Mathf.RoundToInt(currentCar.absoluteSpeed);
-        speedKmhText.text = $"{speedValue}{speedSuffix}";
+        float displayedSpeed = UseMiles ? currentCar.absoluteSpeed * 0.621371f : currentCar.absoluteSpeed;
+        int speedValue = Mathf.RoundToInt(displayedSpeed);
+        speedKmhText.text = $"{speedValue}{GetSpeedSuffix()}";
+    }
+
+    private string GetSpeedSuffix()
+    {
+        if (speedUnitText != null)
+            return speedSuffix;
+
+        return UseMiles ? " MPH" : speedSuffix;
+    }
+
+    private void UpdateSpeedUnitText()
+    {
+        if (speedUnitText != null)
+            speedUnitText.text = UseMiles ? milesUnit : kilometresUnit;
     }
 
     private void UpdateGearText()

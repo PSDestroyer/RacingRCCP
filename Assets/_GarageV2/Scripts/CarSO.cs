@@ -14,6 +14,13 @@ public class CarSO : ScriptableObject
     [SerializeField] private string _carInfo;
     [SerializeField] private int _price;
     [SerializeField] private int _color;
+
+    [Header("Display Stats (1-10)")]
+    [SerializeField] private bool _useCustomDisplayStats;
+    [SerializeField, Range(1, 10)] private int _acceleration = 1;
+    [SerializeField, Range(1, 10)] private int _speed = 1;
+    [SerializeField, Range(1, 10)] private int _handling = 1;
+    [SerializeField, Range(1, 10)] private int _brakes = 1;
     
     public int id => _id;
     public string carPrefabLocation => _carPrefabLocation;
@@ -23,5 +30,10 @@ public class CarSO : ScriptableObject
     public string carInfo => _carInfo;
     public int price => _price;
     public int color => _color;
+    public bool useCustomDisplayStats => _useCustomDisplayStats;
+    public int acceleration => _acceleration;
+    public int speed => _speed;
+    public int handling => _handling;
+    public int brakes => _brakes;
 
 }

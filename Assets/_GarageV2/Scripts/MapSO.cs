@@ -16,6 +16,8 @@ public class MapSO : ScriptableObject
     [SerializeField] private Sprite _mapsprite;
     [SerializeField] private Sprite _countyimg;
     [SerializeField] private string _MapName;
+    [Tooltip("Exact scene name to load when this level is started.")]
+    [SerializeField] private string _sceneName;
     [SerializeField] private int _price;
     [SerializeField] private int _target;
     [SerializeField] private int _time;
@@ -74,6 +76,7 @@ public class MapSO : ScriptableObject
     public Sprite mapsprite => _mapsprite;
     public Sprite county => _countyimg;
     public string mapName => _MapName;
+    public string sceneName => _sceneName;
     public int price => _price;
     public int target => _target;
     public int time => _time;

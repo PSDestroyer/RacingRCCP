@@ -6,5 +6,5 @@ public static class PathLocation
 {
         //Locatia unde se afla Scriptable Objects la masini.
         public static string CarsDataLocation = "SO/CarData";
-        public static string MapsDataLocarion = "SO/MapData";
+        public static string MapsDataLocarion = "SO/MapSo";
 }
