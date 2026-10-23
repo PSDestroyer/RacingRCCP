@@ -1,0 +1,81 @@
+{
+  "status": "Rejected Journey UX reverted; previous authored menu restored. Work will proceed one page at a time.",
+  "atUtc": "2026-10-23T16:22:10.803745+00:00",
+  "implemented": "Generic chassis, independent liveries and development, garage, six career events, economy, menu/results, save migration and PC/Switch guards",
+  "compiledCurrentSources": {
+    "playerErrors": 0,
+    "editorRuntimeErrors": 0,
+    "editorToolsErrors": 0,
+    "evidence": "CompilerValidation.json"
+  },
+  "managedProgression": {
+    "passed": 22,
+    "failed": []
+  },
+  "lastUnityProgression": {
+    "passed": 22,
+    "failed": []
+  },
+  "lastUnityRuntime": {
+    "passed": 6,
+    "errors": [
+      "Full lap failed validity.\n  at FormulaPlayValidation.Update () [0x008e6] in /Users/gheorghe/GitHub/RacingRCCP/Assets/Formula/Editor/FormulaPlayValidation.cs:209 "
+    ],
+    "circuit1Laps": 1,
+    "circuit2Laps": 0,
+    "note": "Fresh-profile menu/garage/gamepad/settings/loading guard/braking passed. First full lap is invalid at both 5x and 1x simulation; previous ten-check baseline is not current full-flow evidence."
+  },
+  "desktopBuild": {
+    "target": "StandaloneOSX",
+    "result": "Succeeded",
+    "seconds": 3255.443397,
+    "bytes": 1376347188,
+    "errors": 1,
+    "warnings": 85,
+    "output": "/var/folders/hz/hdljpzkx3k1d8cp3x9x27cn00000gn/T/FormulaG27Validation/FormulaG27.app"
+  },
+  "shaderCorrection": {
+    "file": "Assets/BunnyGirl/Materials/Character 1.shader",
+    "cause": "ShadowCasterPass.hlsl used Shadows.hlsl without the CommonMaterial.hlsl dependency defining LerpWhiteTo",
+    "change": "Include Core.hlsl and CommonMaterial.hlsl before ShadowCasterPass.hlsl",
+    "revalidatedInBuild": false
+  },
+  "remaining": [
+    "Investigate full-lap validity with current off-track timing; rerun complete integration validation",
+    "Run Build Desktop Validation to confirm shader fix and latest sources",
+    "Validate Windows/Steam and original Switch with installed SDKs/devices",
+    "Calibrate lap times and profile performance on target hardware"
+  ],
+  "uiIntegration": {
+    "palette": "red, white, yellow",
+    "figmaReferenceImplemented": true,
+    "figmaComponentsImported": true,
+    "method": "Adapted high-fidelity Figma context to Unity uGUI; original icons, Teko/Rajdhani fonts and live Generic game data",
+    "figmaAccount": "PsDestroyer",
+    "menuPassed": 16,
+    "menuErrors": [],
+    "evidence": "../FormulaUI/Implementation.json",
+    "currentRevision": "../FormulaUI/PresentationRevision.json",
+    "currentRevisionRuntimeValidated": true,
+    "garagePassed": 6,
+    "serializedMenuPrefab": "Assets/Formula/UI/Formula_Menu.prefab",
+    "legacySceneUiRemoved": true,
+    "hierarchyDocumentation": "../FormulaUI/HierarchyArchitecture.md"
+  },
+  "formulaGarage": {
+    "scene": "Assets/Formula/Scenes/Formula_Garage.unity",
+    "integratedWithMenu": true,
+    "finalPolishApplied": true,
+    "runtimePassed": 6,
+    "runtimeErrors": [],
+    "report": "../FormulaGarage/Implementation.json"
+  },
+  "primaryLanguage": "en",
+  "englishIntegration": {
+    "evidence": "../FormulaUI/English/Implementation.json",
+    "menuPassed": 16,
+    "garagePassed": 6,
+    "hudAndResultsPassed": 3,
+    "errors": []
+  }
+}

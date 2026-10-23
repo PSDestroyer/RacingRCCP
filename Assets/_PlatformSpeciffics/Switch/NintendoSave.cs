@@ -265,9 +265,8 @@ namespace _Assets._PlatformSpeciffics.Switch
             // Only call this when you are sure that all previous operations succeeded.
             result = nn.fs.FileSystem.Commit(_mountName);
 
-            Debug.LogError("AGEDEBUG: Commit result : \n " + result);
-        
-            return true;
+            if (!result.IsSuccess()) Debug.LogError("Nintendo save commit failed: " + result);
+            return result.IsSuccess();
         }
 
         #endregion

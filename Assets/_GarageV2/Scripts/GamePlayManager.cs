@@ -209,6 +209,9 @@ public class GamePlayManager : MonoBehaviour
     private int raceFinishCounter = 0;
     private string lastRacePositionText = string.Empty;
     private Coroutine racePositionAnimationCoroutine;
+    public float FormulaElapsed => raceElapsedTime;
+    public int FormulaCompletedLaps => playerRacer != null ? playerRacer.completedLaps : 0;
+    public bool FormulaRaceStarted => raceStarted;
     private float raceElapsedTime = 0f;
     private float limitedBrakeUsageSeconds = 0f;
     private bool chaseRaceCaughtTarget = false;
@@ -341,6 +344,7 @@ public class GamePlayManager : MonoBehaviour
         InstancePlayer();
         ApplyCurrentMapSettings();
         ApplySavedGameplaySettings();
+        FormulaGame.FormulaSession.Configure(this);
         SetUpRaceStyle(GetDrivingStyleIndex());
 
         if (finishSummaryScreen != null)
@@ -1073,9 +1077,21 @@ public class GamePlayManager : MonoBehaviour
             RCCP_CarController opponentCarController = opponentObject.GetComponent<RCCP_CarController>();
 
             if (aiDriver == null)
+            {
+                if (FormulaGame.FormulaSession.InRace) FormulaGame.FormulaSession.PrepareAgent(opponentObject);
                 aiDriver = opponentObject.AddComponent<RCCP_AI>();
+            }
 
             aiDriver.behaviour = RCCP_AI.BehaviourType.RaceWaypoints;
+            if (FormulaGame.FormulaSession.InRace)
+            {
+                aiDriver.waypointReachThreshold = 12f;
+                aiDriver.raceLookAhead = 20f;
+                aiDriver.agressiveness = 1f;
+                var visual = opponentObject.GetComponent<FormulaGame.FormulaVehicle>();
+                if (visual != null) visual.PreviewLivery(FormulaGame.FormulaCatalog.Current.liveries[(i + 2) % 8].id);
+            }
+
 
             if (raceWaypoints != null)
                 aiDriver.waypointsContainer = raceWaypoints;
@@ -1083,7 +1099,10 @@ public class GamePlayManager : MonoBehaviour
             if (copyPlayerPerformanceOnSpawn && CarController != null && opponentCarController != null)
                 CopyPlayerPerformanceToOpponent(CarController, opponentCarController);
 
-            StartCoroutine(AlignAIAgentToNavMeshDeferred(aiDriver));
+            // Formula agents are already bound before RCCP_AI is enabled. The legacy
+            // deferred alignment disables the agent for a frame while AI is running.
+            if (!FormulaGame.FormulaSession.InRace)
+                StartCoroutine(AlignAIAgentToNavMeshDeferred(aiDriver));
 
             aiRacers[i] = new RaceRacer
             {
@@ -1602,9 +1621,20 @@ public class GamePlayManager : MonoBehaviour
        Transform targetWaypoint = raceWaypoints.waypoints[playerRacer.currentWaypointIndex].transform;
        playerRacer.distanceToNextWaypoint = Vector3.Distance(playerRacer.racerTransform.position, targetWaypoint.position);
 
-       if (playerRacer.distanceToNextWaypoint > waypointReachDistance)
-           return;
+       bool reached = playerRacer.distanceToNextWaypoint <= waypointReachDistance;
+       if (FormulaGame.FormulaSession.InRace)
+       {
+           Vector3 previous = raceWaypoints.waypoints[(playerRacer.currentWaypointIndex + waypointCount - 1) % waypointCount].transform.position;
+           reached = FormulaGame.FormulaSession.WaypointReached(CarController.transform.position, previous, targetWaypoint.position, waypointReachDistance);
+       }
+       if (!reached) return;
 
+       if (FormulaGame.FormulaSession.InRace)
+       {
+           int previousIndex = (playerRacer.currentWaypointIndex + waypointCount - 1) % waypointCount;
+           Vector3 forward = targetWaypoint.position - raceWaypoints.waypoints[previousIndex].transform.position;
+           if (Vector3.Dot(CarController.Rigid.linearVelocity, forward.normalized) <= 0.1f) return;
+       }
        playerRacer.currentWaypointIndex++;
 
        if (playerRacer.currentWaypointIndex >= waypointCount)
@@ -1612,7 +1642,10 @@ public class GamePlayManager : MonoBehaviour
            playerRacer.currentWaypointIndex = 0;
            
            if (playerRacer.lapCountingArmed)
+           {
                playerRacer.completedLaps++;
+               FormulaGame.FormulaSession.Lap(raceElapsedTime);
+           }
 
            if ((RaceType == RaceType.Racing || RaceType == RaceType.NoBrakeChallenge || RaceType == RaceType.TimeAttack) && playerRacer.completedLaps >= totalRaceLaps)
            {
@@ -2535,6 +2568,20 @@ public class GamePlayManager : MonoBehaviour
            return;
 
        missionRewardsApplied = true;
+
+       if (FormulaGame.FormulaSession.InRace)
+       {
+           missionStartingExpTotal = SaveManager.Instance.saveData.exp;
+           missionStartingLevel = SaveManager.Instance.saveData.currentLevel;
+           var receipt = FormulaGame.FormulaSession.Complete(playerRacer.finished, GetPlayerRacePosition(), raceElapsedTime);
+           missionRewardEarned = receipt?.credits ?? 0;
+           missionExpEarned = receipt?.xp ?? 0;
+           missionLevelRewardEarned = receipt?.levelCredits ?? 0;
+           missionFinalExpTotal = SaveManager.Instance.saveData.exp;
+           missionFinalLevel = SaveManager.Instance.saveData.currentLevel;
+           expPerLevel = 3000;
+           return;
+       }
 
        int playerPosition = IsRaceMode() ? GetPlayerRacePosition() : 1;
        missionRewardEarned = missionSucceeded ? GetMissionRewardAmount() : 0;

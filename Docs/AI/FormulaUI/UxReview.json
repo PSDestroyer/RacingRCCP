@@ -1,0 +1,71 @@
+{
+  "atUtc": "2026-10-23T13:51:48.341721+00:00",
+  "scope": "Formula menu and garage UX/UI revision",
+  "reference": "Figma file yVvYJ0oWOxClUE2jLx52fQ, nodes 171:10 / 174:37 / 204:767 / 204:172",
+  "observedIssues": [
+    {
+      "issue": "Two large navigation rows and bright white/pink cards compete with the car",
+      "change": "One home hub, compact garage tabs, dark red rounded panels, white typography and restrained yellow focus"
+    },
+    {
+      "issue": "Changing an upgrade level silently cycles the value",
+      "change": "Explicit owned-level selection with current state and no credit charge"
+    },
+    {
+      "issue": "Hover/selection and equip are conflated in livery cards",
+      "change": "Preview is reversible; separate equip/buy action shows ownership, cost and lock reason"
+    },
+    {
+      "issue": "Locked career cards cannot be inspected",
+      "change": "Allow details; disable race launch until progression criteria pass"
+    },
+    {
+      "issue": "Refreshing or closing a modal jumps focus to the first control",
+      "change": "Remember focus per page/subsection and restore modal origin"
+    },
+    {
+      "issue": "Visual composition has no consistent transition or focus response",
+      "change": "Short unscaled page reveal, animated yellow focus outline and fixed footer hints"
+    },
+    {
+      "issue": "New UI appeared only in Play Mode; old Canvas remained in scenes and audio opened its old panel",
+      "change": "Serialize the complete new UI as a connected prefab, remove legacy scene canvases, use persistent screen/card components, and replace audio/controls with new serialized views"
+    }
+  ],
+  "acceptanceCriteria": [
+    "Inspect locked event without launching or spending",
+    "Preview a livery without changing saved equipped livery",
+    "Explicit equip and purchase retain chassis upgrades",
+    "Choose base and owned engine levels without spending",
+    "Modal cancel returns focus to its source",
+    "Virtual gamepad supports section switching, submit and cancel",
+    "Readable 1280x720 UI with all actionable controls inside canvas",
+    "Visually compare requested screens against Figma; no grayscale menu states",
+    "New menu visible in Edit Mode and immediately on scene load",
+    "Exactly one active initial screen and one Canvas per menu scene",
+    "Navigation preserves authored object identity",
+    "Audio settings and interactive rebind use the new UI and existing save fields"
+  ],
+  "status": "Authored hierarchy and current UX/UI verified in Edit Mode and Play Mode: 13 menu + 6 garage checks passed",
+  "validation": {
+    "menuReport": "RuntimeValidation.json",
+    "garageReport": "../FormulaGarage/RuntimeValidation.json",
+    "menuPassed": 13,
+    "garagePassed": 6,
+    "errors": [],
+    "gamepad": "Input System virtual gamepad; shoulder, submit, cancel and focus restoration",
+    "visuals": [
+      "Home",
+      "Career",
+      "LockedEvent",
+      "Liveries",
+      "Setup",
+      "Purchase",
+      "Development",
+      "UpgradeLevels",
+      "Profile",
+      "Settings",
+      "Quick"
+    ]
+  }
+}

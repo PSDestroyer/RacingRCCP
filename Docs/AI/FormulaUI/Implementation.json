@@ -1,0 +1,118 @@
+{
+  "status": "English is the primary game language. Current presentation preserved after Journey undo.",
+  "atUtc": "2026-10-23T16:22:10.803745+00:00",
+  "figma": {
+    "account": "PsDestroyer",
+    "fileKey": "yVvYJ0oWOxClUE2jLx52fQ",
+    "sessionId": "0ffb6c8c-da51-4a30-b4f0-67f849e477a7",
+    "highFidelityContextObtained": true,
+    "referenceNodes": [
+      "171:10",
+      "174:37",
+      "204:767",
+      "204:172"
+    ]
+  },
+  "integration": "Design adapted to Unity uGUI and Formula 2027 catalog. Live garage and Generic vehicle replace reference mockup imagery; event data and livery thumbnails come from this game.",
+  "presentation": {
+    "palette": [
+      "red",
+      "white",
+      "yellow"
+    ],
+    "neutralGrayscaleButtonStates": false,
+    "fonts": [
+      "Teko Regular",
+      "Rajdhani SemiBold",
+      "Rajdhani Regular"
+    ],
+    "artwork": "Original Figma menu icons and footer glow; monochrome icon variants preserve source alpha and geometry. Original helmet color retained."
+  },
+  "screens": [
+    "Home",
+    "Career",
+    "Garage / Development",
+    "Garage / Setup",
+    "Garage / Liveries",
+    "Quick",
+    "Profile",
+    "Settings",
+    "Purchase confirmation"
+  ],
+  "statistics": "Read applied RCCP torque, front axle brake torque, wheel spring, downforce coefficient, drag coefficient and Rigidbody mass in LateUpdate after progression events. No invented horsepower, 0\u2013100 or measured top speed.",
+  "changedSources": [
+    "Assets/Formula/Scripts/FormulaMainMenu.cs",
+    "Assets/Formula/Scripts/FormulaMenuAssets.cs",
+    "Assets/Formula/Scripts/FormulaMenuFocus.cs",
+    "Assets/Formula/Editor/FormulaMenuAssetBuilder.cs",
+    "Assets/Formula/Editor/FormulaMenuPreview.cs",
+    "Assets/Formula/Editor/FormulaGaragePreview.cs",
+    "Assets/Formula/Editor/FormulaPlayValidation.cs",
+    "Assets/Formula/Editor/FormulaMenuHierarchyBuilder.cs",
+    "Assets/Formula/Editor/FormulaGarageBuilder.cs",
+    "Assets/Formula/Editor/FormulaIntegrationBuilder.cs",
+    "Assets/Formula/Scripts/Menu/FormulaCareerView.cs",
+    "Assets/Formula/Scripts/Menu/FormulaControlsView.cs",
+    "Assets/Formula/Scripts/Menu/FormulaDevelopmentCard.cs",
+    "Assets/Formula/Scripts/Menu/FormulaEventCard.cs",
+    "Assets/Formula/Scripts/Menu/FormulaGarageVehiclePreview.cs",
+    "Assets/Formula/Scripts/Menu/FormulaGarageView.cs",
+    "Assets/Formula/Scripts/Menu/FormulaHomeView.cs",
+    "Assets/Formula/Scripts/Menu/FormulaLiveryCard.cs",
+    "Assets/Formula/Scripts/Menu/FormulaMenuDialogs.cs",
+    "Assets/Formula/Scripts/Menu/FormulaMenuView.cs",
+    "Assets/Formula/Scripts/Menu/FormulaProfileView.cs",
+    "Assets/Formula/Scripts/Menu/FormulaQuickView.cs",
+    "Assets/Formula/Scripts/Menu/FormulaSettingsView.cs",
+    "Assets/Formula/Scripts/Menu/FormulaStatisticsView.cs",
+    "Assets/Formula/Editor/FormulaMenuPremiumBuilder.cs",
+    "Assets/Formula/Scripts/Menu/FormulaMenuFormatting.cs",
+    "Assets/Formula/Scripts/Menu/FormulaTrackMap.cs",
+    "Assets/Formula/Scripts/FormulaRaceUI.cs",
+    "Assets/Formula/Scripts/FormulaSession.cs"
+  ],
+  "assetSetup": "UI/Formula_Menu.prefab is connected in both scenes. Layout and screen components are serialized and visible before Play Mode. No additional setup required.",
+  "validation": {
+    "menuPassed": 16,
+    "menuErrors": [],
+    "runtimeReport": "RuntimeValidation.json",
+    "compilerReport": "CompilerValidation.json",
+    "save": "Every acceptance run uses a fresh temporary validation save, restored on Play Mode exit.",
+    "garagePassed": 6,
+    "garageErrors": [],
+    "garageReport": "../FormulaGarage/RuntimeValidation.json",
+    "note": "English revision: 16 menu and 6 garage checks passed; 3 focused HUD/result text checks passed. Journey remains reverted."
+  },
+  "limitations": [
+    "Editor validation at 1280x720; original Switch hardware, physical controller and Windows/Steam builds not run in this UI task.",
+    "Existing full-race lap-validity failure remains outside this menu change."
+  ],
+  "revision": "PresentationRevision.json",
+  "hierarchy": {
+    "prefab": "Assets/Formula/UI/Formula_Menu.prefab",
+    "editorVisible": true,
+    "legacyCanvasesRemovedFromScenes": true,
+    "rootGroups": [
+      "UI",
+      "Presentation",
+      "Scene Systems"
+    ],
+    "screens": [
+      "Home",
+      "Career",
+      "Garage",
+      "Quick Race",
+      "Profile",
+      "Settings"
+    ],
+    "defaultMenu": "Home",
+    "defaultGarage": "Garage / Livree",
+    "components": "Separate screen views, reusable cards, statistics, dialogs, audio/input settings and vehicle preview. MainMenu coordinates navigation and domain transactions.",
+    "documentation": "HierarchyArchitecture.md",
+    "serializedEvidence": "AuthoredHierarchy.txt",
+    "runtimeDelta": "RuntimeHierarchyDelta.json",
+    "sceneBackups": "SceneMigration/"
+  },
+  "primaryLanguage": "en",
+  "languageRevision": "English/Implementation.json"
+}

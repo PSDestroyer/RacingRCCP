@@ -1,0 +1,303 @@
+SCENE Assets/Scenes/Menu.unity
+ROOT SaveManager (578.03, 331.00, -0.20)
+ROOT Main Camera (-5.67, 1.40, 34.73)
+ROOT CinemachineCameras (-5.12, 1.51, 35.58)
+ROOT Canvas (640.00, 360.00, 0.00)
+CANVAS Canvas parent=
+ROOT EventSystem (0.00, 0.00, 0.00)
+ROOT Plane (-2.57, 0.27, 39.82)
+ROOT SpawnPoint (-2.57, 0.94, 39.80)
+ROOT RCCP_SceneManager (0.00, 0.00, 0.00)
+ROOT RCCP_Canvas (0.00, 0.00, 0.00)
+CANVAS RCCP_Canvas parent=
+ROOT SoundManager (2.73, 171.72, -0.01)
+ROOT PlayerInput (577.71, 331.00, 8.95)
+ROOT MoneyManger (286.46, 362.34, -0.01)
+ROOT RCCp-input (477.53, 421.46, 0.19)
+ROOT Sci-Fi_Neon_City_fbx (102.10, -19.70, -59.00)
+ROOT Props (1.44, 0.41, 38.46)
+ROOT Lights (-2.78, 5.55, 46.54)
+ROOT People (12.34, 0.30, 9.27)
+SCENE Assets/Scenes/GameplayTestScene.unity
+ROOT Scene Objects (0.00, 0.00, 0.00)
+ROOT Directional Light (0.00, 3.00, 0.00)
+ROOT Cube (12.00, 7.85, 76.90)
+ROOT GameplayPrefab (-0.03, 0.08, 6.27)
+WAYPOINTS RCCP_AI_WaypointsContainer count=9
+GAMEPLAY GameplayManager spawn=(1.10, -0.23, 1.10) wp=
+CANVAS HUD parent=GameplayPrefab
+CANVAS CanvasMiniMap parent=RTG-MiniMap
+SCENE Assets/RaceTracksPack/Scenes/Track A/RT_Track_A.unity
+ROOT Directional Light (0.00, 250.10, 0.00)
+ROOT Sea (-144.59, -57.00, -166.28)
+ROOT Rocks (-1240.77, -50.00, -554.15)
+ROOT Props (-155.78, 0.03, -292.86)
+ROOT RT_Track_A_colliders (0.00, 0.00, 0.00)
+ROOT Barriers (0.00, 0.00, 0.00)
+ROOT Track_A_03 (0.00, 0.00, 0.00)
+ROOT Reflection Probe (121.98, 2.22, 157.56)
+ROOT GameplayManager (666.13, 392.16, 0.21)
+GAMEPLAY GameplayManager spawn=(-76.26, 0.68, 180.55) wp=RCCP_AI_WaypointsContainer
+ROOT RCCP_SceneManager (0.00, 0.00, 0.00)
+ROOT RCCP_Camera (0.00, 3.00, -10.00)
+ROOT RCCP_FixedCamera (0.00, 0.00, 0.00)
+ROOT RCCP_CinematicCamera (0.00, 0.00, 0.00)
+ROOT RCCP_SkidmarksManager (0.00, 0.00, 0.00)
+ROOT Spawn (-76.26, 0.68, 180.55)
+ROOT HUD (640.00, 360.00, 0.00)
+CANVAS HUD parent=
+ROOT OponenstPoints (-0.03, 0.08, 6.27)
+ROOT RCCP_AI_WaypointsContainer (0.00, 0.78, 0.00)
+WAYPOINTS RCCP_AI_WaypointsContainer count=39
+ROOT PlaneTrack (0.00, -15.10, 0.00)
+SCENE Assets/RaceTracksPack/Scenes/Track B/RT_Track_B_Final.unity
+ROOT Directional Light (145.68, 38.60, 29.44)
+PART Directional Light pos=(145.68, 38.60, 29.44) bounds=- mesh=-
+ROOT RT_Track_B_01 (0.00, 0.00, 0.00)
+PART RT_Track_B_01 pos=(0.00, 0.00, 0.00) bounds=- mesh=-
+PART Track_B_Barriers pos=(0.00, 0.00, 0.00) bounds=- mesh=-
+PART Track_B_Barriers_MeshPart0 pos=(0.00, 0.00, 0.00) bounds=Center: (30.47, -23.37, -13.60), Extents: (1054.90, 11.33, 887.66) mesh=Track_B_Barriers_MeshPart0
+PART Track_B_Barriers_MeshPart1 pos=(0.00, 0.00, 0.00) bounds=Center: (194.66, -18.83, 196.44), Extents: (143.52, 3.33, 266.15) mesh=Track_B_Barriers_MeshPart1
+PART Track_B_Mesh pos=(0.00, 0.00, 0.00) bounds=Center: (30.44, -24.55, -13.62), Extents: (1080.62, 12.09, 913.35) mesh=Track_B_painted
+PART Track_B_Terrain pos=(0.00, 0.00, 0.00) bounds=Center: (0.00, 0.00, 0.00), Extents: (2160.89, 36.57, 2150.25) mesh=Track_B_Terrain
+ROOT Rocks_Used (-1114.80, 1.10, -95.50)
+PART Rocks_Used pos=(-1114.80, 1.10, -95.50) bounds=- mesh=-
+PART RT_Rock1 pos=(226.50, -19.10, 356.87) bounds=Center: (227.06, -17.74, 357.22), Extents: (20.09, 18.59, 18.48) mesh=Rock6_LP1_Cliff6_400_tris_Group12861
+PART RT_Rock2 pos=(184.70, -19.10, 324.20) bounds=Center: (184.70, -19.10, 324.20), Extents: (8.28, 5.54, 8.21) mesh=Rock2_LP_Group51509
+PART RT_Rock3 pos=(162.50, -19.10, 346.42) bounds=Center: (162.01, -20.10, 346.50), Extents: (20.00, 11.37, 17.94) mesh=Rock4_LP1_Group51808
+PART RT_Rock4 pos=(186.00, -19.10, 407.85) bounds=Center: (185.53, -3.61, 407.33), Extents: (17.44, 19.85, 19.21) mesh=Rock5_LP1_Group35141
+PART RT_Rock5 pos=(186.00, -19.10, 341.19) bounds=Center: (185.95, -19.17, 341.23), Extents: (8.76, 5.56, 8.33) mesh=Rock3_LP1_Group46420
+PART Rock4 pos=(-319.50, -139.86, -25.84) bounds=Center: (-318.84, -17.18, -31.37), Extents: (165.04, 157.21, 156.50) mesh=Rock5_LP1_Group35141
+PART Rock1 pos=(-93.06, -26.66, 32.88) bounds=Center: (-92.74, -22.43, 34.93), Extents: (65.25, 58.09, 68.30) mesh=Rock6_LP1_Cliff6_400_tris_Group12861
+PART Rock3 pos=(1308.55, -4.50, -361.61) bounds=Center: (1309.17, -5.91, -361.55), Extents: (31.90, 29.68, 34.34) mesh=Rock4_LP1_Group51808
+PART Rock2 pos=(1318.20, -1.90, -401.50) bounds=Center: (1318.20, -1.90, -401.50), Extents: (45.81, 39.88, 43.68) mesh=Rock2_LP_Group51509
+PART Rock4 pos=(-1014.00, -14.50, 814.54) bounds=Center: (-1013.27, 23.49, 812.98), Extents: (44.76, 48.69, 39.76) mesh=Rock5_LP1_Group35141
+PART Rock4 pos=(-1014.34, 31.10, 857.89) bounds=Center: (-1013.27, 69.09, 859.24), Extents: (44.69, 48.69, 48.55) mesh=Rock5_LP1_Group35141
+PART Rock4 pos=(-988.92, -23.70, 857.63) bounds=Center: (-989.53, 14.29, 859.24), Extents: (46.65, 48.69, 42.15) mesh=Rock5_LP1_Group35141
+PART Rock4 pos=(-1040.30, 13.33, 901.00) bounds=Center: (-1012.38, 2.73, 961.53), Extents: (106.48, 90.49, 118.74) mesh=Rock5_LP1_Group35141
+PART Rock4 pos=(-1042.45, 9.60, 775.40) bounds=Center: (-1013.27, 1.38, 752.44), Extents: (70.51, 61.92, 68.04) mesh=Rock5_LP1_Group35141
+PART Rock3 pos=(-890.01, -17.11, 878.90) bounds=Center: (-891.47, -20.10, 879.14), Extents: (59.59, 33.88, 53.47) mesh=Rock4_LP1_Group51808
+PART Rock5 pos=(-819.98, -17.11, 863.35) bounds=Center: (-820.12, -17.31, 863.46), Extents: (26.11, 16.56, 24.83) mesh=Rock3_LP1_Group46420
+PART Rock4 pos=(-1687.80, -17.90, 162.50) bounds=Center: (-1619.07, -44.00, 311.51), Extents: (262.13, 222.78, 292.32) mesh=Rock5_LP1_Group35141
+PART Rock1 pos=(-1405.80, -65.90, -193.50) bounds=Center: (-1405.10, -56.54, -188.98), Extents: (144.17, 128.36, 150.92) mesh=Rock6_LP1_Cliff6_400_tris_Group12861
+PART Rock1 pos=(-1516.29, -4.90, -190.59) bounds=Center: (-1519.10, 4.46, -186.98), Extents: (136.09, 128.36, 145.26) mesh=Rock6_LP1_Cliff6_400_tris_Group12861
+PART Rock2 pos=(1273.60, -1.90, -403.60) bounds=Center: (1273.60, -1.90, -403.60), Extents: (46.08, 43.06, 46.08) mesh=Rock2_LP_Group51509
+ROOT Props_Used (127.78, -170.31, 446.20)
+PART Props_Used pos=(127.78, -170.31, 446.20) bounds=- mesh=-
+PART Anteena_Base pos=(792.74, -16.05, -1038.69) bounds=Center: (792.74, -16.05, -1038.69), Extents: (5.89, 4.43, 5.89) mesh=Cube
+PART RT_Antenna pos=(791.81, -12.25, -1039.06) bounds=Center: (791.81, 17.42, -1039.06), Extents: (2.99, 29.67, 3.18) mesh=Antena
+PART RT_Antenna pos=(-105.73, 30.90, 48.90) bounds=Center: (-105.73, 91.13, 48.90), Extents: (8.32, 60.23, 8.49) mesh=Antena
+ROOT RT_Track_B_colliders (0.00, 0.00, 0.00)
+PART RT_Track_B_colliders pos=(0.00, 0.00, 0.00) bounds=- mesh=-
+PART Collider_Ref_001 pos=(345.13, -20.72, -44.10) bounds=Center: (345.19, -15.36, -44.13), Extents: (12.51, 5.52, 7.16) mesh=Collider_Ref_001
+PART Collider_Ref_002 pos=(321.77, -20.37, -33.59) bounds=Center: (321.83, -15.01, -33.62), Extents: (12.46, 5.51, 7.30) mesh=Collider_Ref_002
+PART Collider_Ref_003 pos=(298.49, -20.33, -22.93) bounds=Center: (298.55, -14.97, -22.96), Extents: (12.40, 5.54, 7.52) mesh=Collider_Ref_003
+PART Collider_Ref_004 pos=(275.44, -20.00, -11.76) bounds=Center: (275.49, -14.64, -11.78), Extents: (12.34, 5.50, 7.65) mesh=Collider_Ref_004
+PART Collider_Ref_005 pos=(252.55, -19.69, -0.27) bounds=Center: (252.42, -14.33, -0.20), Extents: (12.34, 5.69, 7.89) mesh=Collider_Ref_005
+PART Collider_Ref_006 pos=(229.99, -19.82, 11.80) bounds=Center: (230.03, -14.46, 11.78), Extents: (12.17, 5.45, 8.04) mesh=Collider_Ref_006
+PART Collider_Ref_007 pos=(207.84, -19.18, 24.55) bounds=Center: (207.91, -13.82, 24.50), Extents: (12.05, 5.57, 8.45) mesh=Collider_Ref_007
+PART Collider_Ref_008 pos=(186.20, -18.91, 38.19) bounds=Center: (186.29, -13.55, 38.14), Extents: (11.82, 5.61, 8.94) mesh=Collider_Ref_008
+PART Collider_Ref_009 pos=(165.26, -18.43, 52.93) bounds=Center: (165.32, -13.07, 52.89), Extents: (11.49, 5.52, 9.42) mesh=Collider_Ref_009
+PART Collider_Ref_010 pos=(145.44, -18.21, 69.14) bounds=Center: (145.54, -12.85, 69.05), Extents: (10.99, 5.67, 10.19) mesh=Collider_Ref_010
+PART Collider_Ref_011 pos=(127.48, -17.76, 87.36) bounds=Center: (127.50, -12.40, 87.34), Extents: (9.94, 5.43, 11.07) mesh=Collider_Ref_011
+PART Collider_Ref_012 pos=(111.64, -17.63, 107.48) bounds=Center: (111.66, -12.26, 107.46), Extents: (9.23, 5.43, 11.57) mesh=Collider_Ref_012
+PART Collider_Ref_013 pos=(97.57, -17.56, 128.87) bounds=Center: (97.58, -12.20, 128.86), Extents: (8.29, 5.38, 12.04) mesh=Collider_Ref_013
+PART Collider_Ref_014 pos=(86.32, -17.60, 151.86) bounds=Center: (86.31, -12.23, 151.88), Extents: (6.76, 5.43, 12.57) mesh=Collider_Ref_014
+PART Collider_Ref_015 pos=(79.15, -17.72, 176.41) bounds=Center: (79.14, -12.36, 176.45), Extents: (4.54, 5.46, 12.82) mesh=Collider_Ref_015
+PART Collider_Ref_016 pos=(77.61, -18.05, 201.92) bounds=Center: (77.62, -12.69, 202.00), Extents: (3.03, 5.56, 12.77) mesh=Collider_Ref_016
+PART Collider_Ref_017 pos=(81.76, -18.50, 227.15) bounds=Center: (81.79, -13.14, 227.25), Extents: (5.35, 5.62, 12.86) mesh=Collider_Ref_017
+PART Collider_Ref_018 pos=(89.75, -19.02, 251.45) bounds=Center: (89.80, -13.66, 251.58), Extents: (6.89, 5.67, 12.64) mesh=Collider_Ref_018
+PART Collider_Ref_019 pos=(99.94, -19.90, 274.93) bounds=Center: (100.02, -14.54, 275.12), Extents: (7.40, 5.84, 12.57) mesh=Collider_Ref_019
+PART Collider_Ref_020 pos=(110.84, -21.38, 298.02) bounds=Center: (110.84, -16.02, 298.02), Extents: (7.53, 5.37, 12.33) mesh=Collider_Ref_020
+PART Collider_Ref_021 pos=(121.53, -21.76, 321.28) bounds=Center: (121.59, -16.40, 321.42), Extents: (7.24, 5.71, 12.56) mesh=Collider_Ref_021
+PART Collider_Ref_022 pos=(131.22, -21.45, 344.95) bounds=Center: (131.25, -16.09, 345.05), Extents: (6.60, 5.61, 12.68) mesh=Collider_Ref_022
+PART Collider_Ref_023 pos=(139.47, -21.91, 369.18) bounds=Center: (139.49, -16.55, 369.23), Extents: (5.71, 5.50, 12.77) mesh=Collider_Ref_023
+PART Collider_Ref_024 pos=(145.73, -22.36, 394.00) bounds=Center: (145.75, -17.00, 394.09), Extents: (4.73, 5.57, 12.87) mesh=Collider_Ref_024
+PART Collider_Ref_025 pos=(149.66, -22.80, 419.31) bounds=Center: (149.67, -17.43, 419.38), Extents: (3.68, 5.54, 12.83) mesh=Collider_Ref_025
+PART Collider_Ref_026 pos=(151.13, -23.12, 444.86) bounds=Center: (151.13, -17.76, 444.94), Extents: (2.47, 5.54, 12.68) mesh=Collider_Ref_026
+PART Collider_Ref_027 pos=(150.29, -23.43, 470.45) bounds=Center: (150.29, -18.07, 470.51), Extents: (3.33, 5.50, 12.78) mesh=Collider_Ref_027
+PART Collider_Ref_028 pos=(147.16, -23.65, 495.87) bounds=Center: (147.15, -18.29, 495.91), Extents: (4.31, 5.46, 12.82) mesh=Collider_Ref_028
+PART Collider_Ref_029 pos=(142.05, -23.84, 520.96) bounds=Center: (142.04, -18.48, 520.99), Extents: (5.29, 5.43, 12.78) mesh=Collider_Ref_029
+PART Collider_Ref_030 pos=(135.15, -23.93, 545.62) bounds=Center: (135.15, -18.57, 545.64), Extents: (5.99, 5.39, 12.69) mesh=Collider_Ref_030
+PART Collider_Ref_031 pos=(126.80, -23.99, 569.83) bounds=Center: (126.80, -18.63, 569.84), Extents: (6.62, 5.38, 12.58) mesh=Collider_Ref_031
+PART Collider_Ref_032 pos=(117.03, -24.00, 593.51) bounds=Center: (117.03, -18.64, 593.52), Extents: (7.11, 5.37, 12.45) mesh=Collider_Ref_032
+PART Collider_Ref_033 pos=(106.32, -24.04, 616.78) bounds=Center: (106.32, -18.68, 616.78), Extents: (7.58, 5.36, 12.31) mesh=Collider_Ref_033
+PART Collider_Ref_034 pos=(94.74, -24.05, 639.62) bounds=Center: (94.74, -18.68, 639.63), Extents: (7.94, 5.37, 12.18) mesh=Collider_Ref_034
+PART Collider_Ref_035 pos=(82.19, -24.02, 661.96) bounds=Center: (82.19, -18.66, 661.96), Extents: (8.33, 5.36, 12.01) mesh=Collider_Ref_035
+PART Collider_Ref_036 pos=(68.72, -24.03, 683.74) bounds=Center: (68.72, -18.66, 683.74), Extents: (8.73, 5.36, 11.82) mesh=Collider_Ref_036
+PART Collider_Ref_037 pos=(54.34, -24.03, 704.93) bounds=Center: (54.34, -18.66, 704.94), Extents: (9.16, 5.38, 11.58) mesh=Collider_Ref_037
+PART Collider_Ref_038 pos=(38.96, -24.04, 725.41) bounds=Center: (38.97, -18.68, 725.40), Extents: (9.58, 5.39, 11.32) mesh=Collider_Ref_038
+PART Collider_Ref_039 pos=(22.62, -24.02, 745.13) bounds=Center: (22.62, -18.66, 745.13), Extents: (10.05, 5.38, 10.95) mesh=Collider_Ref_039
+PART Collider_Ref_040 pos=(5.14, -24.03, 763.86) bounds=Center: (5.13, -18.67, 763.87), Extents: (10.44, 5.39, 10.61) mesh=Collider_Ref_040
+PART Collider_Ref_041 pos=(-13.28, -24.02, 781.65) bounds=Center: (-13.28, -18.66, 781.64), Extents: (10.84, 5.37, 10.17) mesh=Collider_Ref_041
+PART Collider_Ref_042 pos=(-32.77, -24.04, 798.27) bounds=Center: (-32.77, -18.68, 798.28), Extents: (11.27, 5.39, 9.64) mesh=Collider_Ref_042
+PART Collider_Ref_043 pos=(-53.16, -24.02, 813.77) bounds=Center: (-53.16, -18.66, 813.77), Extents: (11.56, 5.37, 9.19) mesh=Collider_Ref_043
+PART Collider_Ref_044 pos=(-74.46, -24.04, 827.99) bounds=Center: (-74.45, -18.68, 827.98), Extents: (11.90, 5.38, 8.58) mesh=Collider_Ref_044
+PART Collider_Ref_045 pos=(-96.57, -24.05, 840.91) bounds=Center: (-96.57, -18.69, 840.91), Extents: (12.17, 5.36, 7.96) mesh=Collider_Ref_045
+PART Collider_Ref_046 pos=(-119.42, -24.02, 852.47) bounds=Center: (-119.42, -18.66, 852.47), Extents: (12.37, 5.36, 7.39) mesh=Collider_Ref_046
+PART Collider_Ref_047 pos=(-142.91, -24.01, 862.68) bounds=Center: (-142.89, -18.64, 862.67), Extents: (12.55, 5.42, 6.80) mesh=Collider_Ref_047
+PART Collider_Ref_048 pos=(-166.96, -24.05, 871.50) bounds=Center: (-166.95, -18.68, 871.50), Extents: (12.65, 5.37, 6.22) mesh=Collider_Ref_048
+PART Collider_Ref_049 pos=(-191.44, -24.03, 879.01) bounds=Center: (-191.44, -18.67, 879.01), Extents: (12.74, 5.37, 5.55) mesh=Collider_Ref_049
+PART Collider_Ref_050 pos=(-216.28, -24.02, 885.27) bounds=Center: (-216.28, -18.66, 885.27), Extents: (12.77, 5.37, 5.00) mesh=Collider_Ref_050
+PART Collider_Ref_051 pos=(-241.40, -24.03, 890.26) bounds=Center: (-241.42, -18.67, 890.26), Extents: (12.80, 5.40, 4.41) mesh=Collider_Ref_051
+PART Collider_Ref_052 pos=(-266.72, -24.02, 894.13) bounds=Center: (-266.73, -18.66, 894.13), Extents: (12.77, 5.37, 3.93) mesh=Collider_Ref_052
+PART Collider_Ref_053 pos=(-292.18, -24.02, 896.93) bounds=Center: (-292.18, -18.66, 896.93), Extents: (12.73, 5.37, 3.40) mesh=Collider_Ref_053
+PART Collider_Ref_054 pos=(-317.74, -24.03, 898.69) bounds=Center: (-317.75, -18.67, 898.69), Extents: (12.68, 5.38, 2.93) mesh=Collider_Ref_054
+PART Collider_Ref_055 pos=(-343.34, -24.04, 899.57) bounds=Center: (-343.34, -18.68, 899.57), Extents: (12.63, 5.38, 2.56) mesh=Collider_Ref_055
+PART Collider_Ref_056 pos=(-368.95, -24.02, 899.72) bounds=Center: (-368.95, -18.65, 899.72), Extents: (12.59, 5.37, 2.36) mesh=Collider_Ref_056
+PART Collider_Ref_057 pos=(-394.56, -24.04, 899.10) bounds=Center: (-394.56, -18.68, 899.10), Extents: (12.65, 5.36, 2.78) mesh=Collider_Ref_057
+PART Collider_Ref_058 pos=(-420.15, -24.02, 897.93) bounds=Center: (-420.14, -18.66, 897.93), Extents: (12.69, 5.39, 2.96) mesh=Collider_Ref_058
+PART Collider_Ref_059 pos=(-445.70, -24.01, 896.09) bounds=Center: (-445.71, -18.65, 896.09), Extents: (12.72, 5.38, 3.21) mesh=Collider_Ref_059
+PART Collider_Ref_060 pos=(-471.22, -24.04, 893.93) bounds=Center: (-471.23, -18.67, 893.93), Extents: (12.74, 5.37, 3.47) mesh=Collider_Ref_060
+PART Collider_Ref_061 pos=(-496.69, -24.03, 891.23) bounds=Center: (-496.69, -18.67, 891.23), Extents: (12.75, 5.36, 3.68) mesh=Collider_Ref_061
+PART Collider_Ref_062 pos=(-522.11, -24.00, 888.03) bounds=Center: (-522.10, -18.64, 888.03), Extents: (12.77, 5.37, 4.00) mesh=Collider_Ref_062
+PART Collider_Ref_063 pos=(-547.42, -24.04, 884.11) bounds=Center: (-547.42, -18.67, 884.11), Extents: (12.78, 5.37, 4.32) mesh=Collider_Ref_063
+PART Collider_Ref_064 pos=(-572.61, -24.04, 879.48) bounds=Center: (-572.60, -18.67, 879.48), Extents: (12.79, 5.39, 4.76) mesh=Collider_Ref_064
+PART Collider_Ref_065 pos=(-597.62, -24.01, 873.92) bounds=Center: (-597.61, -18.65, 873.92), Extents: (12.76, 5.37, 5.18) mesh=Collider_Ref_065
+PART Collider_Ref_066 pos=(-622.42, -24.05, 867.54) bounds=Center: (-622.41, -18.68, 867.54), Extents: (12.74, 5.38, 5.62) mesh=Collider_Ref_066
+PART Collider_Ref_067 pos=(-646.93, -24.01, 860.09) bounds=Center: (-646.92, -18.65, 860.09), Extents: (12.68, 5.38, 6.05) mesh=Collider_Ref_067
+PART Collider_Ref_068 pos=(-671.07, -24.03, 851.53) bounds=Center: (-671.06, -18.66, 851.54), Extents: (12.57, 5.39, 6.67) mesh=Collider_Ref_068
+PART Collider_Ref_069 pos=(-694.79, -24.03, 841.86) bounds=Center: (-694.77, -18.67, 841.87), Extents: (12.44, 5.40, 7.22) mesh=Collider_Ref_069
+PART Collider_Ref_070 pos=(-718.00, -24.03, 831.03) bounds=Center: (-717.99, -18.67, 831.03), Extents: (12.27, 5.38, 7.70) mesh=Collider_Ref_070
+PART Collider_Ref_071 pos=(-740.58, -24.02, 818.94) bounds=Center: (-740.58, -18.66, 818.94), Extents: (12.07, 5.36, 8.20) mesh=Collider_Ref_071
+PART Collider_Ref_072 pos=(-762.55, -24.01, 805.79) bounds=Center: (-762.56, -18.64, 805.78), Extents: (11.86, 5.39, 8.68) mesh=Collider_Ref_072
+PART Collider_Ref_073 pos=(-783.85, -24.03, 791.55) bounds=Center: (-783.84, -18.67, 791.56), Extents: (11.61, 5.38, 9.12) mesh=Collider_Ref_073
+PART Collider_Ref_074 pos=(-804.48, -24.04, 776.37) bounds=Center: (-804.48, -18.67, 776.37), Extents: (11.38, 5.37, 9.47) mesh=Collider_Ref_074
+PART Collider_Ref_075 pos=(-824.41, -24.02, 760.28) bounds=Center: (-824.41, -18.66, 760.28), Extents: (11.08, 5.37, 9.87) mesh=Collider_Ref_075
+PART Collider_Ref_076 pos=(-843.59, -24.04, 743.31) bounds=Center: (-843.60, -18.68, 743.31), Extents: (10.85, 5.37, 10.16) mesh=Collider_Ref_076
+PART Collider_Ref_077 pos=(-862.27, -24.07, 725.78) bounds=Center: (-862.27, -18.71, 725.79), Extents: (10.62, 5.37, 10.41) mesh=Collider_Ref_077
+PART Collider_Ref_078 pos=(-880.28, -24.04, 707.56) bounds=Center: (-880.27, -18.67, 707.57), Extents: (10.36, 5.37, 10.67) mesh=Collider_Ref_078
+PART Collider_Ref_079 pos=(-897.75, -24.04, 688.84) bounds=Center: (-897.75, -18.68, 688.84), Extents: (10.13, 5.37, 10.87) mesh=Collider_Ref_079
+PART Collider_Ref_080 pos=(-914.66, -24.02, 669.60) bounds=Center: (-914.66, -18.66, 669.59), Extents: (9.93, 5.37, 11.05) mesh=Collider_Ref_080
+PART Collider_Ref_081 pos=(-931.21, -24.03, 650.04) bounds=Center: (-931.20, -18.66, 650.05), Extents: (9.75, 5.39, 11.20) mesh=Collider_Ref_081
+PART Collider_Ref_082 pos=(-947.17, -23.98, 630.01) bounds=Center: (-947.17, -18.62, 630.00), Extents: (9.47, 5.37, 11.38) mesh=Collider_Ref_082
+PART Collider_Ref_083 pos=(-962.51, -23.99, 609.49) bounds=Center: (-962.51, -18.63, 609.50), Extents: (9.23, 5.38, 11.55) mesh=Collider_Ref_083
+PART Collider_Ref_084 pos=(-977.03, -23.93, 588.39) bounds=Center: (-977.02, -18.57, 588.41), Extents: (8.83, 5.40, 11.79) mesh=Collider_Ref_084
+PART Collider_Ref_085 pos=(-990.64, -23.84, 566.70) bounds=Center: (-990.63, -18.48, 566.72), Extents: (8.40, 5.41, 12.00) mesh=Collider_Ref_085
+PART Collider_Ref_086 pos=(-1003.28, -23.73, 544.42) bounds=Center: (-1003.26, -18.36, 544.44), Extents: (7.96, 5.42, 12.20) mesh=Collider_Ref_086
+PART Collider_Ref_087 pos=(-1014.62, -23.59, 521.46) bounds=Center: (-1014.61, -18.23, 521.49), Extents: (7.34, 5.44, 12.42) mesh=Collider_Ref_087
+PART Collider_Ref_088 pos=(-1024.71, -23.34, 497.92) bounds=Center: (-1024.69, -17.98, 497.97), Extents: (6.72, 5.48, 12.60) mesh=Collider_Ref_088
+PART Collider_Ref_089 pos=(-1033.28, -23.13, 473.79) bounds=Center: (-1033.26, -17.77, 473.83), Extents: (6.01, 5.47, 12.72) mesh=Collider_Ref_089
+PART Collider_Ref_090 pos=(-1040.10, -22.85, 449.10) bounds=Center: (-1040.08, -17.49, 449.18), Extents: (5.28, 5.55, 12.83) mesh=Collider_Ref_090
+PART Collider_Ref_091 pos=(-1045.26, -22.48, 424.02) bounds=Center: (-1045.24, -17.12, 424.11), Extents: (4.43, 5.56, 12.86) mesh=Collider_Ref_091
+PART Collider_Ref_092 pos=(-1048.56, -22.08, 398.63) bounds=Center: (-1048.55, -16.72, 398.73), Extents: (3.45, 5.59, 12.83) mesh=Collider_Ref_092
+PART Collider_Ref_093 pos=(-1050.04, -21.62, 373.07) bounds=Center: (-1050.04, -16.26, 373.17), Extents: (2.63, 5.60, 12.73) mesh=Collider_Ref_093
+PART Collider_Ref_094 pos=(-1049.70, -21.44, 347.47) bounds=Center: (-1049.70, -16.08, 347.57), Extents: (2.92, 5.60, 12.77) mesh=Collider_Ref_094
+PART Collider_Ref_095 pos=(-1047.61, -21.22, 321.95) bounds=Center: (-1047.62, -15.86, 322.03), Extents: (3.73, 5.55, 12.83) mesh=Collider_Ref_095
+PART Collider_Ref_096 pos=(-1043.81, -20.78, 296.63) bounds=Center: (-1043.83, -15.42, 296.76), Extents: (4.51, 5.67, 12.91) mesh=Collider_Ref_096
+PART Collider_Ref_097 pos=(-1038.56, -19.97, 271.58) bounds=Center: (-1038.64, -14.62, 271.94), Extents: (5.25, 6.22, 13.09) mesh=Collider_Ref_097
+PART Collider_Ref_098 pos=(-1031.81, -18.90, 246.90) bounds=Center: (-1031.86, -13.54, 247.04), Extents: (5.88, 5.70, 12.84) mesh=Collider_Ref_098
+PART Collider_Ref_099 pos=(-1023.86, -18.19, 222.57) bounds=Center: (-1023.90, -12.83, 222.69), Extents: (6.46, 5.67, 12.73) mesh=Collider_Ref_099
+PART Collider_Ref_100 pos=(-1014.71, -17.59, 198.65) bounds=Center: (-1014.78, -12.23, 198.80), Extents: (6.95, 5.74, 12.65) mesh=Collider_Ref_100
+PART Collider_Ref_101 pos=(-1004.42, -17.19, 175.20) bounds=Center: (-1004.51, -11.83, 175.38), Extents: (7.51, 5.82, 12.53) mesh=Collider_Ref_101
+PART Collider_Ref_102 pos=(-992.65, -15.89, 152.51) bounds=Center: (-992.72, -10.53, 152.64), Extents: (8.25, 5.73, 12.21) mesh=Collider_Ref_102
+PART Collider_Ref_103 pos=(-979.26, -14.91, 130.70) bounds=Center: (-979.34, -9.55, 130.81), Extents: (8.96, 5.68, 11.84) mesh=Collider_Ref_103
+PART Collider_Ref_104 pos=(-964.12, -14.31, 110.06) bounds=Center: (-964.20, -8.95, 110.15), Extents: (9.71, 5.65, 11.35) mesh=Collider_Ref_104
+PART Collider_Ref_105 pos=(-947.40, -13.88, 90.67) bounds=Center: (-947.45, -8.52, 90.72), Extents: (10.36, 5.54, 10.76) mesh=Collider_Ref_105
+PART Collider_Ref_106 pos=(-929.09, -13.55, 72.77) bounds=Center: (-929.12, -8.19, 72.80), Extents: (10.86, 5.47, 10.22) mesh=Collider_Ref_106
+PART Collider_Ref_107 pos=(-909.42, -13.39, 56.37) bounds=Center: (-909.43, -8.03, 56.37), Extents: (11.35, 5.38, 9.51) mesh=Collider_Ref_107
+PART Collider_Ref_108 pos=(-888.59, -13.59, 41.49) bounds=Center: (-888.51, -8.23, 41.44), Extents: (11.83, 5.56, 8.89) mesh=Collider_Ref_108
+PART Collider_Ref_109 pos=(-866.96, -14.99, 27.89) bounds=Center: (-866.85, -9.63, 27.83), Extents: (12.12, 5.66, 8.39) mesh=Collider_Ref_109
+PART Collider_Ref_110 pos=(-844.43, -15.35, 15.70) bounds=Center: (-844.40, -9.99, 15.68), Extents: (12.26, 5.46, 7.83) mesh=Collider_Ref_110
+PART Collider_Ref_111 pos=(-821.53, -15.03, 4.26) bounds=Center: (-821.45, -9.66, 4.22), Extents: (12.43, 5.57, 7.49) mesh=Collider_Ref_111
+PART Collider_Ref_112 pos=(-798.24, -15.81, -6.38) bounds=Center: (-798.04, -10.45, -6.46), Extents: (12.60, 5.86, 7.32) mesh=Collider_Ref_112
+PART Collider_Ref_113 pos=(-774.81, -16.89, -16.67) bounds=Center: (-774.57, -11.53, -16.77), Extents: (12.66, 5.95, 7.25) mesh=Collider_Ref_113
+PART Collider_Ref_114 pos=(-751.28, -18.15, -26.72) bounds=Center: (-751.02, -12.80, -26.83), Extents: (12.74, 6.01, 7.01) mesh=Collider_Ref_114
+PART Collider_Ref_115 pos=(-727.51, -19.54, -36.17) bounds=Center: (-727.22, -14.18, -36.28), Extents: (12.82, 6.08, 6.80) mesh=Collider_Ref_115
+PART Collider_Ref_116 pos=(-703.64, -21.04, -45.34) bounds=Center: (-703.33, -15.69, -45.45), Extents: (12.88, 6.12, 6.57) mesh=Collider_Ref_116
+PART Collider_Ref_117 pos=(-679.57, -22.44, -53.99) bounds=Center: (-679.30, -17.08, -54.09), Extents: (12.88, 6.03, 6.41) mesh=Collider_Ref_117
+PART Collider_Ref_118 pos=(-655.40, -23.95, -62.32) bounds=Center: (-655.08, -18.60, -62.43), Extents: (12.94, 6.13, 6.29) mesh=Collider_Ref_118
+PART Collider_Ref_119 pos=(-631.12, -25.56, -70.32) bounds=Center: (-630.79, -20.21, -70.43), Extents: (12.97, 6.17, 6.20) mesh=Collider_Ref_119
+PART Collider_Ref_120 pos=(-606.80, -27.15, -78.21) bounds=Center: (-606.50, -21.80, -78.31), Extents: (12.95, 6.09, 6.13) mesh=Collider_Ref_120
+PART Collider_Ref_121 pos=(-582.42, -28.63, -85.93) bounds=Center: (-582.14, -23.28, -86.02), Extents: (12.95, 6.03, 6.00) mesh=Collider_Ref_121
+PART Collider_Ref_122 pos=(-557.99, -29.99, -93.50) bounds=Center: (-557.70, -24.64, -93.59), Extents: (12.95, 6.05, 6.04) mesh=Collider_Ref_122
+PART Collider_Ref_123 pos=(-533.58, -31.56, -101.10) bounds=Center: (-533.35, -26.21, -101.17), Extents: (12.91, 5.91, 5.96) mesh=Collider_Ref_123
+PART Collider_Ref_124 pos=(-509.16, -32.26, -108.81) bounds=Center: (-509.03, -26.90, -108.85), Extents: (12.82, 5.69, 6.00) mesh=Collider_Ref_124
+PART Collider_Ref_125 pos=(-484.74, -33.03, -116.49) bounds=Center: (-484.60, -27.67, -116.53), Extents: (12.80, 5.69, 6.09) mesh=Collider_Ref_125
+PART Collider_Ref_126 pos=(-460.36, -33.74, -124.33) bounds=Center: (-460.03, -28.39, -124.44), Extents: (12.98, 6.18, 6.17) mesh=Collider_Ref_126
+PART Collider_Ref_127 pos=(-436.15, -34.75, -132.48) bounds=Center: (-435.98, -29.39, -132.54), Extents: (12.80, 5.80, 6.38) mesh=Collider_Ref_127
+PART Collider_Ref_128 pos=(-413.43, -34.75, -144.03) bounds=Center: (-413.50, -29.39, -143.98), Extents: (11.46, 5.57, 9.50) mesh=Collider_Ref_128
+PART Collider_Ref_129 pos=(-396.54, -33.77, -163.02) bounds=Center: (-396.54, -28.41, -163.01), Extents: (8.44, 5.38, 11.97) mesh=Collider_Ref_129
+PART Collider_Ref_130 pos=(-386.85, -33.77, -186.64) bounds=Center: (-386.85, -28.41, -186.64), Extents: (5.58, 5.37, 12.73) mesh=Collider_Ref_130
+PART Collider_Ref_131 pos=(-382.40, -33.77, -211.83) bounds=Center: (-382.40, -28.41, -211.83), Extents: (3.47, 5.36, 12.74) mesh=Collider_Ref_131
+PART Collider_Ref_132 pos=(-381.22, -33.79, -237.41) bounds=Center: (-381.22, -28.42, -237.42), Extents: (2.38, 5.38, 12.60) mesh=Collider_Ref_132
+PART Collider_Ref_133 pos=(-382.39, -33.78, -263.00) bounds=Center: (-382.39, -28.42, -263.02), Extents: (3.19, 5.42, 12.73) mesh=Collider_Ref_133
+PART Collider_Ref_134 pos=(-384.96, -34.09, -288.48) bounds=Center: (-384.96, -28.73, -288.48), Extents: (3.82, 5.37, 12.77) mesh=Collider_Ref_134
+PART Collider_Ref_135 pos=(-388.49, -33.78, -313.85) bounds=Center: (-388.48, -28.42, -313.82), Extents: (4.29, 5.41, 12.80) mesh=Collider_Ref_135
+PART Collider_Ref_136 pos=(-392.88, -33.76, -339.08) bounds=Center: (-392.88, -28.40, -339.09), Extents: (4.50, 5.37, 12.79) mesh=Collider_Ref_136
+PART Collider_Ref_137 pos=(-397.64, -33.88, -364.25) bounds=Center: (-397.66, -28.51, -364.34), Extents: (4.74, 5.58, 12.87) mesh=Collider_Ref_137
+PART Collider_Ref_138 pos=(-402.75, -33.76, -389.35) bounds=Center: (-402.75, -28.40, -389.33), Extents: (4.80, 5.39, 12.79) mesh=Collider_Ref_138
+PART Collider_Ref_139 pos=(-407.93, -33.77, -414.43) bounds=Center: (-407.94, -28.41, -414.44), Extents: (4.69, 5.39, 12.79) mesh=Collider_Ref_139
+PART Collider_Ref_140 pos=(-411.38, -33.76, -439.80) bounds=Center: (-411.38, -28.39, -439.79), Extents: (3.26, 5.39, 12.72) mesh=Collider_Ref_140
+PART Collider_Ref_141 pos=(-411.58, -33.76, -465.39) bounds=Center: (-411.58, -28.40, -465.38), Extents: (2.98, 5.38, 12.69) mesh=Collider_Ref_141
+PART Collider_Ref_142 pos=(-408.64, -33.76, -490.82) bounds=Center: (-408.64, -28.40, -490.81), Extents: (4.44, 5.37, 12.79) mesh=Collider_Ref_142
+PART Collider_Ref_143 pos=(-402.94, -33.77, -515.78) bounds=Center: (-402.95, -28.41, -515.77), Extents: (5.63, 5.39, 12.74) mesh=Collider_Ref_143
+PART Collider_Ref_144 pos=(-394.79, -33.74, -540.05) bounds=Center: (-394.79, -28.38, -540.05), Extents: (6.67, 5.37, 12.56) mesh=Collider_Ref_144
+PART Collider_Ref_145 pos=(-384.58, -33.75, -563.54) bounds=Center: (-384.58, -28.39, -563.54), Extents: (7.52, 5.36, 12.33) mesh=Collider_Ref_145
+PART Collider_Ref_146 pos=(-372.76, -33.77, -586.26) bounds=Center: (-372.76, -28.41, -586.27), Extents: (8.15, 5.39, 12.10) mesh=Collider_Ref_146
+PART Collider_Ref_147 pos=(-359.57, -33.76, -608.21) bounds=Center: (-359.57, -28.39, -608.21), Extents: (8.66, 5.38, 11.86) mesh=Collider_Ref_147
+PART Collider_Ref_148 pos=(-345.31, -33.77, -629.49) bounds=Center: (-345.31, -28.41, -629.48), Extents: (9.05, 5.38, 11.65) mesh=Collider_Ref_148
+PART Collider_Ref_149 pos=(-330.17, -33.76, -650.15) bounds=Center: (-330.17, -28.40, -650.16), Extents: (9.38, 5.38, 11.44) mesh=Collider_Ref_149
+PART Collider_Ref_150 pos=(-314.46, -33.76, -670.38) bounds=Center: (-314.45, -28.39, -670.38), Extents: (9.67, 5.38, 11.25) mesh=Collider_Ref_150
+PART Collider_Ref_151 pos=(-298.24, -33.76, -690.21) bounds=Center: (-298.24, -28.40, -690.21), Extents: (9.83, 5.38, 11.13) mesh=Collider_Ref_151
+PART Collider_Ref_152 pos=(-281.65, -33.75, -709.72) bounds=Center: (-281.66, -28.39, -709.72), Extents: (9.99, 5.38, 11.00) mesh=Collider_Ref_152
+PART Collider_Ref_153 pos=(-264.86, -33.77, -729.07) bounds=Center: (-264.86, -28.41, -729.06), Extents: (10.01, 5.37, 10.98) mesh=Collider_Ref_153
+PART Collider_Ref_154 pos=(-248.07, -33.73, -748.42) bounds=Center: (-248.06, -28.37, -748.43), Extents: (9.95, 5.40, 11.04) mesh=Collider_Ref_154
+PART Collider_Ref_155 pos=(-231.18, -33.70, -767.68) bounds=Center: (-231.20, -28.34, -767.65), Extents: (10.09, 5.43, 10.95) mesh=Collider_Ref_155
+PART Collider_Ref_156 pos=(-213.89, -33.55, -786.57) bounds=Center: (-213.93, -28.19, -786.53), Extents: (10.31, 5.50, 10.79) mesh=Collider_Ref_156
+PART Collider_Ref_157 pos=(-196.07, -33.31, -804.97) bounds=Center: (-196.11, -27.95, -804.93), Extents: (10.50, 5.49, 10.60) mesh=Collider_Ref_157
+PART Collider_Ref_158 pos=(-177.70, -33.01, -822.82) bounds=Center: (-177.75, -27.65, -822.77), Extents: (10.80, 5.51, 10.30) mesh=Collider_Ref_158
+PART Collider_Ref_159 pos=(-158.66, -32.68, -839.95) bounds=Center: (-158.72, -27.32, -839.90), Extents: (11.06, 5.53, 10.01) mesh=Collider_Ref_159
+SCENE Assets/Racing_Visuals/Scenes/Race_Track_1_Visual.unity
+ROOT Camera_Parent (1447.15, 3.22, 1039.25)
+ROOT Road_Blockers (351.78, 0.00, 693.73)
+ROOT Lighting (1466.53, -28.53, 441.97)
+ROOT Road Network (0.00, 0.00, 0.00)
+PART Road Network pos=(0.00, 0.00, 0.00) bounds=- mesh=-
+PART Connection Objects pos=(0.00, 0.02, 0.00) bounds=- mesh=-
+PART Road Objects pos=(0.00, 0.02, 0.00) bounds=- mesh=-
+PART road_0001 pos=(0.00, 0.02, 0.00) bounds=Center: (992.01, 7.58, 1269.75), Extents: (691.30, 7.56, 329.20) mesh=ER Road Mesh
+PART Rail_L pos=(0.00, 0.02, 0.00) bounds=- mesh=-
+PART Rail_L Batch 1 pos=(0.00, 0.02, 0.00) bounds=Center: (1256.44, 6.68, 986.29), Extents: (61.91, 5.72, 45.91) mesh=Rail_L Batch 1
+PART Rail_L Batch 2 pos=(0.00, 0.02, 0.00) bounds=Center: (378.07, 2.32, 1075.96), Extents: (69.01, 0.33, 79.86) mesh=Rail_L Batch 2
+PART Rail_L Batch 3 pos=(0.00, 0.02, 0.00) bounds=Center: (459.33, 2.14, 1533.93), Extents: (65.04, 2.11, 11.21) mesh=Rail_L Batch 3
+PART Rail_L Batch 4 pos=(0.00, 0.02, 0.00) bounds=Center: (1139.22, 0.52, 1571.09), Extents: (138.96, 0.25, 28.72) mesh=Rail_L Batch 4
+PART Rail_L Batch 5 pos=(0.00, 0.02, 0.00) bounds=Center: (1629.25, 0.46, 1430.95), Extents: (54.75, 0.13, 129.44) mesh=Rail_L Batch 5
+PART Rail_R pos=(0.00, 0.02, 0.00) bounds=- mesh=-
+PART Rail_R Batch 1 pos=(0.00, 0.02, 0.00) bounds=Center: (818.51, 12.43, 1002.54), Extents: (95.01, 2.63, 7.10) mesh=Rail_R Batch 1
+PART Rail_R Batch 2 pos=(0.00, 0.02, 0.00) bounds=Center: (370.37, 4.50, 1466.65), Extents: (32.19, 0.30, 56.40) mesh=Rail_R Batch 2
+PART Rail_R Batch 3 pos=(0.00, 0.02, 0.00) bounds=Center: (1623.71, 0.58, 1183.02), Extents: (42.65, 0.25, 117.97) mesh=Rail_R Batch 3
+PART Floor_Green_R pos=(0.00, 0.02, 0.00) bounds=- mesh=-
+PART Floor_Green_R Batch 1 pos=(0.00, 0.02, 0.00) bounds=Center: (1387.25, 6.22, 1013.03), Extents: (194.79, 6.14, 54.88) mesh=Floor_Green_R Batch 1
+PART Floor_Green_R Batch 2 pos=(0.00, 0.02, 0.00) bounds=Center: (984.12, 2.12, 1537.31), Extents: (581.92, 2.09, 44.65) mesh=Floor_Green_R Batch 2
+PART Floor_Blue_L pos=(0.00, 0.02, 0.00) bounds=Center: (1427.06, 0.64, 1559.21), Extents: (148.93, 0.09, 17.19) mesh=
+PART Floor_Blue_R pos=(0.00, 0.02, 0.00) bounds=- mesh=-
+PART Floor_Blue_R Batch 1 pos=(0.00, 0.02, 0.00) bounds=Center: (1053.11, 13.75, 984.04), Extents: (139.67, 1.39, 26.48) mesh=Floor_Blue_R Batch 1
+PART Floor_Blue_R Batch 2 pos=(0.00, 0.02, 0.00) bounds=Center: (524.87, 5.89, 1077.65), Extents: (198.66, 3.91, 83.74) mesh=Floor_Blue_R Batch 2
+PART Floor_Green_L pos=(0.00, 0.02, 0.00) bounds=- mesh=-
+PART Floor_Green_L Batch 1 pos=(0.00, 0.02, 0.00) bounds=Center: (584.66, 6.20, 985.40), Extents: (138.74, 3.60, 11.50) mesh=Floor_Green_L Batch 1
+PART Floor_Green_L Batch 2 pos=(0.00, 0.02, 0.00) bounds=Center: (1639.14, 0.55, 1175.44), Extents: (47.17, 0.23, 126.17) mesh=Floor_Green_L Batch 2
+PART Floor_Orange_L pos=(0.00, 0.02, 0.00) bounds=- mesh=-
+PART Floor_Orange_L Batch 1 pos=(0.00, 0.02, 0.00) bounds=Center: (1455.67, 0.51, 1039.07), Extents: (137.53, 0.44, 12.25) mesh=Floor_Orange_L Batch 1
+PART Floor_Orange_L Batch 2 pos=(0.00, 0.02, 0.00) bounds=Center: (959.10, 12.47, 964.67), Extents: (235.73, 2.67, 27.12) mesh=Floor_Orange_L Batch 2
+PART Floor_Orange_L Batch 3 pos=(0.00, 0.02, 0.00) bounds=Center: (762.31, 2.04, 1557.19), Extents: (238.00, 2.02, 44.53) mesh=Floor_Orange_L Batch 3
+PART Floor_Orange_R pos=(0.00, 0.02, 0.00) bounds=- mesh=-
+PART Floor_Orange_R Batch 1 pos=(0.00, 0.02, 0.00) bounds=Center: (329.44, 3.57, 1285.49), Extents: (11.73, 0.97, 124.94) mesh=Floor_Orange_R Batch 1
+PART Floor_Orange_R Batch 2 pos=(0.00, 0.02, 0.00) bounds=Center: (1615.34, 0.43, 1422.88), Extents: (50.81, 0.11, 122.00) mesh=Floor_Orange_R Batch 2
+PART Minimap_Road pos=(0.00, 0.02, 0.00) bounds=Center: (992.01, 7.58, 1269.75), Extents: (691.30, 7.56, 329.20) mesh=ER Road Mesh
+ROOT Side_Objects (0.00, 0.00, 0.00)
+ROOT Scene_Objects (1292.84, 4.41, 1032.00)
+ROOT Crowd (1418.10, 3.20, 1043.40)
+ROOT RCCP_SceneManager (0.00, 0.00, 0.00)
+SCENE Assets/Racing_Visuals/Scenes/Race_Track_2_Visual.unity
+ROOT Camera_Parent (1007.60, 3.08, 1403.34)
+ROOT Road_Blockers (351.78, 0.00, 693.73)
+ROOT Lighting (1466.53, -28.53, 441.97)
+ROOT Road Network (0.00, 0.00, 0.00)
+PART Road Network pos=(0.00, 0.00, 0.00) bounds=- mesh=-
+PART Connection Objects pos=(0.00, 0.02, 0.00) bounds=- mesh=-
+PART Road Objects pos=(0.00, 0.02, 0.00) bounds=- mesh=-
+PART road_0001 pos=(0.00, 0.02, 0.00) bounds=Center: (948.90, 4.92, 1142.98), Extents: (578.09, 4.91, 319.35) mesh=ER Road Mesh
+PART Minimap_Road pos=(0.00, 0.02, 0.00) bounds=Center: (948.90, 4.92, 1142.98), Extents: (578.09, 4.91, 319.35) mesh=ER Road Mesh
+ROOT Side_Objects (0.00, 0.00, 0.00)
+ROOT Scene_Objects (962.83, 21.51, 1266.16)

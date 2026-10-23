@@ -10,63 +10,73 @@ namespace HalvaStudio.Save
 {
     public class SaveManager : Singleton<SaveManager>
     {
+        private static bool shuttingDown;
+        public new static SaveManager Instance => shuttingDown ? null : Singleton<SaveManager>.Instance;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetShutdownState() => shuttingDown = false;
+        private void OnApplicationQuit() => shuttingDown = true;
         public SaveData saveData;
         [SerializeField] private SaveData defaultSaveData;
 
         public override void AwakeInit()
         {
+            if (Instance != this) return;
+            if (Application.isPlaying) { transform.SetParent(null); DontDestroyOnLoad(gameObject); }
             Debug.Log("Initializing SaveManager...");
             Load();
         }
 
+        public bool LoadFailed { get; private set; }
+        public string LastSaveError { get; private set; }
+
         private void Load()
         {
-            if (saveData == null)
-            {
-                saveData = new SaveData();
-            }
-            if (saveData.carDetails == null || saveData.carDetails.Count == 0)
-            {
-                saveData.carDetails = new SaveData().carDetails; // Assign default values
-            }
-#if UNITY_EDITOR
-            saveData = (SaveData)LoadEditor(typeof(SaveData));
-#else
+#if UNITY_SWITCH && !UNITY_EDITOR
             saveData = (SaveData)LoadSwitch(typeof(SaveData));
+#else
+            saveData = (SaveData)LoadEditor(typeof(SaveData));
 #endif
+            saveData ??= new SaveData();
+            FormulaGame.FormulaProgression.Ensure(saveData);
         }
 
-        public void Save(bool forceSave = false)
+        public void Save(bool forceSave = false) => TrySave(forceSave);
+
+        public bool TrySave(bool forceSave = false)
         {
-            Debug.Log("Saving data...");
-#if UNITY_EDITOR
-            SaveEditor(saveData);
+            if (LoadFailed) { LastSaveError = "Existing save could not be recovered; refusing to overwrite it."; return false; }
+            try
+            {
+#if UNITY_SWITCH && !UNITY_EDITOR
+                bool success = NintendoSave.Save(JsonConvert.SerializeObject(saveData), forceSave);
+                LastSaveError = success ? null : "Nintendo save did not commit.";
+                return success;
 #else
-            SaveSwitch(saveData, forceSave);
+                WriteLocal(saveData);
+                LastSaveError = null;
+                return true;
 #endif
+            }
+            catch (Exception e) { LastSaveError = e.Message; Debug.LogError("Save failed: " + e.Message); return false; }
         }
+
+        private void WriteLocal(object value) => FormulaGame.FormulaSaveStorage.Write(GetSavePath(), value);
 
         #region Editor
 
         public void SaveEditor(object saveObject)
         {
-            try
-            {
-                string jsonFile = JsonConvert.SerializeObject(saveObject);
-                string savePath = GetSavePath();
-
-                File.WriteAllText(savePath, jsonFile);
-
-                Debug.Log("Save completed.");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Error saving data: " + e.Message);
-            }
+            if (LoadFailed) return;
+            try { WriteLocal(saveObject); }
+            catch (Exception e) { Debug.LogError("Error saving data: " + e.Message); }
         }
 
         private string GetSavePath()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            string validationPath = Environment.GetEnvironmentVariable("FORMULA_VALIDATION_SAVE_PATH");
+            if (!string.IsNullOrEmpty(validationPath)) return validationPath;
+#endif
             string savePath = Path.Combine(Application.persistentDataPath, "save.json");
             Debug.Log("Save Path: " + savePath);
             return savePath;
@@ -74,29 +84,24 @@ namespace HalvaStudio.Save
 
         public object LoadEditor(System.Type objectType)
         {
-            string savePath = GetSavePath();
-            object returnObject = null;
-
-            if (File.Exists(savePath))
+            try { return FormulaGame.FormulaSaveStorage.Read(GetSavePath(), objectType) ?? CreateNewProfile(defaultSaveData); }
+            catch (Exception e)
             {
-                try
-                {
-                    string jsonFile = File.ReadAllText(savePath);
-                    returnObject = JsonConvert.DeserializeObject(jsonFile, objectType);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError("Error loading data: " + e.Message);
-                    returnObject = defaultSaveData ?? new SaveData();
-                }
+                LoadFailed = true;
+                Debug.LogError("Existing saves are preserved: " + e.Message);
+                return new SaveData();
             }
-            else
-            {
-                Debug.LogError("Save file not found. Using default data.");
-                returnObject = defaultSaveData ?? new SaveData();
-            }
+        }
 
-            return returnObject;
+        public static SaveData CreateNewProfile(SaveData template)
+        {
+            var data = template == null ? new SaveData() : JsonConvert.DeserializeObject<SaveData>(JsonConvert.SerializeObject(template));
+            var rules = FormulaGame.FormulaCatalog.Current.profile;
+            data.PlayerName = null;
+            data.money = rules.initialCredits; data.exp = rules.initialXp;
+            data.currentLevel = rules.initialLevel; data.currentCar = 0; data.formula = null;
+            FormulaGame.FormulaProgression.Ensure(data);
+            return data;
         }
 
         #endregion
@@ -124,8 +129,8 @@ namespace HalvaStudio.Save
 
             if (jsonFile == null)
             {
-                Debug.LogError("Save file not found. Using default data.");
-                return defaultSaveData ?? new SaveData();
+                Debug.Log("Save file not found. Creating Formula profile.");
+                return CreateNewProfile(defaultSaveData);
             }
 
             try
@@ -134,6 +139,7 @@ namespace HalvaStudio.Save
             }
             catch (Exception e)
             {
+                LoadFailed = true;
                 Debug.LogError("Error deserializing data: " + e.Message);
                 return defaultSaveData ?? new SaveData();
             }
@@ -145,6 +151,8 @@ namespace HalvaStudio.Save
         public class SaveData
         {
             [Header("Player Data")]
+            public FormulaGame.FormulaProgress formula;
+            [JsonExtensionData] public Dictionary<string, Newtonsoft.Json.Linq.JToken> additionalData;
             public string PlayerName;
             public int money;
             public int exp;

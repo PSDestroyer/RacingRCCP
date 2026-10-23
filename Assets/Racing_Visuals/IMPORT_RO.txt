@@ -1,0 +1,53 @@
+PACHET VIZUAL 3D PENTRU UN ALT JOC DE CURSE
+
+Continut: Garage_Visual si Race_Track_1_Visual pana la Race_Track_8_Visual,
+cu modele, materiale, texturi, terenuri, vegetatie, efecte vizuale,
+iluminare si coliziuni fizice ale decorului.
+
+Nu include fisiere C#, DLL-uri, controllere auto, AI, meniuri, HUD,
+checkpointuri, trasee de waypoint, sunete sau actiuni de input.
+Shader-ele sunt incluse deoarece sunt necesare materialelor vizuale.
+Componentele Unity URP pentru camere, lumini, Volume si Lens Flare sunt
+pastrate; implementarea lor provine din pachetele Unity ale destinatiei.
+
+IMPORT
+1. Deschide proiectul de destinatie. Configuratia verificata este
+   Unity 6000.3.19f1 cu Universal Render Pipeline 17.3.0.
+2. Verifica sa fie activ un URP Asset in Graphics si Quality.
+3. Assets > Import Package > Custom Package, apoi selecteaza
+   Racing_Visuals_3D_NoScripts.unitypackage si importa resursele.
+4. Deschide o scena din Assets/Racing_Visuals/Scenes.
+5. Adauga masina si sistemele propriului joc. Cand adaugi camera jocului,
+   dezactiveaza sau sterge Preview_Camera din scena importata.
+6. Adauga scena in Build Profiles/Scene List daca jocul trebuie sa o incarce.
+
+STRUCTURA SI COMPATIBILITATE
+Scenele curatate si copiile datelor de iluminare sunt in Assets/Racing_Visuals.
+Resursele partajate pastreaza calea Assets/Racing_Game si GUID-urile originale,
+pentru a mentine referintele din modele, terenuri si datele binare.
+Daca destinatia contine deja aceste resurse, verifica lista de import:
+Unity poate actualiza resursele cu acelasi GUID/cale.
+Pachetul nu contine ProjectSettings si nu inlocuieste setarile jocului.
+Obiectele scenei folosesc stratul Default si taguri standard Unity.
+Componentele proprii pentru vant, rotatie, UV scrolling sau animatii prin
+script nu sunt incluse; elementele respective raman statice.
+
+VERIFICARE SI LIMITARI
+Cele noua scene au fost importate prin Unity AssetDatabase, inspectate
+pentru componente lipsa si randate in Editor. Nu contin scripturi proprii
+sau trigger-e de gameplay. Vegetatia si oasele personajelor sunt pastrate.
+Unele sloturi de material si mesh-uri lipsa exista deja in scenele sursa;
+nu au fost inventate materiale sau geometrii in locul lor.
+Proiectul sursa are erori C# preexistente in Load_Settings.cs; aceste
+scripturi sunt excluse. Nu s-a efectuat Play Mode sau un player build.
+Importul intr-un alt proiect si compatibilitatea cu Built-in/HDRP ori
+alte versiuni Unity/URP nu au fost verificate.
+Previzualizarile si rapoartele detaliate sunt in Exports/Previews si Exports/Reports.
+
+REGENERARE (in proiectul sursa)
+Tools/PrepareVisualScenes.cs este executat prin Unity Pipeline eval_file.
+python3 Tools/build_visual_package.py scenes pregateste arhiva intermediara.
+Importa Exports/Reports/clean-scenes.unitypackage prin AssetDatabase.ImportPackage.
+Executa Tools/ValidateVisualScenes.cs, apoi Tools/ExportVisualPackage.cs
+prin eval_file. Verifica arhiva cu python3 Tools/verify_visual_package.py.
+Uneltele sunt in afara Assets si nu sunt incluse in unitypackage.

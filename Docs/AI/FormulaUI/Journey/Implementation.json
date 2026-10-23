@@ -1,0 +1,75 @@
+{
+  "atUtc": "2026-10-23T15:47:48.826198+00:00",
+  "status": "Reverted at user request. Screenshots and validation in this folder are historical evidence of the rejected revision.",
+  "home": [
+    "One Garage entry; inactive old development shortcut preserved for serialized compatibility",
+    "Six-stage progress, objective and actual available Bronze reward beside Continue",
+    "Actual next achievement livery with preview, exact objective and safe inspection link"
+  ],
+  "career": [
+    "Journey summary and progress segments",
+    "Next event marker, completed medal states, explicit prerequisite sentences",
+    "Initial focus on next incomplete event; existing focus restoration preserved"
+  ],
+  "results": [
+    "Authored Resources prefab replaces runtime paragraph layout",
+    "Saved receipt values separated into medal, times, credits, XP, balance and level bonus",
+    "Primary action: retry failed objective/free session, launch next unlocked event, or open completed career",
+    "Newly granted cosmetic preview and explicit free equip after returning to Garage",
+    "Result UI never grants credits; existing committed receipt remains authoritative"
+  ],
+  "garage": [
+    "Driving benefit and tradeoff descriptions alongside RCCP numeric comparisons",
+    "Visible cost and clear locked/unaffordable actions",
+    "Locked livery opens its career objective without unlocking or charging",
+    "Setup descriptions explain circuit suitability and aerodynamic tradeoffs"
+  ],
+  "importantFiles": [
+    "Assets/Formula/UI/Formula_Menu.prefab",
+    "Assets/Formula/Resources/Formula/UI/FormulaResults.prefab",
+    "Assets/Formula/Scripts/Menu/FormulaResultsView.cs",
+    "Assets/Formula/Scripts/FormulaRaceUI.cs",
+    "Assets/Formula/Scripts/FormulaMainMenu.cs",
+    "Assets/Formula/Scripts/FormulaSession.cs",
+    "Assets/Formula/Scripts/Menu/FormulaMenuFormatting.cs",
+    "Assets/Formula/Editor/FormulaMenuJourneyBuilder.cs",
+    "Assets/Formula/Editor/FormulaJourneyPreview.cs"
+  ],
+  "setup": "Already applied in Menu and Formula_Garage. New results prefab loads from Resources. No Inspector setup required.",
+  "validation": {
+    "menu": {
+      "passed": 16,
+      "errors": []
+    },
+    "garage": {
+      "passed": 6,
+      "errors": []
+    },
+    "journey": {
+      "passed": 9,
+      "errors": []
+    }
+  },
+  "compiler": "../CompilerValidation.json",
+  "resultTestingMethod": "Play Mode with temporary save and scripted race finishes; no driving/lap-validity claim",
+  "saveSafety": "Temporary isolated acceptance saves. Production prices, unlock rules, physics, schema and player profile unchanged.",
+  "menuReturn": "Transient page/tab/livery destination is consumed once by Menu; it is not saved or used as a second progression authority.",
+  "backups": "../BeforeJourney/ contains previous screenshots and authored scene/prefab text snapshots.",
+  "limits": [
+    "No physical Switch/controller or new Windows/Steam build validation",
+    "Existing full-lap validity failure remains separate from these scripted result-flow checks",
+    "Vehicle materials, shadows and environment art still need a dedicated visual pass for final AAA quality"
+  ],
+  "captures": [
+    "Home.png",
+    "Career.png",
+    "CareerProgress.png",
+    "ResultsBronze.png",
+    "ResultsGold.png",
+    "ResultsRetry.png",
+    "ResultsFree.png",
+    "ResultsComplete.png",
+    "GarageReward.png"
+  ],
+  "revertedAtUtc": "2026-10-23T15:57:12.272414+00:00"
+}

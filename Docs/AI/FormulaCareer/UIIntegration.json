@@ -1,0 +1,47 @@
+{
+  "atUtc": "2026-10-23T13:51:48.341721+00:00",
+  "reference": "https://www.figma.com/design/yVvYJ0oWOxClUE2jLx52fQ/?node-id=171-10",
+  "status": "Figma reference adapted to Unity uGUI and validated",
+  "palette": {
+    "headerRed": "#C8102E",
+    "backgroundRed": "#30000B",
+    "cardWhite": "#FFFFFF",
+    "selectionYellow": "#FFE13B",
+    "labelRed": "#620014",
+    "disabledRedTint": "#FFC2CD"
+  },
+  "implemented": [
+    "Shared palette across Formula menu, garage, confirmation dialogs and race/results",
+    "White button cards with deep red labels and red accent",
+    "Yellow focus/hover and active page/tab indicators",
+    "Red tint for locked buttons instead of gray",
+    "Decorative graphics do not intercept pointer input; modal overlay blocks clicks behind dialog"
+  ],
+  "figma": {
+    "account": "PsDestroyer",
+    "designContextAvailable": true,
+    "screenshotConnectorAvailable": true,
+    "assetsImported": true,
+    "method": "High-fidelity design context and original vector icon PNG exports; local Teko and project Rajdhani fonts"
+  },
+  "evidence": [
+    "../FormulaUI/Implementation.json",
+    "../FormulaUI/RuntimeValidation.json",
+    "../FormulaUI/CompilerValidation.json"
+  ],
+  "limits": [
+    "Legacy audio/remapping panel retains its existing design",
+    "Original Switch hardware and physical controller validation still required"
+  ],
+  "figmaAccessResolved": true,
+  "currentImplementation": "../FormulaUI/Implementation.json",
+  "hierarchyRevision": {
+    "status": "validated",
+    "menuPassed": 13,
+    "garagePassed": 6,
+    "prefab": "Assets/Formula/UI/Formula_Menu.prefab",
+    "documentation": "../FormulaUI/HierarchyArchitecture.md",
+    "legacyCanvasesRemoved": true,
+    "audioAndControlsUseNewUi": true
+  }
+}

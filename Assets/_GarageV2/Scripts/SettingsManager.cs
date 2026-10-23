@@ -11,6 +11,8 @@ public class SettingsManager : MonoBehaviour
     public Toggle easyDriftModeToggle;
     public bool controlVehicleWhileSettingsOpen = false;
 
+    private SaveManager saveOwner;
+
     private void Start()
     {
         if (SaveManager.Instance == null || SaveManager.Instance.saveData == null)
@@ -34,6 +36,7 @@ public class SettingsManager : MonoBehaviour
 
     private void OnEnable()
     {
+        saveOwner = SaveManager.Instance;
         if (controlVehicleWhileSettingsOpen)
             SetVehicleSettingsState(false);
     }
@@ -43,8 +46,8 @@ public class SettingsManager : MonoBehaviour
         if (controlVehicleWhileSettingsOpen)
             SetVehicleSettingsState(true);
 
-        if (SaveManager.Instance != null)
-            SaveManager.Instance.Save();
+        if (saveOwner != null)
+            saveOwner.Save();
     }
 
     public void OnSetSfxVolume(float value)

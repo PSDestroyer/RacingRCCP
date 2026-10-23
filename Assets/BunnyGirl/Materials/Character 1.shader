@@ -209,6 +209,8 @@ Shader "Shader Forge/Character" {
             #pragma fragment ShadowPassFragment
             #pragma multi_compile_instancing
 
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/ShadowCasterPass.hlsl"
             ENDHLSL
         }

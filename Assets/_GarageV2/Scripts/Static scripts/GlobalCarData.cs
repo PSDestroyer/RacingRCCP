@@ -17,7 +17,8 @@ public static class GlobalCarData
     public static void Initialize()
     {
         //Incarca toate SO in lista
-        _carlists  = Resources.LoadAll<CarSO>(path: PathLocation.CarsDataLocation).OrderBy(so =>so.id ).ToList();
+        var formula = Resources.Load<CarSO>("Formula/FormulaGenericCar");
+        _carlists = formula != null ? new List<CarSO> { formula } : Resources.LoadAll<CarSO>(PathLocation.CarsDataLocation).OrderBy(so => so.id).ToList();
         _maplists = Resources.LoadAll<MapSO>(PathLocation.MapsDataLocarion).OrderBy(so=>so.id).ToList();
         
         //Aici Current car cauta Prin lista de SO ID si il compara cu cel din PlayerPrefs

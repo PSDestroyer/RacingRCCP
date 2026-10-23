@@ -1,0 +1,121 @@
+{
+  "atUtc": "2026-10-23T15:17:42.028921+00:00",
+  "status": "Authored migration applied to Menu and Formula_Garage; current captures reviewed and 16 menu plus 6 garage Play Mode checks passed.",
+  "figma": {
+    "fileKey": "yVvYJ0oWOxClUE2jLx52fQ",
+    "highFidelityNodes": [
+      "171:10",
+      "204:767",
+      "174:37"
+    ],
+    "sessionId": "0ffb6c8c-da51-4a30-b4f0-67f849e477a7"
+  },
+  "baselineScreenshots": "BeforePremium/",
+  "observedProblems": [
+    "Career overview has no actual Home entry point",
+    "Uniform large panels flatten the action hierarchy",
+    "Statistics panel covers the front of the car",
+    "Bright floor and high camera dilute the garage composition",
+    "Career cards lack circuit identity and visible reward amounts",
+    "Race details use one dense paragraph; quick-race details mention career rewards despite paying none"
+  ],
+  "changesInCode": [
+    "Explicit Home entry to the career overview",
+    "Primary Continue with objective, available Bronze reward, career progress and next cosmetic reward",
+    "Circuit diagrams derived from actual validated waypoint routes",
+    "Structured briefing with vehicle rule, circuit, medal targets, available rewards and primary race launch focus",
+    "Current-to-next upgrade effects read from actual RCCP values",
+    "Compact statistics rail below the car",
+    "Page-specific smooth camera shots and restrained screen entrance",
+    "Existing confirmation sound wired to pointer and gamepad submit",
+    "New palette-compatible stage floor and lighting authoring",
+    "Readable assistance descriptions and a clear audio/control entry",
+    "Separate free-session names and format facts instead of career medal objectives",
+    "Rebaked stage reflections after floor/light changes; SMAA enabled on menu cameras",
+    "Adjusted livery and development camera aim to leave the car clear of lower UI",
+    "Parked RCCP preview preserves all four visual wheels while physics colliders are disabled; menu and garage checks assert visible wheel renderers."
+  ],
+  "assetCommand": "Tools > Formula Career > Refine Formula UX and UI",
+  "migrationSafety": "Existing prefab controls are edited in place. Optional new fields retain compatibility until migration runs. Save schema, progression prices, physics and rewards are unchanged.",
+  "runtimeValidation": {
+    "menuPassed": 16,
+    "garagePassed": 6,
+    "errors": [],
+    "menuReport": "RuntimeValidation.json",
+    "garageReport": "../FormulaGarage/RuntimeValidation.json",
+    "titleGlyphVisibility": "Every capture checks that active nonempty Teko labels produce visible glyphs. Corrected compact-title ellipsis regression found during visual review."
+  },
+  "limits": [
+    "No new target-platform build or physical Switch/controller validation",
+    "Existing full-lap validity issue remains outside this menu change",
+    "AAA visual quality is not established by acceptance checks; the vehicle materials, shadows and environment art still require a dedicated art pass."
+  ],
+  "compiler": {
+    "atUtc": "2026-10-23T14:21:16.004369+00:00",
+    "method": "Unity bundled Roslyn with copied response files; not a platform build",
+    "targets": [
+      {
+        "target": "player",
+        "errors": [],
+        "warningCount": 31
+      },
+      {
+        "target": "editor-runtime",
+        "errors": [],
+        "warningCount": 31
+      },
+      {
+        "target": "editor-tools",
+        "errors": [],
+        "warningCount": 12
+      }
+    ],
+    "sourceHashes": {
+      "Assets/Formula/Editor/FormulaBuildValidation.cs": "dc90ed1b8721a385d2aec6f90dd41829decec98c9ccd4bbb43d91601f3924c88",
+      "Assets/Formula/Editor/FormulaCircuitBuilder.cs": "cb365136ee05a9e571ddabee501568ecc480a816d78281831392498053b9ea47",
+      "Assets/Formula/Editor/FormulaGarageBuilder.cs": "512afb965b100df050ca5c252e45f1147d00bcd3d7c007df42e77ff4fdbdd40e",
+      "Assets/Formula/Editor/FormulaGaragePreview.cs": "63dd311ce39ba3c2b1a6f4f7d07eb6bd917a7dd8fe47cb74993d515d85534b1b",
+      "Assets/Formula/Editor/FormulaIntegrationBuilder.cs": "0329c6f241a938d083dd455090b32443cf0d19a4f187d61ec76cf2c5be676e3b",
+      "Assets/Formula/Editor/FormulaMenuAssetBuilder.cs": "d7eb16df2e5013c44aa948c5319558b47823c5ae95fb0d5a94dfeeaa43c4efcc",
+      "Assets/Formula/Editor/FormulaMenuHierarchyBuilder.cs": "b020c3b31bc52e86cca43c605145e61e1d9938f99c3d4610eacc8cf171b7dee3",
+      "Assets/Formula/Editor/FormulaMenuPremiumBuilder.cs": "1b2b797381256c8180e8c0bc086d8988f40e8d03edca4b1245998f19a7e829c5",
+      "Assets/Formula/Editor/FormulaMenuPreview.cs": "653f852752432060b9f7564036ba78eb9ba953f0ebdacda547074d6d9deb13f7",
+      "Assets/Formula/Editor/FormulaPhysicsValidation.cs": "933181e87c98a527f7ef7559bc1e17615125cfb06a12a2234a9f57151e991e46",
+      "Assets/Formula/Editor/FormulaPlayValidation.cs": "03572c98ae2b63f5ae41d7d0d7daf900a681329a9da77a2dcaaa661967d21cc3",
+      "Assets/Formula/Editor/FormulaProgressionValidation.cs": "113e0dfa12b6bb591847116fa0f8dc1cf1170cc65099eb51c3950abb17bca8ef",
+      "Assets/Formula/Editor/FormulaRccpBuilder.cs": "6bc5cc585cc36982e828601320d3a6e58857675a32a74a97c97ef80890293222",
+      "Assets/Formula/Editor/FormulaRccpDrivingValidation.cs": "6ef3b9bbf3e99fd3290602f44272892ffc6252a48d1b9c663e448e86bf2cd8a7",
+      "Assets/Formula/Scripts/FormulaAssets.cs": "a056534b8284e39d0bd49192a47aac666d3afc2b40d77f824612a3cb1b754698",
+      "Assets/Formula/Scripts/FormulaCatalog.cs": "0e49f7238b49206d6fc8f82abad4c714d99447711f8151119c58d44a68b4e427",
+      "Assets/Formula/Scripts/FormulaMainMenu.cs": "f48c65fdaa9b0294b5b2273d83c7c5825920e09ebcd2f894b136e878587884be",
+      "Assets/Formula/Scripts/FormulaMenuAssets.cs": "29cc7e968e0e7a7643967fee747b9fe7eafed9b890b9524742c94c1ca4073f76",
+      "Assets/Formula/Scripts/FormulaMenuFocus.cs": "5cb973f111db957bd612b834b2c8b6e05a623cd086a46188ac481bdc47743a2f",
+      "Assets/Formula/Scripts/FormulaProgression.cs": "98f189d3344dc53b900ac2570abcbb103aee76b2334c9061031f9dded8584900",
+      "Assets/Formula/Scripts/FormulaRaceUI.cs": "c3a0c68ecdb520f1d757b79696ea929cb2c78f174d8c7ad63d4e00d6beffa46d",
+      "Assets/Formula/Scripts/FormulaSaveStorage.cs": "311ac74c866bddb120606cccd14087ae0ffdb7b75585e0272d60497dc03312d5",
+      "Assets/Formula/Scripts/FormulaSession.cs": "8eb8c01ec3bb13a0b17b14fc8228e5b356e2b04226fc8ee1c072e808b40dbe7a",
+      "Assets/Formula/Scripts/FormulaUI.cs": "950cce499faff6797fa57176bd6d23e68a604f433a61f5df46f541510637a755",
+      "Assets/Formula/Scripts/FormulaVehicle.cs": "558eb89e260858ee1259fa7d0133c8c05182a3e59d87a8510dd39f9e61bd8724",
+      "Assets/Formula/Scripts/Menu/FormulaCareerView.cs": "3f3a2edee5daf98c682eeb02e33f8baf2bea91a0571eda39e540289600de8473",
+      "Assets/Formula/Scripts/Menu/FormulaControlsView.cs": "9bda50006ced0fb6a6958cac906b43002b6b80cce28bc6ca4c027f9144bed94e",
+      "Assets/Formula/Scripts/Menu/FormulaDevelopmentCard.cs": "16f163659fd6ea3912fcde0ad0cc2637de43ed46fec7e35b08441eaae16c92b3",
+      "Assets/Formula/Scripts/Menu/FormulaEventCard.cs": "12c5561c942f959cd285dd3e452fd79b75ed61afaac76a041a1a6ee3353d1b1c",
+      "Assets/Formula/Scripts/Menu/FormulaGarageVehiclePreview.cs": "e31cae280a684d12d18369182356a5f1994a588ac64abfd0ddf9252b89955916",
+      "Assets/Formula/Scripts/Menu/FormulaGarageView.cs": "534aae9fe13f1fb92499f3f51fc5d27c3db2767915596dc9b06a1a68fdcb671f",
+      "Assets/Formula/Scripts/Menu/FormulaHomeView.cs": "38bcb9d9dd0cbad9380a2f4e4850895e5227957a34c6df719dd601b90cb9fb6c",
+      "Assets/Formula/Scripts/Menu/FormulaLiveryCard.cs": "75c033c33b8effcfa1ade0b2e2e6bbb31ef0e2236609278e34267ff0b96cb3c7",
+      "Assets/Formula/Scripts/Menu/FormulaMenuDialogs.cs": "775773dd9bf195f417cf1629e892dadd9578a98959ab5b5bf53b4ebdd85f28c5",
+      "Assets/Formula/Scripts/Menu/FormulaMenuFormatting.cs": "50625f9ad1e3904beee80c90941a9ce27bc0c95c345d163cdb6472e5729b754c",
+      "Assets/Formula/Scripts/Menu/FormulaMenuView.cs": "cfa8a851579601911f277ce4c9baa4541d422687b4c5118b5410b2ed08dc3c83",
+      "Assets/Formula/Scripts/Menu/FormulaProfileView.cs": "9861e5cb80e931c840249a58ac6104d3dfbd038e13760f55cabd084bccc0f9d9",
+      "Assets/Formula/Scripts/Menu/FormulaQuickView.cs": "cee5cb279e4bb381831d9889d91a412601848ad825ce0a9e7f108d4c798b8ed0",
+      "Assets/Formula/Scripts/Menu/FormulaSettingsView.cs": "2279fa784b769ce902d76abf3cbb79348d618d4240ae58fb3a7255505a7c9524",
+      "Assets/Formula/Scripts/Menu/FormulaStatisticsView.cs": "0636b4e2ad88729fdee2c6df7983cfb7c7d5505cd5a9299d0edb55f03f69e7eb",
+      "Assets/Formula/Scripts/Menu/FormulaTrackMap.cs": "1a86f6ccacd13e2079f5451c76494d6896dc9f41e8b18a930e47c80ceef2431a"
+    }
+  },
+  "observedConsoleWarnings": [
+    "Existing SoundManager attempts unexposed VehicleVolume before using the exposed volume parameter.",
+    "Metal reports memoryless depth surface load/store warnings."
+  ]
+}

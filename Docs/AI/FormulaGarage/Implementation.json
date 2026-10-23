@@ -1,0 +1,59 @@
+{
+  "atUtc": "2026-10-23T13:51:48.341721+00:00",
+  "scene": "Assets/Formula/Scenes/Formula_Garage.unity",
+  "menu": "Assets/Scenes/Menu.unity",
+  "sharedEnvironment": "Assets/Formula/Garage/Formula_Paddock_Garage.prefab",
+  "delivered": [
+    "Formula paddock interior in red, white and yellow",
+    "Engineering benches, cabinets, tool trolleys and a Formula wheel rack",
+    "Dedicated scene starts in Garage / Liveries",
+    "Menu uses the same environment and Generic preview",
+    "Garage registered in Build Settings and desktop validation scene list",
+    "Disabled legacy car presenter cannot spawn a second car when opening audio settings",
+    "Connected Formula_Menu prefab visible before Play Mode; Garage / Livree active by default",
+    "Legacy scene Canvas removed, including old audio/remapping panel"
+  ],
+  "runtimeValidation": {
+    "passed": 6,
+    "errors": [],
+    "evidence": "RuntimeValidation.json",
+    "usesTemporaryProfile": true,
+    "currentUxRevision": true
+  },
+  "compilation": {
+    "player": 0,
+    "editor-runtime": 0,
+    "editor-tools": 0
+  },
+  "figma": "High-fidelity context obtained from PsDestroyer duplicate yVvYJ0oWOxClUE2jLx52fQ. Shared menu/garage adapted to uGUI with Teko/Rajdhani and original reference icons; see ../FormulaUI/Implementation.json.",
+  "platformLimits": [
+    "No fresh desktop build run for this garage",
+    "Original Switch hardware performance remains unmeasured"
+  ],
+  "editorCommands": [
+    "Tools > Formula Career > Create Formula Garage",
+    "Tools > Formula Career > Preview and Validate Formula Garage"
+  ],
+  "finalPolish": {
+    "appliedToGeneratedAssets": true,
+    "validatedInEditor": true,
+    "changes": [
+      "Closer camera framing",
+      "Ceiling shadow corrections and 128px baked interior reflection",
+      "FXAA on garage camera",
+      "Quick-lift pit jack and helmet",
+      "Remove remaining inactive legacy SpawnPoint children",
+      "Reflection bake isolates the garage from other loaded scenes, restoring temporary editor state"
+    ]
+  },
+  "carViewportCenter": {
+    "x": 0.7069743275642395,
+    "y": 0.557512104511261,
+    "z": 9.437482833862305
+  },
+  "assetEvidence": {
+    "reflectionBytes": 280299,
+    "screenshot": "GarageLiveries.png",
+    "sceneSetup": "SceneSetup.json"
+  }
+}

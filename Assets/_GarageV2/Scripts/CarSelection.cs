@@ -316,7 +316,7 @@ public class CarSelection : MonoBehaviour
         PowerSlider.value = displayStats.power;
         PowerText.text = displayStats.power.ToString();
         if (PowerTextDuplicate != null)
-            PowerTextDuplicate.text = $"{displayStats.power} HP";
+            PowerTextDuplicate.text = $"{displayStats.power} Nm";
         SpeedSlider.value = displayStats.speed;
         SpeedText.text = displayStats.speed.ToString();
         SteerSlider.value = displayStats.steer;
@@ -336,6 +336,8 @@ public class CarSelection : MonoBehaviour
   }
   public void loadmaincar()
   {
+      // The Formula menu owns its preview while this legacy presenter is disabled.
+      if (!enabled) return;
       int savedCarIndex = SaveManager.Instance.saveData.currentCar;
 
       if (player == null || indexcar != savedCarIndex)
@@ -438,7 +440,7 @@ public class CarSelection : MonoBehaviour
 
       SaveManager.SaveData.CarSpecs savedCarSpecs = SaveManager.Instance != null ? SaveManager.Instance.GetCarSpecs(carData.carName) : null;
 
-      if (savedCarSpecs != null && savedCarSpecs.isBought)
+      if (carData.carName != "Formula G27" && savedCarSpecs != null && savedCarSpecs.isBought)
       {
           stats.power = savedCarSpecs.power;
           stats.speed = savedCarSpecs.topSpeed;

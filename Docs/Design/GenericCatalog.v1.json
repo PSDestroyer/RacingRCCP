@@ -1,0 +1,772 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "generic_v1",
+  "status": "design_specification_not_runtime_configuration",
+  "language": "ro",
+  "vehicle": {
+    "id": "generic_2027",
+    "displayName": "Formula G27",
+    "priceCredits": 0,
+    "grantOnNewProfile": true,
+    "defaultLiveryId": "generic_orange",
+    "defaultUpgradeLevels": {
+      "engine": 0,
+      "brakes": 0,
+      "suspension": 0,
+      "aero": 0
+    },
+    "defaultSetupId": "balanced",
+    "configuredBaseline": {
+      "massKg": 820,
+      "peakTorqueNm": 480,
+      "engineRpmMin": 1800,
+      "engineRpmMax": 12000,
+      "speedLimitKmh": 340,
+      "drive": "RWD",
+      "gears": 8
+    }
+  },
+  "profile": {
+    "initialCredits": 0,
+    "initialXp": 0,
+    "initialLevel": 1,
+    "xpPerLevel": 3000,
+    "creditsPerLevelUp": 300,
+    "levelFormula": "1 + floor(totalXp / xpPerLevel)",
+    "levelGatesContent": false,
+    "medalOrder": [
+      "none",
+      "bronze",
+      "silver",
+      "gold"
+    ]
+  },
+  "economyRules": {
+    "entryFeeCredits": 0,
+    "repairFeeCredits": 0,
+    "refundsEnabled": false,
+    "upgradePricesAreIncremental": true,
+    "ownedUpgradeLevelsCanBeEquippedFree": true,
+    "appearanceAffectsPerformance": false,
+    "assistOrDifficultyRewardMultiplier": 1.0,
+    "baseRewardsRepeatOnEveryValidFinish": true,
+    "dnfOrAbandonReward": {
+      "credits": 0,
+      "xp": 0
+    },
+    "medalRewardsClaimOncePerProfileAndEventAndTier": true,
+    "higherMedalClaimsAllUnclaimedLowerTiers": true,
+    "achievementLiveriesAutoGrant": true,
+    "creditLiveryUnlockDoesNotGrantOwnership": true,
+    "sharedVehicleProgressAcrossLiveries": true,
+    "quickRaceOrPracticePaysCareerRewards": false,
+    "tutorialReplayBaseReward": {
+      "credits": 0,
+      "xp": 0
+    }
+  },
+  "upgrades": [
+    {
+      "id": "engine",
+      "name": "Motor",
+      "intendedEffect": "Accelerație prin dezvoltarea cuplului; viteza maximă nu este un upgrade separat.",
+      "maxLevel": 3,
+      "levels": [
+        {
+          "level": 1,
+          "incrementalPriceCredits": 1200,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g01",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "engine",
+                "minimumLevel": 0
+              }
+            ]
+          }
+        },
+        {
+          "level": 2,
+          "incrementalPriceCredits": 2400,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g03",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "engine",
+                "minimumLevel": 1
+              }
+            ]
+          }
+        },
+        {
+          "level": 3,
+          "incrementalPriceCredits": 4200,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g06",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "engine",
+                "minimumLevel": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "brakes",
+      "name": "Frâne",
+      "intendedEffect": "Frânare calibrată împreună cu aderența și ABS, păstrând echilibrul față-spate.",
+      "maxLevel": 3,
+      "levels": [
+        {
+          "level": 1,
+          "incrementalPriceCredits": 900,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g01",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "brakes",
+                "minimumLevel": 0
+              }
+            ]
+          }
+        },
+        {
+          "level": 2,
+          "incrementalPriceCredits": 1800,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g03",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "brakes",
+                "minimumLevel": 1
+              }
+            ]
+          }
+        },
+        {
+          "level": 3,
+          "incrementalPriceCredits": 3200,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g06",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "brakes",
+                "minimumLevel": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "suspension",
+      "name": "Suspensie",
+      "intendedEffect": "Controlul mișcărilor șasiului prin amortizare și arcuri, fără a cumpăra asistențe.",
+      "maxLevel": 3,
+      "levels": [
+        {
+          "level": 1,
+          "incrementalPriceCredits": 1000,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g01",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "suspension",
+                "minimumLevel": 0
+              }
+            ]
+          }
+        },
+        {
+          "level": 2,
+          "incrementalPriceCredits": 2000,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g03",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "suspension",
+                "minimumLevel": 1
+              }
+            ]
+          }
+        },
+        {
+          "level": 3,
+          "incrementalPriceCredits": 3600,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g06",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "suspension",
+                "minimumLevel": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "aero",
+      "name": "Aerodinamică",
+      "intendedEffect": "Apăsare mai mare în viraje rapide, cu rezistență aerodinamică suplimentară.",
+      "maxLevel": 3,
+      "levels": [
+        {
+          "level": 1,
+          "incrementalPriceCredits": 1100,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g01",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "aero",
+                "minimumLevel": 0
+              }
+            ]
+          }
+        },
+        {
+          "level": 2,
+          "incrementalPriceCredits": 2200,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g03",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "aero",
+                "minimumLevel": 1
+              }
+            ]
+          }
+        },
+        {
+          "level": 3,
+          "incrementalPriceCredits": 4000,
+          "unlock": {
+            "all": [
+              {
+                "type": "event_medal",
+                "eventId": "g06",
+                "minimumMedal": "bronze"
+              },
+              {
+                "type": "owned_upgrade_level",
+                "branchId": "aero",
+                "minimumLevel": 2
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "liveries": [
+    {
+      "id": "generic_orange",
+      "displayName": "Apex Orange",
+      "prefabPath": "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_01.prefab",
+      "acquisition": "starter_grant",
+      "priceCredits": 0,
+      "unlock": {
+        "type": "profile_created"
+      },
+      "performanceModifier": 1.0
+    },
+    {
+      "id": "generic_black",
+      "displayName": "Velocity Black",
+      "prefabPath": "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_02.prefab",
+      "acquisition": "achievement_grant",
+      "priceCredits": null,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g06",
+        "minimumMedal": "bronze"
+      },
+      "performanceModifier": 1.0
+    },
+    {
+      "id": "generic_red",
+      "displayName": "Corsa Red",
+      "prefabPath": "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_03.prefab",
+      "acquisition": "credit_purchase",
+      "priceCredits": 1500,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g03",
+        "minimumMedal": "bronze"
+      },
+      "performanceModifier": 1.0
+    },
+    {
+      "id": "generic_blue",
+      "displayName": "Azure Blue",
+      "prefabPath": "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_04.prefab",
+      "acquisition": "starter_grant",
+      "priceCredits": 0,
+      "unlock": {
+        "type": "profile_created"
+      },
+      "performanceModifier": 1.0
+    },
+    {
+      "id": "generic_pulse",
+      "displayName": "Pulse",
+      "prefabPath": "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_05.prefab",
+      "acquisition": "achievement_grant",
+      "priceCredits": null,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g02",
+        "minimumMedal": "gold"
+      },
+      "performanceModifier": 1.0
+    },
+    {
+      "id": "generic_yellow",
+      "displayName": "Volt Yellow",
+      "prefabPath": "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_06.prefab",
+      "acquisition": "credit_purchase",
+      "priceCredits": 2200,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g04",
+        "minimumMedal": "bronze"
+      },
+      "performanceModifier": 1.0
+    },
+    {
+      "id": "generic_purple",
+      "displayName": "Nova Purple",
+      "prefabPath": "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_07.prefab",
+      "acquisition": "achievement_grant",
+      "priceCredits": null,
+      "unlock": {
+        "all": [
+          {
+            "type": "event_medal",
+            "eventId": "g01",
+            "minimumMedal": "gold"
+          },
+          {
+            "type": "event_medal",
+            "eventId": "g02",
+            "minimumMedal": "gold"
+          },
+          {
+            "type": "event_medal",
+            "eventId": "g03",
+            "minimumMedal": "gold"
+          },
+          {
+            "type": "event_medal",
+            "eventId": "g04",
+            "minimumMedal": "gold"
+          },
+          {
+            "type": "event_medal",
+            "eventId": "g05",
+            "minimumMedal": "gold"
+          },
+          {
+            "type": "event_medal",
+            "eventId": "g06",
+            "minimumMedal": "gold"
+          }
+        ]
+      },
+      "performanceModifier": 1.0
+    },
+    {
+      "id": "generic_green",
+      "displayName": "Forest Green",
+      "prefabPath": "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_08.prefab",
+      "acquisition": "credit_purchase",
+      "priceCredits": 2800,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g05",
+        "minimumMedal": "bronze"
+      },
+      "performanceModifier": 1.0
+    }
+  ],
+  "freeSetups": [
+    {
+      "id": "balanced",
+      "name": "Echilibrat"
+    },
+    {
+      "id": "speed",
+      "name": "Viteză"
+    },
+    {
+      "id": "corners",
+      "name": "Viraje"
+    }
+  ],
+  "trackBindings": {
+    "track_01": {
+      "assetPath": null,
+      "status": "bind_after_track_validation"
+    },
+    "track_02": {
+      "assetPath": null,
+      "status": "bind_after_track_validation"
+    }
+  },
+  "referenceTimeRule": {
+    "perTrack": true,
+    "vehicle": "generic_2027",
+    "upgradeLevels": 0,
+    "setup": "balanced",
+    "transmission": "automatic",
+    "abs": true,
+    "tcs": true,
+    "definition": "Mediana a trei tururi curate consecutive, conduse de același tester pe gamepad, pe pista și în condițiile fixe ale probei.",
+    "absoluteSecondsStatus": "measure_before_publishing_events"
+  },
+  "careerEvents": [
+    {
+      "id": "g01",
+      "name": "Acomodare",
+      "mode": "familiarization",
+      "trackId": "track_01",
+      "laps": 1,
+      "opponentCount": 0,
+      "unlock": {
+        "type": "profile_created"
+      },
+      "vehicleRule": "stock_balanced",
+      "baseValidFinishReward": {
+        "credits": 0,
+        "xp": 0
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 1000
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "validFinish": true
+        },
+        "silver": {
+          "maximumReferenceTimeMultiplier": 1.25
+        },
+        "gold": {
+          "maximumReferenceTimeMultiplier": 1.12
+        }
+      },
+      "medalMetric": "valid_completion_then_total_lap_time"
+    },
+    {
+      "id": "g02",
+      "name": "Primul tur rapid",
+      "mode": "time_attack",
+      "trackId": "track_01",
+      "laps": 3,
+      "opponentCount": 0,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g01",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 800,
+        "xp": 800
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 800,
+          "xp": 400
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumReferenceTimeMultiplier": 1.2
+        },
+        "silver": {
+          "maximumReferenceTimeMultiplier": 1.1
+        },
+        "gold": {
+          "maximumReferenceTimeMultiplier": 1.03
+        }
+      },
+      "medalMetric": "best_valid_lap_in_three_lap_session",
+      "minimumValidLapsForReward": 1
+    },
+    {
+      "id": "g03",
+      "name": "Debut în cursă",
+      "mode": "race",
+      "trackId": "track_01",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g02",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1000,
+        "xp": 1000
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1000,
+          "xp": 500
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      }
+    },
+    {
+      "id": "g04",
+      "name": "Sprint",
+      "mode": "race",
+      "trackId": "track_02",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g03",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1400,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      }
+    },
+    {
+      "id": "g05",
+      "name": "Tur de precizie",
+      "mode": "time_attack",
+      "trackId": "track_02",
+      "laps": 3,
+      "opponentCount": 0,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g04",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1200,
+        "xp": 1100
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumReferenceTimeMultiplier": 1.2
+        },
+        "silver": {
+          "maximumReferenceTimeMultiplier": 1.1
+        },
+        "gold": {
+          "maximumReferenceTimeMultiplier": 1.03
+        }
+      },
+      "medalMetric": "best_valid_lap_in_three_lap_session",
+      "minimumValidLapsForReward": 1
+    },
+    {
+      "id": "g06",
+      "name": "Finala Generic",
+      "mode": "race",
+      "trackId": "track_02",
+      "laps": 5,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g05",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 2000,
+        "xp": 1600
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1800,
+          "xp": 800
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      }
+    }
+  ],
+  "balanceChecks": {
+    "allUpgradeLevelsCredits": 27600,
+    "purchasableLiveriesCredits": 6500,
+    "allPurchasesCredits": 34100,
+    "firstPassAllBronze": {
+      "creditsBeforeSpending": 14500,
+      "xp": 9600,
+      "finalLevel": 4
+    },
+    "firstPassAllGold": {
+      "creditsBeforeSpending": 18400,
+      "xp": 13200,
+      "finalLevel": 5
+    }
+  },
+  "implementationRules": [
+    "Recompensele, medaliile, XP-ul, deblocările și drepturile de cumpărare se aplică într-o singură operație persistentă și idempotentă.",
+    "Fiecare rezultat are un ID unic; redeschiderea rezultatelor sau relansarea jocului nu plătește aceeași cursă încă o dată.",
+    "Fiecare rulare nouă finalizată valid poate plăti recompensa de bază din nou.",
+    "Achizițiile verifică soldul, condițiile, nivelul anterior și deținerea înainte de debitare; butoanele repetate nu dublează achiziția.",
+    "Progresul folosește ID-uri stabile; migrarea păstrează soldul și progresul existent și nu resetează profilul.",
+    "Setările mașinii se calculează din configurația de bază și nivelul echipat; reîncărcarea nu cumulează multiplicatorii.",
+    "Toate pragurile de bronz trebuie validate cu mașina de bază, fără upgrade-uri.",
+    "Handling din RCCP nu reprezintă dezvoltarea suspensiei; asistențele rămân opțiuni gratuite."
+  ]
+}

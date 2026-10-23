@@ -50,6 +50,7 @@ public class MoneyManager : MonoBehaviour
             return;
         }
 
+        LoadData();
         money = Mathf.Max(0, money - totake);
         SaveMoney();
         UpdateText();
@@ -63,6 +64,7 @@ public class MoneyManager : MonoBehaviour
             return;
         }
 
+        LoadData();
         money += toadd;
         SaveMoney();
         UpdateText();
@@ -141,8 +143,7 @@ public class MoneyManager : MonoBehaviour
             return;
 
         SaveManager.Instance.saveData.money = money;
-        SaveManager.Instance.saveData.exp = exp;
-        SaveManager.Instance.saveData.currentLevel = currentLevel;
+
     }
 
     private void RefreshFuelState()
@@ -163,9 +164,10 @@ public class MoneyManager : MonoBehaviour
         checkTime();
     }
 
+    public void RefreshFromSave() { LoadData(); expPerLevel = 3000; UpdateText(); }
+
     private void UpdateText()
     {
-        SaveMoney();
 
         if (moneyText != null)
             moneyText.text = "<sprite index=0>"+money ;

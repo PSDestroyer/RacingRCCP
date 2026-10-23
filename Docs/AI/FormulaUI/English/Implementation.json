@@ -1,0 +1,48 @@
+{
+  "status": "English is the primary game language. Current presentation preserved after Journey undo.",
+  "atUtc": "2026-10-23T16:22:10.803745+00:00",
+  "scope": [
+    "Existing Formula menus, dialogs, career catalog, garage, upgrade descriptions, controls, profile, HUD, result receipts and player-facing messages",
+    "Existing English UI string table selected at startup before the system locale",
+    "Editor-authored labels translated in place and future authoring uses the same English copy"
+  ],
+  "primaryLocale": "en",
+  "existingLocalizationTable": "UI",
+  "otherLocalesPreserved": true,
+  "hierarchyAndLayout": {
+    "rectTransformCount": 768,
+    "allRectTransformsIdenticalToBeforeEnglish": true,
+    "stableNavigationAndSaveIdentifiersPreserved": true
+  },
+  "economyAndPhysics": "Catalog IDs, numeric prices, rewards, unlock conditions and physics parameters unchanged from the pre-English backup.",
+  "validation": {
+    "menu": {
+      "passed": 16,
+      "errors": []
+    },
+    "garage": {
+      "passed": 6,
+      "errors": []
+    },
+    "raceText": {
+      "passed": 3,
+      "errors": []
+    }
+  },
+  "raceTextMethod": "Real circuit scene and receipt UI with an isolated save and scripted finish; not driving validation.",
+  "compiler": "../CompilerValidation.json",
+  "screenshots": [
+    "../Home.png",
+    "../Career.png",
+    "../Development.png",
+    "../Settings.png",
+    "../Controls.png",
+    "HUD.png",
+    "Results.png"
+  ],
+  "limitations": [
+    "No new platform build or physical Switch/controller validation.",
+    "Pre-existing full-lap validity failure remains outside this language change."
+  ],
+  "beforeBackup": "/private/tmp/FormulaEnglishBefore"
+}
