@@ -19,7 +19,9 @@ namespace FormulaGame
         [SerializeField] private FormulaTrackMap eventMap;
         [SerializeField] private UnityEngine.UI.Button eventCancel, eventAccept, eventGarage;
         [SerializeField] private GameObject upgradeContent;
-        [SerializeField] private TMP_Text upgradeEffect, upgradeTradeoff, upgradeBenefit, upgradeRequirement, upgradeCost;
+        [SerializeField] private TMP_Text upgradeEffect, upgradeTradeoff, upgradeBenefit, upgradeRequirement, upgradeCost, upgradeFunds;
+        [SerializeField] private GameObject liveryContent;
+        [SerializeField] private TMP_Text liveryAcquisition, liveryRequirements, liveryFunds, liveryCost;
         private Action confirm, close;
         private Action<int> selectLevel;
         public bool IsOpen => gameObject.activeSelf;
@@ -37,18 +39,35 @@ namespace FormulaGame
             gameObject.SetActive(true); confirmation.SetActive(true); levelSelection.SetActive(false); if (eventBriefing != null) eventBriefing.SetActive(false);
             title.text = heading; details.text = description; acceptText.text = actionName;
             details.gameObject.SetActive(true); if (upgradeContent != null) upgradeContent.SetActive(false);
+            if (liveryContent != null) liveryContent.SetActive(false);
             accept.interactable = canConfirm; confirm = action; Wire(confirmation.transform); FormulaUI.Focus(confirmation.transform);
         }
-        public void Upgrade(string heading, string effect, string tradeoff, string benefit, string requirement, string cost, string actionName, Action action, bool canConfirm, bool focusAction)
+        public void Upgrade(string heading, string effect, string tradeoff, string benefit, string requirement, string cost, string actionName, Action action, bool canConfirm, bool focusAction, string funds = null, bool creditsMissing = false)
         {
-            Confirm(heading, effect + "\n" + tradeoff + "\n" + benefit + "\n\n" + requirement + "\n" + cost, actionName, action, canConfirm);
+            Confirm(heading, effect + "\n" + tradeoff + "\n" + benefit + "\n\n" + requirement + "\n" + funds + "\n" + cost, actionName, action, canConfirm);
             if (upgradeContent != null)
             {
                 details.gameObject.SetActive(false); upgradeContent.SetActive(true);
                 upgradeEffect.text = effect; upgradeTradeoff.text = tradeoff; upgradeBenefit.text = benefit;
                 upgradeRequirement.text = requirement; upgradeCost.text = cost;
+                upgradeCost.color = creditsMissing ? FormulaUI.Red : Color.white;
+                if (upgradeFunds != null) { upgradeFunds.text = funds; upgradeFunds.gameObject.SetActive(!string.IsNullOrEmpty(funds)); }
             }
             if (focusAction && canConfirm) UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(accept.gameObject);
+        }
+        public void Livery(FormulaCatalog.Livery livery, FormulaLiveryOffer offer, string actionName, Action action, bool focusAction)
+        {
+            Confirm(livery.displayName + " / Livery", offer.Requirements + "\n" + offer.Funds + "\n" + offer.Cost, actionName, action, true);
+            if (liveryContent != null)
+            {
+                details.gameObject.SetActive(false); liveryContent.SetActive(true);
+                liveryAcquisition.text = offer.Purchase ? "CREDIT PURCHASE" : "CAREER REWARD · FREE";
+                liveryRequirements.text = offer.Requirements;
+                liveryRequirements.fontSize = offer.Requirements.Count(c => c == '\n') > 2 ? 20 : 22;
+                liveryFunds.text = offer.Funds; liveryFunds.gameObject.SetActive(!string.IsNullOrEmpty(offer.Funds));
+                liveryCost.text = offer.Cost; liveryCost.color = offer.Shortfall > 0 ? FormulaUI.Red : Color.white;
+            }
+            if (focusAction) UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(accept.gameObject);
         }
         public void SelectLevel(string branchId, Action<int> action)
         {

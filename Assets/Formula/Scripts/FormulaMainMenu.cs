@@ -31,7 +31,7 @@ namespace FormulaGame
         private GameObject modalOrigin;
         private string briefingEvent, briefingMode, garageReturnEvent, garageReturnMode, garageReturnPage;
         private GameObject garageReturnFocus;
-        private bool upgradeBriefing;
+        private bool garageBriefing;
         private string previousBriefingEvent, previousBriefingMode;
         private Coroutine fadeRoutine;
         private Vector2 screenPosition;
@@ -104,7 +104,7 @@ namespace FormulaGame
         private void ClearGarageReturn() { garageReturnEvent = garageReturnMode = garageReturnPage = null; garageReturnFocus = null; view.Garage.SetEventContext(null, null); }
         private void OpenGarageFromBriefing()
         {
-            if (upgradeBriefing) { CloseModal(); return; }
+            if (garageBriefing) { CloseModal(); return; }
             garageReturnEvent = briefingEvent; garageReturnMode = briefingMode; garageReturnPage = page; garageReturnFocus = modalOrigin;
             CloseModal(); Show("Garaj"); view.Garage.SetEventContext(FormulaCatalog.Current.Event(briefingEvent), briefingMode);
         }
@@ -237,13 +237,13 @@ namespace FormulaGame
                 {
                     requirement = "LOCKED\n" + (careerEvent != null ? "Earn " + FormulaCatalog.MedalName(FormulaCatalog.ParseMedal((string)eventRule["minimumMedal"])) + " in " + careerEvent.name + " to unlock this upgrade." : FormulaProgression.LockReason(target.unlock, p));
                     label = careerEvent != null ? "View " + careerEvent.name : "Locked"; actionable = careerEvent != null;
-                    action = () => ViewUpgradeEvent(careerEvent); focusAction = true;
+                    action = () => ViewGarageEvent(careerEvent); focusAction = true;
                 }
                 else if (!affordable)
                 {
-                    requirement = "INSUFFICIENT CREDITS\nEarn another " + (target.incrementalPriceCredits - FormulaProgression.Data.money).ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR to purchase.";
-                    label = careerEvent != null ? "View " + careerEvent.name : "Not enough credits"; actionable = careerEvent != null;
-                    action = () => ViewUpgradeEvent(careerEvent); focusAction = true;
+                    requirement = "INSUFFICIENT CREDITS\nComplete a career event to earn credits.";
+                    label = careerEvent != null ? "Earn credits · " + careerEvent.name : "Not enough credits"; actionable = careerEvent != null;
+                    action = () => ViewGarageEvent(careerEvent); focusAction = true;
                 }
                 else
                 {
@@ -252,7 +252,12 @@ namespace FormulaGame
                     action = () => Mutate(d => FormulaProgression.BuyUpgrade(d, branchId, level));
                 }
             }
-            OpenDialog(); view.Dialogs.Upgrade(branch.name + " / " + (level == 0 ? "Stock" : "Level " + level), effect, tradeoff, benefit, requirement, cost, label, action, actionable, focusAction);
+            // Credits and progression are independent requirements: show both when both are missing.
+            bool unowned = level > p.Owned(branchId);
+            int shortfall = unowned ? Math.Max(0, target.incrementalPriceCredits - FormulaProgression.Data.money) : 0;
+            string funds = unowned ? "Balance: " + FormulaProgression.Data.money.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR · Upgrade cost: " + target.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR" : null;
+            if (shortfall > 0) cost = "MISSING " + shortfall.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
+            OpenDialog(); view.Dialogs.Upgrade(branch.name + " / " + (level == 0 ? "Stock" : "Level " + level), effect, tradeoff, benefit, requirement, cost, label, action, actionable, focusAction, funds, shortfall > 0);
         }
         private static string UpgradePrice(FormulaCatalog.UpgradeLevel level) => "Upgrade cost · " + level.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
         private static JObject UpgradeEventRule(JObject rule, FormulaProgress progress, bool unmetOnly)
@@ -263,11 +268,11 @@ namespace FormulaGame
                 foreach (var child in all.OfType<JObject>()) { var found = UpgradeEventRule(child, progress, unmetOnly); if (found != null) return found; }
             return null;
         }
-        private void ViewUpgradeEvent(FormulaCatalog.CareerEvent careerEvent)
+        private void ViewGarageEvent(FormulaCatalog.CareerEvent careerEvent)
         {
             if (careerEvent == null) return;
             // Keep the Garage origin while the briefing replaces the upgrade dialog.
-            previousBriefingEvent = briefingEvent; previousBriefingMode = briefingMode; upgradeBriefing = true;
+            previousBriefingEvent = briefingEvent; previousBriefingMode = briefingMode; garageBriefing = true;
             briefingEvent = careerEvent.id; briefingMode = "career";
             bool unlocked = FormulaProgression.Unlocked(careerEvent.unlock, FormulaProgression.State);
             view.Dialogs.EventBriefing(careerEvent, "career", () => { if (unlocked) Launch(careerEvent.id, "career"); }, unlocked);
@@ -275,10 +280,14 @@ namespace FormulaGame
         private void SelectLivery(string id) { selectedLivery = id; vehiclePreview.ShowLivery(id); view.Garage.InspectLivery(id); }
         private void ApplySelectedLivery()
         {
-            var livery = FormulaCatalog.Current.Skin(selectedLivery); var p = FormulaProgression.State;
-            if (p.ownedLiveries.Contains(livery.id)) Mutate(d => FormulaProgression.BuyOrEquipLivery(d, livery.id));
-            else if (FormulaProgression.Unlocked(livery.unlock, p) && livery.acquisition == "credit_purchase")
-                Confirm(livery.displayName, "Cosmetic livery. Your upgrades and setup are retained.\nCost: " + livery.priceCredits.Value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR", "Buy and equip", () => Mutate(d => FormulaProgression.BuyOrEquipLivery(d, livery.id)));
+            var livery = FormulaCatalog.Current.Skin(selectedLivery);
+            var offer = new FormulaLiveryOffer(livery, FormulaProgression.State, FormulaProgression.Data.money);
+            if (offer.Equipped) return;
+            if (offer.Owned) { Mutate(d => FormulaProgression.BuyOrEquipLivery(d, livery.id)); return; }
+            bool ready = offer.Unlocked && offer.Shortfall == 0;
+            string actionName = ready ? offer.Purchase ? offer.Action : "Claim and equip · Free" : offer.Unlocked ? "Earn credits · " + offer.Event.name : "View " + offer.Event.name;
+            Action action = ready ? () => Mutate(d => FormulaProgression.BuyOrEquipLivery(d, livery.id)) : () => ViewGarageEvent(offer.Event);
+            OpenDialog(); view.Dialogs.Livery(livery, offer, actionName, action, !ready || !offer.Purchase);
         }
         private void Launch(string id, string mode) { string error = FormulaSession.Launch(id, mode); if (error != null) { CloseModal(); view.SetStatus(error); } }
         private void Mutate(Func<SaveManager.SaveData, string> action)
@@ -299,7 +308,7 @@ namespace FormulaGame
         }
         private void CloseModal()
         {
-            if (upgradeBriefing) { briefingEvent = previousBriefingEvent; briefingMode = previousBriefingMode; upgradeBriefing = false; }
+            if (garageBriefing) { briefingEvent = previousBriefingEvent; briefingMode = previousBriefingMode; garageBriefing = false; }
             bool wasOpen = view.Dialogs.IsOpen; view.Dialogs.Close(); view.SetBaseInteraction(true);
             if (wasOpen) RestoreFocus(modalOrigin);
         }

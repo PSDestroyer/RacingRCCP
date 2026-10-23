@@ -3,7 +3,7 @@
   "status": "Passed",
   "behavior": {
     "locked": "Explicit medal requirement; View event opens existing Career briefing without mutating progression. Back or Garage returns to the source Upgrade category and level, preserving prior event context.",
-    "insufficientCredits": "Exact credit shortfall plus link to replayable prerequisite event.",
+    "insufficientCredits": "Balance and price remain visible; the exact MISSING amount is red beside the action. Unaffordable level prices are red. Earn credits opens the replayable reward event. Medal and credit blockers are shown together.",
     "purchase": "Effects, tradeoff, stock comparison, cost beside Buy and equip. Back initially focused; transaction rechecks price, ownership and unlock.",
     "owned": "Equip \u00b7 Free confirmation; no credit charge.",
     "skippedLevel": "View Level N opens the next required upgrade instead of skipping purchases.",
@@ -11,7 +11,7 @@
   },
   "validation": {
     "report": "RuntimeValidation.json",
-    "passed": 25,
+    "passed": 30,
     "errors": [],
     "coverage": [
       "Virtual gamepad Submit/Cancel from locked upgrade to event and back",
@@ -19,7 +19,8 @@
       "No mutation during locked or insufficient-credit inspection",
       "Purchase cancel, purchase success, applied RCCP torque and suspension",
       "Owned stock/upgraded equip for free",
-      "Scene reload and standalone Garage saved progression"
+      "Scene reload and standalone Garage saved progression",
+      "Zero balance, 400 CR partial balance, exact 1,200 CR balance; shortage color clears when affordable; medal and credit blockers coexist."
     ],
     "scope": "Unity Editor Play Mode with isolated temporary save; no platform build or physical-controller test."
   },
@@ -27,6 +28,7 @@
     "UpgradeLocked.png",
     "UpgradeCredits.png",
     "Purchase.png",
-    "UpgradeOwned.png"
+    "UpgradeOwned.png",
+    "UpgradeCreditsPartial.png"
   ]
 }

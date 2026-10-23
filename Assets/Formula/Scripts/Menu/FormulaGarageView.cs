@@ -13,11 +13,13 @@ namespace FormulaGame
         [SerializeField] private FormulaLiveryCard[] liveries;
         [SerializeField] private FormulaStatisticsView[] statistics;
         [SerializeField] private TMP_Text liveryName, liveryStatus, liveryCondition, liveryActionText;
+        [SerializeField] private TMP_Text liveryFunds, liveryCost;
         [SerializeField] private UnityEngine.UI.Button liveryAction;
         [SerializeField] private FormulaUpgradeView upgrade;
         [SerializeField] private UnityEngine.UI.Button back;
         [SerializeField] private TMP_Text tabHints, contextLabel;
         private int currentSection;
+        private string inspectedLivery;
         public FormulaUpgradeView Upgrade => upgrade;
         public void Bind(Action<int> changeTab, Action<string> levels, Action<string> buyUpgrade, Action<string> equipSetup, Action<string> selectLivery, Action applyLivery)
         {
@@ -75,18 +77,27 @@ namespace FormulaGame
             for (int i = 0; i < tabs.Length; i++) tabs[i].navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.Explicit, selectOnLeft = tabs[(i + tabs.Length - 1) % tabs.Length], selectOnRight = tabs[(i + 1) % tabs.Length], selectOnDown = first, selectOnUp = navigationBack };
             if (currentSection == 1)
                 for (int i = 0; i < setups.Length; i++) setups[i].button.navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.Explicit, selectOnUp = i == 0 ? tabs[1] : setups[i-1].button, selectOnDown = i == setups.Length-1 ? back : setups[i+1].button, selectOnRight = tabs[1] };
+            if (currentSection == 2)
+            {
+                var selected = Array.Find(liveries, c => c.LiveryId == inspectedLivery) ?? liveries[0];
+                var selectedButton = selected.GetComponent<UnityEngine.UI.Button>();
+                var upper = liveryAction.interactable ? liveryAction : tabs[2];
+                for (int i = 0; i < liveries.Length; i++)
+                    liveries[i].GetComponent<UnityEngine.UI.Button>().navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.Explicit, selectOnLeft = liveries[(i + liveries.Length - 1) % liveries.Length].GetComponent<UnityEngine.UI.Button>(), selectOnRight = liveries[(i + 1) % liveries.Length].GetComponent<UnityEngine.UI.Button>(), selectOnUp = upper, selectOnDown = back };
+                liveryAction.navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.Explicit, selectOnUp = tabs[2], selectOnDown = selectedButton, selectOnRight = selectedButton };
+            }
         }
         public void InspectLivery(string id)
         {
-            var livery = FormulaCatalog.Current.Skin(id); var p = FormulaProgression.State;
-            bool owned = p.ownedLiveries.Contains(id), unlocked = FormulaProgression.Unlocked(livery.unlock, p), equipped = p.equippedLivery == id;
+            inspectedLivery = id; var livery = FormulaCatalog.Current.Skin(id);
+            var offer = new FormulaLiveryOffer(livery, FormulaProgression.State, FormulaProgression.Data.money);
             liveryName.text = livery.displayName;
-            liveryStatus.text = equipped ? "EQUIPPED" : owned ? "OWNED" : livery.acquisition == "credit_purchase" && unlocked ? livery.priceCredits.Value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR" : "CAREER REWARD";
-            liveryCondition.text = owned ? "Cosmetic only. Your upgrades are retained." : FormulaProgression.LockReason(livery.unlock, p);
-            bool buy = !owned && unlocked && livery.acquisition == "credit_purchase";
-            liveryAction.interactable = !equipped && (owned || buy && FormulaProgression.Data.money >= livery.priceCredits.Value);
-            liveryActionText.text = equipped ? "Equipped" : owned ? "Equip livery" : buy ? "Buy and equip" : "Continue career";
-            if (buy && FormulaProgression.Data.money < livery.priceCredits.Value) liveryCondition.text = "Not enough credits / " + livery.priceCredits.Value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
+            liveryStatus.text = offer.Status; liveryStatus.color = offer.Owned ? Color.white : FormulaUI.Accent;
+            liveryCondition.text = offer.Condition; liveryCondition.color = offer.Unlocked || offer.Owned ? Color.white : FormulaUI.Accent;
+            if (liveryFunds != null) liveryFunds.text = offer.Funds ?? (offer.Owned ? "Cosmetic only · No performance changes" : "Not sold for credits");
+            if (liveryCost != null) { liveryCost.text = offer.Cost; liveryCost.color = offer.Shortfall > 0 ? FormulaUI.Red : Color.white; }
+            liveryAction.interactable = !offer.Equipped;
+            liveryActionText.text = offer.Action; WireNavigation();
         }
     }
 }

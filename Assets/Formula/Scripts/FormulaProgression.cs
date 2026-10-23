@@ -98,8 +98,9 @@ namespace FormulaGame
             if (livery == null) return "Unknown livery.";
             if (!p.ownedLiveries.Contains(id))
             {
-                if (livery.acquisition != "credit_purchase" || !Unlocked(livery.unlock, p)) return LockReason(livery.unlock, p);
-                int price = livery.priceCredits ?? int.MaxValue;
+                if (!Unlocked(livery.unlock, p)) return LockReason(livery.unlock, p);
+                if (livery.acquisition != "credit_purchase" && livery.acquisition != "achievement_grant") return "This livery is not available.";
+                int price = livery.acquisition == "achievement_grant" ? 0 : livery.priceCredits ?? int.MaxValue;
                 if (d.money < price) return "Not enough credits.";
                 d.money -= price; p.ownedLiveries.Add(id);
             }

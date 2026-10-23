@@ -32,6 +32,15 @@ public static class FormulaMenuUnifiedBuilder
         finally { PrefabUtility.UnloadPrefabContents(root); }
         AssetDatabase.SaveAssets(); Debug.Log("FORMULA_UPGRADE_DIALOG_UX_APPLIED");
     }
+    [MenuItem("Tools/Formula Career/Refine Livery Purchase UX")]
+    public static void RefineLiveries()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
+        var root = PrefabUtility.LoadPrefabContents(FormulaMenuHierarchyBuilder.PrefabPath);
+        try { var view = root.GetComponent<FormulaMenuView>(); StyleLiveries(view.Garage); StyleDialogs(view.Dialogs); PrefabUtility.SaveAsPrefabAsset(root, FormulaMenuHierarchyBuilder.PrefabPath); }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+        AssetDatabase.SaveAssets(); Debug.Log("FORMULA_LIVERY_PURCHASE_UX_APPLIED");
+    }
     public static void Style(FormulaMenuView view)
     {
         SetBool(view, "upgradeTheme", true);
@@ -125,12 +134,19 @@ public static class FormulaMenuUnifiedBuilder
         }
         data.ApplyModifiedPropertiesWithoutUndo();Label(setup,"Setup Policy","Preview the balance. Apply any setup for free.",30,562,470,44,18).textWrappingMode=TextWrappingModes.Normal;
         StyleStatistics(setup.Find("RCCP Statistics").GetComponent<FormulaStatisticsView>());SetBool(setup.Find("RCCP Statistics").GetComponent<FormulaStatisticsView>(),"setupComparison",true);
-        var liveries=garage.transform.Find("Livree");Place(liveries,0,0,1280,720);var details=liveries.Find("Livery Details");Place(details,30,174,340,285);Panel(details);
-        Format(details.Find("Category").GetComponent<TMP_Text>(),20,13,300,25,16);
-        Format(details.Find("Livery Name").GetComponent<TMP_Text>(),20,47,300,58,46,true);
-        Format(details.Find("Ownership").GetComponent<TMP_Text>(),20,110,300,26,20);
-        var condition=details.Find("Unlock Condition").GetComponent<TMP_Text>();Format(condition,20,147,300,60,18);condition.textWrappingMode=TextWrappingModes.Normal;
-        var apply=details.Find("livery-apply").GetComponent<UnityEngine.UI.Button>();Place(apply.transform,20,220,300,48);Format(apply.GetComponentInChildren<TMP_Text>(true),16,0,268,48,23);FormulaMenuTheme.StyleButton(apply);
+        StyleLiveries(garage);
+        tabs.SetAsLastSibling();context.transform.SetAsLastSibling();
+    }
+    private static void StyleLiveries(FormulaGarageView garage)
+    {
+        var liveries=garage.transform.Find("Livree");Place(liveries,0,0,1280,720);var details=liveries.Find("Livery Details");Place(details,30,150,430,322);Panel(details);details.GetComponent<UnityEngine.UI.Image>().color=new Color32(8,9,11,255);
+        Format(details.Find("Category").GetComponent<TMP_Text>(),20,9,390,24,16);
+        Format(details.Find("Livery Name").GetComponent<TMP_Text>(),20,36,390,62,42,true);
+        Format(details.Find("Ownership").GetComponent<TMP_Text>(),20,100,390,29,20);
+        Set(garage,"liveryFunds",Label(details,"Funds","Cosmetic only · No performance changes",20,134,390,26,18));
+        Set(garage,"liveryCost",Label(details,"Cost","Free to equip",20,162,390,36,24,true));
+        var condition=details.Find("Unlock Condition").GetComponent<TMP_Text>();Format(condition,20,200,390,54,18);condition.textWrappingMode=TextWrappingModes.Normal;condition.alignment=TextAlignmentOptions.TopLeft;
+        var apply=details.Find("livery-apply").GetComponent<UnityEngine.UI.Button>();Place(apply.transform,20,260,390,46);Format(apply.GetComponentInChildren<TMP_Text>(true),16,0,358,46,23);FormulaMenuTheme.StyleButton(apply);
         var carousel=liveries.Find("Livery Cards");Place(carousel,30,487,1220,128);
         foreach(var card in carousel.GetComponentsInChildren<FormulaLiveryCard>(true))
         {
@@ -138,7 +154,6 @@ public static class FormulaMenuUnifiedBuilder
             Format(card.transform.Find("Livery Name").GetComponent<TMP_Text>(),9,3,127,30,23,true);
             Place(card.transform.Find("Generic Livery Thumbnail"),5,35,135,68.6f);Format(card.transform.Find("Ownership").GetComponent<TMP_Text>(),9,103,127,24,16);
         }
-        tabs.SetAsLastSibling();context.transform.SetAsLastSibling();
     }
     private static void StyleStatistics(FormulaStatisticsView view)
     {
@@ -238,13 +253,20 @@ public static class FormulaMenuUnifiedBuilder
         var fields=new SerializedObject(view);
         Format((TMP_Text)fields.FindProperty("title").objectReferenceValue,32,18,756,64,42,true);
         var generic=(TMP_Text)fields.FindProperty("details").objectReferenceValue;Format(generic,32,94,756,290,24);generic.textWrappingMode=TextWrappingModes.Normal;
-        var content=Group(confirmation,"Upgrade Details",32,94,756,306);Set(view,"upgradeContent",content.gameObject);
+        var content=Group(confirmation,"Upgrade Details",32,94,756,320);Set(view,"upgradeContent",content.gameObject);
         Set(view,"upgradeEffect",Label(content,"Effect","Downforce  +0% → +4%",0,0,756,46,30,true));
         Label(content,"Comparison Note","CHANGES VS STOCK",520,8,236,30,17);
         Set(view,"upgradeTradeoff",Label(content,"Tradeoff","Drag  +0% → +1%",0,44,756,34,23));
         var benefit=Label(content,"Benefit","More grip in fast corners, with increased air resistance.",0,88,756,60,22);benefit.textWrappingMode=TextWrappingModes.Normal;benefit.alignment=TextAlignmentOptions.TopLeft;Set(view,"upgradeBenefit",benefit);
         var requirement=Label(content,"Requirement","LOCKED\nEarn Bronze in Shakedown to unlock this upgrade.",0,166,756,68,22);requirement.textWrappingMode=TextWrappingModes.Normal;requirement.alignment=TextAlignmentOptions.TopLeft;requirement.color=FormulaUI.Accent;Set(view,"upgradeRequirement",requirement);
-        Set(view,"upgradeCost",Label(content,"Cost","Upgrade cost · 1,100 CR",252,260,504,38,27,true));content.gameObject.SetActive(false);
+        Set(view,"upgradeFunds",Label(content,"Funds","Balance: 0 CR · Upgrade cost: 1,100 CR",0,236,756,30,20));
+        Set(view,"upgradeCost",Label(content,"Cost","Upgrade cost · 1,100 CR",252,270,504,44,30,true));content.gameObject.SetActive(false);
+        var livery=Group(confirmation,"Livery Details",32,94,756,320);Set(view,"liveryContent",livery.gameObject);
+        Set(view,"liveryAcquisition",Label(livery,"Acquisition","CREDIT PURCHASE",0,0,756,46,30,true));
+        Label(livery,"Cosmetic Policy","Cosmetic only · Your upgrades and setup are retained.",0,48,756,30,20);
+        var requirements=Label(livery,"Requirements","NEEDED · Bronze in Race Debut",0,80,756,180,22);requirements.textWrappingMode=TextWrappingModes.Normal;requirements.alignment=TextAlignmentOptions.TopLeft;Set(view,"liveryRequirements",requirements);
+        Set(view,"liveryFunds",Label(livery,"Funds","Balance: 0 CR · Price: 1,500 CR",0,236,756,30,20));
+        Set(view,"liveryCost",Label(livery,"Cost","MISSING 1,500 CR",252,270,504,44,30,true));livery.gameObject.SetActive(false);
         var cancel=(UnityEngine.UI.Button)fields.FindProperty("cancel").objectReferenceValue;Place(cancel.transform,32,414,220,54);Format(cancel.GetComponentInChildren<TMP_Text>(true),18,0,184,54,26);
         var confirm=(UnityEngine.UI.Button)fields.FindProperty("accept").objectReferenceValue;Place(confirm.transform,268,414,520,54);Format(confirm.GetComponentInChildren<TMP_Text>(true),18,0,484,54,26);
         cancel.transform.SetAsLastSibling();confirm.transform.SetAsLastSibling();FormulaMenuTheme.StyleButton(cancel);FormulaMenuTheme.StyleButton(confirm);

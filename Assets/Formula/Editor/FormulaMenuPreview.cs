@@ -162,6 +162,7 @@ public static class FormulaMenuPreview
             else if (stage == 101111)
             {
                 Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "LOCKED\nEarn Bronze in Shakedown to unlock this upgrade."), "Upgrade prerequisite is not explicit.");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "MISSING 1,100 CR" && t.color == FormulaUI.Red), "Missing credits must remain highlighted even when the medal is also missing.");
                 Require(Button("confirm").interactable && EventSystem.current.currentSelectedGameObject == Button("confirm").gameObject && Button("confirm").GetComponentInChildren<TMP_Text>().text == "View Shakedown", "Locked upgrade must focus its actionable event link.");
                 Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Downforce  +0% → +4%") && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Drag  +0% → +1%"), "Aero effect and tradeoff are not separated.");
                 foreach(var text in menu.View.Dialogs.transform.Find("Confirmation").GetComponentsInChildren<TMP_Text>()) { text.ForceMeshUpdate(); Require(text.preferredHeight <= text.rectTransform.rect.height + 1 && text.preferredWidth <= text.rectTransform.rect.width + 1, "Upgrade text exceeds its field: " + text.name + " preferred " + text.preferredWidth + "x" + text.preferredHeight + " rect " + text.rectTransform.rect.size); }
@@ -257,7 +258,97 @@ public static class FormulaMenuPreview
                 Click("generic_blue"); Require(FormulaProgression.State.equippedLivery == "generic_orange", "Preview silently equipped the livery.");
                 Click("livery-apply"); Require(FormulaProgression.State.equippedLivery == "generic_blue" && FormulaProgression.Data.money == 0, "Explicit free livery equip failed.");
                 Require(canvas.GetComponentsInChildren<UnityEngine.UI.RawImage>().Count(i => i.name == "Generic Livery Thumbnail" && i.texture != null) == 8, "Eight individual Generic thumbnails not rendered.");
-                Pass("Eight livery previews never mutate ownership; explicit free equip preserves wallet and development"); Next(30, "livery-render");
+                Pass("Eight livery previews never mutate ownership; explicit free equip preserves wallet and development"); Next(300, "livery-locked-review");
+            }
+            else if (stage == 300)
+            {
+                Click("generic_red"); Require(Button("livery-apply").interactable && Button("generic_red").FindSelectableOnUp()?.name == "livery-apply", "Locked livery cannot be inspected or reached with controller navigation.");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Balance: 0 CR · Price: 1,500 CR") && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "MISSING 1,500 CR" && t.color == FormulaUI.Red), "Locked purchasable livery hides its price or credit shortfall.");
+                Click("livery-apply"); Next(301, "livery-locked-dialog");
+            }
+            else if (stage == 301)
+            {
+                Require(menu.View.Dialogs.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("NEEDED · Bronze in " + FormulaCatalog.Current.Event("g03").name)), "Livery dialog does not explain the missing medal.");
+                Require(Button("confirm").GetComponentInChildren<TMP_Text>().text == "View " + FormulaCatalog.Current.Event("g03").name && EventSystem.current.currentSelectedGameObject.name == "confirm", "Locked livery has no actionable event link.");
+                Capture("LiveryLocked"); Next(302, "livery-controller-submit");
+            }
+            else if (stage == 302)
+            {
+                simulatedPad = InputSystem.AddDevice<Gamepad>("Formula livery validation");
+                InputSystem.QueueStateEvent(simulatedPad, new GamepadState().WithButton(GamepadButton.South)); Next(303, "livery-prerequisite-event");
+            }
+            else if (stage == 303)
+            {
+                InputSystem.QueueStateEvent(simulatedPad, new GamepadState());
+                Require(menu.View.Dialogs.GetComponentsInChildren<TMP_Text>().Any(t => t.text == FormulaCatalog.Current.Event("g03").name.ToUpperInvariant()), "Livery event link opened the wrong prerequisite.");
+                InputSystem.QueueStateEvent(simulatedPad, new GamepadState().WithButton(GamepadButton.East)); Next(304, "livery-controller-back");
+            }
+            else if (stage == 304)
+            {
+                InputSystem.QueueStateEvent(simulatedPad, new GamepadState()); InputSystem.RemoveDevice(simulatedPad); simulatedPad = null;
+                Require(!menu.View.Dialogs.IsOpen && menu.CurrentGarageTab == "Livree" && EventSystem.current.currentSelectedGameObject.name == "livery-apply" && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Corsa Red"), "Back from the prerequisite lost livery preview or focus.");
+                Require(FormulaProgression.Data.money == 0 && FormulaProgression.State.equippedLivery == "generic_blue" && !FormulaProgression.State.ownedLiveries.Contains("generic_red"), "Locked livery inspection changed the save.");
+                Pass("Locked paid livery shows both medal and credit blockers; virtual gamepad opens its event and returns to the same preview without mutation");
+                Require(FormulaProgression.Commit(d => { d.formula.medals["g03"] = Medal.Bronze; d.money = 400; return null; }, out string error), error);
+                Click("generic_red"); Click("livery-apply"); Next(305, "livery-partial-balance");
+            }
+            else if (stage == 305)
+            {
+                Require(menu.View.Dialogs.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "MISSING 1,100 CR" && t.color == FormulaUI.Red) && Button("confirm").GetComponentInChildren<TMP_Text>().text == "Earn credits · " + FormulaCatalog.Current.Event("g03").name, "Livery partial balance or reward-event action is incorrect.");
+                Capture("LiveryCredits"); Next(306, "livery-purchase-review");
+            }
+            else if (stage == 306)
+            {
+                Click("cancel"); Require(FormulaProgression.Data.money == 400 && !FormulaProgression.State.ownedLiveries.Contains("generic_red"), "Insufficient-credit livery review charged the player.");
+                Require(FormulaProgression.Commit(d => { d.money = 1500; return null; }, out string error), error);
+                Click("generic_red"); Click("livery-apply"); Next(307, "livery-exact-balance");
+            }
+            else if (stage == 307)
+            {
+                Require(EventSystem.current.currentSelectedGameObject.name == "cancel" && Button("confirm").GetComponentInChildren<TMP_Text>().text == "Buy and equip · 1,500 CR", "Affordable livery must show the exact price and initially focus Back.");
+                Require(!menu.View.Dialogs.GetComponentsInChildren<TMP_Text>().Any(t => t.text.StartsWith("MISSING")), "Livery shortfall did not clear at exact funds.");
+                Capture("LiveryPurchase"); Next(308, "livery-purchase-confirm");
+            }
+            else if (stage == 308)
+            {
+                Click("cancel"); Require(FormulaProgression.Data.money == 1500 && !FormulaProgression.State.ownedLiveries.Contains("generic_red"), "Cancel purchased the livery.");
+                Click("livery-apply"); Click("confirm"); Next(309, "livery-purchase-result");
+            }
+            else if (stage == 309)
+            {
+                Require(FormulaProgression.Data.money == 0 && FormulaProgression.State.ownedLiveries.Contains("generic_red") && FormulaProgression.State.equippedLivery == "generic_red" && Mathf.Approximately(car.GetComponent<RCCP_CarController>().Engine.maximumTorqueAsNM, 480), "Paid livery price, ownership, equip or unchanged performance is incorrect.");
+                Require(EventSystem.current.currentSelectedGameObject.name == "generic_red", "Livery purchase should focus the equipped card when its action becomes disabled.");
+                Click("generic_blue"); Click("livery-apply"); Require(FormulaProgression.Data.money == 0 && FormulaProgression.State.equippedLivery == "generic_blue", "Owned livery equip should remain free.");
+                Pass("Paid liveries handle partial/exact funds, cancel and purchase atomically; owned equip is free and physics are unchanged");
+                Require(FormulaProgression.Commit(d => { d.formula.medals["g01"] = Medal.Gold; return null; }, out string error), error);
+                Click("generic_purple"); Click("livery-apply"); Next(310, "livery-six-medals");
+            }
+            else if (stage == 310)
+            {
+                var requirement=menu.View.Dialogs.transform.Find("Confirmation/Livery Details/Requirements").GetComponent<TMP_Text>();
+                Require(requirement.GetParsedText().Split('\n').Length == 6 && requirement.text.Contains("MET · Gold in Shakedown") && requirement.text.Contains("NEEDED · Gold in First Flying Lap"), "Nova Purple does not show each met/missing Gold medal.");
+                Require(Button("confirm").GetComponentInChildren<TMP_Text>().text == "View First Flying Lap" && !menu.View.Dialogs.GetComponentsInChildren<TMP_Text>().Any(t => t.text.StartsWith("MISSING") || t.text.StartsWith("Balance:")), "Free achievement reward was presented as a credit purchase.");
+                foreach(var text in menu.View.Dialogs.transform.Find("Confirmation").GetComponentsInChildren<TMP_Text>()) { text.ForceMeshUpdate(); Require(text.preferredHeight <= text.rectTransform.rect.height + 1 && text.preferredWidth <= text.rectTransform.rect.width + 1, "Livery text exceeds its field: " + text.name); }
+                Capture("LiveryReward"); Next(311, "livery-reward-event");
+            }
+            else if (stage == 311)
+            {
+                Click("confirm"); Require(menu.View.Dialogs.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "FIRST FLYING LAP"), "Multi-medal reward did not link to its next missing objective."); menu.Back();
+                Require(FormulaProgression.Commit(d => { foreach(var entry in FormulaCatalog.Current.careerEvents) d.formula.medals[entry.id]=Medal.Gold; return null; }, out string error), error);
+                Click("generic_purple"); Click("livery-apply"); Require(Button("confirm").GetComponentInChildren<TMP_Text>().text == "Claim and equip · Free", "Completed achievement should be claimable for free."); Click("confirm");
+                Require(FormulaProgression.State.ownedLiveries.Contains("generic_purple") && FormulaProgression.State.equippedLivery == "generic_purple" && FormulaProgression.Data.money == 0, "Claiming a completed achievement charged credits or failed to grant ownership.");
+                Click("generic_blue"); Click("livery-apply"); Require(FormulaProgression.Commit(d => { d.formula.medals.Clear(); return null; }, out error), error);
+                Pass("Career reward shows six individual medal requirements, links to the next missing objective and claims completed rewards for free"); Next(312, "all-livery-states");
+            }
+            else if (stage == 312)
+            {
+                foreach(var livery in FormulaCatalog.Current.liveries)
+                {
+                    Click(livery.id);
+                    foreach(var text in menu.View.Garage.transform.Find("Livree/Livery Details").GetComponentsInChildren<TMP_Text>()) { text.ForceMeshUpdate(); Require(text.preferredHeight <= text.rectTransform.rect.height + 1 && text.preferredWidth <= text.rectTransform.rect.width + 1, "Livery inspector text exceeds its field: " + text.name + " / " + livery.id); }
+                }
+                Require(FormulaProgression.State.equippedLivery == "generic_blue" && FormulaProgression.Data.money == 0, "Cycling all livery previews changed progression.");
+                Click("generic_blue"); Pass("All eight livery inspector states fit their authored fields and preview without equipping"); Next(30, "livery-render");
             }
             else if (stage == 30) { Capture("Liveries"); Next(31, "setup-open"); }
             else if (stage == 31) { Click("garage-1"); Click("setup-speed"); Next(4, "setup-capture"); }
@@ -272,8 +363,8 @@ public static class FormulaMenuPreview
             {
                 Require(FormulaProgression.Commit(d => { d.formula.medals["g01"] = Medal.Bronze; return null; }, out string error), error);
                 Click("garage-0"); Click("upgrade-engine"); Click("upgrade-level-1");
-                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "INSUFFICIENT CREDITS\nEarn another 1,200 CR to purchase."), "Credit shortfall is not explained.");
-                Require(Button("confirm").interactable && Button("confirm").GetComponentInChildren<TMP_Text>().text == "View Shakedown", "Insufficient funds should offer the reward event.");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "MISSING 1,200 CR" && t.color == FormulaUI.Red) && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Balance: 0 CR · Upgrade cost: 1,200 CR"), "Credit shortfall, balance and price must be explicit.");
+                Require(Button("confirm").interactable && Button("confirm").GetComponentInChildren<TMP_Text>().text == "Earn credits · Shakedown", "Insufficient funds should offer the reward event.");
                 Next(4001, "upgrade-credit-shortfall");
             }
             else if (stage == 4001) { Capture("UpgradeCredits"); Next(4002, "upgrade-credit-event"); }
@@ -281,7 +372,22 @@ public static class FormulaMenuPreview
             {
                 Click("confirm"); Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "SHAKEDOWN"), "Credit shortfall did not link to a reward event."); menu.Back();
                 Require(FormulaProgression.Data.money == 0 && FormulaProgression.State.Owned("engine") == 0 && EventSystem.current.currentSelectedGameObject.name == "upgrade-level-1", "Insufficient-credit path mutated the save or lost focus.");
-                Pass("Insufficient funds states the exact shortfall and links to a replayable reward event"); Next(4003, "upgrade-unlocked");
+                Pass("Insufficient funds states the exact shortfall and links to a replayable reward event");
+                Require(FormulaProgression.Commit(d => { d.money = 400; return null; }, out string error), error);
+                Click("upgrade-level-1"); Next(40021, "partial-credit-shortfall");
+            }
+            else if (stage == 40021)
+            {
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "MISSING 800 CR" && t.color == FormulaUI.Red) && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Balance: 400 CR · Upgrade cost: 1,200 CR"), "Partial balance does not show the exact missing amount.");
+                Require(Button("upgrade-level-1").transform.Find("Ownership and Price").GetComponent<TMP_Text>().color == FormulaUI.Red, "Unaffordable level price is not highlighted.");
+                Capture("UpgradeCreditsPartial"); Next(40022, "exact-credit-balance");
+            }
+            else if (stage == 40022)
+            {
+                Click("cancel"); Require(FormulaProgression.Commit(d => { d.money = 1200; return null; }, out string error), error); Click("upgrade-level-1");
+                Require(Button("confirm").GetComponentInChildren<TMP_Text>().text == "Buy and equip · 1,200 CR" && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Upgrade cost · 1,200 CR" && t.color == Color.white), "Exact funds did not clear the shortfall state.");
+                Require(FormulaProgression.State.Owned("engine") == 0 && FormulaProgression.Data.money == 1200, "Reviewing an affordable upgrade changed the save.");
+                Click("cancel"); Pass("Missing credits are red for zero/partial balances, both medal and credit blockers remain visible, and exact funds restore the purchase action without spending"); Next(4003, "upgrade-unlocked");
             }
             else if (stage == 4003)
             {
@@ -453,7 +559,7 @@ public static class FormulaMenuPreview
             else if (stage == 10 && age > 2)
             {
                 Require(menu != null && menu.CurrentPage == "Acasă", "Menu reload failed.");
-                Require(FormulaProgression.State.equippedLivery == "generic_blue" && FormulaProgression.State.setup == "speed" && FormulaProgression.State.Owned("engine") == 1 && menu.CurrentGarageTab == "Setup", "Progress or last Garage tab was lost on scene reload.");
+                Require(FormulaProgression.State.equippedLivery == "generic_blue" && FormulaProgression.State.ownedLiveries.Contains("generic_red") && FormulaProgression.State.ownedLiveries.Contains("generic_purple") && FormulaProgression.State.setup == "speed" && FormulaProgression.State.Owned("engine") == 1 && menu.CurrentGarageTab == "Setup", "Progress or last Garage tab was lost on scene reload.");
                 Pass("Scene reload preserves equipped livery, setup and purchased development");
                 Next(1040, "standalone-garage-load");
             }

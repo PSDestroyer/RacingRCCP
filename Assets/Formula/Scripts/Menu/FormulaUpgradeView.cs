@@ -79,6 +79,7 @@ namespace FormulaGame
                 row.surface.texture = installed ? installedSurface : normalSurface;
                 row.status.text = installed ? "INSTALLED" : purchased ? "OWNED · EQUIP" : branch.levels.Find(l => l.level == i).incrementalPriceCredits.ToString("N0", CultureInfo.InvariantCulture);
                 row.status.fontSize = installed ? 28 : purchased ? 22 : 20;
+                row.status.color = !purchased && FormulaProgression.Data.money < branch.levels.Find(l => l.level == i).incrementalPriceCredits ? FormulaUI.Red : Color.white;
                 row.coin.gameObject.SetActive(!purchased);
                 row.value.text = car != null ? ValueAtLevel(BranchId, i, car, wheel).ToString(BranchId == "aero" ? "0.##" : "0.#", CultureInfo.InvariantCulture) + " " + Unit(BranchId) : "—";
             }

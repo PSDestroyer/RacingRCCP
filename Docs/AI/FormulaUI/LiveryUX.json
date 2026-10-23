@@ -1,0 +1,38 @@
+{
+  "feature": "Livery pricing and unlock UX",
+  "status": "Passed",
+  "catalog": "Existing prices and unlock rules in GenericCatalog.json; unchanged",
+  "presentation": {
+    "inspector": "Opaque Upgrade-style card with ownership/state, balance and price, red exact MISSING amount, next required objective and actionable button. Paid card labels show price; achievement cards show CAREER REWARD.",
+    "confirmation": "Existing serialized Confirmation panel with dedicated authored Livery Details group, the same native surfaces, yellow unmet requirements and red controller selection. Paid purchase initially focuses Back.",
+    "requirements": "MET/NEEDED per medal. Nova Purple shows all six Gold targets and routes to the next unmet event.",
+    "paid": "Both medal and credit blockers remain visible. Partial balance shows exact missing credits; exact balance enables Buy and equip with price.",
+    "rewards": "Career rewards are free, never show a credit shortfall, and may be claimed if requirements were already completed but ownership was not yet granted. Existing automatic race-result grants are retained.",
+    "equipped": "Owned liveries equip for free. Preview does not mutate progress or physics.",
+    "navigation": "Virtual gamepad Submit opens the prerequisite and Cancel restores the same livery preview and source action. Card up/down and left/right navigation remains inside the active Garage section."
+  },
+  "validation": {
+    "runtimeReport": "RuntimeValidation.json",
+    "playModePassed": 30,
+    "runtimeErrors": [],
+    "progressionReport": "../FormulaCareer/ProgressionValidation.json",
+    "progressionPassed": 22,
+    "scope": "Unity Editor Play Mode with isolated temporary save and virtual gamepad; no target-platform build or physical-controller validation.",
+    "coverage": [
+      "Locked paid livery with zero credits and unmet medal",
+      "Partial balance 400 CR against 1,500 CR price gives MISSING 1,100 CR",
+      "Exact funds, purchase cancel, paid equip, free owned equip and unchanged RCCP torque",
+      "Six individual met/unmet Gold targets and next-event link",
+      "Free achievement claim and no credit charge",
+      "All eight inspector text states fit authored fields",
+      "Purchased and claimed ownership survive scene reload and standalone Garage"
+    ]
+  },
+  "screenshots": [
+    "LiveryLocked.png",
+    "LiveryCredits.png",
+    "LiveryPurchase.png",
+    "LiveryReward.png",
+    "Liveries.png"
+  ]
+}
