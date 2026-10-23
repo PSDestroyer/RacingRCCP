@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using HalvaStudio.Save;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -30,6 +31,8 @@ namespace FormulaGame
         private GameObject modalOrigin;
         private string briefingEvent, briefingMode, garageReturnEvent, garageReturnMode, garageReturnPage;
         private GameObject garageReturnFocus;
+        private bool upgradeBriefing;
+        private string previousBriefingEvent, previousBriefingMode;
         private Coroutine fadeRoutine;
         private Vector2 screenPosition;
         private InputAction cancelAction;
@@ -101,6 +104,7 @@ namespace FormulaGame
         private void ClearGarageReturn() { garageReturnEvent = garageReturnMode = garageReturnPage = null; garageReturnFocus = null; view.Garage.SetEventContext(null, null); }
         private void OpenGarageFromBriefing()
         {
+            if (upgradeBriefing) { CloseModal(); return; }
             garageReturnEvent = briefingEvent; garageReturnMode = briefingMode; garageReturnPage = page; garageReturnFocus = modalOrigin;
             CloseModal(); Show("Garaj"); view.Garage.SetEventContext(FormulaCatalog.Current.Event(briefingEvent), briefingMode);
         }
@@ -177,23 +181,28 @@ namespace FormulaGame
             bool unlocked = mode != "career" || FormulaProgression.Unlocked(e.unlock, FormulaProgression.State);
             OpenDialog(); view.Dialogs.EventBriefing(e, mode, () => { if (unlocked) Launch(e.id, mode); }, unlocked);
         }
-        private static string DevelopmentDetails(string branch, int previous, int next)
+        private static void UpgradeEffects(string branch, int previous, int next, out string effect, out string tradeoff, out string benefit)
         {
             switch (branch)
             {
-                case "engine": return $"Torque: +{previous * 3}% → +{next * 3}% over stock.\nAcceleration also depends on grip. No additional tradeoff.";
-                case "brakes": return $"Brake torque: +{previous * 4}% → +{next * 4}%.\nAxle balance is retained. ABS and grip limit braking.";
-                case "suspension": return $"Springs +{next * 1.5f:0.#}%, damping +{next * 3.5f:0.#}%, anti-roll +{next * 2.5f:0.#}%.\nFirmer response; less compliance over bumps.";
-                default: return $"Downforce: +{previous * 4}% → +{next * 4}%.\nTradeoff: aerodynamic drag +{next}% over stock.";
+                case "engine":
+                    effect = $"Torque  +{previous * 3}% → +{next * 3}%"; tradeoff = "No additional tradeoff";
+                    benefit = "Higher torque improves acceleration when grip is available."; break;
+                case "brakes":
+                    effect = $"Brake torque  +{previous * 4}% → +{next * 4}%"; tradeoff = "Front-to-rear brake balance is retained";
+                    benefit = "Higher brake torque adds braking force. Grip and ABS still limit stopping distance."; break;
+                case "suspension":
+                    effect = $"Springs  +{previous * 1.5f:0.#}% → +{next * 1.5f:0.#}%";
+                    tradeoff = $"Damping +{next * 3.5f:0.#}% · Anti-roll +{next * 2.5f:0.#}%";
+                    benefit = "Firmer chassis response, with less compliance over bumps."; break;
+                default:
+                    effect = $"Downforce  +{previous * 4}% → +{next * 4}%"; tradeoff = $"Drag  +{previous}% → +{next}%";
+                    benefit = "More grip in fast corners, with increased air resistance."; break;
             }
         }
         private void BuyUpgrade(string branchId)
         {
-            var p = FormulaProgression.State; var branch = FormulaCatalog.Current.Upgrade(branchId); int next = p.Owned(branchId) + 1;
-            var level = branch.levels.Find(l => l.level == next); if (level == null) return;
-            bool unlocked = FormulaProgression.Unlocked(level.unlock, p), affordable = FormulaProgression.Data.money >= level.incrementalPriceCredits;
-            string reason = !unlocked ? FormulaProgression.LockReason(level.unlock, p) : !affordable ? "You need another " + (level.incrementalPriceCredits - FormulaProgression.Data.money).ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR." : "Available to purchase.";
-            Confirm(branch.name + " / Level " + next, DevelopmentDetails(branchId, p.Equipped(branchId), next) + "\n\n" + reason + "\nCost: " + level.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR", unlocked && affordable ? "Buy and equip" : "Unavailable", () => Mutate(d => FormulaProgression.BuyUpgrade(d, branchId, next)), unlocked && affordable);
+            SelectUpgradeLevel(branchId, FormulaProgression.State.Owned(branchId) + 1);
         }
         private void UpgradeLevels(string branchId)
         {
@@ -201,13 +210,67 @@ namespace FormulaGame
         }
         private void SelectUpgradeLevel(string branchId, int level)
         {
-            var p = FormulaProgression.State;
+            var p = FormulaProgression.State; var branch = FormulaCatalog.Current.Upgrade(branchId);
+            if (level == p.Equipped(branchId)) return;
+            var target = branch.levels.Find(l => l.level == level);
+            if (level != 0 && target == null) return;
+            UpgradeEffects(branchId, p.Equipped(branchId), level, out string effect, out string tradeoff, out string benefit);
+            string requirement, cost, label; Action action; bool actionable = true, focusAction = false;
+            int next = p.Owned(branchId) + 1;
             if (level <= p.Owned(branchId))
             {
-                if (level != p.Equipped(branchId)) Mutate(d => FormulaProgression.EquipUpgrade(d, branchId, level));
+                requirement = "OWNED\nSwitch between purchased levels for free."; cost = "Free to equip"; label = "Equip · Free";
+                action = () => Mutate(d => FormulaProgression.EquipUpgrade(d, branchId, level)); focusAction = true;
             }
-            else if (level == p.Owned(branchId) + 1) BuyUpgrade(branchId);
-            else Confirm(FormulaCatalog.Current.Upgrade(branchId).name + " / Level " + level, "Purchase Level " + (p.Owned(branchId) + 1) + " first.", "Unavailable", () => { }, false);
+            else if (level != next)
+            {
+                requirement = "PREVIOUS LEVEL REQUIRED\nPurchase Level " + next + " first."; cost = UpgradePrice(target); label = "View Level " + next;
+                action = () => { CloseModal(); view.Garage.Upgrade.FocusLevel(next); SelectUpgradeLevel(branchId, next); }; focusAction = true;
+            }
+            else
+            {
+                bool unlocked = FormulaProgression.Unlocked(target.unlock, p), affordable = FormulaProgression.Data.money >= target.incrementalPriceCredits;
+                var eventRule = UpgradeEventRule(target.unlock, p, !unlocked);
+                var careerEvent = FormulaCatalog.Current.Event((string)eventRule?["eventId"]);
+                cost = UpgradePrice(target);
+                if (!unlocked)
+                {
+                    requirement = "LOCKED\n" + (careerEvent != null ? "Earn " + FormulaCatalog.MedalName(FormulaCatalog.ParseMedal((string)eventRule["minimumMedal"])) + " in " + careerEvent.name + " to unlock this upgrade." : FormulaProgression.LockReason(target.unlock, p));
+                    label = careerEvent != null ? "View " + careerEvent.name : "Locked"; actionable = careerEvent != null;
+                    action = () => ViewUpgradeEvent(careerEvent); focusAction = true;
+                }
+                else if (!affordable)
+                {
+                    requirement = "INSUFFICIENT CREDITS\nEarn another " + (target.incrementalPriceCredits - FormulaProgression.Data.money).ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR to purchase.";
+                    label = careerEvent != null ? "View " + careerEvent.name : "Not enough credits"; actionable = careerEvent != null;
+                    action = () => ViewUpgradeEvent(careerEvent); focusAction = true;
+                }
+                else
+                {
+                    requirement = "AVAILABLE\nPurchase once. Switch between owned levels for free.";
+                    label = "Buy and equip · " + target.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
+                    action = () => Mutate(d => FormulaProgression.BuyUpgrade(d, branchId, level));
+                }
+            }
+            OpenDialog(); view.Dialogs.Upgrade(branch.name + " / " + (level == 0 ? "Stock" : "Level " + level), effect, tradeoff, benefit, requirement, cost, label, action, actionable, focusAction);
+        }
+        private static string UpgradePrice(FormulaCatalog.UpgradeLevel level) => "Upgrade cost · " + level.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
+        private static JObject UpgradeEventRule(JObject rule, FormulaProgress progress, bool unmetOnly)
+        {
+            if (rule == null || (unmetOnly && FormulaProgression.Unlocked(rule, progress))) return null;
+            if ((string)rule["type"] == "event_medal") return rule;
+            if (rule["all"] is JArray all)
+                foreach (var child in all.OfType<JObject>()) { var found = UpgradeEventRule(child, progress, unmetOnly); if (found != null) return found; }
+            return null;
+        }
+        private void ViewUpgradeEvent(FormulaCatalog.CareerEvent careerEvent)
+        {
+            if (careerEvent == null) return;
+            // Keep the Garage origin while the briefing replaces the upgrade dialog.
+            previousBriefingEvent = briefingEvent; previousBriefingMode = briefingMode; upgradeBriefing = true;
+            briefingEvent = careerEvent.id; briefingMode = "career";
+            bool unlocked = FormulaProgression.Unlocked(careerEvent.unlock, FormulaProgression.State);
+            view.Dialogs.EventBriefing(careerEvent, "career", () => { if (unlocked) Launch(careerEvent.id, "career"); }, unlocked);
         }
         private void SelectLivery(string id) { selectedLivery = id; vehiclePreview.ShowLivery(id); view.Garage.InspectLivery(id); }
         private void ApplySelectedLivery()
@@ -236,6 +299,7 @@ namespace FormulaGame
         }
         private void CloseModal()
         {
+            if (upgradeBriefing) { briefingEvent = previousBriefingEvent; briefingMode = previousBriefingMode; upgradeBriefing = false; }
             bool wasOpen = view.Dialogs.IsOpen; view.Dialogs.Close(); view.SetBaseInteraction(true);
             if (wasOpen) RestoreFocus(modalOrigin);
         }

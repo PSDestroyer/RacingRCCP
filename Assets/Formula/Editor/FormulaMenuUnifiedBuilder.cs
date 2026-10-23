@@ -23,6 +23,15 @@ public static class FormulaMenuUnifiedBuilder
         finally { PrefabUtility.UnloadPrefabContents(root); }
         AssetDatabase.SaveAssets(); Debug.Log("FORMULA_UNIFIED_GARAGE_UI_APPLIED");
     }
+    [MenuItem("Tools/Formula Career/Refine Upgrade Dialog UX")]
+    public static void RefineUpgradeDialog()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
+        var root = PrefabUtility.LoadPrefabContents(FormulaMenuHierarchyBuilder.PrefabPath);
+        try { StyleDialogs(root.GetComponent<FormulaMenuView>().Dialogs); PrefabUtility.SaveAsPrefabAsset(root, FormulaMenuHierarchyBuilder.PrefabPath); }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+        AssetDatabase.SaveAssets(); Debug.Log("FORMULA_UPGRADE_DIALOG_UX_APPLIED");
+    }
     public static void Style(FormulaMenuView view)
     {
         SetBool(view, "upgradeTheme", true);
@@ -211,7 +220,7 @@ public static class FormulaMenuUnifiedBuilder
     }
     private static void StyleDialogs(FormulaMenuDialogs view)
     {
-        view.GetComponent<UnityEngine.UI.Image>().color=new Color(0,0,0,.88f);
+        view.GetComponent<UnityEngine.UI.Image>().color=new Color(0,0,0,.92f);
         foreach(string name in new[]{"Confirmation","Upgrade Level Selection","Race Briefing"})
         {
             var panel=view.transform.Find(name);Panel(panel);
@@ -223,6 +232,22 @@ public static class FormulaMenuUnifiedBuilder
         var garage=Button(briefing,"briefing-garage","GARAGE",224,486,230,50);Set(view,"eventGarage",garage);
         var accept=briefing.Find("confirm");garage.transform.SetAsLastSibling();accept.SetAsLastSibling();Place(accept,470,486,558,50);Format(accept.GetComponentInChildren<TMP_Text>(true),20,0,518,50,26);
         FormulaMenuTheme.StyleButton(back.GetComponent<UnityEngine.UI.Button>());FormulaMenuTheme.StyleButton(accept.GetComponent<UnityEngine.UI.Button>());
+        var confirmation=view.transform.Find("Confirmation");Place(confirmation,230,116,820,488);Panel(confirmation);
+        confirmation.GetComponent<UnityEngine.UI.Image>().color=new Color32(8,9,11,255);
+        Place(confirmation.Find("Accent"),32,0,100,3);
+        var fields=new SerializedObject(view);
+        Format((TMP_Text)fields.FindProperty("title").objectReferenceValue,32,18,756,64,42,true);
+        var generic=(TMP_Text)fields.FindProperty("details").objectReferenceValue;Format(generic,32,94,756,290,24);generic.textWrappingMode=TextWrappingModes.Normal;
+        var content=Group(confirmation,"Upgrade Details",32,94,756,306);Set(view,"upgradeContent",content.gameObject);
+        Set(view,"upgradeEffect",Label(content,"Effect","Downforce  +0% → +4%",0,0,756,46,30,true));
+        Label(content,"Comparison Note","CHANGES VS STOCK",520,8,236,30,17);
+        Set(view,"upgradeTradeoff",Label(content,"Tradeoff","Drag  +0% → +1%",0,44,756,34,23));
+        var benefit=Label(content,"Benefit","More grip in fast corners, with increased air resistance.",0,88,756,60,22);benefit.textWrappingMode=TextWrappingModes.Normal;benefit.alignment=TextAlignmentOptions.TopLeft;Set(view,"upgradeBenefit",benefit);
+        var requirement=Label(content,"Requirement","LOCKED\nEarn Bronze in Shakedown to unlock this upgrade.",0,166,756,68,22);requirement.textWrappingMode=TextWrappingModes.Normal;requirement.alignment=TextAlignmentOptions.TopLeft;requirement.color=FormulaUI.Accent;Set(view,"upgradeRequirement",requirement);
+        Set(view,"upgradeCost",Label(content,"Cost","Upgrade cost · 1,100 CR",252,260,504,38,27,true));content.gameObject.SetActive(false);
+        var cancel=(UnityEngine.UI.Button)fields.FindProperty("cancel").objectReferenceValue;Place(cancel.transform,32,414,220,54);Format(cancel.GetComponentInChildren<TMP_Text>(true),18,0,184,54,26);
+        var confirm=(UnityEngine.UI.Button)fields.FindProperty("accept").objectReferenceValue;Place(confirm.transform,268,414,520,54);Format(confirm.GetComponentInChildren<TMP_Text>(true),18,0,484,54,26);
+        cancel.transform.SetAsLastSibling();confirm.transform.SetAsLastSibling();FormulaMenuTheme.StyleButton(cancel);FormulaMenuTheme.StyleButton(confirm);
     }
     private static void BuildResults(FormulaMenuView menu)
     {

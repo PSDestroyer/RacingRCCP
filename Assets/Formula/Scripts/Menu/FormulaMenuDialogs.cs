@@ -18,6 +18,8 @@ namespace FormulaGame
         [SerializeField] private TMP_Text[] medalRewards;
         [SerializeField] private FormulaTrackMap eventMap;
         [SerializeField] private UnityEngine.UI.Button eventCancel, eventAccept, eventGarage;
+        [SerializeField] private GameObject upgradeContent;
+        [SerializeField] private TMP_Text upgradeEffect, upgradeTradeoff, upgradeBenefit, upgradeRequirement, upgradeCost;
         private Action confirm, close;
         private Action<int> selectLevel;
         public bool IsOpen => gameObject.activeSelf;
@@ -34,7 +36,19 @@ namespace FormulaGame
         {
             gameObject.SetActive(true); confirmation.SetActive(true); levelSelection.SetActive(false); if (eventBriefing != null) eventBriefing.SetActive(false);
             title.text = heading; details.text = description; acceptText.text = actionName;
+            details.gameObject.SetActive(true); if (upgradeContent != null) upgradeContent.SetActive(false);
             accept.interactable = canConfirm; confirm = action; Wire(confirmation.transform); FormulaUI.Focus(confirmation.transform);
+        }
+        public void Upgrade(string heading, string effect, string tradeoff, string benefit, string requirement, string cost, string actionName, Action action, bool canConfirm, bool focusAction)
+        {
+            Confirm(heading, effect + "\n" + tradeoff + "\n" + benefit + "\n\n" + requirement + "\n" + cost, actionName, action, canConfirm);
+            if (upgradeContent != null)
+            {
+                details.gameObject.SetActive(false); upgradeContent.SetActive(true);
+                upgradeEffect.text = effect; upgradeTradeoff.text = tradeoff; upgradeBenefit.text = benefit;
+                upgradeRequirement.text = requirement; upgradeCost.text = cost;
+            }
+            if (focusAction && canConfirm) UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(accept.gameObject);
         }
         public void SelectLevel(string branchId, Action<int> action)
         {

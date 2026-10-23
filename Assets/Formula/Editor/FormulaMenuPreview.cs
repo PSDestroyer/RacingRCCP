@@ -155,6 +155,39 @@ public static class FormulaMenuPreview
             {
                 Click("briefing-garage"); Require(menu.CurrentPage == "Garaj" && menu.CurrentGarageTab == "Dezvoltare" && !menu.View.Dialogs.IsOpen, "Briefing Garage did not open the first Upgrade section.");
                 Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("Stock event")), "Garage did not explain the stock-car event restriction.");
+                Click("upgrade-aero"); Click("upgrade-level-1"); Next(10111, "locked-upgrade");
+            }
+            else if (stage == 10111)
+            { Capture("UpgradeLocked"); Next(101111, "locked-upgrade-inspect"); }
+            else if (stage == 101111)
+            {
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "LOCKED\nEarn Bronze in Shakedown to unlock this upgrade."), "Upgrade prerequisite is not explicit.");
+                Require(Button("confirm").interactable && EventSystem.current.currentSelectedGameObject == Button("confirm").gameObject && Button("confirm").GetComponentInChildren<TMP_Text>().text == "View Shakedown", "Locked upgrade must focus its actionable event link.");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Downforce  +0% → +4%") && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Drag  +0% → +1%"), "Aero effect and tradeoff are not separated.");
+                foreach(var text in menu.View.Dialogs.transform.Find("Confirmation").GetComponentsInChildren<TMP_Text>()) { text.ForceMeshUpdate(); Require(text.preferredHeight <= text.rectTransform.rect.height + 1 && text.preferredWidth <= text.rectTransform.rect.width + 1, "Upgrade text exceeds its field: " + text.name + " preferred " + text.preferredWidth + "x" + text.preferredHeight + " rect " + text.rectTransform.rect.size); }
+                Next(10112, "locked-upgrade-link");
+            }
+            else if (stage == 10112)
+            {
+                simulatedPad = InputSystem.AddDevice<Gamepad>("Formula upgrade dialog validation");
+                InputSystem.QueueStateEvent(simulatedPad, new GamepadState().WithButton(GamepadButton.South)); Next(101121, "locked-upgrade-controller-submit");
+            }
+            else if (stage == 101121)
+            {
+                InputSystem.QueueStateEvent(simulatedPad, new GamepadState());
+                Require(menu.View.Dialogs.IsOpen && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "SHAKEDOWN"), "Upgrade event link opened a different event.");
+                Require(FormulaProgression.Data.money == 0 && FormulaProgression.State.Owned("aero") == 0, "Viewing a prerequisite changed progression.");
+                InputSystem.QueueStateEvent(simulatedPad, new GamepadState().WithButton(GamepadButton.East));
+                Next(10113, "upgrade-event-back");
+            }
+            else if (stage == 10113)
+            {
+                InputSystem.QueueStateEvent(simulatedPad, new GamepadState());
+                Require(!menu.View.Dialogs.IsOpen && menu.CurrentGarageTab == "Dezvoltare" && menu.View.Garage.Upgrade.BranchId == "aero" && EventSystem.current.currentSelectedGameObject.name == "upgrade-level-1", "Briefing Back lost the source upgrade.");
+                InputSystem.RemoveDevice(simulatedPad); simulatedPad = null;
+                Click("upgrade-level-1"); Click("confirm"); Click("briefing-garage");
+                Require(!menu.View.Dialogs.IsOpen && EventSystem.current.currentSelectedGameObject.name == "upgrade-level-1", "Prerequisite briefing Garage must return to the source Garage.");
+                Pass("Locked upgrade explains the medal condition, separates effect and drag, links to Shakedown without mutation and preserves Garage category/level on Back");
                 Click("garage-1"); EventSystem.current.SetSelectedGameObject(Button("setup-speed").gameObject); Next(1012, "setup-preview");
             }
             else if (stage == 1012)
@@ -237,12 +270,28 @@ public static class FormulaMenuPreview
             }
             else if (stage == 40)
             {
+                Require(FormulaProgression.Commit(d => { d.formula.medals["g01"] = Medal.Bronze; return null; }, out string error), error);
+                Click("garage-0"); Click("upgrade-engine"); Click("upgrade-level-1");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "INSUFFICIENT CREDITS\nEarn another 1,200 CR to purchase."), "Credit shortfall is not explained.");
+                Require(Button("confirm").interactable && Button("confirm").GetComponentInChildren<TMP_Text>().text == "View Shakedown", "Insufficient funds should offer the reward event.");
+                Next(4001, "upgrade-credit-shortfall");
+            }
+            else if (stage == 4001) { Capture("UpgradeCredits"); Next(4002, "upgrade-credit-event"); }
+            else if (stage == 4002)
+            {
+                Click("confirm"); Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "SHAKEDOWN"), "Credit shortfall did not link to a reward event."); menu.Back();
+                Require(FormulaProgression.Data.money == 0 && FormulaProgression.State.Owned("engine") == 0 && EventSystem.current.currentSelectedGameObject.name == "upgrade-level-1", "Insufficient-credit path mutated the save or lost focus.");
+                Pass("Insufficient funds states the exact shortfall and links to a replayable reward event"); Next(4003, "upgrade-unlocked");
+            }
+            else if (stage == 4003)
+            {
                 Require(FormulaProgression.Commit(d => { d.money = 20000; d.formula.medals["g01"] = Medal.Bronze; return null; }, out string error), error);
                 Click("garage-0"); Click("upgrade-engine");
                 Require(menu.View.Garage.Upgrade.IsPresented && !canvas.transform.Find("Header").gameObject.activeSelf && !canvas.transform.Find("Footer").gameObject.activeSelf && Button("garage-1").gameObject.activeInHierarchy && Button("garage-2").gameObject.activeInHierarchy, "Upgrade must preserve the permanent Garage tabs and its Figma presentation.");
                 Require(menu.View.Garage.Upgrade.GetComponentsInChildren<UnityEngine.UI.Button>().Count(b => b.name.StartsWith("upgrade-level-")) == 4, "Upgrade needs Stock and three level rows.");
                 Require(menu.View.Garage.GetComponentsInChildren<FormulaDevelopmentCard>(true).Length == 0, "Legacy development cards remain in the authored hierarchy.");
-                Click("upgrade-level-3"); Require(!Button("confirm").interactable, "An unowned intermediate level could be skipped."); Click("cancel");
+                Click("upgrade-level-3"); Require(Button("confirm").GetComponentInChildren<TMP_Text>().text == "View Level 1", "Skipped upgrade does not point to its next required level."); Click("confirm");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Engine / Level 1"), "Required level link did not open the next purchasable upgrade."); Click("cancel");
                 Require(FormulaProgression.Data.money == 20000 && FormulaProgression.State.Owned("engine") == 0 && Mathf.Approximately(car.GetComponent<RCCP_CarController>().Engine.maximumTorqueAsNM, 480), "Inspecting an unavailable upgrade changed credits, ownership or torque.");
                 Pass("Figma Upgrade has four level rows, previews without mutations and blocks skipping unowned levels");
                 Click("upgrade-level-1"); Next(5, "purchase-dialog");
@@ -250,7 +299,7 @@ public static class FormulaMenuPreview
             else if (stage == 5)
             {
                 var selected = EventSystem.current.currentSelectedGameObject?.GetComponent<UnityEngine.UI.Button>();
-                Require(selected != null && (selected.name == "cancel" || selected.name == "confirm"), "Dialog did not capture controller focus.");
+                Require(selected != null && selected.name == "cancel", "A paid purchase should initially focus Back.");
                 Require(selected.FindSelectableOnRight()?.name == "confirm", "Dialog controller navigation escaped.");
                 Capture("Purchase"); Next(50, "purchase-render");
             }
@@ -281,12 +330,18 @@ public static class FormulaMenuPreview
             else if (stage == 62) { EventSystem.current.SetSelectedGameObject(Button("upgrade-level-2").gameObject); Next(63, "level-selection-capture"); }
             else if (stage == 63) { Capture("Development"); Next(631, "level-selection-render"); }
             else if (stage == 631) { Capture("UpgradeLevels"); Next(632, "level-selection-render"); }
-            else if (stage == 632) { Click("upgrade-level-0"); Next(64, "stock-level"); }
+            else if (stage == 632) { Click("upgrade-level-0"); Require(Button("confirm").GetComponentInChildren<TMP_Text>().text == "Equip · Free", "Owned stock level does not offer free equip."); Click("confirm"); Next(64, "stock-level"); }
             else if (stage == 64)
             {
                 Require(FormulaProgression.State.Equipped("engine") == 0 && Mathf.Approximately(car.GetComponent<RCCP_CarController>().Engine.maximumTorqueAsNM, 480), "Explicit stock level did not apply.");
-                Click("upgrade-engine"); Click("upgrade-level-1"); Next(65, "owned-level");
+                Click("upgrade-engine"); Click("upgrade-level-1"); Next(641, "owned-level-review");
             }
+            else if (stage == 641)
+            {
+                Require(Button("confirm").GetComponentInChildren<TMP_Text>().text == "Equip · Free" && FormulaProgression.State.Equipped("engine") == 0, "Reviewing an owned level should wait for free equip confirmation.");
+                Capture("UpgradeOwned"); Next(642, "owned-level-equip");
+            }
+            else if (stage == 642) { Click("confirm"); Next(65, "owned-level"); }
             else if (stage == 65)
             {
                 Require(FormulaProgression.State.Equipped("engine") == 1 && Mathf.Approximately(car.GetComponent<RCCP_CarController>().Engine.maximumTorqueAsNM, 494.4f), "Owned level did not reapply.");

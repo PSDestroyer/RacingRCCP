@@ -56,6 +56,10 @@ namespace FormulaGame
             if (categoryFocus) EventSystem.current?.SetSelectedGameObject(categories[category].gameObject);
         }
         public void PreviewLevel(int level) { previewLevel = level; Render(); }
+        public void FocusLevel(int level)
+        {
+            PreviewLevel(level); EventSystem.current?.SetSelectedGameObject(levels[level].button.gameObject);
+        }
         public void Refresh()
         {
             driver.text = FormulaMenuFormatting.DriverName;
