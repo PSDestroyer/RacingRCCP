@@ -154,17 +154,13 @@ public static class FormulaMenuHierarchyBuilder
     private static FormulaHomeView BuildHome(Transform screens)
     {
         var root = Group(screens, "Home"); var view = root.gameObject.AddComponent<FormulaHomeView>(); var art = FormulaMenuAssets.Current;
-        Set(view, "nextStage", Text(root, "Next Stage", "CARIERA TA / ETAPA 01", 24, 12, 370, 28, 20, false, FormulaUI.Accent));
-        Set(view, "nextEvent", Text(root, "Next Event", "ACOMODARE", 24, 42, 390, 50, 40, true));
         var nav = Group(root, "Navigation");
-        Set(view, "continueCareer", FormulaMenuStyle.MenuButton(nav, "continue-career", "CONTINUĂ CARIERA", art.career, 12, 110, 380, 66, NoAction));
+        Set(view, "career", FormulaMenuStyle.MenuButton(nav, "home-career", "CAREER", art.career, 12, 110, 380, 66, NoAction));
         Set(view, "garage", FormulaMenuStyle.MenuButton(nav, "home-garage", "GARAJ", art.garage, 12, 177, 380, 66, NoAction));
-        Set(view, "development", FormulaMenuStyle.MenuButton(nav, "home-development", "DEZVOLTARE", art.upgrade, 12, 244, 380, 66, NoAction));
         Set(view, "quick", FormulaMenuStyle.MenuButton(nav, "home-quick", "CURSE RAPIDE", art.career, 12, 311, 380, 66, NoAction));
         Set(view, "profile", FormulaMenuStyle.MenuButton(nav, "home-profile", "PROFIL", art.helmet, 12, 378, 182, 60, NoAction));
         Set(view, "settings", FormulaMenuStyle.MenuButton(nav, "home-settings", "SETĂRI", art.settings, 200, 378, 192, 60, NoAction));
-        var caption = FormulaMenuStyle.Surface(root, "Current Vehicle", 650, 440, 550, 55); Text(caption, "Chassis", "FORMULA G27", 18, 0, 240, 50, 34, true);
-        Set(view, "currentLivery", Text(caption, "Equipped Livery", "Apex Orange", 260, 8, 270, 35, 23, false, FormulaUI.Accent)); return view;
+        return view;
     }
     private static Component BuildEvents(Transform screens, bool quick)
     {

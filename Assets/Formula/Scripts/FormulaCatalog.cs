@@ -47,8 +47,8 @@ namespace FormulaGame
         public sealed class Reward { public int credits, xp; }
         public sealed class CareerEvent
         {
-            public string id, name, mode, trackId, vehicleRule;
-            public int laps, opponentCount;
+            public string id, name, mode, trackId, vehicleRule, missionIcon;
+            public int laps, opponentCount, calendarRound;
             public JObject unlock, medalTargets;
             public Reward baseValidFinishReward;
             public Dictionary<string, Reward> oneTimeMedalRewards;
@@ -59,6 +59,7 @@ namespace FormulaGame
     public sealed class FormulaProgress
     {
         public int schemaVersion = 1;
+        public int lastGarageTab;
         public string catalogVersion = "generic_v1";
         public List<string> ownedChassis = new List<string>();
         public List<string> ownedLiveries = new List<string>();

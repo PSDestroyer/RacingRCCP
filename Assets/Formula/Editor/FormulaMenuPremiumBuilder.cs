@@ -141,16 +141,17 @@ public static class FormulaMenuPremiumBuilder
         try
         {
             var view = root.GetComponent<FormulaMenuView>();
+            if (view.UpgradeTheme) { FormulaMenuUnifiedBuilder.Style(view); PrefabUtility.SaveAsPrefabAsset(root, FormulaMenuHierarchyBuilder.PrefabPath); return; }
             foreach (var button in root.GetComponentsInChildren<UnityEngine.UI.Button>(true))
             {
                 var r = (RectTransform)button.transform; MoveButton(button, r.anchoredPosition.x, -r.anchoredPosition.y, r.sizeDelta.x, r.sizeDelta.y);
             }
+            var screens = root.transform.Find("Screens"); Rect(screens, 32, 104, 1216, 520);
             Header(root.transform, view); Home(view.Home); Cards(view.Career.transform, false); Cards(view.Quick.transform, true); Garage(view.Garage); Settings(view.Settings); Briefing(view.Dialogs);
             var footer = root.transform.Find("Footer"); Rect(footer, 0, 648, 1280, 72); footer.GetComponent<UnityEngine.UI.Image>().color = Ink;
             var title = footer.Find("Page Title").GetComponent<TMP_Text>(); Rect(title.transform, 40, 9, 440, 50); Font(title, 42, true);
             Rect(footer.Find("Title Rule"), 480, 39, 225, 1); Rect(footer.Find("Input Hints"), 750, 12, 330, 48); Font(footer.Find("Input Hints").GetComponent<TMP_Text>(), 17);
             MoveButton(footer.Find("nav-0").GetComponent<UnityEngine.UI.Button>(), 1090, 14, 150, 44);
-            var screens = root.transform.Find("Screens"); Rect(screens, 32, 104, 1216, 520);
             var shade = root.transform.Find("Screen Shade") as RectTransform ?? FormulaUI.Box(root.transform, "Screen Shade", 0, 84, 1280, 564, Color.clear);
             shade.SetAsLastSibling(); shade.SetSiblingIndex(screens.GetSiblingIndex()); Set(view, "screenShade", shade.GetComponent<UnityEngine.UI.Image>());
             FormulaEnglishBuilder.TranslateHierarchy(root);
@@ -173,49 +174,99 @@ public static class FormulaMenuPremiumBuilder
         var track = Panel(account, "XP Track", 59, 40, 168, 3, new Color32(80, 8, 27, 255));
         var fill = Panel(track, "XP Progress", 0, 0, 168, 3, FormulaUI.Accent).GetComponent<UnityEngine.UI.Image>(); fill.type = UnityEngine.UI.Image.Type.Filled; fill.fillMethod = UnityEngine.UI.Image.FillMethod.Horizontal; fill.fillAmount = 0; Set(view, "xpFill", fill);
     }
+    [MenuItem("Tools/Formula Career/Simplify Home")]
+    public static void SimplifyHome()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) throw new System.InvalidOperationException("Exit Play Mode first.");
+        var root = PrefabUtility.LoadPrefabContents(FormulaMenuHierarchyBuilder.PrefabPath);
+        try
+        {
+            var home = root.GetComponentInChildren<FormulaHomeView>(true).transform;
+            foreach (string name in new[] { "Next Stage", "Next Event", "Event Objective", "Current Vehicle" })
+            {
+                var item = home.Find(name);
+                if (item != null) UnityEngine.Object.DestroyImmediate(item.gameObject);
+            }
+            PrefabUtility.SaveAsPrefabAsset(root, FormulaMenuHierarchyBuilder.PrefabPath);
+        }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+        AssetDatabase.SaveAssets();
+        Debug.Log("FORMULA_HOME_SIMPLIFIED: removed event details and vehicle/reward caption from Home.");
+    }
+    [MenuItem("Tools/Formula Career/Arrange Home Navigation")]
+    public static void ArrangeHomeNavigation()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
+        var root = PrefabUtility.LoadPrefabContents(FormulaMenuHierarchyBuilder.PrefabPath);
+        try
+        {
+            Home(root.GetComponentInChildren<FormulaHomeView>(true));
+            PrefabUtility.SaveAsPrefabAsset(root, FormulaMenuHierarchyBuilder.PrefabPath);
+        }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+        AssetDatabase.SaveAssets();
+        Debug.Log("FORMULA_HOME_NAVIGATION: one Career entry, aligned navigation.");
+    }
     private static void Home(FormulaHomeView view)
     {
-        var root = view.transform;
-        Rect(root.Find("Next Stage"), 12, 7, 360, 25); Font(root.Find("Next Stage").GetComponent<TMP_Text>(), 18, false, FormulaUI.Accent);
-        Rect(root.Find("Next Event"), 12, 35, 380, 65); Font(root.Find("Next Event").GetComponent<TMP_Text>(), 62, true);
-        var goal = Text(root, "Event Objective", "Încheie un tur valid și oprește de la 30 km/h.", 12, 108, 355, 46, 22); goal.textWrappingMode = TextWrappingModes.Normal; Set(view, "goal", goal);
-        var nav = root.Find("Navigation"); MoveButton(nav.Find("continue-career").GetComponent<UnityEngine.UI.Button>(), 12, 168, 360, 64, true);
-        var overview = NewButton(nav, "home-career", "VEZI CARIERA  /  6 PROBE  →", 12, 238, 360, 40); Set(view, "careerOverview", overview);
-        MoveButton(nav.Find("home-garage").GetComponent<UnityEngine.UI.Button>(), 12, 294, 360, 54);
-        MoveButton(nav.Find("home-development").GetComponent<UnityEngine.UI.Button>(), 12, 353, 360, 54);
-        MoveButton(nav.Find("home-quick").GetComponent<UnityEngine.UI.Button>(), 12, 412, 360, 54);
-        MoveButton(nav.Find("home-profile").GetComponent<UnityEngine.UI.Button>(), 12, 478, 174, 40);
-        MoveButton(nav.Find("home-settings").GetComponent<UnityEngine.UI.Button>(), 198, 478, 174, 40);
-        var caption = root.Find("Current Vehicle"); Rect(caption, 440, 450, 760, 68); caption.GetComponent<UnityEngine.UI.Image>().color = new Color32(12, 1, 5, 230);
-        Rect(caption.Find("Chassis"), 18, 4, 255, 36); Font(caption.Find("Chassis").GetComponent<TMP_Text>(), 34, true);
-        Rect(caption.Find("Equipped Livery"), 18, 38, 255, 24); Font(caption.Find("Equipped Livery").GetComponent<TMP_Text>(), 20, false, FormulaUI.Accent);
-        Set(view, "reward", Text(caption, "Next Race Reward", "OBIECTIV BRONZ / 1.200 CR + 1.000 XP", 290, 6, 452, 25, 18, false, FormulaUI.Accent));
-        var progress = Text(caption, "Career Progress", "0 / 6 PROBE · Pulse / Aur la primul tur rapid", 290, 33, 452, 30, 19); Set(view, "progress", progress);
+        if (view.GetComponentInParent<FormulaMenuView>().UpgradeTheme) { FormulaMenuUnifiedBuilder.StyleHome(view); return; }
+        var nav = view.transform.Find("Navigation");
+        var previous = nav.Find("continue-career");
+        if (previous != null)
+        {
+            var duplicate = nav.Find("home-career");
+            if (duplicate != null) UnityEngine.Object.DestroyImmediate(duplicate.gameObject);
+            previous.name = "home-career";
+        }
+        var career = nav.Find("home-career").GetComponent<UnityEngine.UI.Button>();
+        Set(view, "career", career); career.GetComponentInChildren<TMP_Text>(true).text = "CAREER";
+        MoveButton(career, 12, 60, 360, 64, true);
+        MoveButton(nav.Find("home-garage").GetComponent<UnityEngine.UI.Button>(), 12, 136, 360, 60);
+        var development = nav.Find("home-development"); if (development != null) MoveButton(development.GetComponent<UnityEngine.UI.Button>(), 12, 208, 360, 60);
+        MoveButton(nav.Find("home-quick").GetComponent<UnityEngine.UI.Button>(), 12, 280, 360, 60);
+        MoveButton(nav.Find("home-profile").GetComponent<UnityEngine.UI.Button>(), 12, 364, 174, 48);
+        MoveButton(nav.Find("home-settings").GetComponent<UnityEngine.UI.Button>(), 198, 364, 174, 48);
+        foreach (var button in nav.GetComponentsInChildren<UnityEngine.UI.Button>(true)) StyleHomeButton(button);
+    }
+    private static void StyleHomeButton(UnityEngine.UI.Button button)
+    {
+        var root = (RectTransform)button.transform; float w = root.sizeDelta.x, h = root.sizeDelta.y;
+        var plate = button.GetComponent<UnityEngine.UI.Image>(); plate.sprite = null; plate.type = UnityEngine.UI.Image.Type.Simple;
+        button.transition = UnityEngine.UI.Selectable.Transition.None;
+        foreach (string name in new[] { "Focus Top", "Focus Bottom", "Focus Left", "Focus Right", "Separator" })
+        {
+            var old = root.Find(name); if (old != null) old.gameObject.SetActive(false);
+        }
+        var label = button.GetComponentInChildren<TMP_Text>(true);
+        Font(label, w > 220 ? 27 : 21); label.characterSpacing = w > 220 ? 1.5f : .5f;
+        Rect(label.transform, w > 220 ? 78 : 55, 4, w > 220 ? w - 122 : w - 64, h - 8);
+        var rail = Panel(root, "Selection Rail", 0, 0, 4, h, FormulaUI.Red).GetComponent<UnityEngine.UI.Image>(); rail.raycastTarget = false; rail.sprite = null; rail.type = UnityEngine.UI.Image.Type.Simple;
+        var marker = Panel(root, "Selection Underline", 4, h - 2, w - 4, 2, Color.clear).GetComponent<UnityEngine.UI.Image>(); marker.raycastTarget = false; marker.sprite = null; marker.type = UnityEngine.UI.Image.Type.Simple;
+        var arrow = Text(root, "Selection Arrow", w > 220 ? "→" : "", w - 40, 4, 28, h - 8, 25); arrow.raycastTarget = false; arrow.verticalAlignment = VerticalAlignmentOptions.Middle;
+        var icon = root.Find("Figma Icon")?.GetComponent<UnityEngine.UI.RawImage>();
+        var focus = button.GetComponent<FormulaMenuFocus>(); focus.Initialize(marker); focus.StyleHome(plate, label, icon, rail, arrow);
+        EditorUtility.SetDirty(focus);
+    }
+    [MenuItem("Tools/Formula Career/Arrange Career Cards")]
+    public static void ArrangeCareerCards()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
+        var root = PrefabUtility.LoadPrefabContents(FormulaMenuHierarchyBuilder.PrefabPath);
+        try { FormulaCareerFigmaBuilder.Style(root.GetComponentInChildren<FormulaCareerView>(true)); PrefabUtility.SaveAsPrefabAsset(root, FormulaMenuHierarchyBuilder.PrefabPath); }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+        AssetDatabase.SaveAssets();
     }
     private static void Cards(Transform root, bool quick)
     {
+        if (!quick) { FormulaCareerFigmaBuilder.Style(root.GetComponent<FormulaCareerView>()); return; }
         foreach (var card in root.GetComponentsInChildren<FormulaEventCard>(true))
         {
-            var e = FormulaCatalog.Current.Event(card.EventId); var t = card.transform; var r = (RectTransform)t;
-            if (quick)
-            {
-                Map(t, e.trackId, 388, 14, 174, 84); Rect(t.Find("Mode"), 20, 12, 364, 44); Font(t.Find("Mode").GetComponent<TMP_Text>(), 36, true);
-                Rect(t.Find("Circuit"), 20, 61, 350, 31); Font(t.Find("Circuit").GetComponent<TMP_Text>(), 22);
-                Rect(t.Find("Reward Rule"), 20, 110, 550, 28); Font(t.Find("Reward Rule").GetComponent<TMP_Text>(), 17, false, FormulaUI.Accent);
-            }
-            else
-            {
-                Rect(t.Find("Stage"), 18, 10, 358, 24); Font(t.Find("Stage").GetComponent<TMP_Text>(), 16, false, FormulaUI.Accent);
-                Rect(t.Find("Event Name"), 18, 40, 358, 46); Font(t.Find("Event Name").GetComponent<TMP_Text>(), 37, true);
-                Rect(t.Find("Circuit"), 18, 88, 358, 28); Font(t.Find("Circuit").GetComponent<TMP_Text>(), 22);
-                Rect(t.Find("Race Format"), 18, 119, 228, 24); Font(t.Find("Race Format").GetComponent<TMP_Text>(), 17);
-                Map(t, e.trackId, 249, 112, 126, 62);
-                Rect(t.Find("Card Rule"), 18, 178, 358, 1); t.Find("Card Rule").GetComponent<UnityEngine.UI.Image>().color = new Color32(122, 15, 38, 200);
-                Rect(t.Find("Unlock and Medal"), 18, 148, 225, 29); Font(t.Find("Unlock and Medal").GetComponent<TMP_Text>(), 18, false, FormulaUI.Accent);
-                Set(card, "reward", Text(t, "Available Reward", "BRONZ / CR + XP", 18, 187, 358, 25, 18));
-            }
+            var e = FormulaCatalog.Current.Event(card.EventId); var t = card.transform;
+            Map(t, e.trackId, 388, 14, 174, 84); Rect(t.Find("Mode"), 20, 12, 364, 44); Font(t.Find("Mode").GetComponent<TMP_Text>(), 36, true);
+            Rect(t.Find("Circuit"), 20, 61, 350, 31); Font(t.Find("Circuit").GetComponent<TMP_Text>(), 22);
+            Rect(t.Find("Reward Rule"), 20, 110, 550, 28); Font(t.Find("Reward Rule").GetComponent<TMP_Text>(), 17, false, FormulaUI.Accent);
         }
-        Text(root, "Career Policy", quick ? "ANTRENAMENT LIBER  /  FĂRĂ IMPACT ASUPRA PROGRESULUI ÎN CARIERĂ" : "BRONZ PENTRU PROGRESIE  ·  ARGINT ȘI AUR PENTRU BONUSURI", 0, 490, 1200, 28, 18, false, FormulaUI.Accent);
+        Text(root, "Career Policy", "ANTRENAMENT LIBER  /  FĂRĂ IMPACT ASUPRA PROGRESULUI ÎN CARIERĂ", 0, 506, 1200, 28, 18, false, FormulaUI.Accent);
     }
     private static void Garage(FormulaGarageView view)
     {
@@ -250,6 +301,7 @@ public static class FormulaMenuPremiumBuilder
             var thumb = card.transform.Find("Generic Livery Thumbnail").GetComponent<UnityEngine.UI.RawImage>(); Rect(thumb.transform, 5, 34, 135, 68.6f); thumb.uvRect = new Rect(.14f, .14f, .72f, .72f);
             Rect(card.transform.Find("Ownership"), 9, 104, 127, 23); Font(card.transform.Find("Ownership").GetComponent<TMP_Text>(), 17, false, FormulaUI.Accent);
         }
+        if (view.Upgrade != null) FormulaUpgradeFigmaBuilder.Style(view);
     }
     private static void Statistics(FormulaStatisticsView view)
     {
@@ -284,28 +336,49 @@ public static class FormulaMenuPremiumBuilder
         var description = Text(audio.transform, "Description", "Volum și vibrații\nTastatură, gamepad și volan", 24, 151, 542, 90, 25); description.textWrappingMode = TextWrappingModes.Normal;
         Text(audio.transform, "Action", "PERSONALIZEAZĂ  →", 24, 253, 542, 35, 22, false, FormulaUI.Accent);
     }
+    [MenuItem("Tools/Formula Career/Arrange Event Briefing")]
+    public static void ArrangeEventBriefing()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
+        var root = PrefabUtility.LoadPrefabContents(FormulaMenuHierarchyBuilder.PrefabPath);
+        try { Briefing(root.GetComponentInChildren<FormulaMenuDialogs>(true)); PrefabUtility.SaveAsPrefabAsset(root, FormulaMenuHierarchyBuilder.PrefabPath); }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+        AssetDatabase.SaveAssets();
+    }
     private static void Briefing(FormulaMenuDialogs view)
     {
-        var root = Panel(view.transform, "Race Briefing", 150, 100, 980, 520, new Color32(24, 2, 10, 255)); Set(view, "eventBriefing", root.gameObject);
-        Set(view, "eventState", Text(root, "Event State", "CARIERĂ / ETAPA 01", 32, 20, 916, 28, 18, false, FormulaUI.Accent));
-        Set(view, "eventTitle", Text(root, "Event Title", "ACOMODARE", 32, 57, 916, 65, 56, true));
-        var circuit = Panel(root, "Circuit", 32, 143, 276, 245, new Color32(49, 4, 17, 245));
-        Set(view, "eventMap", Map(circuit, "track_01", 26, 14, 224, 124));
-        var track = Text(circuit, "Circuit Name and Format", "Circuitul Grand Prix\n1 tur / 0 adversari", 20, 158, 236, 69, 23); track.textWrappingMode = TextWrappingModes.Normal; Set(view, "eventTrack", track);
-        Set(view, "eventGoal", Text(root, "Goal", "Încheie un tur valid și oprește de la 30 km/h.", 338, 139, 610, 60, 25)); root.Find("Goal").GetComponent<TMP_Text>().textWrappingMode = TextWrappingModes.Normal;
-        var goals = new TMP_Text[3]; var tiers = new TMP_Text[3]; string[] names = { "BRONZ", "ARGINT", "AUR" };
+        var root = Panel(view.transform, "Race Briefing", 110, 80, 1060, 560, new Color32(24, 2, 10, 255)); Set(view, "eventBriefing", root.gameObject);
+        Set(view, "eventState", Text(root, "Event State", "CAREER / EVENT 01", 32, 20, 996, 24, 17, false, FormulaUI.Accent));
+        Set(view, "eventTitle", Text(root, "Event Title", "SHAKEDOWN", 32, 50, 996, 64, 52, true));
+        var circuit = Panel(root, "Circuit", 32, 130, 276, 250, new Color32(49, 4, 17, 245));
+        Set(view, "eventMap", Map(circuit, "track_01", 26, 16, 224, 124));
+        var track = Text(circuit, "Circuit Name and Format", "Grand Prix Circuit\n1 lap · Solo", 20, 160, 236, 70, 22); track.textWrappingMode = TextWrappingModes.Normal; Set(view, "eventTrack", track);
+        Text(root, "Objective Heading", "OBJECTIVE", 338, 126, 690, 22, 15, false, FormulaUI.Accent);
+        Set(view, "eventGoal", Text(root, "Goal", "Complete a valid lap", 338, 151, 690, 44, 28));
+        Text(root, "Targets Heading", "MEDAL / TARGET", 352, 207, 360, 22, 15);
+        Set(view, "eventReward", Text(root, "Reward", "TOTAL REWARD", 750, 207, 264, 22, 15, false, FormulaUI.Accent));
+        var goals = new TMP_Text[3]; var tiers = new TMP_Text[3]; var rewards = new TMP_Text[3]; string[] names = { "BRONZ", "ARGINT", "AUR" };
         for (int i = 0; i < 3; i++)
         {
-            var medal = Panel(root, "Medal " + names[i], 338 + i * 207, 212, 194, 88, new Color32(44, 3, 14, 255));
-            tiers[i] = Text(medal, "Tier", names[i], 14, 8, 166, 24, 16, false, FormulaUI.Accent); goals[i] = Text(medal, "Target", i == 0 ? "Tur valid + oprire" : "Timp țintă", 14, 39, 166, 37, 23);
+            var medal = Panel(root, "Medal " + names[i], 338, 238 + i * 55, 690, 49, new Color32(44, 3, 14, 255));
+            tiers[i] = Text(medal, "Tier", new[] { "BRONZE", "SILVER", "GOLD" }[i], 14, 13, 85, 24, 17, false, FormulaUI.Accent);
+            goals[i] = Text(medal, "Target", "Complete a valid lap", 110, 11, 285, 28, 21);
+            rewards[i] = Text(medal, "Total Reward", "1,200 CR · 1,000 XP", 412, 11, 264, 28, 21);
         }
-        var serialized = new SerializedObject(view); var p = serialized.FindProperty("medalGoals"); p.arraySize = goals.Length; for (int i = 0; i < goals.Length; i++) p.GetArrayElementAtIndex(i).objectReferenceValue = goals[i]; serialized.ApplyModifiedPropertiesWithoutUndo();
-        p = serialized.FindProperty("medalTiers"); p.arraySize = tiers.Length; for (int i = 0; i < tiers.Length; i++) p.GetArrayElementAtIndex(i).objectReferenceValue = tiers[i]; serialized.ApplyModifiedPropertiesWithoutUndo();
-        var reward = Text(root, "Reward", "1.200 CR + 1.000 XP\nLa obiectivul Bronz", 338, 319, 610, 70, 23, false, FormulaUI.Accent); reward.textWrappingMode = TextWrappingModes.Normal; Set(view, "eventReward", reward);
-        var vehicle = Text(root, "Vehicle Rule", "MAȘINĂ DE BAZĂ\nSetup Echilibrat", 32, 400, 276, 73, 19); vehicle.textWrappingMode = TextWrappingModes.Normal; Set(view, "eventVehicle", vehicle);
-        Set(view, "eventNote", Text(root, "Note", "Bronzul deblochează următoarea etapă.", 338, 400, 610, 27, 17));
-        var cancel = NewButton(root, "cancel", "ÎNAPOI", 338, 445, 176, 49); Set(view, "eventCancel", cancel);
-        var accept = NewButton(root, "confirm", "PORNEȘTE CURSA  →", 530, 445, 418, 49); MoveButton(accept, 530, 445, 418, 49, true); Set(view, "eventAccept", accept); Set(view, "eventActionText", accept.GetComponentInChildren<TMP_Text>(true)); root.gameObject.SetActive(false);
+        var serialized = new SerializedObject(view);
+        void SetTexts(string field, TMP_Text[] texts) { var p = serialized.FindProperty(field); p.arraySize = texts.Length; for (int i = 0; i < texts.Length; i++) p.GetArrayElementAtIndex(i).objectReferenceValue = texts[i]; serialized.ApplyModifiedPropertiesWithoutUndo(); }
+        SetTexts("medalGoals", goals); SetTexts("medalTiers", tiers); SetTexts("medalRewards", rewards);
+        var vehicle = Text(root, "Vehicle Rule", "STOCK CAR\nBalanced setup", 32, 398, 276, 70, 19); vehicle.textWrappingMode = TextWrappingModes.Normal; Set(view, "eventVehicle", vehicle);
+        var note = Text(root, "Note", "Bronze unlocks the next event.", 338, 410, 690, 62, 17); note.textWrappingMode = TextWrappingModes.Normal; Set(view, "eventNote", note);
+        var cancel = NewButton(root, "cancel", "BACK", 338, 486, 176, 50); Set(view, "eventCancel", cancel);
+        var accept = NewButton(root, "confirm", "START EVENT", 530, 486, 498, 50); Set(view, "eventAccept", accept); Set(view, "eventActionText", accept.GetComponentInChildren<TMP_Text>(true));
+        foreach (var button in new[] { cancel, accept })
+        {
+            StyleHomeButton(button);
+            var label = button.GetComponentInChildren<TMP_Text>(true); Rect(label.transform, 20, 4, button == accept ? 420 : 140, 42);
+            button.GetComponent<FormulaMenuFocus>().StyleHome(button.GetComponent<UnityEngine.UI.Image>(), label, null, button.transform.Find("Selection Rail").GetComponent<UnityEngine.UI.Image>(), button.transform.Find("Selection Arrow").GetComponent<TMP_Text>());
+        }
+        root.gameObject.SetActive(false);
         var generic = view.transform.Find("Confirmation"); generic.GetComponent<UnityEngine.UI.Image>().color = new Color32(24, 2, 10, 255);
         Font(generic.Find("Title").GetComponent<TMP_Text>(), 44, true);
         var description = generic.Find("Details").GetComponent<TMP_Text>(); Font(description, 24); description.textWrappingMode = TextWrappingModes.Normal;

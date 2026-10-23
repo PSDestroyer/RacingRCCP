@@ -26,6 +26,7 @@ namespace FormulaGame
             if (!p.ownedChassis.Contains("generic_2027")) p.ownedChassis.Add("generic_2027");
             foreach (var id in new[] { "generic_orange", "generic_blue" }) if (!p.ownedLiveries.Contains(id)) p.ownedLiveries.Add(id);
             if (!p.ownedLiveries.Contains(p.equippedLivery) || FormulaCatalog.Current.Skin(p.equippedLivery) == null) p.equippedLivery = "generic_orange";
+            p.lastGarageTab = Math.Clamp(p.lastGarageTab, 0, 2);
             var catalog = FormulaCatalog.Current;
             if (!catalog.freeSetups.Exists(s => s.id == p.setup)) p.setup = "balanced";
             foreach (var b in catalog.upgrades)

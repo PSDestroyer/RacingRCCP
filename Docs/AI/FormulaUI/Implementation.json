@@ -1,6 +1,6 @@
 {
-  "status": "English is the primary game language. Current presentation preserved after Journey undo.",
-  "atUtc": "2026-10-23T16:22:10.803745+00:00",
+  "status": "Career mission symbols replace country flags, matte currency coin removes glow, and event dates follow the verified official 2027 F1 calendar.",
+  "atUtc": "2026-10-23T17:51:41.693055+00:00",
   "figma": {
     "account": "PsDestroyer",
     "fileKey": "yVvYJ0oWOxClUE2jLx52fQ",
@@ -39,7 +39,7 @@
     "Settings",
     "Purchase confirmation"
   ],
-  "statistics": "Read applied RCCP torque, front axle brake torque, wheel spring, downforce coefficient, drag coefficient and Rigidbody mass in LateUpdate after progression events. No invented horsepower, 0\u2013100 or measured top speed.",
+  "statistics": "Read applied RCCP torque, front axle brake torque, wheel spring, downforce coefficient, drag coefficient and Rigidbody mass in LateUpdate after progression events. No invented horsepower, 0–100 or measured top speed.",
   "changedSources": [
     "Assets/Formula/Scripts/FormulaMainMenu.cs",
     "Assets/Formula/Scripts/FormulaMenuAssets.cs",
@@ -69,11 +69,14 @@
     "Assets/Formula/Scripts/Menu/FormulaMenuFormatting.cs",
     "Assets/Formula/Scripts/Menu/FormulaTrackMap.cs",
     "Assets/Formula/Scripts/FormulaRaceUI.cs",
-    "Assets/Formula/Scripts/FormulaSession.cs"
+    "Assets/Formula/Scripts/FormulaSession.cs",
+    "Assets/Formula/Scripts/FormulaSeasonCalendar.cs",
+    "Assets/Formula/Scripts/Menu/FormulaMissionIcon.cs",
+    "Assets/Formula/Editor/FormulaCareerFigmaBuilder.cs"
   ],
   "assetSetup": "UI/Formula_Menu.prefab is connected in both scenes. Layout and screen components are serialized and visible before Play Mode. No additional setup required.",
   "validation": {
-    "menuPassed": 16,
+    "menuPassed": 18,
     "menuErrors": [],
     "runtimeReport": "RuntimeValidation.json",
     "compilerReport": "CompilerValidation.json",
@@ -81,7 +84,7 @@
     "garagePassed": 6,
     "garageErrors": [],
     "garageReport": "../FormulaGarage/RuntimeValidation.json",
-    "note": "English revision: 16 menu and 6 garage checks passed; 3 focused HUD/result text checks passed. Journey remains reverted."
+    "note": "18 current menu Play Mode checks passed, zero errors. Inspected Career and dated event briefing at 1280x720. Distinct mission symbols, no visible country badges, matte coin, official opening weekend and cross-month date verified; virtual gamepad and save reload passed."
   },
   "limitations": [
     "Editor validation at 1280x720; original Switch hardware, physical controller and Windows/Steam builds not run in this UI task.",
@@ -114,5 +117,68 @@
     "sceneBackups": "SceneMigration/"
   },
   "primaryLanguage": "en",
-  "languageRevision": "English/Implementation.json"
+  "languageRevision": "English/Implementation.json",
+  "homeCopyRevision": "HomeCopyRevision.json",
+  "homeNavigationRevision": {
+    "removed": [
+      "Next Stage",
+      "Next Event",
+      "Event Objective",
+      "Current Vehicle (including rewards and career progress)"
+    ],
+    "scope": "Home only; career cards and event briefings retained.",
+    "authoring": "Removed objects and serialized display references; hierarchy/premium builders no longer recreate these blocks.",
+    "backup": "/private/tmp/FormulaSingleCareerBefore",
+    "screenshot": "Home.png",
+    "careerEntry": "One CAREER button opens Career overview. Event selection opens briefing. Back restores event-card and then Home Career focus.",
+    "layout": "Career starts at y=60 within Home; main button gaps are 12 px; Profile and Settings are a secondary row with a 24 px gap.",
+    "validation": "16 current Play Mode checks passed, including single Career entry, event briefing, Back focus restoration, virtual gamepad and scene reload; zero errors."
+  },
+  "homeButtonStyle": {
+    "scope": "Six Home navigation buttons only; other screen focus styles retained.",
+    "normal": "Deep crimson plates, white typography, red left rail, consistent icon/text spacing.",
+    "selected": "White plate, dark crimson text, red icon, yellow 2px underline and directional arrow.",
+    "motion": "100ms unscaled focus fade and 4px text shift. Hover is crimson; pointer press uses yellow.",
+    "authoring": "Serialized in Formula_Menu.prefab; Arrange Home Navigation reapplies style.",
+    "backup": "/private/tmp/FormulaHomeStyleBefore",
+    "screenshots": [
+      "Home.png",
+      "HomeGarageFocus.png"
+    ],
+    "validation": "16 menu checks passed, including transferred selection styling, Career/Back, virtual gamepad and scene reload. Zero errors; 720p screenshots inspected."
+  },
+  "careerCardRevision": {
+    "layout": "Source 398x216 cards at the six exact Figma positions; dedicated full-screen Career header, background and footer.",
+    "contentOrder": [
+      "Circuit title and mission-type symbol",
+      "Event name",
+      "Live route diagram",
+      "Official 2027 weekend dates",
+      "Round number and selected To Race action"
+    ],
+    "selection": "Original exported red card surface and To Race graphic from variant 184:275.",
+    "scope": "Career only. Shared header and footer hidden while Career is visible, restored on other pages.",
+    "sourceManifest": "FigmaCareer/Implementation.json",
+    "backup": "/private/tmp/FormulaCareerExactBefore",
+    "screenshots": [
+      "Career.png",
+      "CareerUnselected.png",
+      "CareerSelection.png"
+    ],
+    "validation": "18 current menu Play Mode checks passed, zero errors. Inspected Career and dated event briefing at 1280x720. Distinct mission symbols, no visible country badges, matte coin, official opening weekend and cross-month date verified; virtual gamepad and save reload passed."
+  },
+  "eventBriefingRevision": {
+    "layout": "Circuit and vehicle rule on left; objective above three medal rows with target and corresponding event reward total on right. Separate Back / Start Event footer.",
+    "rewards": "Base valid finish reward plus all unclaimed medal bonuses through each tier. Existing economy and save data unchanged. Level-up rewards are calculated by progression at race completion.",
+    "selection": "Shared FormulaMenuFocus white plate, dark text, red rail, yellow underline; locked launch disabled and Back focused.",
+    "authoring": "Serialized in Formula_Menu.prefab; Arrange Event Briefing updates existing objects.",
+    "backup": "/private/tmp/FormulaBriefingBefore",
+    "screenshots": [
+      "EventBriefing.png",
+      "LockedEvent.png"
+    ],
+    "validation": "16 menu Play Mode checks passed, zero errors. Inspected available and locked briefing captures at 1280x720; physical Switch and controller not tested.",
+    "calendar": "Header includes the same 2027 weekend date as the event card."
+  },
+  "careerCalendarRevision": "FigmaCareer/Calendar2027.md"
 }

@@ -7,7 +7,7 @@ namespace FormulaGame
 {
     public sealed class FormulaSettingsView : MonoBehaviour
     {
-        [SerializeField] private GameObject overview, details, audioPage;
+        [SerializeField] private GameObject overview, details, audioPage, audioMarker, controlsMarker;
         [SerializeField] private FormulaControlsView controls;
         [SerializeField] private UnityEngine.UI.Button[] assists;
         [SerializeField] private TMP_Text[] assistLabels;
@@ -49,6 +49,7 @@ namespace FormulaGame
         private void ShowDetails(bool showControls)
         {
             controls.CancelRebind(); audioPage.SetActive(!showControls); controls.gameObject.SetActive(showControls);
+            if (audioMarker != null) audioMarker.SetActive(!showControls); if (controlsMarker != null) controlsMarker.SetActive(showControls);
             if (showControls) controls.Refresh();
             FormulaUI.Focus(showControls ? controls.transform : audioPage.transform);
         }

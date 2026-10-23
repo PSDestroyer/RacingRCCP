@@ -44,11 +44,12 @@ namespace FormulaGame
         public void Present(string page, string tab, bool instant = false)
         {
             if (presentationCamera == null) return;
-            Vector3 offset = page != "Garaj" ? new Vector3(3.3f, 1.7f, 8.2f) : tab == "Setup" ? new Vector3(3.8f, 2f, 8.6f) : tab == "Livree" ? new Vector3(3.8f, 1.8f, 8.3f) : new Vector3(3.1f, 1.9f, 8.1f);
+            bool upgrade = page == "Garaj" && tab == "Dezvoltare";
+            Vector3 offset = page != "Garaj" ? new Vector3(3.3f, 1.7f, 8.2f) : tab == "Setup" ? new Vector3(3.8f, 2f, 8.6f) : tab == "Livree" ? new Vector3(3.8f, 1.8f, 8.3f) : new Vector3(.65f, 1.1f, 6.7f);
             shotPosition = vehicleAnchor.position + offset;
             Vector3 right = Vector3.Cross(Vector3.up, vehicleAnchor.position - shotPosition).normalized;
-            float aimHeight = page == "Garaj" ? tab == "Livree" ? .2f : .12f : .42f;
-            shotRotation = Quaternion.LookRotation(vehicleAnchor.position + Vector3.up * aimHeight - right * 1.9f - shotPosition);
+            float aimHeight = upgrade ? -.18f : page == "Garaj" ? tab == "Livree" ? .2f : .12f : .42f;
+            shotRotation = Quaternion.LookRotation(vehicleAnchor.position + Vector3.up * aimHeight - right * (upgrade ? .72f : 1.9f) - shotPosition);
             presentationCamera.fieldOfView = 34;
             if (instant) { presentationCamera.transform.SetPositionAndRotation(shotPosition, shotRotation); moving = false; }
             else moving = true;

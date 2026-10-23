@@ -5,7 +5,7 @@ namespace FormulaGame
 {
     public sealed class FormulaGarageView : MonoBehaviour
     {
-        [Serializable] public sealed class SetupCard { public string id; public UnityEngine.UI.Button button; public TMP_Text label; public GameObject equippedMarker; }
+        [Serializable] public sealed class SetupCard { public string id; public UnityEngine.UI.Button button; public TMP_Text label, description, status; public GameObject equippedMarker; }
         [SerializeField] private UnityEngine.UI.Button[] tabs;
         [SerializeField] private GameObject[] tabMarkers, sections;
         [SerializeField] private FormulaDevelopmentCard[] development;
@@ -14,6 +14,11 @@ namespace FormulaGame
         [SerializeField] private FormulaStatisticsView[] statistics;
         [SerializeField] private TMP_Text liveryName, liveryStatus, liveryCondition, liveryActionText;
         [SerializeField] private UnityEngine.UI.Button liveryAction;
+        [SerializeField] private FormulaUpgradeView upgrade;
+        [SerializeField] private UnityEngine.UI.Button back;
+        [SerializeField] private TMP_Text tabHints, contextLabel;
+        private int currentSection;
+        public FormulaUpgradeView Upgrade => upgrade;
         public void Bind(Action<int> changeTab, Action<string> levels, Action<string> buyUpgrade, Action<string> equipSetup, Action<string> selectLivery, Action applyLivery)
         {
             for (int i = 0; i < tabs.Length; i++) { int index = i; tabs[i].onClick.AddListener(() => changeTab(index)); }
@@ -24,17 +29,23 @@ namespace FormulaGame
         }
         public void ShowSection(int index)
         {
+            currentSection = index;
             for (int i = 0; i < sections.Length; i++) { sections[i].SetActive(i == index); tabMarkers[i].SetActive(i == index); }
+            if (upgrade != null) upgrade.SetPresentationActive(gameObject.activeInHierarchy && index == 0);
+            WireNavigation();
         }
         public void Refresh()
         {
             foreach (var card in development) card.Refresh();
+            if (upgrade != null) upgrade.Refresh();
             var p = FormulaProgression.State;
             foreach (var card in setups)
             {
                 var setup = FormulaCatalog.Current.freeSetups.Find(s => s.id == card.id);
                 string description = card.id == "balanced" ? "Balance between corners and straights." : card.id == "speed" ? "Downforce −8% · Drag −4%" : "Downforce +8% · Drag +4%";
-                card.label.text = setup.name.ToUpperInvariant() + (p.setup == card.id ? " · EQUIPPED" : " · FREE") + "\n" + description;
+                card.label.text = card.description == null ? setup.name.ToUpperInvariant() + (p.setup == card.id ? " · EQUIPPED" : " · FREE") + "\n" + description : setup.name.ToUpperInvariant();
+                if (card.description != null) card.description.text = description;
+                if (card.status != null) card.status.text = p.setup == card.id ? "APPLIED" : "FREE · APPLY";
                 card.equippedMarker.SetActive(p.setup == card.id);
             }
             foreach (var card in liveries) card.Refresh();
@@ -43,6 +54,27 @@ namespace FormulaGame
         {
             foreach (var panel in statistics) panel.Refresh(car, wheel);
             foreach (var card in development) card.RefreshComparison(car, wheel);
+            if (upgrade != null) upgrade.RefreshPhysics(car, wheel);
+        }
+        public void SetEventContext(FormulaCatalog.CareerEvent entry, string mode)
+        {
+            if (contextLabel == null) return;
+            contextLabel.text = entry == null ? "" : entry.name.ToUpperInvariant() + "\n" + (entry.vehicleRule == "stock_balanced" || mode == "time_trial" ? "Stock event · Your car changes will not apply" : "Your equipped upgrades and setup will be used");
+        }
+        public void PreviewSetup(string id)
+        {
+            foreach (var panel in statistics) panel.PreviewSetup(id);
+        }
+        public void WireNavigation()
+        {
+            if (!gameObject.activeInHierarchy || back == null) return;
+            if (tabHints != null) tabHints.text = UnityEngine.InputSystem.Gamepad.current != null ? "LB/RB · Tabs" : "Q/E · Tabs";
+            var navigationBack = upgrade != null && upgrade.IsPresented ? upgrade.BackControl : back;
+            if (currentSection == 0 && upgrade != null) upgrade.WireNavigation(tabs[0]);
+            var first = currentSection == 0 && upgrade != null ? upgrade.FirstControl : Array.Find(sections[currentSection].GetComponentsInChildren<UnityEngine.UI.Selectable>(), b => b.IsActive() && b.IsInteractable());
+            for (int i = 0; i < tabs.Length; i++) tabs[i].navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.Explicit, selectOnLeft = tabs[(i + tabs.Length - 1) % tabs.Length], selectOnRight = tabs[(i + 1) % tabs.Length], selectOnDown = first, selectOnUp = navigationBack };
+            if (currentSection == 1)
+                for (int i = 0; i < setups.Length; i++) setups[i].button.navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.Explicit, selectOnUp = i == 0 ? tabs[1] : setups[i-1].button, selectOnDown = i == setups.Length-1 ? back : setups[i+1].button, selectOnRight = tabs[1] };
         }
         public void InspectLivery(string id)
         {

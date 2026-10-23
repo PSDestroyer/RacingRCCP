@@ -28,6 +28,8 @@ namespace FormulaGame
         private string page = "Acasă", garageTab = "Dezvoltare", renderedKey, selectedLivery;
         private Transform activeScreen;
         private GameObject modalOrigin;
+        private string briefingEvent, briefingMode, garageReturnEvent, garageReturnMode, garageReturnPage;
+        private GameObject garageReturnFocus;
         private Coroutine fadeRoutine;
         private Vector2 screenPosition;
         private InputAction cancelAction;
@@ -53,16 +55,16 @@ namespace FormulaGame
             vehiclePreview.Initialize();
             cancelAction = EventSystem.current?.GetComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>()?.cancel?.action;
             view.Back.onClick.AddListener(Back);
-            view.Home.Bind(() => EventDetails(FormulaCatalog.Current.careerEvents.Find(e => FormulaProgression.State.Best(e.id) < Medal.Bronze) ?? FormulaCatalog.Current.Event("g06"), "career"),
-                () => Show("Garaj"), () => ChangeGarageTab(0), () => Show("Curse rapide"), () => Show("Profil"), () => Show("Setări"));
-            view.Career.Bind(InspectEvent); view.Quick.Bind(InspectEvent);
-            view.Home.BindCareerOverview(() => Show("Carieră"));
+            view.Home.Bind(() => Show("Carieră"),
+                OpenGarage, () => Show("Curse rapide"), () => Show("Profil"), () => Show("Setări"));
+            view.Career.Bind(InspectEvent, Back); view.Quick.Bind(InspectEvent);
             view.Garage.Bind(ChangeGarageTab, UpgradeLevels, BuyUpgrade, id => Mutate(d => FormulaProgression.EquipSetup(d, id)), SelectLivery, ApplySelectedLivery);
-            view.Dialogs.Bind(CloseModal); view.Dialogs.Close();
+            if (view.Garage.Upgrade != null) view.Garage.Upgrade.Bind(SelectUpgradeLevel, Back);
+            view.Dialogs.Bind(CloseModal, OpenGarageFromBriefing); view.Dialogs.Close();
             view.Settings.Bind(id => Mutate(d => { if (id == "abs") d.formula.abs = !d.formula.abs; else if (id == "tcs") d.formula.tcs = !d.formula.tcs; else d.formula.esp = !d.formula.esp; return null; }));
             screenPosition = ((RectTransform)view.Screens).anchoredPosition;
             initialized = true;
-            if (startInGarage) garageTab = "Livree";
+            garageTab = GarageTabs[FormulaProgression.State.lastGarageTab];
             selectedLivery = FormulaProgression.State.equippedLivery;
             Refresh(); Show(startInGarage ? "Garaj" : "Acasă");
         }
@@ -75,7 +77,10 @@ namespace FormulaGame
             {
                 bool previous = Gamepad.current?.leftShoulder.wasPressedThisFrame == true || Keyboard.current?.qKey.wasPressedThisFrame == true;
                 bool next = Gamepad.current?.rightShoulder.wasPressedThisFrame == true || Keyboard.current?.eKey.wasPressedThisFrame == true;
-                if (previous || next) ChangeGarageTab((Array.IndexOf(GarageTabs, garageTab) + (next ? 1 : 2)) % 3);
+                if (previous || next)
+                {
+                    ChangeGarageTab((Array.IndexOf(GarageTabs, garageTab) + (next ? 1 : 2)) % 3);
+                }
             }
             bool cancel = cancelAction?.WasPerformedThisFrame() == true || Keyboard.current?.escapeKey.wasPressedThisFrame == true;
             if (cancel) Back();
@@ -84,10 +89,29 @@ namespace FormulaGame
         {
             if (!initialized) return;
             if (view.Dialogs.IsOpen) CloseModal();
+            else if (page == "Garaj" && garageReturnEvent != null)
+            {
+                string id = garageReturnEvent, mode = garageReturnMode, target = garageReturnPage; var origin = garageReturnFocus;
+                ClearGarageReturn(); Show(target); RestoreFocus(origin); EventDetails(FormulaCatalog.Current.Event(id), mode);
+            }
             else if (page == "Setări" && view.Settings.BackWithinPage()) return;
             else if (page != "Acasă") Show("Acasă");
         }
-        private void ChangeGarageTab(int index) { garageTab = GarageTabs[index]; Show("Garaj"); }
+        public void OpenGarage() { ClearGarageReturn(); Show("Garaj"); }
+        private void ClearGarageReturn() { garageReturnEvent = garageReturnMode = garageReturnPage = null; garageReturnFocus = null; view.Garage.SetEventContext(null, null); }
+        private void OpenGarageFromBriefing()
+        {
+            garageReturnEvent = briefingEvent; garageReturnMode = briefingMode; garageReturnPage = page; garageReturnFocus = modalOrigin;
+            CloseModal(); Show("Garaj"); view.Garage.SetEventContext(FormulaCatalog.Current.Event(briefingEvent), briefingMode);
+        }
+        private void ChangeGarageTab(int index)
+        {
+            index = Mathf.Clamp(index, 0, GarageTabs.Length - 1); garageTab = GarageTabs[index];
+            string error = null;
+            if (FormulaProgression.State.lastGarageTab != index)
+                FormulaProgression.Commit(d => { d.formula.lastGarageTab = index; return null; }, out error);
+            Show("Garaj"); if (error != null) view.SetStatus(error);
+        }
         private void RememberFocus()
         {
             var selected = EventSystem.current?.currentSelectedGameObject;
@@ -120,7 +144,7 @@ namespace FormulaGame
         private void Refresh()
         {
             if (!initialized) return;
-            view.RefreshWallet(); view.Home.Refresh(); view.Career.Refresh(); view.Quick.Refresh(); view.Profile.Refresh(); view.Settings.Refresh(); view.Garage.Refresh();
+            view.RefreshWallet(); view.Career.Refresh(); view.Quick.Refresh(); view.Profile.Refresh(); view.Settings.Refresh(); view.Garage.Refresh();
             selectedLivery = FormulaProgression.State.equippedLivery; view.Garage.InspectLivery(selectedLivery);
             vehiclePreview.ShowLivery(selectedLivery); statsDirty = true;
         }
@@ -132,10 +156,10 @@ namespace FormulaGame
             activeScreen = view.Activate(page); view.Garage.ShowSection(Array.IndexOf(GarageTabs, garageTab));
             vehiclePreview.Present(page, garageTab, previousKey == null);
             string hints = Gamepad.current != null ? (page == "Garaj" ? "L/R · Sections\nConfirm · Back" : "Confirm · Select\nBack · Menu") : (page == "Garaj" ? "Q/E · Sections\nEnter · Confirm" : "Enter · Confirm\nEsc · Back");
-            view.SetChrome(page == "Acasă" ? "MAIN MENU" : page == "Garaj" ? "GARAGE / " + FormulaMenuFormatting.PageName(garageTab).ToUpperInvariant() : FormulaMenuFormatting.PageName(page).ToUpperInvariant(), hints, page != "Acasă");
+            view.SetChrome(page == "Acasă" ? "MAIN MENU" : page == "Garaj" ? FormulaMenuFormatting.PageName(garageTab).ToUpperInvariant() : FormulaMenuFormatting.PageName(page).ToUpperInvariant(), hints, page != "Acasă");
             selectedLivery = FormulaProgression.State.equippedLivery;
             vehiclePreview.ShowLivery(selectedLivery); view.Garage.InspectLivery(selectedLivery); statsDirty = true;
-            RestoreFocus();
+            view.Garage.WireNavigation(); RestoreFocus();
             if (previousKey != null && previousKey != renderedKey)
             {
                 if (fadeRoutine != null) StopCoroutine(fadeRoutine); fadeRoutine = StartCoroutine(RevealContent());
@@ -149,6 +173,7 @@ namespace FormulaGame
         private void InspectEvent(string id, string mode) => EventDetails(FormulaCatalog.Current.Event(id), mode);
         private void EventDetails(FormulaCatalog.CareerEvent e, string mode)
         {
+            briefingEvent = e.id; briefingMode = mode;
             bool unlocked = mode != "career" || FormulaProgression.Unlocked(e.unlock, FormulaProgression.State);
             OpenDialog(); view.Dialogs.EventBriefing(e, mode, () => { if (unlocked) Launch(e.id, mode); }, unlocked);
         }
@@ -173,6 +198,16 @@ namespace FormulaGame
         private void UpgradeLevels(string branchId)
         {
             OpenDialog(); view.Dialogs.SelectLevel(branchId, level => Mutate(d => FormulaProgression.EquipUpgrade(d, branchId, level)));
+        }
+        private void SelectUpgradeLevel(string branchId, int level)
+        {
+            var p = FormulaProgression.State;
+            if (level <= p.Owned(branchId))
+            {
+                if (level != p.Equipped(branchId)) Mutate(d => FormulaProgression.EquipUpgrade(d, branchId, level));
+            }
+            else if (level == p.Owned(branchId) + 1) BuyUpgrade(branchId);
+            else Confirm(FormulaCatalog.Current.Upgrade(branchId).name + " / Level " + level, "Purchase Level " + (p.Owned(branchId) + 1) + " first.", "Unavailable", () => { }, false);
         }
         private void SelectLivery(string id) { selectedLivery = id; vehiclePreview.ShowLivery(id); view.Garage.InspectLivery(id); }
         private void ApplySelectedLivery()

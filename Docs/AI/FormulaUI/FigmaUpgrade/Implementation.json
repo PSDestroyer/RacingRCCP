@@ -1,0 +1,155 @@
+{
+  "fileKey": "yVvYJ0oWOxClUE2jLx52fQ",
+  "frame": "204:767",
+  "selectedVariant": "222:586",
+  "sessionId": "458c6ff4-ebe1-4943-af43-0e2e50849ded",
+  "referenceSize": [
+    1280,
+    720
+  ],
+  "method": "Individual source decoration layers, native uGUI/TMP controls and the live Generic vehicle. The reference screenshot is documentation only. Source text and currency were omitted from temporary export copies; originals were retained.",
+  "authoring": "Tools / Formula Career / Match Figma Upgrade. Formula_Menu.prefab contains serialized page objects, buttons and bindings; no runtime UI generation.",
+  "adaptations": [
+    "Four existing branches: Engine, Suspension, Aero and Brakes; no fictitious Turbo or extra vehicle performance branch.",
+    "Stock plus three development levels; prices and unlocks come from GenericCatalog.json.",
+    "Real RCCP torque, spring and downforce values replace the source demo 300 HP labels.",
+    "Selected, installed, owned and unowned states are separate. Source red level selection and category glow are retained.",
+    "Level inspection changes the preview only. A purchase uses the existing confirmation and progression transaction; owned levels equip for free.",
+    "Existing setup, assists, liveries, stable IDs and saves retained. Home UPGRADE opens this page; GARAGE opens liveries.",
+    "F27 / 2027 logo, saved player name and matte currency match the updated Career page.",
+    "Statistics show installed physical values and selected-level development ticks."
+  ],
+  "geometry": {
+    "categories": [
+      0,
+      100,
+      1280,
+      47
+    ],
+    "levels": {
+      "origin": [
+        30,
+        167
+      ],
+      "rowSize": [
+        237,
+        85.5
+      ],
+      "rows": 4
+    },
+    "statistics": [
+      535,
+      433,
+      523,
+      180
+    ],
+    "footer": [
+      0,
+      624,
+      1280,
+      96
+    ]
+  },
+  "implementation": [
+    "Assets/Formula/Scripts/Menu/FormulaUpgradeView.cs",
+    "Assets/Formula/Scripts/Menu/FormulaUpgradeOption.cs",
+    "Assets/Formula/Editor/FormulaUpgradeFigmaBuilder.cs"
+  ],
+  "assets": [
+    {
+      "name": "CategoryGlow",
+      "nodeId": "174:154",
+      "path": "Assets/Formula/UI/FigmaUpgrade/CategoryGlow.png",
+      "width": 125,
+      "height": 8,
+      "sha256": "e3bef55a7d5137d37cfb2b8971ca417f8e20eb35ead9e2eae5cb653d49670db7",
+      "hasMeta": true
+    },
+    {
+      "name": "CategorySurface",
+      "nodeId": "213:995",
+      "path": "Assets/Formula/UI/FigmaUpgrade/CategorySurface.png",
+      "width": 1320,
+      "height": 95,
+      "sha256": "2afdfe5f0e41945e998164ac91d5591fbc8bfc7182c53b5013e1321303b11751",
+      "hasMeta": true
+    },
+    {
+      "name": "FooterShade",
+      "nodeId": "204:771",
+      "path": "Assets/Formula/UI/FigmaUpgrade/FooterShade.png",
+      "width": 1280,
+      "height": 108,
+      "sha256": "7035c6c290c2e25355558d34eb5aefa2e446f81c824d70a769d1fe0e8b8390d5",
+      "hasMeta": true
+    },
+    {
+      "name": "LevelInstalled",
+      "nodeId": "227:666",
+      "path": "Assets/Formula/UI/FigmaUpgrade/LevelInstalled.png",
+      "width": 237,
+      "height": 87,
+      "sha256": "f60979e6769b78d87e6c92d846f36c15f6808c34331d54faf7b255f08cd2920a",
+      "hasMeta": true
+    },
+    {
+      "name": "LevelNormal",
+      "nodeId": "222:584",
+      "path": "Assets/Formula/UI/FigmaUpgrade/LevelNormal.png",
+      "width": 237,
+      "height": 87,
+      "sha256": "c47d62157b7e85efd7aedfef1cf6b4e247564a7f8d9f1f64cedce3957c714ee4",
+      "hasMeta": true
+    },
+    {
+      "name": "LevelSelected",
+      "nodeId": "222:586",
+      "path": "Assets/Formula/UI/FigmaUpgrade/LevelSelected.png",
+      "width": 237,
+      "height": 87,
+      "sha256": "a2b0b14ed74b81f74ec6557ee717b60eedb5011cb8a248770eb6b04cf83da9dd",
+      "hasMeta": true
+    },
+    {
+      "name": "LowerShade",
+      "nodeId": "227:664",
+      "path": "Assets/Formula/UI/FigmaUpgrade/LowerShade.png",
+      "width": 1280,
+      "height": 220,
+      "sha256": "1e7e3d0f0c9abf9a106d568b6f35fa88b799aa3571557e66c49b45a31c672b17",
+      "hasMeta": true
+    },
+    {
+      "name": "StatsSurface",
+      "nodeId": "227:665",
+      "path": "Assets/Formula/UI/FigmaUpgrade/StatsSurface.png",
+      "width": 491,
+      "height": 180,
+      "sha256": "6a92291af9b4896c9fca8f5143097c88e9428472b3a8c6c4dc23036038cbfeb0",
+      "hasMeta": true
+    }
+  ],
+  "backup": "/private/tmp/FormulaUpgradeFigmaBefore",
+  "validation": {
+    "status": "Passed",
+    "report": "../RuntimeValidation.json",
+    "screenshots": [
+      "../Development.png",
+      "../UpgradeLevels.png",
+      "../Purchase.png"
+    ],
+    "platform": "Unity Editor, 1280x720 and virtual gamepad. No new platform build.",
+    "passed": 20,
+    "errors": [],
+    "finalPhase": "complete",
+    "legacyDevelopmentCardsRemoved": true,
+    "equippedValues": {
+      "equippedTorque": 494.3999938964844,
+      "equippedBrakes": 1400.0,
+      "equippedSpring": 71050.0,
+      "equippedDownforce": 5.519999980926514,
+      "equippedDrag": 11.519999504089355
+    }
+  },
+  "currentPresentationRevision": "../UnifiedGarage/Implementation.json"
+}

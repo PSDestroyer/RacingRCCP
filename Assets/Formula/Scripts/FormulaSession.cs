@@ -105,7 +105,7 @@ namespace FormulaGame
             pendingFinished = finished; pendingPosition = position; pendingElapsed = elapsed;
             var e = CurrentEvent;
             var p = FormulaProgression.State;
-            bool valid = finished && ValidLaps > 0 && (e.mode != "familiarization" || BrakeStopCompleted);
+            bool valid = finished && ValidLaps > 0;
             Medal medal = Medal.None;
             if (valid && e.mode == "race") medal = position == 1 ? Medal.Gold : position == 2 ? Medal.Silver : position == 3 ? Medal.Bronze : Medal.None;
             else if (valid)

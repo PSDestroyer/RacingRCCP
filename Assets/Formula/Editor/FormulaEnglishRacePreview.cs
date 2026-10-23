@@ -65,20 +65,31 @@ public static class FormulaEnglishRacePreview
                 var game = UnityEngine.Object.FindFirstObjectByType<GamePlayManager>(); if (game == null || game.CarController == null || GameObject.Find("Formula Race") == null) return;
                 var texts = Texts(); Require(texts.Any(t => t.text.Contains("Best lap:")) && texts.Any(t => t.text == "Menu"), "Race HUD is not English.");
                 Require(FormulaAssets.Current.FindTrack("track_01").displayName == "Grand Prix Circuit", "Track name is not English.");
-                Pass("Real circuit HUD, braking objective, menu button and circuit name render in English"); ScreenCapture.CaptureScreenshot("Docs/AI/FormulaUI/English/HUD.png"); Next(2, "scripted-finish");
+                Pass("Shakedown HUD shows the valid-lap objective in English"); ScreenCapture.CaptureScreenshot("Docs/AI/FormulaUI/English/HUD.png"); Next(2, "scripted-finish");
             }
             else if (stage == 2)
             {
-                FormulaSession.ObserveBraking(35, 1); FormulaSession.ObserveBraking(0, 1); FormulaSession.Lap(1); FormulaSession.Lap(250);
+                FormulaSession.InvalidateLap(); FormulaSession.Lap(1);
+                Require(FormulaSession.ValidLaps == 0, "Invalid lap counted toward Shakedown.");
+                FormulaSession.Lap(250);
+                Require(!FormulaSession.BrakeStopCompleted, "Test must complete Shakedown without a braking stop.");
                 Require(FormulaSession.Complete(true, 1, 250) != null, "English result receipt failed to save."); Next(3, "result-render");
             }
             else if (stage == 3)
             {
-                var texts = Texts(); Require(texts.Any(t => t.text == "Bronze") && texts.Any(t => t.text == "Retry event") && texts.Any(t => t.text.Contains("Balance:")), "Result panel is not English.");
+                var texts = Texts(); Require(texts.Any(t => t.text == "BRONZE") && texts.Any(t => t.text == "Retry event") && UnityEngine.Object.FindFirstObjectByType<FormulaResultsView>() != null, "Result panel is not English.");
                 Require(texts.All(t => !System.Text.RegularExpressions.Regex.IsMatch(t.text, "[ăâîșțĂÂÎȘȚşţŞŢ]")), "Romanian text remains in the HUD or results.");
-                Pass("Committed receipt result screen uses English medal, reward, balance and action labels"); ScreenCapture.CaptureScreenshot("Docs/AI/FormulaUI/English/Results.png"); Next(4, "result-capture");
+                var receipt = FormulaProgression.State.lastReceipt;
+                Require(texts.Any(t => t.text == "+" + receipt.credits.ToString("N0") + " CR") && texts.Any(t => t.text == "+" + receipt.xp.ToString("N0") + " XP"), "Result reward labels differ from the saved receipt.");
+                Require(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.name == "next", "The next career event must be the primary result action.");
+                Pass("Shakedown awards Bronze for a valid lap without a braking stop; authored result values match the saved receipt and focus Continue career"); ScreenCapture.CaptureScreenshot("Docs/AI/FormulaUI/English/Results.png"); Next(4, "result-capture");
             }
-            else if (stage == 4) { FormulaSession.ReturnToMenu(); Next(5, "menu-return"); }
+            else if (stage == 4)
+            {
+                var events = UnityEngine.EventSystems.EventSystem.current;
+                Require(UnityEngine.EventSystems.ExecuteEvents.ExecuteHierarchy<UnityEngine.EventSystems.ICancelHandler>(events.currentSelectedGameObject, new UnityEngine.EventSystems.BaseEventData(events), (handler, data) => handler.OnCancel(data)) != null, "Results do not handle the UI Back action.");
+                Next(5, "menu-return");
+            }
             else if (stage == 5 && age > 3)
             {
                 var menu = UnityEngine.Object.FindFirstObjectByType<FormulaMainMenu>(); if (menu == null) return;

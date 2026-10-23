@@ -15,15 +15,17 @@ namespace FormulaGame
         [SerializeField] private TMP_Text eventTitle, eventState, eventTrack, eventGoal, eventVehicle, eventReward, eventActionText, eventNote;
         [SerializeField] private TMP_Text[] medalGoals;
         [SerializeField] private TMP_Text[] medalTiers;
+        [SerializeField] private TMP_Text[] medalRewards;
         [SerializeField] private FormulaTrackMap eventMap;
-        [SerializeField] private UnityEngine.UI.Button eventCancel, eventAccept;
+        [SerializeField] private UnityEngine.UI.Button eventCancel, eventAccept, eventGarage;
         private Action confirm, close;
         private Action<int> selectLevel;
         public bool IsOpen => gameObject.activeSelf;
-        public void Bind(Action onClose)
+        public void Bind(Action onClose, Action onGarage = null)
         {
             close = onClose; cancel.onClick.AddListener(() => close()); levelCancel.onClick.AddListener(() => close());
             accept.onClick.AddListener(() => confirm?.Invoke());
+            if (eventGarage != null && onGarage != null) eventGarage.onClick.AddListener(() => onGarage());
             if (eventCancel != null) eventCancel.onClick.AddListener(() => close());
             if (eventAccept != null) eventAccept.onClick.AddListener(() => confirm?.Invoke());
             for (int i = 0; i < levels.Length; i++) { int level = i; levels[i].onClick.AddListener(() => selectLevel?.Invoke(level)); }
@@ -61,13 +63,13 @@ namespace FormulaGame
             string freeTitle = mode == "time_trial" ? "TIME ATTACK" : e.mode == "race" ? "QUICK RACE" : "PRACTICE";
             confirm = action; eventTitle.text = career ? e.name.ToUpperInvariant() : freeTitle; eventMap.SetTrack(e.trackId);
             var track = FormulaAssets.Current.FindTrack(e.trackId); float t = track.referenceLapSeconds;
-            eventState.text = !unlocked ? "LOCKED / " + FormulaProgression.LockReason(e.unlock, FormulaProgression.State) : mode == "career" ? "CAREER / EVENT " + e.id.Substring(1) : mode == "time_trial" ? "TIME ATTACK" : "FREE RACE";
-            eventTrack.text = track.displayName + "\n" + e.laps + (e.laps == 1 ? " lap" : " laps") + "  ·  " + e.opponentCount + " opponents";
+            eventState.text = mode == "career" ? "CAREER / EVENT " + e.id.Substring(1) + " · " + FormulaSeasonCalendar.Current.Caption(e) + " " + FormulaSeasonCalendar.Current.year : mode == "time_trial" ? "TIME ATTACK" : "FREE RACE";
+            eventTrack.text = track.displayName + "\n" + e.laps + (e.laps == 1 ? " lap" : " laps") + "  ·  " + (e.opponentCount == 0 ? "Solo" : e.opponentCount + " opponents");
             eventGoal.text = career ? FormulaMenuFormatting.EventGoal(e) : e.mode == "race" ? "Race for your best result on this circuit." : "Learn the circuit and complete valid laps.";
             eventVehicle.text = e.vehicleRule == "stock_balanced" || mode == "time_trial" ? "STOCK CAR\nBalanced setup" : "YOUR CAR\nEquipped upgrades and setup";
-            medalGoals[0].text = e.mode == "race" ? "Podium" : e.mode == "familiarization" ? "Valid lap + stop" : "≤ " + FormulaRaceUI.TimeText(t * 1.2);
-            medalGoals[1].text = e.mode == "race" ? "Top 2" : "≤ " + FormulaRaceUI.TimeText(t * (e.mode == "familiarization" ? 1.25 : 1.1));
-            medalGoals[2].text = e.mode == "race" ? "Win" : "≤ " + FormulaRaceUI.TimeText(t * (e.mode == "familiarization" ? 1.12 : 1.03));
+            medalGoals[0].text = e.mode == "race" ? "Finish in the top 3" : e.mode == "familiarization" ? "Complete a valid lap" : "≤ " + FormulaRaceUI.TimeText(t * 1.2);
+            medalGoals[1].text = e.mode == "race" ? "Finish in the top 2" : "≤ " + FormulaRaceUI.TimeText(t * (e.mode == "familiarization" ? 1.25 : 1.1));
+            medalGoals[2].text = e.mode == "race" ? "Win the race" : "≤ " + FormulaRaceUI.TimeText(t * (e.mode == "familiarization" ? 1.12 : 1.03));
             if (medalTiers != null && medalTiers.Length == 3)
             {
                 string[] tiers = career ? new[] { "BRONZE", "SILVER", "GOLD" } : new[] { "FORMAT", "OPPONENTS", "SESSION" };
@@ -79,10 +81,23 @@ namespace FormulaGame
                 medalGoals[1].text = e.opponentCount == 0 ? "No opponents" : e.opponentCount + " AI drivers";
                 medalGoals[2].text = "Free practice";
             }
-            var reward = FormulaMenuFormatting.AvailableBronzeReward(e);
-            eventReward.text = mode == "career" ? reward.credits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR   +   " + reward.xp.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " XP\nBronze target · includes unclaimed bonuses" : "FREE MODE\nNo career credits or XP";
-            eventNote.text = mode != "career" ? "Practice the circuit at your own pace." : track.referenceCalibrated || e.mode == "race" ? "Bronze unlocks the next event." : "Target times are being calibrated.";
-            eventAccept.interactable = unlocked; eventActionText.text = unlocked ? "START RACE  →" : "CONTINUE CAREER";
+            eventReward.text = career ? "TOTAL REWARD" : "NO CAREER REWARDS";
+            if (medalRewards != null && medalRewards.Length == 3)
+            {
+                FormulaProgression.State.claimedMedalMasks.TryGetValue(e.id, out int claimed);
+                int credits = e.baseValidFinishReward.credits, xp = e.baseValidFinishReward.xp;
+                for (int i = 0; i < 3; i++)
+                {
+                    if ((claimed & (1 << (i + 1))) == 0)
+                    {
+                        var bonus = e.oneTimeMedalRewards[((Medal)(i + 1)).ToString().ToLowerInvariant()]; credits += bonus.credits; xp += bonus.xp;
+                    }
+                    medalRewards[i].text = career ? credits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR · " + xp.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " XP" : "—";
+                }
+            }
+            eventNote.text = !unlocked ? "LOCKED · " + FormulaProgression.LockReason(e.unlock, FormulaProgression.State) : !career ? "No career credits or XP. Your career progress is unchanged." : "Totals include finish reward and unclaimed medal bonuses."
+                + (track.referenceCalibrated || e.mode == "race" ? "" : "\nProvisional lap targets.");
+            eventAccept.interactable = unlocked; eventActionText.text = unlocked ? "START EVENT" : "EVENT LOCKED";
             Wire(eventBriefing.transform); UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(unlocked ? eventAccept.gameObject : eventCancel.gameObject);
         }
         private static void Wire(Transform panel)

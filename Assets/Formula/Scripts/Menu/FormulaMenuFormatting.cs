@@ -4,6 +4,7 @@ namespace FormulaGame
 {
     public static class FormulaMenuFormatting
     {
+        public static string DriverName => string.IsNullOrWhiteSpace(FormulaProgression.Data.PlayerName) ? "Driver" : FormulaProgression.Data.PlayerName;
         // Internal navigation keys stay stable; only the visible labels are English.
         public static string PageName(string key)
         {
@@ -15,7 +16,7 @@ namespace FormulaGame
                 case "Curse rapide": return "Quick Race";
                 case "Profil": return "Profile";
                 case "Setări": return "Settings";
-                case "Dezvoltare": return "Development";
+                case "Dezvoltare": return "Upgrade";
                 case "Livree": return "Liveries";
                 default: return key;
             }
@@ -23,8 +24,8 @@ namespace FormulaGame
         public static string EventGoal(FormulaCatalog.CareerEvent e)
         {
             if (e.mode == "race") return "Finish the race on the podium.";
-            if (e.mode == "familiarization") return "Complete a valid lap; stop from 30 km/h.";
-            return "Set your fastest valid lap.";
+            if (e.mode == "familiarization") return "Complete your first valid lap.";
+            return "Target lap: " + FormulaRaceUI.TimeText(FormulaAssets.Current.FindTrack(e.trackId).referenceLapSeconds * 1.2) + " or faster.";
         }
         public static FormulaCatalog.Reward AvailableBronzeReward(FormulaCatalog.CareerEvent e)
         {

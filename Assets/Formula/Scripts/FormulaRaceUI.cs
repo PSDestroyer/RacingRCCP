@@ -41,7 +41,7 @@ namespace FormulaGame
             var e = FormulaSession.CurrentEvent;
             FormulaSession.ObserveBraking(game.CarController.absoluteSpeed, game.CarController.Inputs.inputs.brakeInput);
             hud.text = $"{e.name}  ·  Lap {Mathf.Min(game.FormulaCompletedLaps + 1, game.totalRaceLaps)}/{game.totalRaceLaps}  ·  {TimeText(game.FormulaElapsed)}\nBest lap: {TimeText(FormulaSession.BestLap)}";
-            if (e.mode == "familiarization") hud.text += FormulaSession.BrakeStopCompleted ? " · Braking complete" : " · Brake from 30 km/h to a stop";
+            if (e.mode == "familiarization") hud.text += " · Complete a valid lap";
             if (!game.FormulaRaceStarted) return;
             float distance = DistanceToRoute(game.CarController.transform.position);
             outsideSeconds = distance > trackHalfWidth ? outsideSeconds + .1f * Time.timeScale : 0;
@@ -66,6 +66,11 @@ namespace FormulaGame
         {
             yield return null; // Restore focus after the existing finish screen updates.
             showingResult = true;
+            if (FormulaMenuAssets.Current != null && FormulaMenuAssets.Current.resultsPrefab != null)
+            {
+                var result = Instantiate(FormulaMenuAssets.Current.resultsPrefab, canvas.transform, false);
+                result.GetComponent<FormulaResultsView>().Present(receipt); yield break;
+            }
             var panel = FormulaUI.Box(canvas.transform, "Formula Results", 0, 0, 1280, 720, FormulaUI.Background);
             FormulaUI.Text(panel, FormulaSession.CurrentEvent.name, 60, 50, 1160, 60, 36);
             FormulaUI.Text(panel, FormulaUI.MedalName(receipt.medal), 60, 125, 1160, 65, 40, FormulaUI.Accent);

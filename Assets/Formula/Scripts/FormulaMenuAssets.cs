@@ -7,6 +7,7 @@ namespace FormulaGame
     public sealed class FormulaMenuAssets : ScriptableObject
     {
         public TMP_FontAsset bodyFont, titleFont;
+        public GameObject resultsPrefab;
         public Texture2D career, garage, upgrade, settings, helmet, footerGlow;
         public Texture2D[] liveries;
         public Sprite panelSprite;
@@ -19,8 +20,8 @@ namespace FormulaGame
 
     public static class FormulaMenuStyle
     {
-        public static readonly Color SurfaceColor = new Color32(25, 2, 8, 255);
-        public static readonly Color RaisedColor = new Color32(50, 5, 15, 255);
+        public static readonly Color SurfaceColor = new Color32(28, 29, 32, 240);
+        public static readonly Color RaisedColor = new Color32(20, 21, 24, 250);
         private static Sprite rounded;
         private static Texture2D shade;
         public static RectTransform Surface(Transform parent, string name, float x, float y, float w, float h, Color? color = null)
@@ -118,7 +119,7 @@ namespace FormulaGame
         {
             var button = Button(parent, id, "", x, y, w, h, click);
             var colors = button.colors;
-            colors.normalColor = new Color32(25, 2, 8, 255); colors.highlightedColor = new Color32(100, 7, 25, 245);
+            colors.normalColor = new Color32(28, 29, 32, 240); colors.highlightedColor = new Color32(100, 7, 25, 245);
             colors.selectedColor = FormulaUI.Red; colors.pressedColor = FormulaUI.Ink; button.colors = colors;
             var text = button.GetComponentInChildren<TMP_Text>(); text.text = title;
             text.color = Color.white; text.enableAutoSizing = false; text.fontSize = 28;

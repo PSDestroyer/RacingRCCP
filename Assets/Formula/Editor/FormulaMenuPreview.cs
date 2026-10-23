@@ -112,6 +112,7 @@ public static class FormulaMenuPreview
                 Require(menu.legacyCanvas == null && menu.legacyNavigation == null, "Menu still depends on the legacy UI.");
                 Require(menu.View.Screens.childCount == 6 && menu.View.Screens.Cast<Transform>().Count(t => t.gameObject.activeSelf) == 1, "Exactly one of the six authored screens must be active.");
                 authoredUiObjects = canvas.GetComponentsInChildren<Transform>(true).Select(t => t.GetInstanceID()).OrderBy(id => id).ToArray();
+                Require(canvas.transform.Find("Shell Lower Shade").GetSiblingIndex() < canvas.transform.Find("Screens").GetSiblingIndex(), "The stage shade covers page content.");
                 Pass("Serialized menu is active immediately with one Canvas, six persistent screens and no legacy presenter");
                 Require(Time.frameCount > report.startFrame + 5, "Runtime frames did not advance.");
                 Require(FormulaMenuAssets.Current.liveries.Length == 8 && FormulaMenuAssets.Current.liveries.All(t => t != null), "Livery artwork missing.");
@@ -120,21 +121,62 @@ public static class FormulaMenuPreview
                 Require(UnityEngine.Object.FindObjectsByType<RCCP_CarController>(FindObjectsSortMode.None).Length == 1, "Duplicate preview car.");
                 var displayWheels = car.GetComponentsInChildren<RCCP_WheelCollider>();
                 Require(displayWheels.Length == 4 && displayWheels.All(w => w.wheelModel != null && w.wheelModel.gameObject.activeInHierarchy && w.wheelModel.GetComponentsInChildren<Renderer>().Any(r => r.enabled)), "Parked Generic must keep all four wheel models visible.");
+                Require(canvas.GetComponentsInChildren<FormulaPanelGraphic>(true).All(p => p.GetComponent<CanvasRenderer>() != null), "An Upgrade-style surface has no renderer.");
                 Pass("Home renders with Teko/Rajdhani, original Figma artwork, one live Generic and advancing frames");
-                Capture("Home"); Next(100, "continue-briefing");
+                Capture("Home"); Next(97, "home-selection-change");
             }
-            else if (stage == 100) { Click("continue-career"); Next(101, "briefing-render"); }
+            else if (stage == 97)
+            {
+                EventSystem.current.SetSelectedGameObject(Button("home-garage").gameObject); Next(98, "home-selected-render");
+            }
+            else if (stage == 98)
+            {
+                Require(Button("home-garage").transform.Find("Upgrade Focus").GetComponent<FormulaPanelGraphic>().color.a > .95f && Button("home-career").transform.Find("Upgrade Focus").GetComponent<FormulaPanelGraphic>().color.a < .05f, "Home selection styling did not transfer to Garage.");
+                Capture("HomeGarageFocus"); Next(99, "home-focus-restore");
+            }
+            else if (stage == 99)
+            {
+                EventSystem.current.SetSelectedGameObject(Button("home-career").gameObject); Next(100, "career-navigation");
+            }
+            else if (stage == 100)
+            {
+                Require(menu.View.Home.GetComponentsInChildren<UnityEngine.UI.Button>().Length == 5, "Home must expose Career, Garage and Quick Race plus Profile and Settings.");
+                Click("home-career"); Require(menu.CurrentPage == "Carieră" && !menu.View.Dialogs.IsOpen, "Career must open the overview, not a briefing.");
+                Click("g01"); Next(101, "briefing-render");
+            }
             else if (stage == 101)
             {
-                Require(menu.View.Dialogs.IsOpen && EventSystem.current.currentSelectedGameObject.name == "confirm", "Continue did not focus the free race start action.");
+                Require(menu.View.Dialogs.IsOpen && EventSystem.current.currentSelectedGameObject.name == "confirm", "Career event did not focus the race start action.");
                 Require(canvas.GetComponentsInChildren<FormulaTrackMap>().Any(), "Briefing circuit outline missing.");
-                Capture("EventBriefing"); Next(102, "briefing-back");
+                Require(Button("confirm").FindSelectableOnLeft()?.name == "briefing-garage" && Button("briefing-garage").FindSelectableOnLeft()?.name == "cancel", "Briefing navigation order must follow Back, Garage, Start event.");
+                Capture("EventBriefing"); Next(1011, "contextual-garage");
+            }
+            else if (stage == 1011)
+            {
+                Click("briefing-garage"); Require(menu.CurrentPage == "Garaj" && menu.CurrentGarageTab == "Dezvoltare" && !menu.View.Dialogs.IsOpen, "Briefing Garage did not open the first Upgrade section.");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("Stock event")), "Garage did not explain the stock-car event restriction.");
+                Click("garage-1"); EventSystem.current.SetSelectedGameObject(Button("setup-speed").gameObject); Next(1012, "setup-preview");
+            }
+            else if (stage == 1012)
+            {
+                Require(FormulaProgression.State.setup == "balanced" && Mathf.Approximately(car.GetComponent<RCCP_CarController>().AeroDynamics.downForce, 6) && FormulaProgression.Data.money == 0, "Setup focus changed the equipped car or credits.");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("6 → 5.52")), "Setup preview does not show current versus proposed downforce.");
+                Capture("ContextGarageSetup"); Next(10121, "setup-preview-capture");
+            }
+            else if (stage == 10121) { Click("setup-speed"); menu.Back(); Next(1013, "briefing-garage-return"); }
+            else if (stage == 1013)
+            {
+                Require(menu.CurrentPage == "Carieră" && menu.View.Dialogs.IsOpen && EventSystem.current.currentSelectedGameObject.name == "confirm", "Garage Back did not reopen the original event briefing.");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "SHAKEDOWN"), "Garage returned to a different event.");
+                Pass("Briefing Garage preserves event context, warns for stock rules, previews setup without mutation and returns to the same event");
+                Capture("BriefingGarageReturn"); Next(102, "briefing-back");
             }
             else if (stage == 102)
             {
-                menu.Back(); Require(EventSystem.current.currentSelectedGameObject.name == "continue-career", "Briefing cancel lost Continue focus.");
+                menu.Back(); Require(EventSystem.current.currentSelectedGameObject.name == "g01", "Briefing cancel lost event-card focus.");
                 Require(FormulaProgression.Data.money == 0, "Inspecting the race spent credits.");
-                Pass("Continue opens a structured race briefing with circuit outline and primary launch focus; Back restores Continue without spending");
+                Pass("Single Career entry opens overview; an event opens its briefing and Back restores the event card without spending");
+                menu.Back(); Require(EventSystem.current.currentSelectedGameObject.name == "home-career", "Back from Career lost Home focus.");
                 Next(1, "career");
             }
             else if (stage == 1)
@@ -146,7 +188,28 @@ public static class FormulaMenuPreview
             {
                 Require(FormulaCatalog.Current.careerEvents.All(e => Button(e.id) != null), "Career card missing.");
                 Require(Button("g06").interactable, "Locked events must remain inspectable.");
-                Pass("Six career cards preserve event locks and rewards"); Capture("Career"); Next(21, "locked-inspection");
+                Pass("Six career cards preserve event locks and rewards");
+                Require(Button("g01").GetComponent<RectTransform>().sizeDelta == new Vector2(398, 216), "Career card dimensions differ from Figma.");
+                Require(!canvas.transform.Find("Header").gameObject.activeSelf && !canvas.transform.Find("Footer").gameObject.activeSelf, "Legacy chrome overlaps Figma Career.");
+                var season = FormulaSeasonCalendar.Current;
+                Require(season.year == 2027 && season.rounds.Count == 24 && season.Round(1).startDate == "2027-03-12" && season.Round(1).endDate == "2027-03-14", "2027 season opening weekend does not match the official calendar.");
+                Require(FormulaCatalog.Current.careerEvents.Select(season.Caption).Distinct().Count() == 6 && season.Caption(FormulaCatalog.Current.Event("g06")) == "30 APR–02 MAY", "Career dates repeat or the cross-month weekend is incorrect.");
+                var typeIcons = menu.View.Career.GetComponentsInChildren<FormulaMissionIcon>();
+                Require(typeIcons.Length == 6 && typeIcons.Select(i => i.DisplaySymbol).Distinct().Count() == 6, "Career needs six distinct mission symbols.");
+                Require(!menu.View.Career.GetComponentsInChildren<UnityEngine.UI.RawImage>().Any(i => i.name == "Country Badge"), "A country flag is still visible on a mission.");
+                var coin = menu.View.Career.transform.Find("Figma Driver and Wallet/Coin").GetComponent<UnityEngine.UI.RawImage>();
+                Require(coin.texture.name == "CoinMatte" && coin.rectTransform.sizeDelta.x <= 30 && coin.color.r < .8f, "Career currency still uses the large glowing coin.");
+                Pass("2027 dates match the official opening weekend, all six mission icons differ and the currency coin has no halo");
+                Capture("Career"); EventSystem.current.SetSelectedGameObject(null);
+                foreach (var focus in menu.View.Career.GetComponentsInChildren<FormulaMenuFocus>()) focus.OnPointerExit(new PointerEventData(EventSystem.current));
+                Next(200, "figma-career-unselected");
+            }
+            else if (stage == 200) { Capture("CareerUnselected"); EventSystem.current.SetSelectedGameObject(Button("g02").gameObject); Next(201, "figma-career-selection"); }
+            else if (stage == 201)
+            {
+                Require(Button("g02").transform.Find("Upgrade Focus").GetComponent<FormulaPanelGraphic>().color.a > .95f && Button("g01").transform.Find("Upgrade Focus").GetComponent<FormulaPanelGraphic>().color.a < .05f, "Figma red selection did not move to the next card.");
+                Capture("CareerSelection"); Pass("Figma Career uses 398x216 cards, isolated chrome and transfers the original red selection artwork");
+                EventSystem.current.SetSelectedGameObject(Button("g01").gameObject); Next(21, "locked-inspection");
             }
             else if (stage == 21) { Click("g06"); Require(!Button("confirm").interactable, "Locked event allowed launch."); Next(22, "locked-dialog"); }
             else if (stage == 22) { Capture("LockedEvent"); Next(23, "locked-return"); }
@@ -155,7 +218,7 @@ public static class FormulaMenuPreview
                 Click("cancel"); Require(EventSystem.current.currentSelectedGameObject.name == "g06", "Closing event details lost the selected career card.");
                 Pass("Locked career content can be inspected, cannot launch and restores the original card focus"); Next(20, "garage-open");
             }
-            else if (stage == 20) { menu.Show("Garaj"); Click("garage-2"); Next(3, "liveries"); }
+            else if (stage == 20) { menu.Show("Acasă"); Click("home-garage"); Require(menu.CurrentGarageTab == "Setup", "Garage did not remember its last section."); Pass("A single Home Garage entry remembers the last section"); Click("garage-2"); Next(3, "liveries"); }
             else if (stage == 3)
             {
                 Click("generic_blue"); Require(FormulaProgression.State.equippedLivery == "generic_orange", "Preview silently equipped the livery.");
@@ -175,7 +238,14 @@ public static class FormulaMenuPreview
             else if (stage == 40)
             {
                 Require(FormulaProgression.Commit(d => { d.money = 20000; d.formula.medals["g01"] = Medal.Bronze; return null; }, out string error), error);
-                Click("garage-0"); Click("buy-engine"); Next(5, "purchase-dialog");
+                Click("garage-0"); Click("upgrade-engine");
+                Require(menu.View.Garage.Upgrade.IsPresented && !canvas.transform.Find("Header").gameObject.activeSelf && !canvas.transform.Find("Footer").gameObject.activeSelf && Button("garage-1").gameObject.activeInHierarchy && Button("garage-2").gameObject.activeInHierarchy, "Upgrade must preserve the permanent Garage tabs and its Figma presentation.");
+                Require(menu.View.Garage.Upgrade.GetComponentsInChildren<UnityEngine.UI.Button>().Count(b => b.name.StartsWith("upgrade-level-")) == 4, "Upgrade needs Stock and three level rows.");
+                Require(menu.View.Garage.GetComponentsInChildren<FormulaDevelopmentCard>(true).Length == 0, "Legacy development cards remain in the authored hierarchy.");
+                Click("upgrade-level-3"); Require(!Button("confirm").interactable, "An unowned intermediate level could be skipped."); Click("cancel");
+                Require(FormulaProgression.Data.money == 20000 && FormulaProgression.State.Owned("engine") == 0 && Mathf.Approximately(car.GetComponent<RCCP_CarController>().Engine.maximumTorqueAsNM, 480), "Inspecting an unavailable upgrade changed credits, ownership or torque.");
+                Pass("Figma Upgrade has four level rows, previews without mutations and blocks skipping unowned levels");
+                Click("upgrade-level-1"); Next(5, "purchase-dialog");
             }
             else if (stage == 5)
             {
@@ -186,8 +256,8 @@ public static class FormulaMenuPreview
             }
             else if (stage == 50)
             {
-                Click("cancel"); Require(EventSystem.current.currentSelectedGameObject.name == "buy-engine", "Purchase cancel did not restore its origin button."); Require(FormulaProgression.Data.money == 20000 && FormulaProgression.State.Owned("engine") == 0, "Cancel changed the save.");
-                Click("buy-engine"); Click("confirm"); Next(6, "development-capture");
+                Click("cancel"); Require(EventSystem.current.currentSelectedGameObject.name == "upgrade-level-1", "Purchase cancel did not restore its origin button."); Require(FormulaProgression.Data.money == 20000 && FormulaProgression.State.Owned("engine") == 0, "Cancel changed the save.");
+                Click("upgrade-level-1"); Click("confirm"); Next(6, "development-capture");
             }
             else if (stage == 6)
             {
@@ -196,9 +266,9 @@ public static class FormulaMenuPreview
                 report.equippedTorque = controller.Engine.maximumTorqueAsNM; report.equippedBrakes = controller.FrontAxle.maxBrakeTorque;
                 report.equippedDownforce = controller.AeroDynamics.downForce; report.equippedDrag = controller.AeroDynamics.airResistance;
                 Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == controller.Engine.maximumTorqueAsNM.ToString("0.#") + " Nm"), "UI torque differs from RCCP.");
-                Require(EventSystem.current.currentSelectedGameObject.name == "buy-engine", "Successful purchase lost its source focus.");
+                Require(EventSystem.current.currentSelectedGameObject.name == "upgrade-level-1", "Successful purchase lost its source focus.");
                 Pass("Upgrade purchase/cancel, source focus, credit cost, ownership and live torque statistics agree");
-                Click("buy-suspension"); Click("confirm"); Next(61, "suspension-statistics");
+                Click("upgrade-suspension"); Click("upgrade-level-1"); Click("confirm"); Next(61, "suspension-statistics");
             }
             else if (stage == 61)
             {
@@ -206,15 +276,16 @@ public static class FormulaMenuPreview
                 Require(FormulaProgression.State.Owned("suspension") == 1, "Suspension purchase failed.");
                 Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == report.equippedSpring.ToString("0") + " N/m"), "Suspension statistic differs from applied wheel spring.");
                 Pass("Suspension statistic follows the equipped physical spring value");
-                Capture("Development"); Next(62, "level-selector");
+                Click("upgrade-engine"); Next(62, "level-selector");
             }
-            else if (stage == 62) { Click("equip-engine"); Next(63, "level-selection-capture"); }
-            else if (stage == 63) { Capture("UpgradeLevels"); Next(631, "level-selection-render"); }
-            else if (stage == 631) { Click("level-engine-0"); Next(64, "stock-level"); }
+            else if (stage == 62) { EventSystem.current.SetSelectedGameObject(Button("upgrade-level-2").gameObject); Next(63, "level-selection-capture"); }
+            else if (stage == 63) { Capture("Development"); Next(631, "level-selection-render"); }
+            else if (stage == 631) { Capture("UpgradeLevels"); Next(632, "level-selection-render"); }
+            else if (stage == 632) { Click("upgrade-level-0"); Next(64, "stock-level"); }
             else if (stage == 64)
             {
                 Require(FormulaProgression.State.Equipped("engine") == 0 && Mathf.Approximately(car.GetComponent<RCCP_CarController>().Engine.maximumTorqueAsNM, 480), "Explicit stock level did not apply.");
-                Click("equip-engine"); Click("level-engine-1"); Next(65, "owned-level");
+                Click("upgrade-engine"); Click("upgrade-level-1"); Next(65, "owned-level");
             }
             else if (stage == 65)
             {
@@ -291,19 +362,27 @@ public static class FormulaMenuPreview
             {
                 menu.Show("Acasă"); Click("home-garage"); Click("garage-0");
                 simulatedPad = InputSystem.AddDevice<Gamepad>("Formula UX validation");
+                EventSystem.current.SetSelectedGameObject(Button("upgrade-engine").gameObject);
+                InputSystem.QueueStateEvent(simulatedPad, new GamepadState().WithButton(GamepadButton.DpadRight)); Next(904, "component-input");
+            }
+            else if (stage == 904)
+            {
+                InputSystem.QueueStateEvent(simulatedPad, new GamepadState());
+                Require(menu.View.Garage.Upgrade.BranchId == "suspension", "D-pad did not change the focused Upgrade component.");
                 InputSystem.QueueStateEvent(simulatedPad, new GamepadState().WithButton(GamepadButton.RightShoulder)); Next(91, "bumper-input");
             }
             else if (stage == 91)
             {
                 InputSystem.QueueStateEvent(simulatedPad, new GamepadState());
-                Require(menu.CurrentGarageTab == "Setup", "Gamepad bumper did not switch garage section.");
+                Require(menu.CurrentGarageTab == "Setup", "Gamepad bumper did not switch the permanent Garage tab.");
                 EventSystem.current.SetSelectedGameObject(Button("setup-balanced").gameObject);
                 InputSystem.QueueStateEvent(simulatedPad, new GamepadState().WithButton(GamepadButton.South)); Next(92, "submit-input");
             }
             else if (stage == 92)
             {
                 InputSystem.QueueStateEvent(simulatedPad, new GamepadState());
-                Require(FormulaProgression.State.setup == "balanced", "Gamepad submit did not activate the focused setup.");
+                Require(FormulaProgression.State.setup == "balanced", "Gamepad submit did not apply the focused free setup.");
+                Pass("Gamepad D-pad changes Upgrade component, bumper changes Garage tab, and Submit applies the focused setup");
                 InputSystem.QueueStateEvent(simulatedPad, new GamepadState().WithButton(GamepadButton.East)); Next(93, "back-input");
             }
             else if (stage == 93)
@@ -313,16 +392,27 @@ public static class FormulaMenuPreview
                 Require(EventSystem.current.currentSelectedGameObject.name == "home-garage", "Returning from garage lost home focus.");
                 InputSystem.RemoveDevice(simulatedPad); simulatedPad = null;
                 Pass("Virtual gamepad bumper, submit, cancel and focus restoration work through runtime input");
-                Click("home-garage"); Click("setup-speed"); Next(94, "controller-save");
+                Click("home-garage"); Click("garage-1"); Click("setup-speed"); Next(94, "controller-save");
             }
             else if (stage == 94) { FormulaSession.ReturnToMenu(); Next(10, "reload"); }
             else if (stage == 10 && age > 2)
             {
                 Require(menu != null && menu.CurrentPage == "Acasă", "Menu reload failed.");
-                Require(FormulaProgression.State.equippedLivery == "generic_blue" && FormulaProgression.State.setup == "speed" && FormulaProgression.State.Owned("engine") == 1, "Progress was lost on scene reload.");
+                Require(FormulaProgression.State.equippedLivery == "generic_blue" && FormulaProgression.State.setup == "speed" && FormulaProgression.State.Owned("engine") == 1 && menu.CurrentGarageTab == "Setup", "Progress or last Garage tab was lost on scene reload.");
                 Pass("Scene reload preserves equipped livery, setup and purchased development");
-                Next(11, "complete"); EditorApplication.ExitPlaymode();
+                Next(1040, "standalone-garage-load");
             }
+            else if (stage == 1040) { UnityEngine.SceneManagement.SceneManager.LoadScene(FormulaGarageBuilder.GarageScene); Next(1041, "standalone-garage"); }
+            else if (stage == 1041 && age > 2)
+            {
+                if (menu == null || car == null || !car.IsReady) return;
+                Require(menu.CurrentPage == "Garaj" && menu.CurrentGarageTab == "Setup", "Standalone Garage did not restore the saved section.");
+                Require(Button("garage-0") != null && Button("garage-1") != null && Button("garage-2") != null, "Standalone Garage tabs are missing.");
+                Pass("Standalone Garage uses the same authored UI, remembered section and Generic vehicle");
+                Capture("StandaloneGarage"); Next(1042, "standalone-garage-capture");
+            }
+            else if (stage == 1042) { Next(11, "complete"); EditorApplication.ExitPlaymode(); }
+
         }
         catch (Exception error)
         {

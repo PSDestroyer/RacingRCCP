@@ -9,9 +9,9 @@ namespace FormulaGame
     public static class FormulaUI
     {
         // Shared by the menu, garage, confirmation dialogs and race results.
-        public static readonly Color Background = new Color32(48, 0, 11, 250);
-        public static readonly Color Red = new Color32(200, 16, 46, 255);
-        public static readonly Color Ink = new Color32(98, 0, 20, 255);
+        public static readonly Color Background = new Color32(8, 9, 11, 250);
+        public static readonly Color Red = new Color32(255, 30, 0, 255);
+        public static readonly Color Ink = new Color32(18, 19, 22, 255);
         public static readonly Color Panel = Color.white;
         public static readonly Color Accent = new Color32(255, 225, 59, 255);
         public static readonly Color Disabled = new Color32(255, 194, 205, 255);

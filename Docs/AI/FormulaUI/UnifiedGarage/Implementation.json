@@ -1,0 +1,66 @@
+{
+  "scope": "One Garage entry and a shared Upgrade visual language for Home, Career, Garage, Quick Race, Profile, Settings, dialogs and race results.",
+  "authoring": "Tools / Formula Career / Unify Garage UX and Upgrade Style",
+  "menuPrefab": "Assets/Formula/UI/Formula_Menu.prefab",
+  "resultsPrefab": "Assets/Formula/Resources/Formula/UI/FormulaResults.prefab",
+  "backup": "/private/tmp/FormulaUnifiedGarageBefore",
+  "navigation": {
+    "home": [
+      "Career",
+      "Garage",
+      "Quick Race",
+      "Profile",
+      "Settings"
+    ],
+    "garageTabs": [
+      "Upgrade",
+      "Setup",
+      "Liveries"
+    ],
+    "garageFirstVisit": "Upgrade",
+    "garageMemory": "lastGarageTab, additive optional profile field; old saves default to Upgrade and invalid values are clamped",
+    "controller": "LB/RB switches Garage tabs; D-pad navigates components and levels; confirm and Back remain consistent",
+    "briefing": "Garage preserves the event, mode and source-card focus; Back reopens the same briefing with refreshed vehicle rules",
+    "stockEvents": "Garage identifies stock/time-trial restrictions before the player makes car changes"
+  },
+  "preview": {
+    "upgrade": "Focus previews a level; an explicit confirmed purchase spends credits. Owned levels equip for free.",
+    "setup": "Focus previews current versus proposed downforce and drag without changing physics or saving. Confirm applies a free preset.",
+    "liveries": "Focus previews the livery. Equip or confirmed Buy and equip changes the saved appearance. Development is retained."
+  },
+  "presentation": {
+    "art": "Existing per-layer Figma Upgrade / Career logo, wallet, matte coin, footer glow and shade exports",
+    "surfaces": "Native FormulaPanelGraphic gradient, hairlines and red selection, derived from the Upgrade screen; no runtime bitmap generation",
+    "type": "Existing Teko and Rajdhani font assets",
+    "hierarchy": "Existing view ownership retained. New surfaces and controls are serialized; results are an authored prefab with FormulaResultsView.",
+    "reference": "../FigmaUpgrade/Reference.png"
+  },
+  "validation": {
+    "status": "Passed",
+    "menuReport": "../RuntimeValidation.json",
+    "raceReport": "../English/RaceValidation.json",
+    "platform": "Unity Editor at 1280x720, keyboard and virtual gamepad; no target-platform build",
+    "menuChecks": 23,
+    "raceChecks": 3,
+    "errors": [],
+    "menuPhase": "complete",
+    "racePhase": "complete",
+    "raceMethod": "Temporary save, real circuit scene, scripted finish; no driving validation",
+    "screenshots": [
+      "../HomeGarageFocus.png",
+      "../ContextGarageSetup.png",
+      "../Liveries.png",
+      "../Development.png",
+      "../CareerSelection.png",
+      "../Quick.png",
+      "../Profile.png",
+      "../Settings.png",
+      "../Audio.png",
+      "../Controls.png",
+      "../EventBriefing.png",
+      "../Purchase.png",
+      "../English/Results.png",
+      "../StandaloneGarage.png"
+    ]
+  }
+}
