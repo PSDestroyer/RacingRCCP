@@ -33,6 +33,11 @@ public static class FormulaMenuPreview
         EditorApplication.update += Update;
         Application.logMessageReceived += OnLog;
     }
+    [MenuItem("Tools/Formula Career/Preview and Validate Menu at 1080p")]
+    public static void Run1080()
+    {
+        FormulaGameViewValidation.Select1080(); Run();
+    }
     [MenuItem("Tools/Formula Career/Preview and Validate Figma Menu")]
     public static void Run()
     {
@@ -59,6 +64,7 @@ public static class FormulaMenuPreview
         {
             var actions = RCCP_InputActions.Instance.inputActions;
             actions.RemoveAllBindingOverrides(); actions.LoadBindingOverridesFromJson(SessionState.GetString("FormulaMenu.Check.InputOverrides", ""));
+            FormulaGameViewValidation.Restore();
             SessionState.SetBool(Active, false); Environment.SetEnvironmentVariable("FORMULA_VALIDATION_SAVE_PATH", null);
             string previous = SessionState.GetString(Previous, "");
             EditorSceneManager.playModeStartScene = string.IsNullOrEmpty(previous) ? null : AssetDatabase.LoadAssetAtPath<SceneAsset>(previous);
@@ -104,6 +110,8 @@ public static class FormulaMenuPreview
             var canvas = menu != null ? menu.View.Canvas : null;
             if (stage == 0 && age > 2)
             {
+                // Asset import can consume wall time before the first player frames.
+                if (Time.frameCount <= report.startFrame + 5) return;
                 var locale = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocaleAsync;
                 if (!locale.IsDone) return;
                 Require(locale.Result != null && locale.Result.Identifier.Code == "en", "English was not selected as the startup locale.");
@@ -494,6 +502,59 @@ public static class FormulaMenuPreview
                 InputSystem.RemoveDevice(simulatedKeyboard); simulatedKeyboard = null;
                 menu.Back(); Require(menu.CurrentPage == "Setări" && !menu.View.Settings.DetailsOpen && canvas.enabled, "New settings failed to return.");
                 Pass("New audio and controls preserve volume, cancel and commit interactive bindings through the existing RCCP save");
+                Click("open-ACCESSIBILITY"); Click("preference-5"); Click("preference-6"); Click("preference-7");
+                Require(FormulaProgression.State.textScale == 115 && FormulaProgression.State.reducedMotion && FormulaProgression.State.highContrast, "Accessibility preferences did not apply.");
+                Next(805, "accessibility-preview");
+            }
+            else if (stage == 805)
+            {
+                Require(canvas.transform.Find("Screen Shade").gameObject.activeInHierarchy && canvas.transform.Find("Screen Shade").GetComponent<UnityEngine.UI.Image>().color.a >= .79f, "High contrast does not darken the background.");
+                Capture("Accessibility"); Next(8051, "accessibility-capture");
+            }
+            else if (stage == 8051)
+            {
+                Click("tab-DISPLAY"); Click("preference-1");
+                Require(FormulaProgression.State.safeAreaPercent == 95, "Safe area preference did not apply.");
+                Next(806, "display-preview");
+            }
+            else if (stage == 806)
+            {
+                Capture("Display"); Next(8061, "display-capture");
+            }
+            else if (stage == 8061)
+            {
+                Click("tab-GRAPHICS");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text.StartsWith("QUALITY  /")), "Graphics page has no actual quality setting.");
+                Next(807, "graphics-preview");
+            }
+            else if (stage == 807)
+            {
+                Capture("Graphics"); Next(8071, "graphics-capture");
+            }
+            else if (stage == 8071)
+            {
+                FormulaProgression.Commit(d => { d.formula.bestLapSeconds["g01"] = 52.432; return null; }, out _);
+                menu.Back(); menu.Show("Profil"); Next(808, "profile-records");
+            }
+            else if (stage == 808)
+            {
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Count(t => t.text.StartsWith("BEST LAP")) == 6, "Profile does not expose six lap records.");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "BEST LAP  00:52.432"), "Profile lap record differs from the saved best lap.");
+                Capture("Profile"); Next(8081, "profile-capture");
+            }
+            else if (stage == 8081)
+            {
+                menu.Show("Carieră"); Next(809, "readability-preview");
+            }
+            else if (stage == 809)
+            {
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "COMPLETED") && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "NEXT EVENT"), "Career progression states are missing.");
+                Capture("CareerLargeText"); Next(8091, "readability-capture");
+            }
+            else if (stage == 8091)
+            {
+                FormulaProgression.Commit(d => { d.formula.textScale = 100; d.formula.safeAreaPercent = 100; d.formula.reducedMotion = false; d.formula.highContrast = false; return null; }, out _);
+                Pass("Display safe area, larger text, reduced motion, contrast, graphics page, XP and six profile records are available without altering the wallet");
                 menu.Show("Curse rapide"); Next(9, "quick");
             }
             else if (stage == 9)
@@ -515,10 +576,12 @@ public static class FormulaMenuPreview
             }
             else if (stage == 900)
             {
-                Click("quick-0"); Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("No career credits or XP")), "Quick race briefing promises career rewards.");
+                Require(canvas.GetComponentsInChildren<FormulaEventCard>().Length == 2, "Quick sessions still duplicate six circuit cards.");
+                Click("mode-1"); Click("quick-0");
+                Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "TIME ATTACK"), "Selected quick mode was lost in briefing."); Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("No career credits or XP")), "Quick race briefing promises career rewards.");
                 Capture("QuickBriefing"); Next(901, "quick-briefing-back");
             }
-            else if (stage == 901) { menu.Back(); Pass("Quick race briefing clearly states that no career credits or XP are awarded"); Next(90, "virtual-controller"); }
+            else if (stage == 901) { menu.Back(); Pass("Quick sessions separate mode and circuit, preserve the selected Time Attack mode and clearly state that no career credits or XP are awarded"); Next(90, "virtual-controller"); }
             else if (stage == 90)
             {
                 menu.Show("Acasă"); Click("home-garage"); Click("garage-0");

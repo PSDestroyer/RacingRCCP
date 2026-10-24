@@ -61,7 +61,7 @@ namespace FormulaGame
         public void SetEventContext(FormulaCatalog.CareerEvent entry, string mode)
         {
             if (contextLabel == null) return;
-            contextLabel.text = entry == null ? "" : entry.name.ToUpperInvariant() + "\n" + (entry.vehicleRule == "stock_balanced" || mode == "time_trial" ? "Stock event · Your car changes will not apply" : "Your equipped upgrades and setup will be used");
+            contextLabel.text = entry == null ? "" : entry.name.ToUpperInvariant() + "\n" + ((mode == "career" && entry.vehicleRule == "stock_balanced") || mode == "time_trial" ? "Stock event · Your car changes will not apply" : "Your equipped upgrades and setup will be used");
         }
         public void PreviewSetup(string id)
         {
@@ -70,7 +70,7 @@ namespace FormulaGame
         public void WireNavigation()
         {
             if (!gameObject.activeInHierarchy || back == null) return;
-            if (tabHints != null) tabHints.text = UnityEngine.InputSystem.Gamepad.current != null ? "LB/RB · Tabs" : "Q/E · Tabs";
+            if (tabHints != null) tabHints.text = FormulaInputHints.Sections;
             var navigationBack = upgrade != null && upgrade.IsPresented ? upgrade.BackControl : back;
             if (currentSection == 0 && upgrade != null) upgrade.WireNavigation(tabs[0]);
             var first = currentSection == 0 && upgrade != null ? upgrade.FirstControl : Array.Find(sections[currentSection].GetComponentsInChildren<UnityEngine.UI.Selectable>(), b => b.IsActive() && b.IsInteractable());

@@ -1,17 +1,16 @@
 using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 namespace FormulaGame
 {
     [RequireComponent(typeof(GamePlayManager))]
+    [DefaultExecutionOrder(100)]
     public sealed class FormulaRaceUI : MonoBehaviour
     {
         public float trackHalfWidth = 18f;
         private GamePlayManager game;
         private Canvas canvas;
-        private TMP_Text hud;
+        private FormulaRaceView raceView;
         private float nextRefresh, outsideSeconds;
         private bool showingResult;
         private void Awake() => game = GetComponent<GamePlayManager>();
@@ -20,28 +19,24 @@ namespace FormulaGame
         private void Start()
         {
             canvas = FormulaUI.Canvas("Formula Race", 180);
-            var bar = FormulaUI.Box(canvas.transform, "RaceHeader", 0, 0, 1280, 80, FormulaUI.Background);
-            hud = FormulaUI.Text(bar, "", 24, 8, 1000, 64, 26);
-            FormulaUI.Button(bar, "race-menu", "Menu", 1090, 8, 166, 64, FormulaSession.ReturnToMenu);
+            FormulaInputHints.ConfigureUI(UnityEngine.EventSystems.EventSystem.current?.GetComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>());
+            if (FormulaMenuAssets.Current.racePrefab == null) { Debug.LogError("Formula race presentation is not authored."); enabled = false; return; }
+            raceView = Instantiate(FormulaMenuAssets.Current.racePrefab, canvas.transform, false).GetComponent<FormulaRaceView>();
+            raceView.Bind(game);
+            canvas.gameObject.AddComponent<FormulaPresentation>();
+            HideLegacyHud();
         }
         private void Update()
         {
-            if (game.CarController == null || showingResult || !FormulaSession.InRace) return;
             if (Time.unscaledTime < nextRefresh) return;
             nextRefresh = Time.unscaledTime + .1f;
+            raceView?.Tick(game);
+            if (game.CarController == null || showingResult || !FormulaSession.InRace || raceView == null) return;
             if (FormulaSession.LastError != null)
             {
-                showingResult = true;
-                var errorPanel = FormulaUI.Box(canvas.transform, "SaveError", 0, 0, 1280, 720, FormulaUI.Background);
-                FormulaUI.Text(errorPanel, "The result could not be saved\n" + FormulaSession.LastError, 80, 140, 1100, 200, 28);
-                FormulaUI.Button(errorPanel, "retry-save", "Retry saving", 80, 400, 500, 90, () => { showingResult = false; errorPanel.gameObject.SetActive(false); Destroy(errorPanel.gameObject); FormulaSession.RetryResult(); });
-                FormulaUI.Button(errorPanel, "leave", "Menu without rewards", 620, 400, 540, 90, FormulaSession.ReturnToMenu);
-                FormulaUI.Focus(errorPanel); return;
+                raceView.SaveError(FormulaSession.LastError); return;
             }
-            var e = FormulaSession.CurrentEvent;
             FormulaSession.ObserveBraking(game.CarController.absoluteSpeed, game.CarController.Inputs.inputs.brakeInput);
-            hud.text = $"{e.name}  ·  Lap {Mathf.Min(game.FormulaCompletedLaps + 1, game.totalRaceLaps)}/{game.totalRaceLaps}  ·  {TimeText(game.FormulaElapsed)}\nBest lap: {TimeText(FormulaSession.BestLap)}";
-            if (e.mode == "familiarization") hud.text += " · Complete a valid lap";
             if (!game.FormulaRaceStarted) return;
             float distance = DistanceToRoute(game.CarController.transform.position);
             outsideSeconds = distance > trackHalfWidth ? outsideSeconds + .1f * Time.timeScale : 0;
@@ -65,23 +60,31 @@ namespace FormulaGame
         private IEnumerator ShowResults(FormulaReceipt receipt)
         {
             yield return null; // Restore focus after the existing finish screen updates.
-            showingResult = true;
+            showingResult = true; raceView.Finish();
             if (FormulaMenuAssets.Current != null && FormulaMenuAssets.Current.resultsPrefab != null)
             {
                 var result = Instantiate(FormulaMenuAssets.Current.resultsPrefab, canvas.transform, false);
-                result.GetComponent<FormulaResultsView>().Present(receipt); yield break;
+                result.GetComponent<FormulaResultsView>().Present(receipt);
+                canvas.GetComponent<FormulaPresentation>().Register((RectTransform)result.transform); yield break;
             }
-            var panel = FormulaUI.Box(canvas.transform, "Formula Results", 0, 0, 1280, 720, FormulaUI.Background);
-            FormulaUI.Text(panel, FormulaSession.CurrentEvent.name, 60, 50, 1160, 60, 36);
-            FormulaUI.Text(panel, FormulaUI.MedalName(receipt.medal), 60, 125, 1160, 65, 40, FormulaUI.Accent);
-            string text = $"Time: {TimeText(receipt.elapsedSeconds)}  ·  Best lap: {TimeText(receipt.bestLapSeconds)}\n\n+{receipt.credits:N0} CR  ·  +{receipt.xp:N0} XP\nLevel bonus: +{receipt.levelCredits:N0} CR\nBalance: {FormulaProgression.Data.money:N0} CR  ·  Level {FormulaProgression.Data.currentLevel}";
-            foreach (string id in receipt.newLiveries) text += "\nLivery unlocked: " + FormulaCatalog.Current.Skin(id).displayName;
-            FormulaUI.Text(panel, text, 60, 215, 1160, 300, 28);
-            FormulaUI.Button(panel, "retry", "Retry event", 60, 580, 340, 80, () => FormulaSession.Launch(receipt.eventId, FormulaProgression.State.activeMode));
-            var next = FormulaCatalog.Current.careerEvents.Find(e => FormulaProgression.State.Best(e.id) < Medal.Bronze);
-            if (next != null) FormulaUI.Button(panel, "next", "Continue career", 420, 580, 390, 80, () => FormulaSession.Launch(next.id, "career"));
-            FormulaUI.Button(panel, "menu", "Menu", 830, 580, 390, 80, FormulaSession.ReturnToMenu);
-            FormulaUI.Focus(panel);
+            Debug.LogError("Formula results prefab is not authored.");
+        }
+        private void HideLegacyHud()
+        {
+            foreach (var source in new[] { game.lapUIRoot, game.timerUIRoot })
+                if (source != null)
+                {
+                    var oldCanvas = source.GetComponentInParent<Canvas>();
+                    if (oldCanvas != null && oldCanvas != canvas) oldCanvas.enabled = false;
+                }
+            foreach (var legacy in FindObjectsByType<GameplayMangerCarHud>(FindObjectsSortMode.None))
+            {
+                legacy.enabled = false;
+                foreach (var item in new UnityEngine.Object[] { legacy.speedKmhText, legacy.currentGearText, legacy.currentGearImage, legacy.tachometerNeedle, legacy.absImage, legacy.espImage, legacy.tcsImage })
+                    if (item is Component component) component.gameObject.SetActive(false);
+            }
+            foreach (var text in new[] { game.currentLapText, game.totalLapsText, game.missionGoalText, game.racePositionText, game.racePositionTotalText, game.liveLeaderboardText, game.raceStateText, game.DriftModeText, game.DriftTimerText, game.PerfectDriftBestTimeText, game.TotalScoreText, game.scoreText, game.missionIntroText })
+                if (text != null) text.enabled = false;
         }
         public static string TimeText(double seconds)
         {

@@ -1,7 +1,6 @@
 using System;
 using HalvaStudio.Save;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.AI;
 
 namespace FormulaGame
@@ -10,10 +9,14 @@ namespace FormulaGame
     {
         public static bool InRace { get; private set; }
         public static FormulaCatalog.CareerEvent CurrentEvent => FormulaCatalog.Current.Event(FormulaProgression.State.activeEventId);
-        public static bool StockVehicle => InRace && (FormulaProgression.State.activeMode == "time_trial" || CurrentEvent?.vehicleRule == "stock_balanced");
+        public static bool StockVehicle => InRace && (FormulaProgression.State.activeMode == "time_trial" || (FormulaProgression.State.activeMode == "career" && CurrentEvent?.vehicleRule == "stock_balanced"));
         public static int OpponentLevel => CurrentEvent?.id == "g06" ? 2 : CurrentEvent?.id == "g04" ? 1 : 0;
         public static double BestLap { get; private set; }
         public static int ValidLaps { get; private set; }
+        public static bool LapInvalid => lapInvalid;
+        public static double LapElapsed(double elapsed) => System.Math.Max(0, elapsed - lastLapEnd);
+        public static string PendingReviewEvent { get; set; }
+        public static void ReviewEvent(string id) { PendingReviewEvent = id; ReturnToMenu(); }
         private static double lastLapEnd;
         private static bool lapInvalid, reachedBrakingSpeed;
         public static bool BrakeStopCompleted { get; private set; }
@@ -35,8 +38,9 @@ namespace FormulaGame
             Time.timeScale = 1f; AudioListener.pause = false;
             try
             {
-                if (LoadingManager.Instance != null) LoadingManager.Instance.LoadScene(track.scenePath);
-                else SceneManager.LoadScene(track.scenePath);
+                var loader = LoadingManager.Instance;
+                if (loader == null) loader = new GameObject("Formula Loading Manager").AddComponent<LoadingManager>();
+                loader.LoadScene(track.scenePath);
             }
             catch (Exception failure) { launching = false; return "Failed to load the circuit: " + failure.Message; }
             return null;
@@ -118,7 +122,7 @@ namespace FormulaGame
                     : e.mode == "familiarization" || (reference > 0 && metric <= reference * 1.2) ? Medal.Bronze : Medal.None;
             }
             FormulaReceipt receipt = null;
-            if (!FormulaProgression.Commit(d => { receipt = FormulaProgression.Complete(d, p.activeRunId, p.activeEventId, valid, medal, elapsed, BestLap); return receipt == null ? "Duplicate or invalid result." : null; }, out string error))
+            if (!FormulaProgression.Commit(d => { receipt = FormulaProgression.Complete(d, p.activeRunId, p.activeEventId, valid, medal, elapsed, BestLap); if (receipt != null) receipt.finishPosition = position; return receipt == null ? "Duplicate or invalid result." : null; }, out string error))
             {
                 LastError = error; receipt = null;
                 Debug.LogError("Formula result not saved: " + error);
@@ -130,7 +134,9 @@ namespace FormulaGame
         public static void ReturnToMenu()
         {
             EnterMenu();
-            SceneManager.LoadScene("Menu");
+            var loader = LoadingManager.Instance;
+            if (loader == null) loader = new GameObject("Formula Loading Manager").AddComponent<LoadingManager>();
+            loader.LoadScene("Menu");
         }
     }
 }

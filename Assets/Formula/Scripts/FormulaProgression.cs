@@ -27,6 +27,8 @@ namespace FormulaGame
             foreach (var id in new[] { "generic_orange", "generic_blue" }) if (!p.ownedLiveries.Contains(id)) p.ownedLiveries.Add(id);
             if (!p.ownedLiveries.Contains(p.equippedLivery) || FormulaCatalog.Current.Skin(p.equippedLivery) == null) p.equippedLivery = "generic_orange";
             p.lastGarageTab = Math.Clamp(p.lastGarageTab, 0, 2);
+            p.textScale = p.textScale >= 115 ? 115 : 100;
+            p.safeAreaPercent = p.safeAreaPercent == 95 ? 95 : 100;
             var catalog = FormulaCatalog.Current;
             if (!catalog.freeSetups.Exists(s => s.id == p.setup)) p.setup = "balanced";
             foreach (var b in catalog.upgrades)
@@ -138,7 +140,8 @@ namespace FormulaGame
                 }
                 p.claimedMedalMasks[eventId] = mask;
                 if (medal > p.Best(eventId)) p.medals[eventId] = medal;
-                if (bestLap > 0 && (!p.bestLapSeconds.TryGetValue(eventId, out double old) || bestLap < old)) p.bestLapSeconds[eventId] = bestLap;
+                if (bestLap > 0 && (!p.bestLapSeconds.TryGetValue(eventId, out double old) || bestLap < old))
+                { p.bestLapSeconds[eventId] = bestLap; receipt.personalBest = true; }
                 d.exp = checked(d.exp + receipt.xp); d.currentLevel = Level(d, FormulaCatalog.Current);
                 receipt.levelCredits = Math.Max(0, d.currentLevel - p.highestRewardedLevel) * FormulaCatalog.Current.profile.creditsPerLevelUp;
                 p.highestRewardedLevel = Math.Max(p.highestRewardedLevel, d.currentLevel);

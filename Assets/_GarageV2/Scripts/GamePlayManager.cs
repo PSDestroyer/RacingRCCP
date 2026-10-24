@@ -212,6 +212,8 @@ public class GamePlayManager : MonoBehaviour
     public float FormulaElapsed => raceElapsedTime;
     public int FormulaCompletedLaps => playerRacer != null ? playerRacer.completedLaps : 0;
     public bool FormulaRaceStarted => raceStarted;
+    public int FormulaPosition => GetPlayerRacePosition();
+    public int FormulaParticipants => GetTotalRaceParticipants();
     private float raceElapsedTime = 0f;
     private float limitedBrakeUsageSeconds = 0f;
     private bool chaseRaceCaughtTarget = false;

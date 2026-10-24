@@ -47,6 +47,25 @@ public static class FormulaProgressionValidation
             Assert(d.money == 9000 && d.exp == 12345 && d.currentLevel >= 7 && d.formula.legacyCarIndex == 3, "Legacy progress changed");
             Assert(JsonConvert.SerializeObject(d).Contains("futureField"), "Unknown legacy field was dropped");
         });
+        Check("Presentation preferences migrate safely without changing career progress", () =>
+        {
+            var d = New(); d.formula.textScale = 0; d.formula.safeAreaPercent = 0; FormulaProgression.Ensure(d);
+            Assert(d.formula.textScale == 100 && d.formula.safeAreaPercent == 100 && d.formula.qualityLevel == -1, "Unsafe preference defaults");
+            d.formula.textScale = 115; d.formula.safeAreaPercent = 95; d.formula.reducedMotion = true;
+            var saved = JsonConvert.DeserializeObject<SaveManager.SaveData>(JsonConvert.SerializeObject(d)); FormulaProgression.Ensure(saved);
+            Assert(saved.formula.textScale == 115 && saved.formula.safeAreaPercent == 95 && saved.formula.reducedMotion && saved.money == 0, "Preferences failed to survive reload");
+        });
+        Check("Legacy level floors show the actual XP remaining", () =>
+        {
+            string caption = FormulaMenuFormatting.Experience(12345, 7, out float fill);
+            Assert(caption == "8,655 XP TO LEVEL 8" && fill == 0, "Legacy XP floor was displayed as a normal level");
+            Assert(FormulaMenuFormatting.Experience(1000, 1, out fill) == "1,000 / 3,000 XP" && System.Math.Abs(fill - 1f / 3) < .001f, "Fresh XP progress is incorrect");
+        });
+        Check("Personal best is reported only when the career record improves", () =>
+        {
+            var d = New(); var first = Finish(d, "g01", Medal.Bronze); var repeated = Finish(d, "g01", Medal.Bronze);
+            Assert(first.personalBest && !repeated.personalBest, "Personal best flag does not match records");
+        });
         Check("Locked event cannot start", () => Assert(FormulaProgression.BeginRun(New(), "g06", "career") != null, "Gate bypassed"));
         Check("Locked upgrade cannot debit wallet", () => { var d = New(); d.money = 9999; Assert(FormulaProgression.BuyUpgrade(d, "engine") != null && d.money == 9999, "Locked purchase changed balance"); });
         Check("G01 bronze grants exactly 1200 CR and 1000 XP", () => { var d = New(); Finish(d, "g01", Medal.Bronze); Assert(d.money == 1200 && d.exp == 1000, "Wrong first reward"); });

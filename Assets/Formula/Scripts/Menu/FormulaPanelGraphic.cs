@@ -12,8 +12,8 @@ namespace FormulaGame
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear(); var r = rectTransform.rect;
-            Color left = selected ? new Color32(255, 30, 0, 245) : new Color32(20, 21, 24, 250);
-            Color right = selected ? new Color32(94, 8, 2, 225) : new Color32(20, 21, 24, 225);
+            Color left = selected ? new Color32(255, 30, 0, 255) : new Color32(14, 10, 11, 255);
+            Color right = selected ? new Color32(94, 8, 2, 255) : new Color32(14, 10, 11, 255);
             Quad(vh, r.xMin, r.yMin, r.xMax, r.yMax, left * color, right * color);
             Color edge = new Color(1, 1, 1, selected ? .7f : .32f) * color;
             Quad(vh, r.xMin, r.yMax - 1, r.xMax, r.yMax, edge, edge);

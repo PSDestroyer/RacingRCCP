@@ -70,9 +70,9 @@ namespace FormulaGame
         private void Update()
         {
             if (frame == null) return;
-            float target = selected ? 1 : homePlate == null && hovered ? .5f : 0;
+            float target = selected ? 1 : homePlate == null && hovered ? .18f : 0;
             if (Mathf.Approximately(strength, target)) return;
-            strength = Mathf.MoveTowards(strength, target, Time.unscaledDeltaTime * 10);
+            strength = FormulaProgression.State.reducedMotion ? target : Mathf.MoveTowards(strength, target, Time.unscaledDeltaTime * 10);
             SetColor(strength);
         }
     }

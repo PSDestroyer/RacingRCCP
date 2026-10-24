@@ -13,6 +13,8 @@ public class PauseGameplay : MonoBehaviour
     public string menuSceneName = "Menu";
     public bool pauseAudioListener = true;
 
+    public System.Func<bool> OptionsOverride { private get; set; }
+    private int lastOptionsFrame = -1;
     private bool isPaused = false;
     private bool canPause = true;
     private bool wasVehicleControllableBeforePause = false;
@@ -52,8 +54,10 @@ public class PauseGameplay : MonoBehaviour
 
     public void TogglePause()
     {
-        if (!canPause)
+        if (!canPause || lastOptionsFrame == Time.frameCount)
             return;
+        lastOptionsFrame = Time.frameCount;
+        if (OptionsOverride?.Invoke() == true) return;
 
         if (settingsPanel != null && settingsPanel.activeSelf)
         {

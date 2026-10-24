@@ -99,7 +99,7 @@ namespace FormulaGame
             eventState.text = mode == "career" ? "CAREER / EVENT " + e.id.Substring(1) + " · " + FormulaSeasonCalendar.Current.Caption(e) + " " + FormulaSeasonCalendar.Current.year : mode == "time_trial" ? "TIME ATTACK" : "FREE RACE";
             eventTrack.text = track.displayName + "\n" + e.laps + (e.laps == 1 ? " lap" : " laps") + "  ·  " + (e.opponentCount == 0 ? "Solo" : e.opponentCount + " opponents");
             eventGoal.text = career ? FormulaMenuFormatting.EventGoal(e) : e.mode == "race" ? "Race for your best result on this circuit." : "Learn the circuit and complete valid laps.";
-            eventVehicle.text = e.vehicleRule == "stock_balanced" || mode == "time_trial" ? "STOCK CAR\nBalanced setup" : "YOUR CAR\nEquipped upgrades and setup";
+            eventVehicle.text = (mode == "career" && e.vehicleRule == "stock_balanced") || mode == "time_trial" ? "STOCK CAR\nBalanced setup" : "YOUR CAR\nEquipped upgrades and setup";
             medalGoals[0].text = e.mode == "race" ? "Finish in the top 3" : e.mode == "familiarization" ? "Complete a valid lap" : "≤ " + FormulaRaceUI.TimeText(t * 1.2);
             medalGoals[1].text = e.mode == "race" ? "Finish in the top 2" : "≤ " + FormulaRaceUI.TimeText(t * (e.mode == "familiarization" ? 1.25 : 1.1));
             medalGoals[2].text = e.mode == "race" ? "Win the race" : "≤ " + FormulaRaceUI.TimeText(t * (e.mode == "familiarization" ? 1.12 : 1.03));
@@ -112,7 +112,7 @@ namespace FormulaGame
             {
                 medalGoals[0].text = e.laps + (e.laps == 1 ? " lap" : " laps");
                 medalGoals[1].text = e.opponentCount == 0 ? "No opponents" : e.opponentCount + " AI drivers";
-                medalGoals[2].text = "Free practice";
+                medalGoals[2].text = mode == "time_trial" ? "Stock car" : e.mode == "race" ? "Race" : "Practice";
             }
             eventReward.text = career ? "TOTAL REWARD" : "NO CAREER REWARDS";
             if (medalRewards != null && medalRewards.Length == 3)
@@ -128,8 +128,7 @@ namespace FormulaGame
                     medalRewards[i].text = career ? credits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR · " + xp.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " XP" : "—";
                 }
             }
-            eventNote.text = !unlocked ? "LOCKED · " + FormulaProgression.LockReason(e.unlock, FormulaProgression.State) : !career ? "No career credits or XP. Your career progress is unchanged." : "Totals include finish reward and unclaimed medal bonuses."
-                + (track.referenceCalibrated || e.mode == "race" ? "" : "\nProvisional lap targets.");
+            eventNote.text = !unlocked ? "LOCKED · " + FormulaProgression.LockReason(e.unlock, FormulaProgression.State) : !career ? "No career credits or XP. Your career progress is unchanged." : "Rewards include your finish reward and unclaimed medal bonuses.\nValid laps require staying within track limits and passing every checkpoint.";
             eventAccept.interactable = unlocked; eventActionText.text = unlocked ? "START EVENT" : "EVENT LOCKED";
             Wire(eventBriefing.transform); UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(unlocked ? eventAccept.gameObject : eventCancel.gameObject);
         }

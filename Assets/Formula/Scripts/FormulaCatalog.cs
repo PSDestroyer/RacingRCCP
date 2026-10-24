@@ -60,6 +60,9 @@ namespace FormulaGame
     {
         public int schemaVersion = 1;
         public int lastGarageTab;
+        public int textScale = 100, safeAreaPercent = 100;
+        public bool reducedMotion, highContrast;
+        public int qualityLevel = -1, vSync = -1, frameLimit = -1, displayMode = -1;
         public string catalogVersion = "generic_v1";
         public List<string> ownedChassis = new List<string>();
         public List<string> ownedLiveries = new List<string>();
@@ -85,6 +88,8 @@ namespace FormulaGame
         public string runId, eventId;
         public Medal medal;
         public int credits, xp, levelCredits;
+        public int finishPosition;
+        public bool personalBest;
         public double elapsedSeconds, bestLapSeconds;
         public List<string> newLiveries = new List<string>();
     }

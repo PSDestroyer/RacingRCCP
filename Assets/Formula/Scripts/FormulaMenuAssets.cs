@@ -7,7 +7,7 @@ namespace FormulaGame
     public sealed class FormulaMenuAssets : ScriptableObject
     {
         public TMP_FontAsset bodyFont, titleFont;
-        public GameObject resultsPrefab;
+        public GameObject resultsPrefab, racePrefab, loadingPrefab;
         public Texture2D career, garage, upgrade, settings, helmet, footerGlow;
         public Texture2D[] liveries;
         public Sprite panelSprite;

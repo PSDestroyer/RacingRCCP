@@ -22,6 +22,8 @@ public class LoadingManager : Singleton<LoadingManager>
 
     private bool isLoading;
     private float displayedProgress;
+    private FormulaGame.FormulaLoadingView formulaView;
+    private Canvas formulaCanvas;
 
     private void Awake()
     {
@@ -57,7 +59,7 @@ public class LoadingManager : Singleton<LoadingManager>
         if (EventSystem.current != null)
             EventSystem.current.SetSelectedGameObject(null);
 
-        ShowLoadingUI();
+        ShowLoadingUI(sceneName);
 
         AsyncOperation op = SceneManager.LoadSceneAsync(sceneName);
         op.allowSceneActivation = false;
@@ -91,10 +93,17 @@ public class LoadingManager : Singleton<LoadingManager>
         isLoading = false;
     }
 
-    private void ShowLoadingUI()
+    private void ShowLoadingUI(string sceneName)
     {
-        if (loadingRoot != null)
-            loadingRoot.SetActive(true);
+        if (FormulaGame.FormulaMenuAssets.Current != null && FormulaGame.FormulaMenuAssets.Current.loadingPrefab != null)
+        {
+            formulaCanvas = FormulaGame.FormulaUI.Canvas("Formula Loading Canvas", 1000);
+            DontDestroyOnLoad(formulaCanvas.gameObject);
+            formulaView = Instantiate(FormulaGame.FormulaMenuAssets.Current.loadingPrefab, formulaCanvas.transform, false).GetComponent<FormulaGame.FormulaLoadingView>();
+            formulaView.SetDestination(sceneName);
+            formulaCanvas.gameObject.AddComponent<FormulaGame.FormulaPresentation>();
+        }
+        else if (loadingRoot != null) loadingRoot.SetActive(true);
 
         if (loadingCanvasGroup != null)
         {
@@ -108,6 +117,8 @@ public class LoadingManager : Singleton<LoadingManager>
 
     private void HideLoadingUI()
     {
+        if (formulaCanvas != null) Destroy(formulaCanvas.gameObject);
+        formulaCanvas = null; formulaView = null;
         if (loadingRoot != null)
             loadingRoot.SetActive(false);
 
@@ -119,6 +130,7 @@ public class LoadingManager : Singleton<LoadingManager>
 
     private void UpdateUI(float progress01)
     {
+        if (formulaView != null) formulaView.Present(progress01);
         if (progressSlider != null)
             progressSlider.value = progress01;
 

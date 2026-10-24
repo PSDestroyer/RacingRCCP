@@ -12,6 +12,7 @@ namespace FormulaGame
         [SerializeField] private TMP_Text reward, objective;
         [SerializeField] private bool figmaLayout;
         [SerializeField] private FormulaMissionIcon missionIcon;
+        [SerializeField] private TMP_Text availability, earnedMedal, cardAction;
         public string EventId => eventId;
         public string Mode => mode;
         public void Bind(Action<string, string> inspect) => button.onClick.AddListener(() => inspect(eventId, mode));
@@ -20,9 +21,19 @@ namespace FormulaGame
             var e = FormulaCatalog.Current.Event(eventId); var p = FormulaProgression.State;
             if (figmaLayout)
             {
-                eventName.text = FormulaAssets.Current.FindTrack(e.trackId).displayName.Replace(" Circuit", "").ToUpperInvariant();
+                eventName.text = e.name.ToUpperInvariant();
                 stage.text = "Round " + (index + 1);
-                trackName.text = e.name;
+                trackName.text = FormulaAssets.Current.FindTrack(e.trackId).displayName;
+                bool open = FormulaProgression.Unlocked(e.unlock, p);
+                var best = p.Best(e.id);
+                var upcoming = FormulaCatalog.Current.careerEvents.Find(entry => p.Best(entry.id) < Medal.Bronze);
+                if (availability != null)
+                {
+                    availability.text = !open ? "LOCKED" : best >= Medal.Bronze ? "COMPLETED" : upcoming?.id == e.id ? "NEXT EVENT" : "AVAILABLE";
+                    availability.color = !open || upcoming?.id == e.id ? FormulaUI.Accent : Color.white;
+                }
+                if (earnedMedal != null) earnedMedal.text = best == Medal.None ? "" : FormulaUI.MedalName(best).ToUpperInvariant() + " MEDAL";
+                if (cardAction != null) cardAction.text = open ? "VIEW EVENT  ›" : "VIEW REQUIREMENT  ›";
                 state.text = FormulaSeasonCalendar.Current.Caption(e);
                 if (missionIcon != null) missionIcon.SetEvent(e);
                 GetComponent<FormulaMenuFocus>()?.RefreshVisuals();

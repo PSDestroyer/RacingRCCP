@@ -47,6 +47,7 @@ public static class FormulaMenuUnifiedBuilder
         StyleShell(view); StyleHome(view.Home); StyleGarage(view.Garage);
         StyleCareer(view.Career); StyleQuick(view.Quick); StyleProfile(view.Profile); StyleSettings(view.Settings); StyleDialogs(view.Dialogs);
         FormulaEnglishBuilder.TranslateHierarchy(view.gameObject);
+        FormulaExperienceBuilder.Style(view);
     }
     private static void StyleShell(FormulaMenuView view)
     {
@@ -287,6 +288,7 @@ public static class FormulaMenuUnifiedBuilder
             Set(view,"bonus",Label(root.transform,"Level Bonus","Level bonus: +0 CR",30,401,580,38,24));Set(view,"unlocks",Label(root.transform,"Unlocks","Progress saved",650,401,600,85,24));
             var retry=Button(root.transform,"retry","Retry event",30,532,390,64);var next=Button(root.transform,"next","Continue career",440,532,390,64);var back=Button(root.transform,"menu","Menu",850,532,400,64);
             Set(view,"retry",retry);Set(view,"next",next);Set(view,"menu",back);
+            FormulaExperienceBuilder.StyleResults(root);
             var prefab=PrefabUtility.SaveAsPrefabAsset(root,path);FormulaMenuAssets.Current.resultsPrefab=prefab;EditorUtility.SetDirty(FormulaMenuAssets.Current);
         }
         finally{UnityEngine.Object.DestroyImmediate(root);}

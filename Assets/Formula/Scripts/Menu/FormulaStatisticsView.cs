@@ -14,7 +14,8 @@ namespace FormulaGame
         private WheelCollider currentWheel;
         private string previewBranch;
         private int previewLevel;
-        public void PreviewUpgrade(string branch, int level) { previewBranch = branch; previewLevel = level; RefreshDevelopment(); }
+        [SerializeField] private TMP_Text comparison;
+        public void PreviewUpgrade(string branch, int level) { previewBranch = branch; previewLevel = level; if (currentCar != null) Refresh(currentCar, currentWheel); else RefreshDevelopment(); }
         public void PreviewSetup(string id) { if (!setupComparison) return; inspectedSetup = id; if (currentCar != null) Refresh(currentCar, currentWheel); }
         public void Refresh(RCCP_CarController car, WheelCollider wheel)
         {
@@ -30,9 +31,27 @@ namespace FormulaGame
                 float down = car.AeroDynamics.downForce / SetupFactor(installed, false) * SetupFactor(inspectedSetup, false);
                 float resistance = car.AeroDynamics.airResistance / SetupFactor(installed, true) * SetupFactor(inspectedSetup, true);
                 aero.text += " → " + down.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
-                drag.text = "Aero drag " + car.AeroDynamics.airResistance.ToString("0.##") + " → " + resistance.ToString("0.##") + " · Free setup preview";
+                drag.text = "Aero drag " + car.AeroDynamics.airResistance.ToString("0.##") + " → " + resistance.ToString("0.##");
             }
+            if (!setupComparison && !string.IsNullOrEmpty(previewBranch))
+            {
+                var value = previewBranch == "engine" ? torque : previewBranch == "brakes" ? brakes : previewBranch == "suspension" ? spring : aero;
+                float proposed = FormulaUpgradeView.ValueAtLevel(previewBranch, previewLevel, car, wheel);
+                if (previewLevel != FormulaProgression.State.Equipped(previewBranch))
+                    value.text += " → " + proposed.ToString(previewBranch == "aero" ? "0.##" : "0.#", System.Globalization.CultureInfo.InvariantCulture) + (previewBranch == "aero" ? "" : " " + FormulaUpgradeView.Unit(previewBranch));
+                if (previewBranch == "aero" && previewLevel != FormulaProgression.State.Equipped("aero"))
+                {
+                    float proposedDrag = car.AeroDynamics.airResistance / (1 + .01f * FormulaProgression.State.Equipped("aero")) * (1 + .01f * previewLevel);
+                    drag.text = $"Drag {car.AeroDynamics.airResistance:0.##} → {proposedDrag:0.##}";
+                }
+            }
+            if (comparison != null) comparison.text = setupComparison ? "CURRENT → SETUP PREVIEW" : previewBranch != null && previewLevel != FormulaProgression.State.Equipped(previewBranch) ? "CURRENT → LEVEL " + previewLevel + " PREVIEW" : "CURRENT CONFIGURATION";
             RefreshDevelopment();
+            if (setupComparison)
+            {
+                foreach (var row in development) if (row.branchId == "aero" && row.label != null) row.label.text = "DOWNFORCE";
+                if (string.IsNullOrEmpty(inspectedSetup) || inspectedSetup == FormulaProgression.State.setup) drag.text = "Aero drag " + car.AeroDynamics.airResistance.ToString("0.##");
+            }
         }
         private static float SetupFactor(string id, bool drag) => id == "speed" ? drag ? .96f : .92f : id == "corners" ? drag ? 1.04f : 1.08f : 1f;
         private void RefreshDevelopment()

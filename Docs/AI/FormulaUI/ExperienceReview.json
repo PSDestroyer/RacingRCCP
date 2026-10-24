@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-24",
+  "unity": "6000.0.55f1",
+  "status": "Integrated and validated in Unity Editor",
+  "constraints": {
+    "language": "English",
+    "palette": [
+      "red",
+      "white",
+      "yellow"
+    ],
+    "vehicle": "Generic",
+    "home": "Career, Garage, Quick Race; Profile and Settings secondary"
+  },
+  "changes": {
+    "shared_presentation": "Opaque content panels, native red selection, distinct hover, last-used input prompts, safe-area fitting and 100/115 percent body text.",
+    "career": "Distinct event names, locked/next/completed states, earned medals and retained event calendar and mission icons.",
+    "briefing": "Opaque surface; explicit valid-lap rules, actual medal targets and total available rewards. Developer-only provisional copy removed.",
+    "upgrade_and_setup": "Current-to-preview physical values, separate equipped level and inspected level, no green price strip; Setup focuses on downforce and drag.",
+    "liveries": "Eight existing offers retain explicit price, missing credits and unmet requirements; common typography and selection.",
+    "quick_race": "Three mode choices followed by two circuit choices and a session briefing; single career reward policy.",
+    "profile": "Career medals, saved best laps, XP progress, legacy level-floor handling and next career livery.",
+    "results": "XP progress, next-medal gap, personal best, unlocked livery preview, zero-bonus suppression and next-event briefing instead of immediate launch.",
+    "settings": "Display, Graphics and Accessibility sections with saved preferences; existing audio, vibration, assists and RCCP rebind storage retained.",
+    "controls": "Formula driving actions only, no repeated arrow-key rows; whole-device reset still clears all device overrides.",
+    "race": "Authored HUD with speed/gear/RPM/lap/position/timing/objective and invalid-lap feedback; legacy race Canvas hidden.",
+    "pause": "Existing pause controller owns simulation and audio; confirmation before restart/leave, cancel selected first; Escape deduplicated between RCCP and UI.",
+    "loading_and_errors": "Themed asynchronous loader for race and menu, recoverable save-result dialog and visible menu action errors."
+  },
+  "validation": {
+    "menu_720p": "31 passed, zero runtime errors on final authored menu; screenshots at 1280x720",
+    "menu_1080p": "31 passed, zero runtime errors at 1920x1080; subsequent card-surface alignment correction rechecked at 720p",
+    "progression_and_saves": {
+      "passed": 25,
+      "failed": 0,
+      "report": "../FormulaCareer/ProgressionValidation.json"
+    },
+    "race_flow": {
+      "passed": 6,
+      "errors": 0,
+      "report": "English/RaceValidation.json",
+      "method": "Temporary save, real circuit, scripted finish; not a driving test"
+    },
+    "authored_hierarchy": "Menu and Formula Garage validated: one Canvas and EventSystem per scene, no missing scripts or legacy menu presenter",
+    "compile": "Unity Editor imported scripts and ran Play Mode with no C# compilation errors",
+    "known_test_harness_fix": "Startup waits for six actual player frames before inspecting the menu; the 60-second timeout remains active."
+  },
+  "not_validated": [
+    "Physical Nintendo Switch performance/readability and Joy-Con behavior",
+    "Physical gamepad hardware",
+    "Standalone PC or Switch player build",
+    "End-to-end driving and lap-target calibration"
+  ],
+  "authoring_command": "Tools > Formula Career > Integrate Experience Review",
+  "save_compatibility": "Additive preferences and receipt fields. Existing chassis, livery, event and upgrade identifiers are unchanged. Atomic save owner retained."
+}

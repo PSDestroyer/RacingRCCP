@@ -33,6 +33,14 @@ namespace FormulaGame
             bool firstBronze = (claimed & (1 << (int)Medal.Bronze)) == 0;
             return new FormulaCatalog.Reward { credits = e.baseValidFinishReward.credits + (firstBronze ? e.oneTimeMedalRewards["bronze"].credits : 0), xp = e.baseValidFinishReward.xp + (firstBronze ? e.oneTimeMedalRewards["bronze"].xp : 0) };
         }
+        public static string Experience(int totalXp, int level, out float fraction)
+        {
+            int step = FormulaCatalog.Current.profile.xpPerLevel;
+            int within = System.Math.Max(0, totalXp - (level - 1) * step);
+            fraction = UnityEngine.Mathf.Clamp01(within / (float)step);
+            if (totalXp < (level - 1) * step) return (level * step - totalXp).ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " XP TO LEVEL " + (level + 1);
+            return within.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " / " + step.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " XP";
+        }
         public static string NextReward()
         {
             var next = FormulaCatalog.Current.liveries.Where(l => l.acquisition == "achievement_grant" && !FormulaProgression.State.ownedLiveries.Contains(l.id) && l.id != "generic_purple").OrderBy(l => (string)l.unlock["eventId"]).FirstOrDefault();

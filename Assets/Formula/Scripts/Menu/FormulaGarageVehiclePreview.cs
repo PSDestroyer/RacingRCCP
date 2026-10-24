@@ -51,7 +51,7 @@ namespace FormulaGame
             float aimHeight = upgrade ? -.18f : page == "Garaj" ? tab == "Livree" ? .2f : .12f : .42f;
             shotRotation = Quaternion.LookRotation(vehicleAnchor.position + Vector3.up * aimHeight - right * (upgrade ? .72f : 1.9f) - shotPosition);
             presentationCamera.fieldOfView = 34;
-            if (instant) { presentationCamera.transform.SetPositionAndRotation(shotPosition, shotRotation); moving = false; }
+            if (instant || FormulaProgression.State.reducedMotion) { presentationCamera.transform.SetPositionAndRotation(shotPosition, shotRotation); moving = false; }
             else moving = true;
         }
         private void LateUpdate()

@@ -47,12 +47,24 @@ namespace FormulaGame
             if (driver != null) driver.text = upgradeTheme ? FormulaMenuFormatting.DriverName : $"{d.PlayerName ?? "Pilot"}   /   LEVEL {d.currentLevel}";
             if (xpFill != null) xpFill.fillAmount = (d.exp % 3000) / 3000f;
         }
+        private string activePage = "Acasă";
         public void SetStatus(string message) => hints.text = message;
+        public void RefreshContrast()
+        {
+            bool contrast = FormulaProgression.State.highContrast;
+            if (screenShade != null)
+            {
+                screenShade.gameObject.SetActive(activePage != "Carieră" && !(activePage == "Garaj" && garage.Upgrade.IsPresented));
+                screenShade.color = new Color(0, 0, 0, contrast ? .8f : activePage == "Acasă" ? .32f : activePage == "Garaj" ? .2f : .65f);
+            }
+            var shade = garage.Upgrade.transform.Find("World Shade")?.GetComponent<UnityEngine.UI.Image>();
+            if (shade != null) shade.color = new Color(0, 0, 0, contrast ? .7f : .2f);
+        }
         public Transform Activate(string page)
         {
             if (garage.Upgrade != null) garage.Upgrade.SetPresentationActive(false);
             career.SetPresentationActive(page == "Carieră");
-            if (screenShade != null) screenShade.color = new Color(0, 0, 0, page == "Acasă" ? .18f : page == "Garaj" ? .2f : .88f);
+            activePage = page; RefreshContrast();
             home.gameObject.SetActive(page == "Acasă"); career.gameObject.SetActive(page == "Carieră");
             garage.gameObject.SetActive(page == "Garaj"); quick.gameObject.SetActive(page == "Curse rapide");
             profile.gameObject.SetActive(page == "Profil"); settings.gameObject.SetActive(page == "Setări");
