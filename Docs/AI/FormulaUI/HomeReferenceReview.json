@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-24",
+  "scope": "Four concrete UI/UX corrections and a focused Home reference with the Generic display vehicle.",
+  "home": {
+    "actions": [
+      "Career",
+      "Garage",
+      "Quick Race",
+      "Profile",
+      "Settings"
+    ],
+    "language": "English",
+    "palette": [
+      "red",
+      "white",
+      "yellow"
+    ],
+    "changes": [
+      "Native vector navigation symbols and focus chevron; explicit controller navigation.",
+      "Quiet navigation backdrop and simplified driver/credit header.",
+      "Larger complete vehicle framing, smooth camera/FOV changes and isolated display finish.",
+      "Studio lighting, darker room materials and reflections baked from the loaded Menu scene."
+    ],
+    "screenshot": "Home.png",
+    "largerTextScreenshot": "HomeLargeText.png"
+  },
+  "corrections": {
+    "settings": "Audio and Controls icon and label no longer overlap.",
+    "results": "Quick Race, Time Attack and Practice report their actual session type.",
+    "accessibility": "115 percent body text is enforced; authored slots reserve space, and runtime upgrade/livery status updates retain that size.",
+    "rebinding": "Conflicts with existing driving bindings, including alternate keys, are rejected before applying or saving; the notice identifies the occupied action and restores row focus."
+  },
+  "validation": {
+    "menu720p": {
+      "passed": 35,
+      "errors": 0
+    },
+    "menu1080p": {
+      "passed": 35,
+      "errors": 0,
+      "report": "RuntimeValidation.json"
+    },
+    "bodyText115": {
+      "measurements": 331,
+      "layoutFailures": 0,
+      "report": "Text115Validation.json"
+    },
+    "finalHome1080p": {
+      "passed": 6,
+      "errors": 0,
+      "report": "HomeReferenceValidation.json",
+      "method": "After the final reflection bake, isolated test save and virtual controller; includes full framing, focus restoration, text 115 percent and safe area 95 percent."
+    },
+    "hierarchy": "Existing persistent menu prefab; one Canvas and EventSystem. No additional Home actions.",
+    "compilation": "Unity 6000.0.55f1 compiled runtime and Editor scripts with no C# errors.",
+    "originalRaceMaterials": "Display property blocks and separate Editor display material copies; original racing materials unchanged."
+  },
+  "limits": [
+    "No standalone PC or Switch build in this pass.",
+    "No physical Switch or gamepad validation.",
+    "The 35-check full menu runs preceded the final reflection bake; the dedicated Home run validates the final presentation."
+  ]
+}

@@ -55,7 +55,7 @@ namespace FormulaGame
             if (screenShade != null)
             {
                 screenShade.gameObject.SetActive(activePage != "Carieră" && !(activePage == "Garaj" && garage.Upgrade.IsPresented));
-                screenShade.color = new Color(0, 0, 0, contrast ? .8f : activePage == "Acasă" ? .32f : activePage == "Garaj" ? .2f : .65f);
+                screenShade.color = new Color(0, 0, 0, contrast ? .8f : activePage == "Acasă" ? 0 : activePage == "Garaj" ? .2f : .65f);
             }
             var shade = garage.Upgrade.transform.Find("World Shade")?.GetComponent<UnityEngine.UI.Image>();
             if (shade != null) shade.color = new Color(0, 0, 0, contrast ? .7f : .2f);
@@ -84,7 +84,7 @@ namespace FormulaGame
             back.interactable = interactable;
             foreach (var button in screens.GetComponentsInChildren<UnityEngine.UI.Selectable>(true))
                 button.navigation = new UnityEngine.UI.Navigation { mode = interactable ? UnityEngine.UI.Navigation.Mode.Automatic : UnityEngine.UI.Navigation.Mode.None };
-            if (interactable) garage.WireNavigation();
+            if (interactable) { garage.WireNavigation(); home.WireNavigation(); }
         }
     }
 }

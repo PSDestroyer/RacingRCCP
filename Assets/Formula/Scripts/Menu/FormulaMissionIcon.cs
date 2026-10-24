@@ -6,10 +6,11 @@ namespace FormulaGame
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class FormulaMissionIcon : UnityEngine.UI.MaskableGraphic
     {
-        public enum Symbol { Helmet, Stopwatch, Race, Sprint, Precision, Trophy }
+        public enum Symbol { Helmet, Stopwatch, Race, Sprint, Precision, Trophy, Garage, Settings, Chevron }
         [SerializeField] private Symbol symbol;
         [SerializeField] private float stroke = 1.8f;
         public Symbol DisplaySymbol => symbol;
+        public void SetSymbol(Symbol value) { symbol = value; raycastTarget = false; SetVerticesDirty(); }
         public void SetEvent(FormulaCatalog.CareerEvent e)
         {
             Symbol next;
@@ -57,6 +58,20 @@ namespace FormulaGame
                     Path(mesh,new[] {new Vector2(.28f,.77f),new Vector2(.12f,.77f),new Vector2(.14f,.59f),new Vector2(.32f,.50f)});
                     Path(mesh,new[] {new Vector2(.72f,.77f),new Vector2(.88f,.77f),new Vector2(.86f,.59f),new Vector2(.68f,.50f)});
                     Line(mesh,new Vector2(.5f,.4f),new Vector2(.5f,.17f)); Line(mesh,new Vector2(.33f,.15f),new Vector2(.67f,.15f)); break;
+                case Symbol.Garage:
+                    Path(mesh,new[] { new Vector2(.12f,.15f),new Vector2(.12f,.67f),new Vector2(.5f,.87f),new Vector2(.88f,.67f),new Vector2(.88f,.15f) });
+                    Path(mesh,new[] { new Vector2(.28f,.15f),new Vector2(.28f,.58f),new Vector2(.72f,.58f),new Vector2(.72f,.15f) });
+                    Line(mesh,new Vector2(.29f,.43f),new Vector2(.71f,.43f)); Line(mesh,new Vector2(.29f,.29f),new Vector2(.71f,.29f)); break;
+                case Symbol.Settings:
+                    var points = new Vector2[33];
+                    for (int i=0;i<points.Length;i++)
+                    {
+                        float angle = (i+.5f)*Mathf.PI*2/32, radius = i%4==0 || i%4==3 ? .39f : .31f;
+                        points[i] = new Vector2(.5f,.5f) + new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*radius;
+                    }
+                    Path(mesh,points); Ring(mesh,new Vector2(.5f,.5f),.13f); break;
+                case Symbol.Chevron:
+                    Path(mesh,new[] { new Vector2(.32f,.77f),new Vector2(.63f,.5f),new Vector2(.32f,.23f) }); break;
             }
         }
         private Vector2 Point(Vector2 p) => new Vector2(rectTransform.rect.xMin+p.x*rectTransform.rect.width,rectTransform.rect.yMin+p.y*rectTransform.rect.height);

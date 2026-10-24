@@ -44,7 +44,7 @@ namespace FormulaGame
             foreach (var card in setups)
             {
                 var setup = FormulaCatalog.Current.freeSetups.Find(s => s.id == card.id);
-                string description = card.id == "balanced" ? "Balance between corners and straights." : card.id == "speed" ? "Downforce −8% · Drag −4%" : "Downforce +8% · Drag +4%";
+                string description = card.id == "balanced" ? "Balanced cornering and speed." : card.id == "speed" ? "Downforce −8% · Drag −4%" : "Downforce +8% · Drag +4%";
                 card.label.text = card.description == null ? setup.name.ToUpperInvariant() + (p.setup == card.id ? " · EQUIPPED" : " · FREE") + "\n" + description : setup.name.ToUpperInvariant();
                 if (card.description != null) card.description.text = description;
                 if (card.status != null) card.status.text = p.setup == card.id ? "APPLIED" : "FREE · APPLY";

@@ -13,6 +13,8 @@ namespace FormulaGame
         [SerializeField] private Color[] supportingColors;
         [SerializeField] private UnityEngine.UI.Graphic figmaSelection, figmaAction;
         [SerializeField] private UnityEngine.UI.Graphic figmaNormal;
+        [SerializeField] private bool homeNavigation;
+        public void UseHomeNavigation() { homeNavigation = true; }
         public void StyleFigma(UnityEngine.UI.Graphic selection, UnityEngine.UI.Graphic action, UnityEngine.UI.Graphic normal = null)
         {
             homePlate = homeLabel = homeIcon = homeRail = homeArrow = null;
@@ -40,7 +42,8 @@ namespace FormulaGame
         {
             if (figmaSelection != null)
             {
-                figmaSelection.color = new Color(1, 1, 1, alpha);
+                float tint = homeNavigation && pressed ? .82f : 1;
+                figmaSelection.color = new Color(tint, tint, tint, alpha);
                 if (figmaNormal != null) figmaNormal.color = new Color(1, 1, 1, 1 - alpha);
                 if (figmaAction != null) figmaAction.color = new Color(1, 1, 1, alpha);
                 return;

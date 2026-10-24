@@ -10,6 +10,7 @@ namespace FormulaGame
         [SerializeField] private Camera presentationCamera;
         private Vector3 shotPosition;
         private Quaternion shotRotation;
+        private float shotFieldOfView;
         private bool moving;
         private FormulaVehicle vehicle;
         public FormulaVehicle Vehicle => vehicle;
@@ -39,19 +40,35 @@ namespace FormulaGame
             }
             foreach (var wheel in root.GetComponentsInChildren<WheelCollider>()) wheel.enabled = false;
             if (Car.Audio != null) Car.Audio.enabled = false;
+            ApplyDisplayFinish(root, vehicle.body);
+        }
+        private static readonly int Smoothness = Shader.PropertyToID("_Smoothness"), Metallic = Shader.PropertyToID("_Metallic");
+        private static void ApplyDisplayFinish(GameObject root, Renderer body)
+        {
+            var block = new MaterialPropertyBlock();
+            foreach (var renderer in root.GetComponentsInChildren<MeshRenderer>())
+            {
+                bool painted = renderer == body, rim = renderer.name.StartsWith("Generic_Rim", StringComparison.Ordinal), tyre = renderer.name.StartsWith("Generic_Tyre", StringComparison.Ordinal);
+                if (!painted && !rim && !tyre) continue;
+                renderer.GetPropertyBlock(block);
+                block.SetFloat(Smoothness, painted ? .54f : rim ? .5f : .18f);
+                block.SetFloat(Metallic, rim ? .65f : painted ? .12f : 0);
+                renderer.SetPropertyBlock(block); block.Clear();
+            }
         }
         public void ShowLivery(string id) { if (vehicle != null) vehicle.PreviewLivery(id); }
         public void Present(string page, string tab, bool instant = false)
         {
             if (presentationCamera == null) return;
             bool upgrade = page == "Garaj" && tab == "Dezvoltare";
-            Vector3 offset = page != "Garaj" ? new Vector3(3.3f, 1.7f, 8.2f) : tab == "Setup" ? new Vector3(3.8f, 2f, 8.6f) : tab == "Livree" ? new Vector3(3.8f, 1.8f, 8.3f) : new Vector3(.65f, 1.1f, 6.7f);
+            bool home = page == "Acasă";
+            Vector3 offset = home ? new Vector3(3.9f, 1.7f, 7.4f) : page != "Garaj" ? new Vector3(3.3f, 1.7f, 8.2f) : tab == "Setup" ? new Vector3(3.8f, 2f, 8.6f) : tab == "Livree" ? new Vector3(3.8f, 1.8f, 8.3f) : new Vector3(.65f, 1.1f, 6.7f);
             shotPosition = vehicleAnchor.position + offset;
             Vector3 right = Vector3.Cross(Vector3.up, vehicleAnchor.position - shotPosition).normalized;
-            float aimHeight = upgrade ? -.18f : page == "Garaj" ? tab == "Livree" ? .2f : .12f : .42f;
-            shotRotation = Quaternion.LookRotation(vehicleAnchor.position + Vector3.up * aimHeight - right * (upgrade ? .72f : 1.9f) - shotPosition);
-            presentationCamera.fieldOfView = 34;
-            if (instant || FormulaProgression.State.reducedMotion) { presentationCamera.transform.SetPositionAndRotation(shotPosition, shotRotation); moving = false; }
+            float aimHeight = home ? .48f : upgrade ? -.18f : page == "Garaj" ? tab == "Livree" ? .2f : .12f : .42f;
+            shotRotation = Quaternion.LookRotation(vehicleAnchor.position + Vector3.up * aimHeight - right * (home ? .95f : upgrade ? .72f : 1.9f) - shotPosition);
+            shotFieldOfView = home ? 30 : 34;
+            if (instant || FormulaProgression.State.reducedMotion) { presentationCamera.transform.SetPositionAndRotation(shotPosition, shotRotation); presentationCamera.fieldOfView = shotFieldOfView; moving = false; }
             else moving = true;
         }
         private void LateUpdate()
@@ -61,8 +78,9 @@ namespace FormulaGame
             var cameraTransform = presentationCamera.transform;
             cameraTransform.position = Vector3.Lerp(cameraTransform.position, shotPosition, blend);
             cameraTransform.rotation = Quaternion.Slerp(cameraTransform.rotation, shotRotation, blend);
+            presentationCamera.fieldOfView = Mathf.Lerp(presentationCamera.fieldOfView, shotFieldOfView, blend);
             if ((cameraTransform.position - shotPosition).sqrMagnitude < .00001f && Quaternion.Angle(cameraTransform.rotation, shotRotation) < .01f)
-            { cameraTransform.SetPositionAndRotation(shotPosition, shotRotation); moving = false; }
+            { cameraTransform.SetPositionAndRotation(shotPosition, shotRotation); presentationCamera.fieldOfView = shotFieldOfView; moving = false; }
         }
     }
 }

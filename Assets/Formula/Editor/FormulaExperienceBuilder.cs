@@ -8,6 +8,19 @@ using UnityEngine;
 // Explicit authoring pass: the shipped prefab is the UI, including in Edit Mode.
 public static class FormulaExperienceBuilder
 {
+    [MenuItem("Tools/Formula Career/Correct Review Issues")]
+    public static void CorrectReviewIssues()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
+        var root = PrefabUtility.LoadPrefabContents(FormulaMenuHierarchyBuilder.PrefabPath);
+        try
+        {
+            var view = root.GetComponent<FormulaMenuView>(); Settings(view.Settings); ReserveAccessibilityLayout(view);
+            PrefabUtility.SaveAsPrefabAsset(root, FormulaMenuHierarchyBuilder.PrefabPath);
+        }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+        AssetDatabase.SaveAssets(); Debug.Log("FORMULA_REVIEW_ISSUES_CORRECTED");
+    }
     [MenuItem("Tools/Formula Career/Integrate Experience Review")]
     public static void Apply()
     {
@@ -37,6 +50,54 @@ public static class FormulaExperienceBuilder
             }
         var shade = view.transform.Find("Screen Shade"); Place(shade, 0, 100, 1280, 524); shade.SetAsLastSibling(); shade.SetSiblingIndex(view.Screens.GetSiblingIndex());
         Career(view.Career); Briefing(view.Dialogs); Garage(view.Garage); Quick(view.Quick); Profile(view.Profile); Settings(view.Settings);
+        FormulaHomeReferenceBuilder.StyleChrome(view);
+        ReserveAccessibilityLayout(view);
+    }
+    private static void ReserveAccessibilityLayout(FormulaMenuView view)
+    {
+        var upgrade = view.Garage.Upgrade;
+        var rows = new SerializedObject(upgrade).FindProperty("levels");
+        for(int i=0;i<rows.arraySize;i++)
+        {
+            var row=rows.GetArrayElementAtIndex(i); var button=(UnityEngine.UI.Button)row.FindPropertyRelative("button").objectReferenceValue;
+            Place(button.transform,0,i*86,237,82); FormulaMenuTheme.StyleButton(button);
+            Place(((TMP_Text)row.FindPropertyRelative("status").objectReferenceValue).transform,18,44,170,38);
+        }
+        Place(upgrade.transform.Find("Level Details"),30,545,470,78);
+        var setup=view.Garage.transform.Find("Setup"); var statistics=setup.Find("RCCP Statistics");
+        Place(statistics,520,410,730,194); Place(statistics.Find("Comparison Panel"),0,0,730,194);
+        var explanation=statistics.Find("Setup Explanation").GetComponent<TMP_Text>();
+        explanation.text="Less downforce: more straight-line speed.\nMore downforce: more fast-corner grip."; Place(explanation.transform,20,128,690,60);
+        foreach(Transform card in setup.Find("Setup Cards"))
+        {
+            var description=card.Find("Setup Effect").GetComponent<TMP_Text>();
+            if(card.name=="setup-balanced") description.text="Balanced cornering and speed.";
+            Place(card.Find("Setup Status"),20,77,300,34);
+        }
+        var carousel=view.Garage.transform.Find("Livree/Livery Cards"); Place(carousel,30,487,1220,136);
+        foreach(var card in carousel.GetComponentsInChildren<FormulaLiveryCard>(true))
+        {
+            var rect=(RectTransform)card.transform; rect.sizeDelta=new Vector2(145,136); FormulaMenuTheme.StyleButton(card.GetComponent<UnityEngine.UI.Button>());
+            Place(card.transform.Find("Ownership"),9,104,127,32);
+            var state=card.transform.Find("Ownership").GetComponent<TMP_Text>(); if(state.text=="CAREER REWARD")state.text="REWARD";
+        }
+        var requirements=Ref<TMP_Text>(view.Dialogs,"liveryRequirements"); requirements.fontSize=requirements.fontSizeMin=requirements.fontSizeMax=20;
+        foreach(Transform row in view.Profile.transform.Find("Career Medals"))
+        {
+            var rect=(RectTransform)row; rect.sizeDelta=new Vector2(830,69);
+            var surface=row.Find("Upgrade Surface"); if(surface!=null)Place(surface,0,0,830,69);
+            Place(row.Find("Event"),20,-2,570,40); Place(row.Find("Personal Best"),20,36,570,33);
+        }
+        ReserveSingleLineText(view.gameObject);
+    }
+    private static void ReserveSingleLineText(GameObject root)
+    {
+        foreach(var text in root.GetComponentsInChildren<TMP_Text>(true))
+        {
+            if(text.font==FormulaMenuAssets.Current.titleFont || text.fontSize>32 || text.text.Contains("\n"))continue;
+            var rect=text.rectTransform; float height=Mathf.Max(rect.sizeDelta.y,text.fontSize*1.8f), extra=height-rect.sizeDelta.y;
+            rect.sizeDelta=new Vector2(rect.sizeDelta.x,height); rect.anchoredPosition+=Vector2.up*(extra*.5f);
+        }
     }
     private static void Career(FormulaCareerView view)
     {
@@ -151,7 +212,8 @@ public static class FormulaExperienceBuilder
     private static void Settings(FormulaSettingsView view)
     {
         var overview = view.transform.Find("Assists"); var open = overview.Find("existing-settings"); Place(open, 600, 194, 650, 78); FormulaMenuTheme.StyleButton(open.GetComponent<UnityEngine.UI.Button>());
-        Format(open.GetComponentInChildren<TMP_Text>(true), 20, 0, 610, 78, 32, true);
+        Format(open.GetComponentInChildren<TMP_Text>(true), 76, 0, 554, 78, 32, true);
+        var icon = open.Find("Figma Icon"); if (icon != null) Place(icon, 20, 23, 32, 32);
         foreach (string name in new[] { "Description", "Action" }) { var child = open.Find(name); if (child != null) child.gameObject.SetActive(false); }
         var details = view.transform.Find("Audio and Controls"); var tabs = details.Find("Tabs"); Place(tabs, 30, 115, 1220, 42);
         var audio = tabs.Find("settings-audio"); var controls = tabs.Find("settings-controls");

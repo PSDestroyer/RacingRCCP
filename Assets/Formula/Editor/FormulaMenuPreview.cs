@@ -39,13 +39,17 @@ public static class FormulaMenuPreview
         FormulaGameViewValidation.Select1080(); Run();
     }
     [MenuItem("Tools/Formula Career/Preview and Validate Figma Menu")]
-    public static void Run()
+    public static void Run() => BeginRun(false);
+    [MenuItem("Tools/Formula Career/Preview Home Reference at 1080p")]
+    public static void RunHomeReference() { FormulaGameViewValidation.Select1080(); BeginRun(true); }
+    private static void BeginRun(bool homeOnly)
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
         if (FormulaMenuAssets.Current == null) throw new InvalidOperationException("Build Figma Menu Assets first.");
         Environment.SetEnvironmentVariable("FORMULA_VALIDATION_SAVE_PATH", Path.Combine(Path.GetTempPath(), "FormulaMenu-" + Guid.NewGuid().ToString("N"), "save.json"));
         SessionState.SetString(Previous, EditorSceneManager.playModeStartScene == null ? "" : AssetDatabase.GetAssetPath(EditorSceneManager.playModeStartScene));
         SessionState.SetBool(Active, true); SessionState.SetInt(Stage, 0);
+        SessionState.SetBool("FormulaMenu.Check.HomeOnly",homeOnly);
         SessionState.SetString(ReportKey, JsonUtility.ToJson(new Report()));
         SessionState.SetString("FormulaMenu.Check.InputOverrides", RCCP_InputActions.Instance.inputActions.SaveBindingOverridesAsJson());
         EditorSceneManager.playModeStartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>("Assets/Scenes/Menu.unity");
@@ -83,7 +87,7 @@ public static class FormulaMenuPreview
         report.frame = Time.frameCount; report.phase = phase;
         SessionState.SetInt(Stage, stage); started = EditorApplication.timeSinceStartup;
         string json = JsonUtility.ToJson(report, true); SessionState.SetString(ReportKey, json);
-        Directory.CreateDirectory("Docs/AI/FormulaUI"); File.WriteAllText("Docs/AI/FormulaUI/RuntimeValidation.json", json);
+        Directory.CreateDirectory("Docs/AI/FormulaUI"); File.WriteAllText("Docs/AI/FormulaUI/"+(SessionState.GetBool("FormulaMenu.Check.HomeOnly",false)?"HomeReferenceValidation.json":"RuntimeValidation.json"), json);
     }
     private static void Capture(string name)
     {
@@ -119,16 +123,19 @@ public static class FormulaMenuPreview
                 Require(UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length == 1, "Legacy or duplicate Canvas remains in the scene.");
                 Require(menu.legacyCanvas == null && menu.legacyNavigation == null, "Menu still depends on the legacy UI.");
                 Require(menu.View.Screens.childCount == 6 && menu.View.Screens.Cast<Transform>().Count(t => t.gameObject.activeSelf) == 1, "Exactly one of the six authored screens must be active.");
+                ValidateResultModes(menu);
+                FormulaTextFitValidation.Remember(menu.View);
                 authoredUiObjects = canvas.GetComponentsInChildren<Transform>(true).Select(t => t.GetInstanceID()).OrderBy(id => id).ToArray();
                 Require(canvas.transform.Find("Shell Lower Shade").GetSiblingIndex() < canvas.transform.Find("Screens").GetSiblingIndex(), "The stage shade covers page content.");
                 Pass("Serialized menu is active immediately with one Canvas, six persistent screens and no legacy presenter");
                 Require(Time.frameCount > report.startFrame + 5, "Runtime frames did not advance.");
                 Require(FormulaMenuAssets.Current.liveries.Length == 8 && FormulaMenuAssets.Current.liveries.All(t => t != null), "Livery artwork missing.");
                 Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.font == FormulaMenuAssets.Current.titleFont), "Teko title font not rendered.");
-                Require(canvas.GetComponentsInChildren<UnityEngine.UI.RawImage>().Count(i => i.texture != null) >= 8, "Original menu icon slots missing.");
+                Require(menu.View.Home.GetComponentsInChildren<FormulaMissionIcon>().Count(i => i.name == "Navigation Icon") == 5, "Home must have five crisp navigation icons.");
                 Require(UnityEngine.Object.FindObjectsByType<RCCP_CarController>(FindObjectsSortMode.None).Length == 1, "Duplicate preview car.");
                 var displayWheels = car.GetComponentsInChildren<RCCP_WheelCollider>();
                 Require(displayWheels.Length == 4 && displayWheels.All(w => w.wheelModel != null && w.wheelModel.gameObject.activeInHierarchy && w.wheelModel.GetComponentsInChildren<Renderer>().Any(r => r.enabled)), "Parked Generic must keep all four wheel models visible.");
+                ValidateHomeFraming(car);
                 Require(canvas.GetComponentsInChildren<FormulaPanelGraphic>(true).All(p => p.GetComponent<CanvasRenderer>() != null), "An Upgrade-style surface has no renderer.");
                 Pass("Home renders with Teko/Rajdhani, original Figma artwork, one live Generic and advancing frames");
                 Capture("Home"); Next(97, "home-selection-change");
@@ -140,12 +147,54 @@ public static class FormulaMenuPreview
             else if (stage == 98)
             {
                 Require(Button("home-garage").transform.Find("Upgrade Focus").GetComponent<FormulaPanelGraphic>().color.a > .95f && Button("home-career").transform.Find("Upgrade Focus").GetComponent<FormulaPanelGraphic>().color.a < .05f, "Home selection styling did not transfer to Garage.");
+                Require(Button("home-garage").transform.Find("Selection Arrow").gameObject.activeInHierarchy && Button("home-garage").transform.Find("Selection Arrow").GetComponent<FormulaMissionIcon>().color.a > .95f, "The focused Home action has no visible arrow.");
                 Capture("HomeGarageFocus"); Next(99, "home-focus-restore");
             }
             else if (stage == 99)
             {
-                EventSystem.current.SetSelectedGameObject(Button("home-career").gameObject); Next(100, "career-navigation");
+                EventSystem.current.SetSelectedGameObject(Button("home-career").gameObject);
+                if(SessionState.GetBool("FormulaMenu.Check.HomeOnly",false))
+                {
+                    simulatedPad=InputSystem.AddDevice<Gamepad>("Formula Home validation");
+                    InputSystem.QueueStateEvent(simulatedPad,new GamepadState().WithButton(GamepadButton.DpadDown)); Next(990,"home-controller-garage");
+                }
+                else Next(100, "career-navigation");
             }
+            else if(stage>=990 && stage<=993)
+            {
+                InputSystem.QueueStateEvent(simulatedPad,new GamepadState());
+                string[] expected={"home-garage","home-quick","home-profile","home-settings"};
+                Require(EventSystem.current.currentSelectedGameObject.name==expected[stage-990],"Home D-pad navigation did not follow the visible action order.");
+                InputSystem.QueueStateEvent(simulatedPad,new GamepadState().WithButton(stage==992?GamepadButton.DpadRight:stage==993?GamepadButton.South:GamepadButton.DpadDown));
+                Next(stage+1,"home-controller-"+(stage+1));
+            }
+            else if(stage==994)
+            {
+                InputSystem.QueueStateEvent(simulatedPad,new GamepadState()); Require(menu.CurrentPage=="Setări","Home controller Submit did not open Settings.");
+                InputSystem.QueueStateEvent(simulatedPad,new GamepadState().WithButton(GamepadButton.East)); Next(995,"home-controller-return");
+            }
+            else if(stage==995)
+            {
+                InputSystem.QueueStateEvent(simulatedPad,new GamepadState());
+                Require(menu.CurrentPage=="Acasă" && EventSystem.current.currentSelectedGameObject.name=="home-settings","Home did not restore the action that opened Settings.");
+                InputSystem.RemoveDevice(simulatedPad); simulatedPad=null;
+                Pass("Virtual controller traverses Career, Garage, Quick Race, Profile and Settings; Submit/Back restore source focus");
+                FormulaProgression.Commit(d=>{ d.formula.textScale=115; d.formula.safeAreaPercent=95; return null; },out _);
+                Next(996,"home-larger-text");
+            }
+            else if(stage==996)
+            {
+                Require(menu.View.Home.GetComponentsInChildren<UnityEngine.UI.Button>().Length==5,"Home gained extra actions.");
+                foreach(var text in menu.View.Home.GetComponentsInChildren<TMP_Text>())
+                {
+                    text.ForceMeshUpdate(); Require(!text.enableAutoSizing && text.preferredWidth<=text.rectTransform.rect.width+1,"Home label does not retain readable 115 percent text.");
+                }
+                var block=new MaterialPropertyBlock(); car.body.GetPropertyBlock(block);
+                Require(block.GetFloat("_Smoothness")>.5f && Mathf.Approximately(car.body.sharedMaterial.GetFloat("_Smoothness"),0),"Display finish changed the original race material or did not reach the preview.");
+                Pass("Home retains five readable actions at 115 percent text and 95 percent safe area; display paint is isolated from race materials");
+                Capture("HomeLargeText"); Next(997,"home-final-capture");
+            }
+            else if(stage==997) { Next(998,"complete"); EditorApplication.ExitPlaymode(); }
             else if (stage == 100)
             {
                 Require(menu.View.Home.GetComponentsInChildren<UnityEngine.UI.Button>().Length == 5, "Home must expose Career, Garage and Quick Race plus Profile and Settings.");
@@ -493,6 +542,22 @@ public static class FormulaMenuPreview
                 Click("rebind-0"); Require(menu.View.Settings.IsRebinding, "Input rebind did not start.");
                 Click("rebind-cancel"); Require(!menu.View.Settings.IsRebinding, "Input rebind did not cancel.");
                 Click("rebind-0"); simulatedKeyboard = InputSystem.AddDevice<Keyboard>("Formula binding validation");
+                SessionState.SetString("FormulaMenu.Check.BeforeConflict", RCCP_InputActions.Instance.inputActions.SaveBindingOverridesAsJson());
+                InputSystem.QueueStateEvent(simulatedKeyboard, new KeyboardState(Key.S)); Next(8031, "rebind-conflict");
+            }
+            else if (stage == 8031)
+            {
+                InputSystem.QueueStateEvent(simulatedKeyboard, new KeyboardState());
+                Require(menu.View.Settings.IsRebinding && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("INPUT ALREADY IN USE") && t.text.Contains("Brake")), "A duplicate driving input was not explained.");
+                Require(RCCP_InputActions.Instance.inputActions.SaveBindingOverridesAsJson() == SessionState.GetString("FormulaMenu.Check.BeforeConflict", ""), "Rejected input changed a binding.");
+                Require(EventSystem.current.currentSelectedGameObject.name == "rebind-cancel", "Conflict notice lost controller focus.");
+                Capture("BindingConflict"); Next(8032, "rebind-conflict-dismiss");
+            }
+            else if (stage == 8032)
+            {
+                Click("rebind-cancel"); Require(!menu.View.Settings.IsRebinding && EventSystem.current.currentSelectedGameObject.name == "rebind-0", "Dismissing a conflict did not restore the binding row.");
+                Pass("Conflicting input is rejected without mutation and explains the occupied action; dismiss restores source focus");
+                Click("rebind-0");
                 InputSystem.QueueStateEvent(simulatedKeyboard, new KeyboardState(Key.Y)); Next(804, "rebind-apply");
             }
             else if (stage == 804)
@@ -549,6 +614,8 @@ public static class FormulaMenuPreview
             else if (stage == 809)
             {
                 Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "COMPLETED") && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "NEXT EVENT"), "Career progression states are missing.");
+                FormulaTextFitValidation.Validate(menu);
+                Pass("115 percent body text retains its requested size and fits Home, Career, briefing, Garage, Profile, Quick Race and Settings");
                 Capture("CareerLargeText"); Next(8091, "readability-capture");
             }
             else if (stage == 8091)
@@ -649,5 +716,42 @@ public static class FormulaMenuPreview
     {
         if (report == null || !SessionState.GetBool(Active, false) || !EditorApplication.isPlaying) return;
         if (type == LogType.Error || type == LogType.Exception || type == LogType.Assert) report.errors = report.errors.Concat(new[] { message }).ToArray();
+    }
+    private static void ValidateResultModes(FormulaMainMenu menu)
+    {
+        var state = FormulaProgression.State; string previous = state.activeMode;
+        string[] modes = { "quick", "time_trial", "quick" }, events = { "g03", "g02", "g01" }, names = { "Quick Race", "Time Attack", "Practice" };
+        try
+        {
+            for (int i = 0; i < modes.Length; i++)
+            {
+                state.activeMode = modes[i];
+                var root = UnityEngine.Object.Instantiate(FormulaMenuAssets.Current.resultsPrefab, menu.View.Canvas.transform, false);
+                try
+                {
+                    root.GetComponent<FormulaResultsView>().Present(new FormulaReceipt { eventId = events[i] });
+                    Require(root.GetComponentsInChildren<TMP_Text>().Any(t => t.text == names[i] + " · No career credits or XP"), "Results mislabels the " + names[i] + " mode.");
+                }
+                finally { UnityEngine.Object.DestroyImmediate(root); }
+            }
+            Pass("Results identifies Quick Race, Time Attack and Practice without promising career rewards");
+        }
+        finally { state.activeMode = previous; }
+    }
+    private static void ValidateHomeFraming(FormulaVehicle car)
+    {
+        Vector2 min=Vector2.one*float.PositiveInfinity,max=Vector2.one*float.NegativeInfinity;
+        foreach(var renderer in car.GetComponentsInChildren<MeshRenderer>().Where(r=>r.enabled && r.gameObject.activeInHierarchy))
+        {
+            var bounds=renderer.bounds;
+            for(int i=0;i<8;i++)
+            {
+                var world=bounds.center+Vector3.Scale(bounds.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1));
+                Vector2 point=Camera.main.WorldToViewportPoint(world); min=Vector2.Min(min,point); max=Vector2.Max(max,point);
+            }
+        }
+        File.WriteAllText("Docs/AI/FormulaUI/HomeFraming.json",Newtonsoft.Json.JsonConvert.SerializeObject(new { min=new[] { min.x,min.y },max=new[] { max.x,max.y },Camera.main.fieldOfView },Newtonsoft.Json.Formatting.Indented));
+        Require(min.x>.35f && max.x<.99f && min.y>.15f && max.y<.85f,"Home car framing overlaps navigation, leaves the camera or meets the footer: "+min+" to "+max);
+        Pass("Home keeps the whole Generic inside the hero area with five actions and a visible controller selection");
     }
 }

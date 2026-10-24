@@ -50,7 +50,12 @@ namespace FormulaGame
         }
         private static string NextTarget(FormulaReceipt r)
         {
-            if (FormulaProgression.State.activeMode != "career") return "Practice session · No career credits or XP";
+            if (FormulaProgression.State.activeMode != "career")
+            {
+                string mode = FormulaProgression.State.activeMode == "time_trial" ? "Time Attack"
+                    : FormulaCatalog.Current.Event(r.eventId).mode == "race" ? "Quick Race" : "Practice";
+                return mode + " · No career credits or XP";
+            }
             if (r.medal == Medal.Gold) return "GOLD TARGET ACHIEVED";
             var e = FormulaCatalog.Current.Event(r.eventId);
             var tier = r.medal == Medal.None ? Medal.Bronze : r.medal + 1;

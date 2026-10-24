@@ -47,8 +47,8 @@ namespace FormulaGame
                     float size = entry.Value * textScale / 100f;
                     text.fontSize = size;
                     text.fontSizeMax = size;
-                    // Single-line controls can shrink back to their authored size.
-                    text.fontSizeMin = entry.Value; text.enableAutoSizing = true;
+                    // Accessibility sizing is a minimum, never a suggestion for auto-fit.
+                    text.fontSizeMin = size; text.enableAutoSizing = false;
                 }
             }
             inset = p.safeAreaPercent; Fit();

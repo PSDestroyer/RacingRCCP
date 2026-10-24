@@ -22,13 +22,17 @@ namespace FormulaGame
         private InputActionRebindingExtensions.RebindingOperation operation;
         private InputAction reboundAction;
         private bool wasEnabled;
+        private string conflictMessage;
+        private TMP_Text cancelLabel;
+        private string cancelCaption;
         private string device = "<Keyboard>";
         private int pageIndex;
         private static readonly string[] DrivingActions = { "Throttle", "Brake", "Steering", "Gear Shift Up", "Gear Shift Down", "Clutch", "Change Camera", "Look Back", "Options", "Pause" };
         private GameObject returnFocus;
-        public bool IsRebinding => operation != null;
+        public bool IsRebinding => operation != null || conflictMessage != null;
         public void Initialize()
         {
+            cancelLabel = cancelRebind.GetComponentInChildren<TMP_Text>(true); cancelCaption = cancelLabel.text;
             keyboard.onClick.AddListener(() => SelectDevice("<Keyboard>")); gamepad.onClick.AddListener(() => SelectDevice("<Gamepad>")); wheel.onClick.AddListener(() => SelectDevice("Wheel"));
             previous.onClick.AddListener(() => { pageIndex--; RefreshRows(); }); next.onClick.AddListener(() => { pageIndex++; RefreshRows(); });
             reset.onClick.AddListener(ResetDevice); cancelRebind.onClick.AddListener(CancelRebind);
@@ -115,6 +119,13 @@ namespace FormulaGame
             waiting.SetActive(true); listInteraction.interactable = false; listInteraction.blocksRaycasts = false;
             prompt.text = "Press a new input for\n" + rows[row].action.text + "\nEsc · Cancel";
             operation = reboundAction.PerformInteractiveRebinding(entry.index).WithCancelingThrough("<Keyboard>/escape").WithTimeout(15)
+                .OnApplyBinding((candidate, path) =>
+                {
+                    string conflict = BindingConflict(actions, entry.action, entry.index, path, candidate.selectedControl);
+                    if (conflict == null) entry.action.ApplyBindingOverride(entry.index, path);
+                    else conflictMessage = "INPUT ALREADY IN USE\n" + InputControlPath.ToHumanReadableString(path, InputControlPath.HumanReadableStringOptions.OmitDevice)
+                        + " is assigned to " + conflict + ".\nYour previous binding is unchanged.";
+                })
                 .OnCancel(_ => Finish(false)).OnComplete(_ => Finish(true));
             if (device != "Wheel") operation.WithControlsHavingToMatchPath(device);
             else operation.WithControlsExcluding("<Mouse>").WithControlsExcluding("<Keyboard>").WithControlsExcluding("<Gamepad>");
@@ -124,11 +135,41 @@ namespace FormulaGame
         {
             var completed = operation; operation = null; completed?.Dispose();
             if (wasEnabled) reboundAction?.Enable(); reboundAction = null;
-            waiting.SetActive(false); listInteraction.interactable = true; listInteraction.blocksRaycasts = true;
-            if (save) RCCP_RebindSaveLoad.Save(); RefreshRows();
+            if (conflictMessage != null)
+            {
+                prompt.text = conflictMessage; cancelLabel.text = "Back";
+                EventSystem.current?.SetSelectedGameObject(cancelRebind.gameObject); return;
+            }
+            if (save) RCCP_RebindSaveLoad.Save();
+            CloseRebind();
+        }
+        // Compare effective bindings, including hidden alternate keys. A rejected candidate
+        // never reaches ApplyBindingOverride or the RCCP save owner.
+        internal static string BindingConflict(InputActionAsset asset, InputAction target, int index, string path, InputControl control = null)
+        {
+            foreach (var map in asset.actionMaps) foreach (var action in map.actions)
+            {
+                if (Array.IndexOf(DrivingActions, action.name) < 0) continue;
+                for (int i = 0; i < action.bindings.Count; i++)
+                {
+                    if (action == target && i == index) continue;
+                    var binding = action.bindings[i];
+                    if (binding.isComposite || string.IsNullOrEmpty(binding.effectivePath)) continue;
+                    if (string.Equals(binding.effectivePath, path, StringComparison.OrdinalIgnoreCase)
+                        || control != null && InputControlPath.Matches(binding.effectivePath, control))
+                        return ActionName(action.name) + BindingPart(action, i);
+                }
+            }
+            return null;
+        }
+        private void CloseRebind()
+        {
+            conflictMessage = null; waiting.SetActive(false); listInteraction.interactable = true; listInteraction.blocksRaycasts = true;
+            if (cancelLabel != null) cancelLabel.text = cancelCaption;
+            RefreshRows();
             if (isActiveAndEnabled && returnFocus != null) EventSystem.current?.SetSelectedGameObject(returnFocus);
         }
-        public void CancelRebind() { if (operation != null) operation.Cancel(); }
+        public void CancelRebind() { if (operation != null) operation.Cancel(); else if (conflictMessage != null) CloseRebind(); }
         private void ResetDevice()
         {
             foreach (var map in actions.actionMaps) foreach (var action in map.actions)

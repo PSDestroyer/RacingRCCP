@@ -63,7 +63,6 @@ namespace FormulaGame
                 details.gameObject.SetActive(false); liveryContent.SetActive(true);
                 liveryAcquisition.text = offer.Purchase ? "CREDIT PURCHASE" : "CAREER REWARD · FREE";
                 liveryRequirements.text = offer.Requirements;
-                liveryRequirements.fontSize = offer.Requirements.Count(c => c == '\n') > 2 ? 20 : 22;
                 liveryFunds.text = offer.Funds; liveryFunds.gameObject.SetActive(!string.IsNullOrEmpty(offer.Funds));
                 liveryCost.text = offer.Cost; liveryCost.color = offer.Shortfall > 0 ? FormulaUI.Red : Color.white;
             }

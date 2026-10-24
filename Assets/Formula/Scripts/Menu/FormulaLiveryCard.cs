@@ -19,7 +19,7 @@ namespace FormulaGame
         {
             var p = FormulaProgression.State; bool equipped = p.equippedLivery == liveryId;
             var livery = FormulaCatalog.Current.Skin(liveryId);
-            ownership.text = equipped ? "EQUIPPED" : p.ownedLiveries.Contains(liveryId) ? "OWNED" : livery.acquisition == "credit_purchase" ? livery.priceCredits.Value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR" : "CAREER REWARD";
+            ownership.text = equipped ? "EQUIPPED" : p.ownedLiveries.Contains(liveryId) ? "OWNED" : livery.acquisition == "credit_purchase" ? livery.priceCredits.Value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR" : "REWARD";
             ownership.color = Color.white;
             equippedMarker.SetActive(equipped);
         }

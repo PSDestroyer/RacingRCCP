@@ -74,18 +74,7 @@ public static class FormulaMenuUnifiedBuilder
     }
     public static void StyleHome(FormulaHomeView view)
     {
-        FullScreen(view.transform);var nav=view.transform.Find("Navigation");Place(nav,30,154,400,440);
-        var old=nav.Find("home-development");if(old!=null)UnityEngine.Object.DestroyImmediate(old.gameObject);
-        string[] ids={"home-career","home-garage","home-quick","home-profile","home-settings"};
-        string[] labels={"CAREER","GARAGE","QUICK RACE","PROFILE","SETTINGS"};
-        for(int i=0;i<ids.Length;i++)
-        {
-            var button=nav.Find(ids[i]).GetComponent<UnityEngine.UI.Button>();
-            Place(button.transform,i==4?199:0,i<3?i*98:330,i<3?390:191,i<3?82:54);
-            var text=button.GetComponentInChildren<TMP_Text>(true);text.text=labels[i];Format(text,i<3?82:53,0,i<3?290:130,i<3?82:54,i<3?36:22);
-            var icon=button.transform.Find("Figma Icon");if(icon!=null){var rect=(RectTransform)icon;Place(icon,22,(i<3?82:54)*.5f-rect.sizeDelta.y*.5f,rect.sizeDelta.x,rect.sizeDelta.y);}
-            FormulaMenuTheme.StyleButton(button);
-        }
+        FormulaHomeReferenceBuilder.StyleHome(view);
     }
     public static void StyleGarage(FormulaGarageView garage)
     {
