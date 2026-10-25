@@ -1,0 +1,311 @@
+{
+  "cause": "Imported front tyre bounds put the front WheelColliders 0.00172418 m left of the vehicle centreline. Zero steering launches yawed left; mirroring only this offset reversed the yaw.",
+  "fix": "Centre the front physics axle while preserving track width, longitudinal positions, tuning and visual source meshes. Applied to eight Generic livery prefabs and the runtime prefab; builder preserves the correction.",
+  "unity": "6000.3.19f1",
+  "checks": [
+    {
+      "source": "LaunchDiagnosis-BeforeFix.json",
+      "status": "completed",
+      "errors": [],
+      "profiles": [
+        {
+          "profile": "keyboard_stock",
+          "seconds": 5.969952,
+          "forwardMetres": 64.11691,
+          "finalLateralMetres": -1.04540348,
+          "maxLateralMetres": 1.04540348,
+          "finalHeadingDegrees": -4.956238,
+          "finalKmh": 86.17956,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "raw_zero_steer",
+          "seconds": 5.969952,
+          "forwardMetres": 64.1174,
+          "finalLateralMetres": -1.04618192,
+          "maxLateralMetres": 1.04618192,
+          "finalHeadingDegrees": -4.95803833,
+          "finalKmh": 86.18055,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "counter_steer_off",
+          "seconds": 5.969952,
+          "forwardMetres": 64.10096,
+          "finalLateralMetres": -1.05293,
+          "maxLateralMetres": 1.05293,
+          "finalHeadingDegrees": -5.019104,
+          "finalKmh": 86.12806,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "esp_off",
+          "seconds": 5.969952,
+          "forwardMetres": 64.1039352,
+          "finalLateralMetres": -1.05655086,
+          "maxLateralMetres": 1.05655086,
+          "finalHeadingDegrees": -5.02810669,
+          "finalKmh": 86.1348343,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "direct_differential",
+          "seconds": 5.969952,
+          "forwardMetres": 63.60559,
+          "finalLateralMetres": -1.12503779,
+          "maxLateralMetres": 1.12503779,
+          "finalHeadingDegrees": -5.50656128,
+          "finalKmh": 85.96662,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "symmetric_front_geometry",
+          "seconds": 5.969952,
+          "forwardMetres": 64.18312,
+          "finalLateralMetres": -0.0284668542,
+          "maxLateralMetres": 0.0284668542,
+          "finalHeadingDegrees": -0.172515869,
+          "finalKmh": 83.8697357,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "symmetric_front_counter_off",
+          "seconds": 5.969952,
+          "forwardMetres": 64.18312,
+          "finalLateralMetres": -0.028482113,
+          "maxLateralMetres": 0.028482113,
+          "finalHeadingDegrees": -0.172515869,
+          "finalKmh": 83.8697357,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        }
+      ]
+    },
+    {
+      "source": "LaunchDiagnosis.json",
+      "status": "completed",
+      "errors": [],
+      "profiles": [
+        {
+          "profile": "keyboard_stock",
+          "seconds": 5.993206,
+          "forwardMetres": 64.65418,
+          "finalLateralMetres": -1.14633214,
+          "maxLateralMetres": 1.14633214,
+          "finalHeadingDegrees": -5.242584,
+          "finalKmh": 86.32861,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "raw_zero_steer",
+          "seconds": 5.993206,
+          "forwardMetres": 64.65894,
+          "finalLateralMetres": -1.14833808,
+          "maxLateralMetres": 1.14833808,
+          "finalHeadingDegrees": -5.247223,
+          "finalKmh": 86.33374,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "counter_steer_off",
+          "seconds": 5.993206,
+          "forwardMetres": 64.656395,
+          "finalLateralMetres": -1.15149677,
+          "maxLateralMetres": 1.15149677,
+          "finalHeadingDegrees": -5.25469971,
+          "finalKmh": 86.33675,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "esp_off",
+          "seconds": 5.993206,
+          "forwardMetres": 64.6926,
+          "finalLateralMetres": -1.16581392,
+          "maxLateralMetres": 1.16581392,
+          "finalHeadingDegrees": -5.40692139,
+          "finalKmh": 86.72937,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "direct_differential",
+          "seconds": 5.993206,
+          "forwardMetres": 64.0418549,
+          "finalLateralMetres": -1.06540835,
+          "maxLateralMetres": 1.06540835,
+          "finalHeadingDegrees": -4.937958,
+          "finalKmh": 86.00784,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "front_x_centered",
+          "seconds": 5.993206,
+          "forwardMetres": 63.9930458,
+          "finalLateralMetres": -0.0582973622,
+          "maxLateralMetres": 0.0582973622,
+          "finalHeadingDegrees": -0.9739685,
+          "finalKmh": 83.54208,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "front_z_aligned",
+          "seconds": 5.993206,
+          "forwardMetres": 64.65747,
+          "finalLateralMetres": -1.14891458,
+          "maxLateralMetres": 1.14891458,
+          "finalHeadingDegrees": -5.24850464,
+          "finalKmh": 86.3340759,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "symmetric_front_geometry",
+          "seconds": 5.993206,
+          "forwardMetres": 63.99212,
+          "finalLateralMetres": -0.0629970655,
+          "maxLateralMetres": 0.0629970655,
+          "finalHeadingDegrees": -0.9975281,
+          "finalKmh": 83.54619,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "mirrored_front_offset",
+          "seconds": 5.993206,
+          "forwardMetres": 64.65792,
+          "finalLateralMetres": 1.1434747,
+          "maxLateralMetres": 1.1434747,
+          "finalHeadingDegrees": 5.236854,
+          "finalKmh": 86.3278351,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        }
+      ]
+    },
+    {
+      "source": "LaunchValidation.json",
+      "status": "passed",
+      "errors": [],
+      "profiles": [
+        {
+          "profile": "keyboard_stock",
+          "seconds": 5.9595356,
+          "forwardMetres": 62.9630165,
+          "finalLateralMetres": 0.00261597428,
+          "maxLateralMetres": 0.00261597428,
+          "finalHeadingDegrees": 0.00731511973,
+          "finalKmh": 83.02922,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "raw_zero_steer",
+          "seconds": 5.9595356,
+          "forwardMetres": 62.9284821,
+          "finalLateralMetres": -0.00769417826,
+          "maxLateralMetres": 0.00769417826,
+          "finalHeadingDegrees": -0.08633423,
+          "finalKmh": 82.99937,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "opposite_heading",
+          "seconds": 5.9595356,
+          "forwardMetres": 62.9659157,
+          "finalLateralMetres": 0.002962398,
+          "maxLateralMetres": 0.002962398,
+          "finalHeadingDegrees": 0.009735107,
+          "finalKmh": 83.0315552,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "orthogonal_heading",
+          "seconds": 5.9595356,
+          "forwardMetres": 63.5857468,
+          "finalLateralMetres": -0.003234798,
+          "maxLateralMetres": 0.003234798,
+          "finalHeadingDegrees": -0.115264893,
+          "finalKmh": 83.61204,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "legacy_front_offset",
+          "seconds": 5.9595356,
+          "forwardMetres": 63.8045959,
+          "finalLateralMetres": -1.08567691,
+          "maxLateralMetres": 1.08567691,
+          "finalHeadingDegrees": -5.1546936,
+          "finalKmh": 86.1180954,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        },
+        {
+          "profile": "mirrored_front_offset",
+          "seconds": 5.9595356,
+          "forwardMetres": 63.80484,
+          "finalLateralMetres": 1.08644211,
+          "maxLateralMetres": 1.08644211,
+          "finalHeadingDegrees": 5.157004,
+          "finalKmh": 86.11965,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        }
+      ]
+    },
+    {
+      "source": "GridLaunchValidation.json",
+      "status": "passed",
+      "errors": [],
+      "profiles": [
+        {
+          "profile": "grid_keyboard_stock",
+          "seconds": 4.965897,
+          "forwardMetres": 46.98433,
+          "finalLateralMetres": 0.03869011,
+          "maxLateralMetres": 0.03869011,
+          "finalHeadingDegrees": 0.296386719,
+          "finalKmh": 73.699646,
+          "maxRawSteer": 0.0,
+          "maxProcessedSteer": 0.0,
+          "minimumGroundedWheels": 4
+        }
+      ]
+    }
+  ]
+}

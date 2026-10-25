@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using FormulaGame;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -440,6 +441,13 @@ public static class FormulaRccpBuilder
         input.counterSteerFactor = 0.35f;
         input.steeringLimiter = true;
         input.steeringCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(80f, 0.55f), new Keyframe(180f, 0.27f), new Keyframe(340f, 0.14f));
+        if (root.name.StartsWith("Formula_Generic", StringComparison.Ordinal))
+        {
+            input.steeringCurve = FormulaHandlingAuthoring.SteeringCurve();
+            root.AddComponent<FormulaSteering>();
+            root.AddComponent<FormulaTractionControl>();
+            FormulaHandlingAuthoring.CenterAxleWheelColliders(front);
+        }
         var stability = root.GetComponentInChildren<RCCP_Stability>();
         stability.ABS = true; stability.TCS = true; stability.ESP = true;
         stability.steerHelperStrength = 0.25f;
@@ -450,9 +458,11 @@ public static class FormulaRccpBuilder
         aero.airResistance = 12f;
         aero.wheelResistance = 0.5f;
         aero.autoReset = true;
-        Transform com = Child(aero.transform, "COM");
+        Transform com = aero.COM;
         com.position = root.transform.TransformPoint(new Vector3(0f, 0.25f, -0.15f));
         aero.COM = com;
+        if (root.name.StartsWith("Formula_Generic", StringComparison.Ordinal))
+            FormulaHandlingAuthoring.ApplyChassisCalibration(root);
 
         Bounds bounds = VisualBounds(root);
         AddBodyCollider(root.transform, "Chassis", new Vector3(0f, 0.27f, -0.1f), new Vector3(0.65f, 0.45f, 3.65f));

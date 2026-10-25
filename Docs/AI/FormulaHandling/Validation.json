@@ -1,0 +1,127 @@
+{
+  "utc": "2026-10-25T16:47:52.868746+00:00",
+  "status": "fixed_and_editor_validated",
+  "unityVersion": "6000.3.19f1",
+  "baselineCommit": "cf8728316a303633ac9cffa048c944fc727d50f0",
+  "defect": {
+    "input": "Keyboard",
+    "observed": "Stock Generic feels difficult to control and slides at speed",
+    "expected": "A new player can drive a complete valid lap with the initial car and default assists, without buying upgrades"
+  },
+  "findings": [
+    {
+      "hypothesis": "Excessive high-speed steering lock amplifies full digital key commands",
+      "status": "confirmed_contributor",
+      "evidence": "At 200 km/h, a 0.65-second full key hold gives about 7.42 degrees of wheel steering with the legacy curve; corrected production prefab gives about 1.26 degrees. Measured slip drops from 11.88 to 4.71 degrees in the same manoeuvre. The baseline reproduced excessive slide, not a full 360-degree spin."
+    },
+    {
+      "hypothesis": "Tire grip, engine power or chassis forces need a broad retune",
+      "status": "not_required_for_this_fix",
+      "evidence": "The isolated curve change reduces slip and permits a valid physical lap. All other serialized physics and RCCP component values are unchanged in nine prefab assets."
+    },
+    {
+      "hypothesis": "Additional steering rack slowdown is necessary",
+      "status": "not_adopted",
+      "evidence": "The initial three-profile experiment in BeforeAssetFix.json found no material improvement over the curve change alone; no dynamic rack override or extra stabilizing force was added."
+    },
+    {
+      "hypothesis": "Natural finish creates RCCP_AI before its navigation agent is prepared",
+      "status": "confirmed_and_fixed",
+      "evidence": "KeyboardLap-BeforeFinishAgentFix.json records a valid lap followed by SetDestination errors. Finish now calls the existing FormulaSession.PrepareAgent path before adding AI. Final full-lap run includes a two-second bound-agent/AI-profile check and no errors."
+    }
+  ],
+  "changes": [
+    "Speed-sensitive steering curve saved to eight Generic livery prefabs and the runtime vehicle prefab; matching authoring builder retains the correction on rebuild",
+    "RCCP autonomous vehicles explicitly retain their previous analog steering calibration when PrepareAgent is called, including the post-finish takeover",
+    "Post-finish AI navigation is bound before RCCP_AI is enabled",
+    "Editor-only regression tools use temporary saves; no test driver is included in runtime builds"
+  ],
+  "validation": {
+    "assetAudit": "AssetAudit.json",
+    "prefabsVerified": 9,
+    "preserved": "Prefab GUIDs, all non-input MonoBehaviour fields, wheel colliders, tire curves, suspension, engine/gearbox/differential, aero, assists and Rigidbody physics; Unity serializer field renames normalized",
+    "comparison": "Comparison.json",
+    "physicsMeasurements": 18,
+    "pairedCases": 9,
+    "speedsKmh": [
+      140,
+      200,
+      260
+    ],
+    "maneuvers": [
+      "0.18-second full key tap",
+      "0.65-second full key hold",
+      "0.65-second steer with throttle lift"
+    ],
+    "hold200": {
+      "legacyWheelAngle": 7.421667575836182,
+      "correctedWheelAngle": 1.2612942457199097,
+      "legacySlip": 11.88233470916748,
+      "correctedSlip": 4.706657886505127,
+      "slipReductionPercent": 60.4
+    },
+    "fullLap": {
+      "report": "KeyboardLap.json",
+      "event": "g01 / Shakedown / Grand Prix Circuit",
+      "timeSeconds": 95.27732849121094,
+      "maxSpeedKmh": 172.295319,
+      "maxBodySlipDegrees": 7.479088,
+      "validLaps": 1,
+      "stockVehicle": true,
+      "method": "Automated binary W/A/S/D route follower through Input System; no AI during the timed lap, no transport, velocity writes or scripted finish; normal AI takeover after crossing the line",
+      "errors": [],
+      "postFinishNavigationChecked": true
+    },
+    "aiSmoke": {
+      "report": "AIProfiles.json",
+      "opponents": 3,
+      "method": "Four-car Quick Race: actual player/AI steering profiles and eight seconds of opponent physics/navigation",
+      "results": [
+        {
+          "index": 0,
+          "distance": 88.4257355,
+          "speed": 25.459753,
+          "navBound": true
+        },
+        {
+          "index": 1,
+          "distance": 102.1787,
+          "speed": 66.7177658,
+          "navBound": true
+        },
+        {
+          "index": 2,
+          "distance": 101.137192,
+          "speed": 63.56185,
+          "navBound": true
+        }
+      ],
+      "errors": []
+    },
+    "compilation": "Final runtime and Editor assemblies compiled; final graphical Editor runs captured no errors",
+    "saveIsolation": true,
+    "diagnosticHistory": "BeforeAssetFix.json contains the initial 27-sample comparison. AIProfiles-StationaryGridProbe.json was inconclusive because the player was left stationary on the grid; the final smoke test drives the player and records individual opponent movement/navigation."
+  },
+  "limitations": [
+    "Full-key flat-road comparisons use controlled initial velocities; they are not natural acceleration-to-260-km/h tests",
+    "The valid lap uses an automated binary keyboard route follower, not a human play-feel review. It uses real input actions/physics/checkpoints/finish without transport or scripted completion",
+    "The complete lap covers Grand Prix Circuit; all 18 circuits, analog controller feel and Switch hardware were not exhaustively retested in this correction"
+  ],
+  "snapshotSha256": {
+    "Assets/Formula/Editor/FormulaHandlingAuthoring.cs": "3bd1776b4e4fbe7cafff6022bbe4b0689345cbb7d1e44a1b4a660ae9f7f91268",
+    "Assets/Formula/Editor/FormulaHandlingValidation.cs": "b72246e4b3f3c00e2325ec4f6955f7e2e80accd751fcca5fdb92e48bda8a24c3",
+    "Assets/Formula/Editor/FormulaKeyboardLapValidation.cs": "3c7b33933a0272b98cddab2d41947fe45d5e198140fcd893d22f04d00fcd1aee",
+    "Assets/Formula/Editor/FormulaRccpBuilder.cs": "54c8087d78d4b1c1c98c53fd7b413ad1331a11c4a95074f4522f3a85e127f252",
+    "Assets/Formula/Scripts/FormulaSession.cs": "e492b88598351ce117f81f76b28cb28074963b841ef87e9dadf249b1416809dd",
+    "Assets/_GarageV2/Scripts/GamePlayManager.cs": "f4e5bd21a5dfcdf8fd948f1562987c85e841f62218fc216a038aa08b5f6a059b",
+    "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_01.prefab": "b0b1fbde9bc81eb10c892756fa5a40661579d755e2fd3636ee8d7a10888e1a80",
+    "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_02.prefab": "6a78e4a2ef340bb9ea54e3d96c375f64a327ee1ab1862a47333f54a66d6076c4",
+    "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_03.prefab": "3bfe3cf4771ab3a2f89535218d8a2b04bcc631e14ea0a1f8f6b08db01628516c",
+    "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_04.prefab": "d3e46a649ed447e7e81b97144ea9bae77b8082e2bc0eb3cb263487bf1ff6cbd8",
+    "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_05.prefab": "96fcccdd1b0ea64fc8bf25ffa35842582b511262ccb5842fb38a6f1d13b52b6c",
+    "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_06.prefab": "a16df1eac491f5048879091c63b057b6427643fb91b2760671f6045b97197648",
+    "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_07.prefab": "c1a5cc71b969a1cb0d8f12959c052e7bc4b1909f7ce84da79e965d11e01a39d9",
+    "Assets/Formula/RCCP/Prefabs/Generic/Formula_Generic_RCCP_08.prefab": "d3b5c5c3ad12da0f3145ff410991774194afbfebac79ddc84197480758969cca",
+    "Assets/Formula/Resources/Formula/Vehicles/Formula_Generic.prefab": "bd3a460cbadef53822d29427f6f3d84c22315abe5e7cdf78c9b731766805c4ef"
+  }
+}

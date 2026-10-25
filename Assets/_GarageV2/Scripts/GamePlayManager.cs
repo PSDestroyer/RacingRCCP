@@ -802,7 +802,10 @@ public class GamePlayManager : MonoBehaviour
         RCCP_AI playerAI = CarController.GetComponent<RCCP_AI>();
 
         if (playerAI == null)
+        {
+            if (FormulaGame.FormulaSession.InRace) FormulaGame.FormulaSession.PrepareAgent(CarController.gameObject);
             playerAI = CarController.gameObject.AddComponent<RCCP_AI>();
+        }
 
         playerAI.behaviour = RCCP_AI.BehaviourType.RaceWaypoints;
         playerAI.waypointsContainer = raceWaypoints;

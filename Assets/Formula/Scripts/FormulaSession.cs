@@ -52,6 +52,10 @@ namespace FormulaGame
         }
         public static void PrepareAgent(GameObject vehicle)
         {
+            // RCCP's autonomous controller was calibrated with the original curve.
+            // Player key presses use the corrected prefab curve; AI supplies analog inputs.
+            var input = vehicle.GetComponentInChildren<RCCP_Input>();
+            if (input != null) input.steeringCurve = new AnimationCurve(new Keyframe(0, 1), new Keyframe(80, .55f), new Keyframe(180, .27f), new Keyframe(340, .14f));
             if (vehicle.GetComponentInChildren<NavMeshAgent>(true) != null) return;
             if (!NavMesh.SamplePosition(vehicle.transform.position, out NavMeshHit hit, 30f, NavMesh.AllAreas))
                 throw new InvalidOperationException("No road navigation mesh near vehicle: " + vehicle.transform.position);
