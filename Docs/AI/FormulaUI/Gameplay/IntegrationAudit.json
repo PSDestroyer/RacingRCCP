@@ -1,0 +1,81 @@
+{
+  "utc": "2026-10-25T14:12:48.439984+00:00",
+  "status": "passed",
+  "unityVersion": "6000.3.19f1",
+  "sceneBindings": [
+    "Assets/Formula/Scenes/Formula_Circuit_01.unity",
+    "Assets/Formula/Scenes/Formula_Circuit_02.unity",
+    "Assets/Formula/Scenes/Formula_Circuit_03.unity",
+    "Assets/Formula/Scenes/Formula_Circuit_04.unity",
+    "Assets/Formula/Scenes/Formula_Circuit_05.unity",
+    "Assets/Formula/Scenes/Formula_Circuit_06.unity",
+    "Assets/Formula/Scenes/Formula_Circuit_07.unity",
+    "Assets/Formula/Scenes/Formula_Circuit_08.unity",
+    "Assets/Formula/Scenes/Formula_RTG_01.unity",
+    "Assets/Formula/Scenes/Formula_RTG_02.unity",
+    "Assets/Formula/Scenes/Formula_RTG_03.unity",
+    "Assets/Formula/Scenes/Formula_RTG_04.unity",
+    "Assets/Formula/Scenes/Formula_RTG_05.unity",
+    "Assets/Formula/Scenes/Formula_RTG_06.unity",
+    "Assets/Formula/Scenes/Formula_RTG_07.unity",
+    "Assets/Formula/Scenes/Formula_RTG_08.unity",
+    "Assets/Formula/Scenes/Formula_RTG_09.unity",
+    "Assets/Formula/Scenes/Formula_RTG_10.unity"
+  ],
+  "sceneBindingCount": 18,
+  "menuAssetsUsesAuthoredRacePrefab": true,
+  "hudReferenceFields": [
+    "participantCount",
+    "timingCaption",
+    "deltaCaption",
+    "delta",
+    "lapStatus",
+    "pauseHint",
+    "standingsRoot",
+    "notification"
+  ],
+  "standingsRows": 4,
+  "shiftLights": 12,
+  "runtimeInstantiation": "Existing FormulaRaceUI loads the authored race prefab from FormulaMenuAssets; no runtime HUD hierarchy builder added.",
+  "snapshotSha256": {
+    "Assets/Formula/Editor/FormulaRaceAuthoring.cs": "981098725931860ef43eb914b0859584eb8a155e9d7263f114975d0a2ded12b1",
+    "Assets/Formula/Editor/FormulaGameplayHudPreview.cs": "41852e6560198eb66e4e606ac98763f3b04a5447ce190d117534baf65fb5c2f0",
+    "Assets/Formula/Scripts/FormulaRaceUI.cs": "09fd3d6239935c996458187afd9e4b01057582593ef93efa62dece616ceafeb6",
+    "Assets/Formula/Scripts/FormulaSession.cs": "b4248ee0df3149ac2dcc71cf30d39fc7a300894ed96795e8425965087591b47e",
+    "Assets/Formula/Scripts/Menu/FormulaRaceView.cs": "3aee661535835fe97e262bac9a1cd104f36f813a4b4a65a8f01710d2e7c515e2",
+    "Assets/Formula/Scripts/Menu/FormulaInputHints.cs": "9412b12f66bfe697162574e2b99ff9c2d4b0165362ffa277f671ce78d01bb93b",
+    "Assets/Formula/Scripts/Menu/FormulaRacePanelGraphic.cs": "b153148538fc5a8b0f0ef3ae2889a8f10768722bbd708c79117f1b8f9aaa5329",
+    "Assets/_GarageV2/Scripts/GamePlayManager.cs": "8b98d27759abbcda7e122e297dd493681c3b00d58c6c72d30a1827570034b516",
+    "Assets/Formula/Resources/Formula/UI/FormulaRace.prefab": "6640347a2f14524741f61af207cbcab2639ba6a763262ba70aa917dc9f99ecb1",
+    "Assets/Formula/Scripts/Menu/FormulaRaceMinimap.cs": "2f3a51d6ab9b89ab5b5b9dd68a24abe9aeec20be4e2b017e3e0faa28cf1dfa04",
+    "Assets/Formula/Scripts/Menu/FormulaMinimapMarkers.cs": "a9c9dc7e09c659f38b2059eda86b250cec98ff0eb11892f9b2f68140b7fbfbb1"
+  },
+  "unchangedSceneAndBasePrefabCheck": "Only FormulaRace.prefab is intentionally authored; circuit scenes and FormulaRaceSystems.prefab were not modified for the HUD.",
+  "minimap": {
+    "serializedRouteAndMarkerReferences": "passed",
+    "routeSource": "Active GamePlayManager.raceWaypoints world positions",
+    "staticRouteAndMovingMarkersSeparate": true,
+    "extraCamera": false,
+    "renderTexture": false,
+    "hudPanelRect": [
+      32,
+      392,
+      264,
+      212
+    ],
+    "objectivePanelRect": [
+      32,
+      616,
+      480,
+      72
+    ],
+    "gapToObjective": 12,
+    "player": "Yellow heading arrow",
+    "opponents": "White dots",
+    "route": "White with black outline",
+    "racingDirection": "Red chevrons",
+    "startFinish": "Black and white checkered marker",
+    "offMapMarkers": "Clamped to the minimap interior",
+    "soloRivalsLegend": "Hidden"
+  }
+}

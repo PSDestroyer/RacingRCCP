@@ -1,0 +1,160 @@
+{
+  "utc": "2026-10-25T13:49:11.053521+00:00",
+  "status": "implemented_and_editor_validated",
+  "unityVersion": "6000.3.19f1",
+  "uiLanguage": "English",
+  "palette": {
+    "red": "#FF1E00",
+    "white": "#FFFFFF",
+    "yellow": "#FFE13B",
+    "surfaces": "Translucent black with clipped corners"
+  },
+  "features": [
+    "Position and lap hierarchy with a live four-row race classification",
+    "Single shared authored HUD prefab; race systems retain state authority",
+    "Race clock for races; lap clock and measured checkpoint split to valid session best for solo runs",
+    "Frame-rate instrument refresh, allocation-free clock formatting, twelve non-flashing RPM shift lamps and RCCP speed/gear",
+    "Temporary intro objective and lap-completion messages; persistent invalid-lap state without premature valid-lap claims",
+    "Compact device-aware pause prompt; keyboard and gamepad navigation preserved"
+  ],
+  "integration": {
+    "report": "IntegrationAudit.json",
+    "boundCircuitScenes": 18,
+    "racePrefab": "Assets/Formula/Resources/Formula/UI/FormulaRace.prefab"
+  },
+  "validation": {
+    "editorCSharpCompileErrors": [],
+    "hudSuites": [
+      {
+        "report": "Validation-1280.json",
+        "width": 1280,
+        "height": 720,
+        "passed": 11,
+        "errors": [],
+        "framesAdvanced": 11439
+      },
+      {
+        "report": "Validation-1920.json",
+        "width": 1920,
+        "height": 1080,
+        "passed": 11,
+        "errors": [],
+        "framesAdvanced": 10613
+      }
+    ],
+    "existingRaceResultRegression": {
+      "report": "EnglishRaceRegression.json",
+      "passed": 7,
+      "errors": [],
+      "scriptedFinish": true
+    },
+    "visualReview": [
+      "Race-Clean-1280.png",
+      "Race-Text115-Safe95-1280.png",
+      "Solo-1280.png",
+      "Invalid-Lap-1280.png",
+      "Race-Clean-1920.png",
+      "Race-Text115-Safe95-1920.png"
+    ],
+    "textScalePercent": 115,
+    "safeAreaPercent": 95,
+    "realKeyboardDriving": true,
+    "virtualGamepad": true,
+    "isolatedSave": true,
+    "final720Rerun": "Repeated after removing the redundant invalid-lap caption. No geometry changed after the 1080 layout pass.",
+    "sourceDiffWhitespaceCheck": "C# passed; Unity serialized YAML uses its normal blank-value spacing."
+  },
+  "screenshots": [
+    {
+      "file": "Invalid-Lap-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Invalid-Lap-1920.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "Pause-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Pause-1920.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "Race-Clean-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Race-Clean-1920.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "Race-Text115-Safe95-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Race-Text115-Safe95-1920.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "Solo-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Solo-1920.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "Split-To-Best-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Split-To-Best-1920.png",
+      "width": 1920,
+      "height": 1080
+    }
+  ],
+  "observedUnityGeneratedTrackedChanges": [
+    "Assets/Formula/Garage/Materials/Vehicle/Material_1_855c397f_Display.mat",
+    "Assets/Formula/RCCP/Materials/Material_1 2_de1cb806.mat",
+    "Assets/Formula/RCCP/Materials/Material_1 3_9b3ebc81.mat",
+    "Assets/Formula/RCCP/Materials/Material_1 4_0e4b1001.mat",
+    "Assets/Formula/RCCP/Materials/Material_1_855c397f.mat",
+    "Assets/Formula/Resources/Formula/UI/Rajdhani-SemiBold.asset",
+    "Assets/Formula/Resources/Formula/UI/Rajdhani.asset",
+    "Assets/Formula/Resources/Formula/UI/Teko.asset",
+    "Assets/Settings/PC_RPAsset.asset",
+    "ProjectSettings/GraphicsSettings.asset"
+  ],
+  "serializationNote": "During original-project Play Mode Unity 6.3 serialized URP asset version 13, graphics keyword settings, material motion-vector settings and dynamic TMP font data. These were not reverted. No intentional rendering configuration change was made by this HUD feature.",
+  "limitations": [
+    "Editor validation on macOS Metal; no new standalone build for this HUD change.",
+    "720p layout and virtual gamepad do not establish Nintendo Switch hardware performance.",
+    "Synthetic checkpoint and RPM boundary tests are labelled in their reports; they do not constitute a natural completed race.",
+    "Split comparison is sampled at actual race checkpoints, not a continuous distance-based delta."
+  ],
+  "firstAttemptRepairs": [
+    "Authoring handles Unity fake-null CanvasGroup references explicitly.",
+    "Active-device polling moved before the telemetry throttle so one-frame gamepad presses are not missed.",
+    "Screenshot captures wait a frame before scene transitions."
+  ],
+  "sourceFingerprintReport": "IntegrationAudit.json",
+  "editorFinalState": {
+    "scene": "Assets/Scenes/Menu.unity",
+    "playMode": false,
+    "gameViewPreset": "720p (1280x720)",
+    "confirmedWith": "cua_repl screenshot and accessibility state"
+  }
+}

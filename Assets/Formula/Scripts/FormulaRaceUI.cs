@@ -28,6 +28,9 @@ namespace FormulaGame
         }
         private void Update()
         {
+            // Input edges last one frame; capture the active device before throttling telemetry.
+            FormulaInputHints.Poll();
+            raceView?.UpdateTelemetry(game);
             if (Time.unscaledTime < nextRefresh) return;
             nextRefresh = Time.unscaledTime + .1f;
             raceView?.Tick(game);

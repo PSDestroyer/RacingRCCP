@@ -1,0 +1,63 @@
+{
+  "utc": "2026-10-25T15:26:54.767758+00:00",
+  "status": "implemented_and_editor_validated",
+  "unityVersion": "6000.3.19f1",
+  "scope": "Simplify the existing gameplay HUD and outcome screens after the UX review",
+  "features": [
+    "Quick Race has no permanent generic goal; Career retains a compact exact pass target; goal remains available in Pause",
+    "Career intro no longer repeats its permanent target in a separate toast; free-session introduction lasts three seconds",
+    "Session, lap timing, minimap and vehicle instruments use smaller aligned authored rectangles; timing panel expands only for useful reference/status rows",
+    "Yellow outlined lateral chevrons replace proximity text without covering the car",
+    "Formula opponents receive fictional names; custom authored names and non-Formula defaults are preserved",
+    "Results use a leading outcome title, subdued performance metrics, and prominent actual credits/XP or livery rewards",
+    "Zero reward panels and unchanged XP progress are hidden; valid-finish rewards remain visible even when a career target is missed",
+    "Free-session success emphasizes lap performance; repeated Personal Best metadata is removed",
+    "Retry/Next Event focus, race rules, receipts and progression remain with existing owners",
+    "TMP Ellipsis row height fixed at 115 percent; acceptance checks now require visible glyphs for every active nonempty label"
+  ],
+  "validation": {
+    "reports": [
+      {
+        "path": "Validation-1280.json",
+        "width": 1280,
+        "height": 720,
+        "passed": 21,
+        "errors": []
+      },
+      {
+        "path": "Validation-1920.json",
+        "width": 1920,
+        "height": 1080,
+        "passed": 21,
+        "errors": []
+      }
+    ],
+    "totalPassed": 42,
+    "input": "Real RCCP keyboard movement; virtual gamepad Start pause/resume and input prompts",
+    "accessibility": "HUD and result variants checked at 115% text and 95% safe area; rendered label glyphs checked and screenshots reviewed at both resolutions",
+    "raceCoverage": "Real four-car Racing Visuals scene, RTG solo Time Attack, one-lap Shakedown retry and subsequent career time target",
+    "scriptedBoundaries": "RPM, checkpoint comparisons, physical rival positions, career finish receipts and result variants are scripted; not a natural race completion test",
+    "outcomeVariants": "Invalid lap, missed time with nonzero rewards, P4, free-session failure and Personal Best success, and career success with bonus and livery unlock",
+    "saveIsolation": "Temporary validation save; no QA rewards written to the player profile",
+    "compilation": "No C# compiler errors found; both final graphical Editor play runs captured no errors"
+  },
+  "integrationAudit": "IntegrationAudit.json",
+  "sharedCircuitCount": 18,
+  "quickRaceOpaquePanelAreaReductionPercent": 28.7,
+  "areaMeasurement": "Authored rectangular panel area, including standings; not a performance measurement. Temporary notices, pause control and conditional chevrons excluded.",
+  "visualReview": [
+    "Race-Clean-1920.png",
+    "Career-Time-Target-1920.png",
+    "Proximity-Text115-1280.png",
+    "Proximity-Text115-1920.png",
+    "Failed-Result-1280.png",
+    "Passed-Result-1280.png",
+    "Free-Result-Text115-1920.png",
+    "Livery-Reward-Text115-1920.png"
+  ],
+  "limitations": [
+    "No standalone build or physical Switch test for this revision",
+    "Measured race-time gaps are not part of the local overlap indicators",
+    "Only the current-session valid best lap supplies checkpoint comparisons"
+  ]
+}

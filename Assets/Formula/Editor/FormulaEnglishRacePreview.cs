@@ -157,7 +157,7 @@ public static class FormulaEnglishRacePreview
             }
             else if (stage == 3)
             {
-                var texts = Texts(); Require(texts.Any(t => t.text == "BRONZE") && texts.Any(t => t.text == "Retry event") && UnityEngine.Object.FindFirstObjectByType<FormulaResultsView>() != null, "Result panel is not English.");
+                var texts = Texts(); Require(texts.Any(t => t.text == "BRONZE") && texts.Any(t => t.text == "RETRY") && UnityEngine.Object.FindFirstObjectByType<FormulaResultsView>() != null, "Result panel is not English.");
                 Require(texts.Any(t => t.text.StartsWith("LEVEL 1  /")) && texts.Any(t => t.text.StartsWith("NEXT MEDAL  /")) && texts.Any(t => t.text.StartsWith("UP NEXT  /")), "Results lack XP, next medal or next event context.");
                 Require(!texts.Any(t => t.text == "LEVEL UP BONUS  +0 CR"), "Zero level bonus is displayed.");
                 Require(texts.All(t => !System.Text.RegularExpressions.Regex.IsMatch(t.text, "[ăâîșțĂÂÎȘȚşţŞŢ]")), "Romanian text remains in the HUD or results.");

@@ -1,0 +1,205 @@
+{
+  "utc": "2026-10-25T14:12:48.439984+00:00",
+  "status": "superseded_by_gameplay_ux_revision",
+  "unityVersion": "6000.3.19f1",
+  "uiLanguage": "English",
+  "palette": {
+    "red": "#FF1E00",
+    "white": "#FFFFFF",
+    "yellow": "#FFE13B",
+    "surfaces": "Translucent black with clipped corners"
+  },
+  "features": [
+    "Position and lap hierarchy with a live four-row race classification",
+    "Single shared authored HUD prefab; race systems retain state authority",
+    "Race clock for races; lap clock and measured checkpoint split to valid session best for solo runs",
+    "Frame-rate instrument refresh, allocation-free clock formatting, twelve non-flashing RPM shift lamps and RCCP speed/gear",
+    "Temporary intro objective and lap-completion messages; persistent invalid-lap state without premature valid-lap claims",
+    "Compact device-aware pause prompt; keyboard and gamepad navigation preserved",
+    "Live circuit minimap with fixed aspect ratio, yellow player heading, white rival markers, red direction chevrons and a checkered start/finish; solo legend updates on circuit change."
+  ],
+  "integration": {
+    "report": "IntegrationAudit.json",
+    "boundCircuitScenes": 18,
+    "racePrefab": "Assets/Formula/Resources/Formula/UI/FormulaRace.prefab"
+  },
+  "validation": {
+    "editorCSharpCompileErrors": [],
+    "hudSuites": [
+      {
+        "report": "Validation-1280.json",
+        "width": 1280,
+        "height": 720,
+        "passed": 13,
+        "errors": [],
+        "framesAdvanced": 12463
+      },
+      {
+        "report": "Validation-1920.json",
+        "width": 1920,
+        "height": 1080,
+        "passed": 13,
+        "errors": [],
+        "framesAdvanced": 11665
+      }
+    ],
+    "existingRaceResultRegression": {
+      "report": "EnglishRaceRegression.json",
+      "passed": 7,
+      "errors": [],
+      "scriptedFinish": true,
+      "validatedBeforeMinimap": true
+    },
+    "visualReview": [
+      "Minimap-720.png",
+      "Minimap-1080.png",
+      "Race-Text115-Safe95-1280.png",
+      "Race-Text115-Safe95-1920.png",
+      "Solo-1280.png",
+      "Invalid-Lap-1280.png"
+    ],
+    "textScalePercent": 115,
+    "safeAreaPercent": 95,
+    "realKeyboardDriving": true,
+    "virtualGamepad": true,
+    "isolatedSave": true,
+    "final720Rerun": "Current minimap implementation passed 13 checks at each resolution, including real marker movement, a Racing Visuals race and an RTG02 solo scene change.",
+    "sourceDiffWhitespaceCheck": "C# passed; Unity serialized YAML uses its normal blank-value spacing."
+  },
+  "screenshots": [
+    {
+      "file": "Invalid-Lap-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Invalid-Lap-1920.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "Minimap-1080.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "Minimap-720.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Pause-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Pause-1920.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "Race-Clean-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Race-Clean-1920.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "Race-Text115-Safe95-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Race-Text115-Safe95-1920.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "Solo-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Solo-1920.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "Split-To-Best-1280.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "file": "Split-To-Best-1920.png",
+      "width": 1920,
+      "height": 1080
+    }
+  ],
+  "observedUnityGeneratedTrackedChanges": [
+    "Assets/Formula/Garage/Materials/Vehicle/Material_1_855c397f_Display.mat",
+    "Assets/Formula/RCCP/Materials/Material_1 2_de1cb806.mat",
+    "Assets/Formula/RCCP/Materials/Material_1 3_9b3ebc81.mat",
+    "Assets/Formula/RCCP/Materials/Material_1 4_0e4b1001.mat",
+    "Assets/Formula/RCCP/Materials/Material_1_855c397f.mat",
+    "Assets/Formula/Resources/Formula/UI/Rajdhani-SemiBold.asset",
+    "Assets/Formula/Resources/Formula/UI/Rajdhani.asset",
+    "Assets/Formula/Resources/Formula/UI/Teko.asset",
+    "Assets/Settings/PC_RPAsset.asset",
+    "ProjectSettings/GraphicsSettings.asset"
+  ],
+  "serializationNote": "During original-project Play Mode Unity 6.3 serialized URP asset version 13, graphics keyword settings, material motion-vector settings and dynamic TMP font data. These were not reverted. No intentional rendering configuration change was made by this HUD feature.",
+  "limitations": [
+    "Editor validation on macOS Metal; no new standalone build for this HUD change.",
+    "720p layout and virtual gamepad do not establish Nintendo Switch hardware performance.",
+    "Synthetic checkpoint and RPM boundary tests are labelled in their reports; they do not constitute a natural completed race.",
+    "Split comparison is sampled at actual race checkpoints, not a continuous distance-based delta."
+  ],
+  "firstAttemptRepairs": [
+    "Authoring handles Unity fake-null CanvasGroup references explicitly.",
+    "Active-device polling moved before the telemetry throttle so one-frame gamepad presses are not missed.",
+    "Screenshot captures wait a frame before scene transitions."
+  ],
+  "sourceFingerprintReport": "IntegrationAudit.json",
+  "editorFinalState": {
+    "scene": "Assets/Scenes/Menu.unity",
+    "playMode": false,
+    "gameViewPreset": "720p (1280x720)",
+    "confirmedWith": "cua_repl screenshot and accessibility state"
+  },
+  "minimap": {
+    "serializedRouteAndMarkerReferences": "passed",
+    "routeSource": "Active GamePlayManager.raceWaypoints world positions",
+    "staticRouteAndMovingMarkersSeparate": true,
+    "extraCamera": false,
+    "renderTexture": false,
+    "hudPanelRect": [
+      32,
+      392,
+      264,
+      212
+    ],
+    "objectivePanelRect": [
+      32,
+      616,
+      480,
+      72
+    ],
+    "gapToObjective": 12,
+    "player": "Yellow heading arrow",
+    "opponents": "White dots",
+    "route": "White with black outline",
+    "racingDirection": "Red chevrons",
+    "startFinish": "Black and white checkered marker",
+    "offMapMarkers": "Clamped to the minimap interior",
+    "soloRivalsLegend": "Hidden",
+    "playModeCircuits": [
+      "track_01",
+      "rtg_02"
+    ],
+    "reportChecksPassed": 26
+  },
+  "supersededBy": "../GameplayUX/Validation.json"
+}

@@ -1,0 +1,25 @@
+{
+    "phase": "complete",
+    "unityVersion": "6000.3.19f1",
+    "method": "Graphical Editor, isolated save, real race and input. Split/RPM boundaries use synthetic telemetry; no race completion claim.",
+    "width": 1920,
+    "height": 1080,
+    "startFrame": 1,
+    "endFrame": 11666,
+    "passed": [
+        "Real four-car race shows authoritative position, standings and race clock without premature valid-lap text",
+        "Minimap fits the live Racing Visuals circuit and includes all three real AI cars",
+        "Objective disappears after the intro; the unobstructed HUD remains live",
+        "Keyboard drives the RCCP car; displayed speed and gear come from its telemetry",
+        "Escape pauses/resumes once; HUD is hidden behind pause and restored on resume",
+        "Virtual gamepad Start pauses/resumes and changes the pause prompt",
+        "Synthetic idle/limiter telemetry verifies twelve shift lamps without changing vehicle tuning",
+        "HUD remains in bounds and text fits at 115 percent with 95 percent safe area",
+        "Solo Time Attack prioritizes lap timing and removes the leaderboard and participant count",
+        "RTG circuit map rebinds on scene change with its own geometry and no rivals in solo mode",
+        "Track limits show a temporary explanation and a persistent invalid-lap indicator",
+        "Synthetic checkpoint/lap events confirm a valid best lap and a measured split; invalid laps never replace the reference",
+        "Invalid lap suppresses its delta; HUD changes do not spend credits"
+    ],
+    "errors": []
+}

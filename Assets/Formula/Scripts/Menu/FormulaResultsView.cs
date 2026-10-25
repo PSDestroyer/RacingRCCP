@@ -11,16 +11,24 @@ namespace FormulaGame
         [SerializeField] private TMP_Text progress, target, nextContext;
         [SerializeField] private UnityEngine.UI.Image xpFill;
         [SerializeField] private UnityEngine.UI.RawImage rewardLivery;
+        [SerializeField] private TMP_Text resultCaption;
+        [SerializeField] private RectTransform progressionRoot;
+        [SerializeField] private TMP_Text[] metricCaptions;
         public void OnCancel(UnityEngine.EventSystems.BaseEventData data) => FormulaSession.ReturnToMenu();
         public void Present(FormulaReceipt receipt)
         {
             eventName.text = FormulaCatalog.Current.Event(receipt.eventId).name.ToUpperInvariant();
             bool career = FormulaProgression.State.activeMode == "career";
             var session = FormulaCatalog.Current.Event(receipt.eventId);
-            medal.text = career ? FormulaUI.MedalName(receipt.medal).ToUpperInvariant()
+            bool noValidLap = receipt.bestLapSeconds <= 0;
+            bool failed = noValidLap || career && receipt.medal == Medal.None;
+            if (resultCaption != null) resultCaption.text = failed ? "SESSION ENDED" : career ? "EVENT PASSED" : "SESSION COMPLETE";
+            medal.text = noValidLap ? "NO VALID LAP" : career && failed ? session.mode == "race" ? "OUTSIDE TOP 3" : "TARGET MISSED"
+                : career ? FormulaUI.MedalName(receipt.medal).ToUpperInvariant()
                 : receipt.bestLapSeconds <= 0 ? "NO VALID LAP"
                 : session.mode == "race" ? "P" + receipt.finishPosition
                 : receipt.personalBest ? "PERSONAL BEST" : "SESSION COMPLETE";
+            medal.color = failed ? FormulaUI.Red : FormulaUI.Accent;
             elapsed.text = FormulaRaceUI.TimeText(receipt.elapsedSeconds); bestLap.text = FormulaRaceUI.TimeText(receipt.bestLapSeconds);
             credits.text = "+" + receipt.credits.ToString("N0") + " CR"; xp.text = "+" + receipt.xp.ToString("N0") + " XP";
             bonus.gameObject.SetActive(receipt.levelCredits > 0);
@@ -29,17 +37,24 @@ namespace FormulaGame
             string xpText = FormulaMenuFormatting.Experience(data.exp, data.currentLevel, out float fraction);
             if (progress != null) progress.text = "LEVEL " + data.currentLevel + "  /  " + xpText;
             if (xpFill != null) xpFill.fillAmount = fraction;
-            if (target != null) target.text = NextTarget(receipt);
+            if (target != null) target.text = noValidLap ? "Complete a lap within track limits, passing every checkpoint."
+                : failed && session.mode == "race" ? "Finish in the top 3. You finished P" + receipt.finishPosition + "."
+                : failed ? "Record a valid lap in " + FormulaRaceUI.TimeText(FormulaAssets.Current.FindTrack(session.trackId).referenceLapSeconds * 1.2) + " or faster.\nImprove by " + (receipt.bestLapSeconds - FormulaAssets.Current.FindTrack(session.trackId).referenceLapSeconds * 1.2).ToString("0.000", System.Globalization.CultureInfo.InvariantCulture) + " s."
+                : NextTarget(receipt);
             wallet.text = FormulaProgression.Data.money.ToString("N0"); driver.text = FormulaMenuFormatting.DriverName;
-            unlocks.text = receipt.newLiveries.Count == 0 ? receipt.personalBest ? "PERSONAL BEST\nProgress saved" : "PROGRESS SAVED" : "LIVERY UNLOCKED\n" + string.Join(" · ", receipt.newLiveries.Select(id => FormulaCatalog.Current.Skin(id).displayName));
+            unlocks.text = receipt.newLiveries.Count == 0 ? receipt.personalBest && career ? "PERSONAL BEST\nResult saved" : "RESULT SAVED" : "LIVERY UNLOCKED\n" + string.Join(" · ", receipt.newLiveries.Select(id => FormulaCatalog.Current.Skin(id).displayName));
             unlocks.color = receipt.newLiveries.Count > 0 ? FormulaUI.Accent : Color.white;
             if (rewardLivery != null)
             {
                 rewardLivery.gameObject.SetActive(receipt.newLiveries.Count > 0);
                 if (receipt.newLiveries.Count > 0) rewardLivery.texture = FormulaMenuAssets.Current.liveries[FormulaCatalog.Current.liveries.FindIndex(l => l.id == receipt.newLiveries[0])];
             }
+            LayoutOutcome(receipt, failed, career);
+            retry.onClick.RemoveAllListeners(); next.onClick.RemoveAllListeners(); menu.onClick.RemoveAllListeners();
+            retry.GetComponentInChildren<TMP_Text>().text = "RETRY";
+            menu.GetComponentInChildren<TMP_Text>().text = "MENU";
             retry.onClick.AddListener(() => FormulaSession.Launch(receipt.eventId, FormulaProgression.State.activeMode));
-            var nextEvent = career ? FormulaCatalog.Current.careerEvents.Find(e => FormulaProgression.State.Best(e.id) < Medal.Bronze) : null;
+            var nextEvent = career && !failed ? FormulaCatalog.Current.careerEvents.Find(e => FormulaProgression.State.Best(e.id) < Medal.Bronze) : null;
             next.gameObject.SetActive(nextEvent != null); if (nextEvent != null) next.onClick.AddListener(() => FormulaSession.ReviewEvent(nextEvent.id));
             if (nextContext != null) nextContext.text = nextEvent == null ? "" : "UP NEXT  /  " + nextEvent.name.ToUpperInvariant() + " · " + FormulaAssets.Current.FindTrack(nextEvent.trackId).displayName;
             if (nextEvent != null) next.GetComponentInChildren<TMP_Text>().text = nextEvent.id == receipt.eventId ? "REVIEW EVENT" : "NEXT EVENT";
@@ -50,7 +65,50 @@ namespace FormulaGame
             {
                 ResizeAction(retry, 30, 600); ResizeAction(menu, 650, 600);
             }
-            UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(nextEvent != null ? next.gameObject : menu.gameObject);
+            else
+            {
+                ResizeAction(retry, 30, 390); ResizeAction(next, 440, 390); ResizeAction(menu, 850, 400);
+            }
+            UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(failed ? retry.gameObject : nextEvent != null ? next.gameObject : menu.gameObject);
+        }
+        private void LayoutOutcome(FormulaReceipt receipt, bool failed, bool career)
+        {
+            // Outcomes lead; zero rewards never compete with the explanation or retry action.
+            FormulaMenuTheme.Place(eventName.rectTransform, 30, 144, 1220, 60);
+            FormulaMenuTheme.Place(medal.rectTransform, 30, 208, failed ? 1220 : 580, 78);
+            bool earned = receipt.credits > 0 || receipt.xp > 0 || receipt.levelCredits > 0;
+            Metric(0, elapsed, 30, failed ? 386 : 320, 84);
+            Metric(1, bestLap, 340, failed ? 386 : 320, 84);
+            Metric(2, credits, 650, failed ? 386 : 208, failed ? 94 : 116);
+            Metric(3, xp, 960, failed ? 386 : 208, failed ? 94 : 116);
+            elapsed.transform.parent.gameObject.SetActive(true);
+            bestLap.transform.parent.gameObject.SetActive(receipt.bestLapSeconds > 0);
+            credits.transform.parent.gameObject.SetActive(receipt.credits > 0);
+            xp.transform.parent.gameObject.SetActive(receipt.xp > 0);
+            credits.color = FormulaUI.Accent; xp.color = FormulaUI.Accent;
+            if (!career && !failed && !earned)
+            {
+                Metric(0, elapsed, 650, 208, 116); Metric(1, bestLap, 960, 208, 116);
+            }
+            progressionRoot.gameObject.SetActive(career && (receipt.xp > 0 || receipt.levelCredits > 0));
+            FormulaMenuTheme.Place(progressionRoot, 650, failed ? 482 : 348, 600, failed ? 40 : 52);
+            FormulaMenuTheme.Place(progress.rectTransform, 0, 0, 600, 28);
+            var bar = (RectTransform)xpFill.transform.parent;
+            FormulaMenuTheme.Place(bar, 0, failed ? 32 : 44, 600, 4);
+            FormulaMenuTheme.Place(xpFill.rectTransform, 0, 0, 600, 4);
+            FormulaMenuTheme.Place(target.rectTransform, 30, failed ? 292 : 482, failed ? 600 : 1000, failed ? 80 : 40);
+            FormulaMenuTheme.Place(unlocks.rectTransform, failed ? 650 : 30, failed ? 304 : 414, failed ? 390 : 580, failed ? 48 : 62);
+            FormulaMenuTheme.Place(bonus.rectTransform, 650, failed ? 354 : 402, 390, 28);
+            FormulaMenuTheme.Place(nextContext.rectTransform, 650, 432, 390, 44);
+            if (rewardLivery != null) FormulaMenuTheme.Place(rewardLivery.rectTransform, 1050, failed ? 300 : 414, 200, failed ? 84 : 100);
+        }
+        private void Metric(int index, TMP_Text value, float x, float y, float height)
+        {
+            var panel = (RectTransform)value.transform.parent;
+            FormulaMenuTheme.Place(panel, x, y, 290, height);
+            foreach (var surface in panel.GetComponentsInChildren<FormulaPanelGraphic>(true)) FormulaMenuTheme.Place(surface.rectTransform, 0, 0, 290, height);
+            FormulaMenuTheme.Place(metricCaptions[index].rectTransform, 16, 4, 258, 26);
+            FormulaMenuTheme.Place(value.rectTransform, 16, 30, 258, height - 30);
         }
         private static string NextTarget(FormulaReceipt r)
         {

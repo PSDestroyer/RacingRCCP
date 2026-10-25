@@ -1,0 +1,33 @@
+{
+    "phase": "complete",
+    "unityVersion": "6000.3.19f1",
+    "method": "Graphical Editor, isolated save, real race and input. Split/RPM/proximity and career finishes are scripted boundary checks; no natural race completion claim.",
+    "width": 1920,
+    "height": 1080,
+    "startFrame": 1,
+    "endFrame": 19647,
+    "passed": [
+        "Real four-car race shows authoritative position, standings, persistent goal and distinct lap/race clocks from lap one",
+        "Minimap fits the live Racing Visuals circuit and includes all three real AI cars",
+        "Objective disappears after the intro; the unobstructed HUD remains live",
+        "Keyboard drives the RCCP car; displayed speed and gear come from its telemetry",
+        "Pause contains a readable goal and current progress recap",
+        "Escape pauses/resumes once; HUD is hidden behind pause and restored on resume",
+        "Virtual gamepad Start pauses/resumes and changes the pause prompt",
+        "Synthetic idle/limiter telemetry verifies twelve shift lamps without changing vehicle tuning",
+        "Scripted real-rival positions verify both proximity sides and reject cars on another elevation; no time gaps are fabricated",
+        "HUD remains in bounds and text fits at 115 percent with 95 percent safe area",
+        "Solo Time Attack explains its missing reference, keeps a persistent goal, and hides race-only information",
+        "RTG circuit map rebinds on scene change with its own geometry and no rivals in solo mode",
+        "Track limits show a temporary explanation and a persistent invalid-lap indicator",
+        "Synthetic checkpoint/lap events confirm a valid best lap and a measured split; invalid laps never replace the reference",
+        "Invalid lap suppresses its delta; HUD changes do not spend credits",
+        "Only/final invalid lap directs Retry after finish instead of promising a nonexistent next lap",
+        "Scripted invalid Shakedown result explains failure, focuses Retry and awards no medal or credits",
+        "Retry really reloads a clean session; scripted valid Shakedown saves Bronze and prioritizes Next Event",
+        "Next Event returns to its career briefing with progress retained",
+        "Career Time Attack retains the exact pass time in HUD and Pause",
+        "Synthetic result variants verify missed time, P4, free-session failure and reuse after failure without changing credits"
+    ],
+    "errors": []
+}

@@ -13,6 +13,8 @@ namespace FormulaGame
         public static int OpponentLevel => CurrentEvent?.id == "g06" ? 2 : CurrentEvent?.id == "g04" ? 1 : 0;
         public static double BestLap { get; private set; }
         public static int ValidLaps { get; private set; }
+        public static double LastLap { get; private set; }
+        public static bool LastLapValid { get; private set; }
         public static bool LapInvalid => lapInvalid;
         public static double LapElapsed(double elapsed) => System.Math.Max(0, elapsed - lastLapEnd);
         public static string PendingReviewEvent { get; set; }
@@ -26,6 +28,8 @@ namespace FormulaGame
         private static double pendingElapsed;
         private static bool launching;
         public static event Action<FormulaReceipt> Finished;
+        public static event Action<int, double> CheckpointPassed;
+        public static event Action LapCompleted;
         public static void EnterMenu() { launching = false; InRace = false; LastError = null; Time.timeScale = 1f; AudioListener.pause = false; }
         public static string Launch(string id, string mode)
         {
@@ -67,7 +71,7 @@ namespace FormulaGame
                 string id = circuit != null ? "race:" + circuit.trackId : "g03";
                 FormulaProgression.BeginRun(FormulaProgression.Data, id, "quick");
             }
-            InRace = true; LastError = null; reachedBrakingSpeed = false; BrakeStopCompleted = false; BestLap = 0; ValidLaps = 0; lastLapEnd = 0; lapInvalid = false;
+            InRace = true; LastError = null; reachedBrakingSpeed = false; BrakeStopCompleted = false; BestLap = 0; ValidLaps = 0; LastLap = 0; LastLapValid = false; lastLapEnd = 0; lapInvalid = false;
             var e = CurrentEvent;
             CorridorHalfWidth = game.GetComponent<FormulaRaceUI>().trackHalfWidth;
             game.useCurrentMapModeSettings = false;
@@ -98,15 +102,18 @@ namespace FormulaGame
         }
         public static FormulaReceipt RetryResult() => Complete(pendingFinished, pendingPosition, pendingElapsed);
         public static void InvalidateLap() { if (InRace) lapInvalid = true; }
+        public static void Checkpoint(int index, double elapsed) { if (InRace) CheckpointPassed?.Invoke(index, LapElapsed(elapsed)); }
         public static void Lap(double elapsed)
         {
             if (!InRace) return;
             double time = elapsed - lastLapEnd; lastLapEnd = elapsed;
-            if (!lapInvalid && time > 1)
+            LastLap = time; LastLapValid = !lapInvalid && time > 1;
+            if (LastLapValid)
             {
                 ValidLaps++; if (BestLap <= 0 || time < BestLap) BestLap = time;
             }
             lapInvalid = false;
+            LapCompleted?.Invoke();
         }
         public static FormulaReceipt Complete(bool finished, int position, double elapsed)
         {

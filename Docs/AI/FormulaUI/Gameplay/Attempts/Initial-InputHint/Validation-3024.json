@@ -1,0 +1,18 @@
+{
+    "phase": "failed",
+    "unityVersion": "6000.3.19f1",
+    "method": "Graphical Editor, isolated save, real race and input. Split/RPM boundaries use synthetic telemetry; no race completion claim.",
+    "width": 3024,
+    "height": 72,
+    "startFrame": 1,
+    "endFrame": 5400,
+    "passed": [
+        "Real four-car race shows authoritative position, standings and race clock without premature valid-lap text",
+        "Objective disappears after the intro; the unobstructed HUD remains live",
+        "Keyboard drives the RCCP car; displayed speed and gear come from its telemetry",
+        "Escape pauses/resumes once; HUD is hidden behind pause and restored on resume"
+    ],
+    "errors": [
+        "Pause hint did not follow the active input device.\n  at FormulaGameplayHudPreview.Update () [0x00567] in /Users/gheorghe/GitHub/RacingRCCP/Assets/Formula/Editor/FormulaGameplayHudPreview.cs:173 "
+    ]
+}

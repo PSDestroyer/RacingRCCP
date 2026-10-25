@@ -245,16 +245,33 @@ public static class FormulaExperienceBuilder
     public static void StyleResults(GameObject root)
     {
         var view = root.GetComponent<FormulaResultsView>();
+        Set(view, "resultCaption", root.transform.Find("Result Caption").GetComponent<TMP_Text>());
         Place(root.transform.Find("Header/Formula Logo"), 23, -6, 322, 110);
-        for (int i = 0; i < 4; i++) Place(root.transform.Find("Result " + new[] { "elapsed", "bestLap", "credits", "xp" }[i]), 30 + i * 310, 225, 290, 128);
-        Set(view, "progress", Label(root.transform, "XP Progress", "LEVEL 1  /  0 OF 3,000 XP", 30, 369, 580, 30, 21));
-        Set(view, "xpFill", Fill(root.transform, "Experience Bar", 30, 409, 580, 5));
-        var target = Label(root.transform, "Next Medal", "NEXT MEDAL", 30, 436, 1220, 40, 22); target.textWrappingMode = TextWrappingModes.Normal; Set(view, "target", target);
-        Format(root.transform.Find("Level Bonus").GetComponent<TMP_Text>(), 30, 482, 580, 32, 21);
-        Format(root.transform.Find("Unlocks").GetComponent<TMP_Text>(), 650, 369, 390, 94, 22);
+        Format(Ref<TMP_Text>(view, "eventName"), 30, 144, 1220, 60, 44, true);
+        Format(Ref<TMP_Text>(view, "medal"), 30, 208, 580, 78, 64, true);
+        var metricCaptions = new UnityEngine.Object[4];
+        for (int i = 0; i < 4; i++)
+        {
+            var panel = root.transform.Find("Result " + new[] { "elapsed", "bestLap", "credits", "xp" }[i]);
+            Place(panel, i < 2 ? 30 + i * 310 : 650 + (i - 2) * 310, i < 2 ? 320 : 208, 290, i < 2 ? 84 : 116);
+            foreach (var surface in panel.GetComponentsInChildren<FormulaPanelGraphic>(true)) Place(surface.transform, 0, 0, 290, i < 2 ? 84 : 116);
+            var caption = panel.Find("Caption").GetComponent<TMP_Text>(); Format(caption, 16, 4, 258, 26, 18); metricCaptions[i] = caption;
+            Format(panel.Find("Value").GetComponent<TMP_Text>(), 16, 30, 258, i < 2 ? 54 : 86, i < 2 ? 44 : 52, true);
+        }
+        SetArray(view, "metricCaptions", metricCaptions);
+        var progression = Group(root.transform, "Progression", 650, 348, 600, 52); Set(view, "progressionRoot", progression);
+        foreach (string name in new[] { "XP Progress", "Experience Bar" })
+        {
+            var previous = root.transform.Find(name); if (previous != null) previous.SetParent(progression, false);
+        }
+        Set(view, "progress", Label(progression, "XP Progress", "LEVEL 1  /  0 OF 3,000 XP", 0, 0, 600, 28, 19));
+        Set(view, "xpFill", Fill(progression, "Experience Bar", 0, 44, 600, 4));
+        var target = Label(root.transform, "Next Medal", "NEXT MEDAL", 30, 482, 1000, 40, 22); target.textWrappingMode = TextWrappingModes.Normal; Set(view, "target", target);
+        Format(root.transform.Find("Level Bonus").GetComponent<TMP_Text>(), 650, 402, 390, 28, 19);
+        Format(root.transform.Find("Unlocks").GetComponent<TMP_Text>(), 30, 414, 580, 62, 20);
         root.transform.Find("Unlocks").GetComponent<TMP_Text>().textWrappingMode = TextWrappingModes.Normal;
-        var art = Group(root.transform, "Reward Livery", 1050, 363, 200, 100); var thumbnail = art.GetComponent<UnityEngine.UI.RawImage>() ?? art.gameObject.AddComponent<UnityEngine.UI.RawImage>(); thumbnail.raycastTarget = false; art.gameObject.SetActive(false); Set(view, "rewardLivery", thumbnail);
-        Set(view, "nextContext", Label(root.transform, "Next Event", "", 650, 482, 600, 40, 21));
+        var art = Group(root.transform, "Reward Livery", 1050, 414, 200, 100); var thumbnail = art.GetComponent<UnityEngine.UI.RawImage>() ?? art.gameObject.AddComponent<UnityEngine.UI.RawImage>(); thumbnail.raycastTarget = false; art.gameObject.SetActive(false); Set(view, "rewardLivery", thumbnail);
+        var next = Label(root.transform, "Next Event", "", 650, 432, 390, 44, 18); next.textWrappingMode = TextWrappingModes.Normal; Set(view, "nextContext", next);
     }
     private static void BuildRace() { FormulaRaceAuthoring.Build(); }
     public static RectTransform Group(Transform p, string name, float x, float y, float w, float h) { var r = p.Find(name) as RectTransform ?? FormulaUI.Rect(p, name, x, y, w, h); Place(r, x, y, w, h); return r; }

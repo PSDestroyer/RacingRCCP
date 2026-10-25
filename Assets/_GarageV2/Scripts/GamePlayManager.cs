@@ -214,6 +214,20 @@ public class GamePlayManager : MonoBehaviour
     public bool FormulaRaceStarted => raceStarted;
     public int FormulaPosition => GetPlayerRacePosition();
     public int FormulaParticipants => GetTotalRaceParticipants();
+    private static readonly string[] formulaRivalNames = { "A. Vale", "M. Costa", "L. Reed", "N. Serra", "E. Frost", "S. Arden", "J. Voss", "R. Quinn" };
+    private static string DefaultRacerName(int index) => FormulaGame.FormulaSession.InRace ? formulaRivalNames[index % formulaRivalNames.Length] : $"AI {index + 1}";
+    // The HUD consumes the same ordering as the race, without allocating a new ranking every refresh.
+    public void CopyFormulaStandings(List<RaceRacer> destination)
+    {
+        destination.Clear();
+        foreach (var racer in allRacers)
+        {
+            if (racer == null || racer.eliminated) continue;
+            int index = destination.Count;
+            while (index > 0 && IsRacerAhead(racer, destination[index - 1])) index--;
+            destination.Insert(index, racer);
+        }
+    }
     private float raceElapsedTime = 0f;
     private float limitedBrakeUsageSeconds = 0f;
     private bool chaseRaceCaughtTarget = false;
@@ -620,8 +634,8 @@ public class GamePlayManager : MonoBehaviour
             if (aiRacer == null)
                 continue;
 
-            if (string.IsNullOrWhiteSpace(aiRacer.displayName))
-                aiRacer.displayName = $"AI {i + 1}";
+            if (string.IsNullOrWhiteSpace(aiRacer.displayName) || FormulaGame.FormulaSession.InRace && (aiRacer.displayName.StartsWith("AI ", StringComparison.Ordinal) || aiRacer.displayName == "Racer"))
+                aiRacer.displayName = DefaultRacerName(i);
 
             if (aiRacer.aiDriver != null)
             {
@@ -1113,7 +1127,7 @@ public class GamePlayManager : MonoBehaviour
 
             aiRacers[i] = new RaceRacer
             {
-                displayName = $"AI {i + 1}",
+                displayName = DefaultRacerName(i),
                 racerTransform = opponentObject.transform,
                 aiDriver = aiDriver,
                 currentWaypointIndex = 0,
@@ -1643,6 +1657,9 @@ public class GamePlayManager : MonoBehaviour
            if (Vector3.Dot(CarController.Rigid.linearVelocity, forward.normalized) <= 0.1f) return;
        }
        playerRacer.currentWaypointIndex++;
+
+       if (FormulaGame.FormulaSession.InRace)
+           FormulaGame.FormulaSession.Checkpoint(playerRacer.currentWaypointIndex - 1, raceElapsedTime);
 
        if (playerRacer.currentWaypointIndex >= waypointCount)
        {

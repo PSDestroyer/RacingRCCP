@@ -14,10 +14,10 @@ namespace FormulaGame
         {
             if (frame == Time.frameCount) return;
             frame = Time.frameCount;
-            bool pad = Gamepad;
+            var device = UnityEngine.InputSystem.Gamepad.current;
+            bool pad = Gamepad && device != null;
             var keyboard = Keyboard.current; var mouse = Mouse.current;
             if (keyboard?.anyKey.wasPressedThisFrame == true || mouse?.leftButton.wasPressedThisFrame == true || mouse?.rightButton.wasPressedThisFrame == true || (mouse != null && mouse.delta.ReadValue().sqrMagnitude > 4)) pad = false;
-            var device = UnityEngine.InputSystem.Gamepad.current;
             if (device != null)
             {
                 foreach (var control in device.allControls)

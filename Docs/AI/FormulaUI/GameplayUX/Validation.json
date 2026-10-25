@@ -1,0 +1,56 @@
+{
+  "utc": "2026-10-25T14:48:35.023684+00:00",
+  "status": "superseded_by_compact_gameplay_composition",
+  "unityVersion": "6000.3.19f1",
+  "scope": "Gameplay HUD, Pause objective recap, failure/result navigation; existing race rules unchanged",
+  "features": [
+    "Persistent mode-aware session goal and progress; exact career Time Attack pass time",
+    "Distinct current-lap and race-total clocks from lap one; explicit missing-reference state",
+    "Final/only invalid lap directs Retry after finish; no extra laps are promised",
+    "Result failure reasons and Retry focus; successful career Next Event focus; reusable button layout",
+    "Actual nearby-rival left/right overlap indicators with elevation rejection and short release hold",
+    "Opaque black surfaces, red rails, white/yellow hierarchy; minimap and telemetry share bottom margin",
+    "Frame-based message fading; existing reduced-motion preference respected",
+    "Authored prefab hierarchy and serialized references; same HUD used by eighteen circuits"
+  ],
+  "validation": {
+    "reports": [
+      {
+        "path": "Validation-1280.json",
+        "width": 1280,
+        "height": 720,
+        "passed": 20,
+        "errors": []
+      },
+      {
+        "path": "Validation-1920.json",
+        "width": 1920,
+        "height": 1080,
+        "passed": 21,
+        "errors": []
+      }
+    ],
+    "totalPassed": 41,
+    "accessibility": "HUD checked at 115% text and 95% safe area at 720p and 1080p",
+    "input": "Real RCCP movement with keyboard; virtual gamepad Start pause/resume and prompt switching",
+    "raceCoverage": "Real four-car Racing Visuals scene, solo RTG scene, Shakedown retry and subsequent career Time Attack",
+    "scriptedBoundaries": "RPM, checkpoint splits, rival positions, finish receipts and result variants are explicitly scripted; no natural race completion claim",
+    "saveIsolation": "Temporary validation save; player profile not used for QA rewards",
+    "compilation": "No C# compiler errors found; both graphical Editor play runs have empty captured error lists"
+  },
+  "integrationAudit": "IntegrationAudit.json",
+  "visualReview": [
+    "Race-Clean-1280.png",
+    "Race-Clean-1920.png",
+    "Pause-1280.png",
+    "Failed-Result-1280.png",
+    "Passed-Result-1280.png",
+    "Career-Time-Target-1920.png"
+  ],
+  "limitations": [
+    "No new standalone player build or Switch device validation",
+    "Proximity is local physical overlap, not a measured race time gap",
+    "Checkpoint split reference comes from the current session valid best lap"
+  ],
+  "supersededBy": "../GameplayComposition/Validation.json"
+}
