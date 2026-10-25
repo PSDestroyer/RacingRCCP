@@ -1,0 +1,30 @@
+{
+    "name": "WindshieldRainHDRP.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9063ae429062f2040bfa57c2f223896a",
+        "GUID:78bd2ddd6e276394a9615c203e574844",
+        "GUID:457756d89b35d2941b3e7b37b4ece6f1",
+        "GUID:44eaaeaf9bc0ac1408548ec221b30773",
+        "GUID:df380645f10b7bc4b97d4f5eb6303d95"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "WINDSHIELD_HDRP_AVAILABLE"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.render-pipelines.high-definition",
+            "expression": "[0.0.0,)",
+            "define": "WINDSHIELD_HDRP_AVAILABLE"
+        }
+    ],
+    "noEngineReferences": false
+}

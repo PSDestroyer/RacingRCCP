@@ -1,0 +1,154 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BackWindowRainWithPost
+  m_Shader: {fileID: 4800000, guid: 3c11cb1537a7f09429a9d03de16d4ffa, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _ALPHAPREMULTIPLY_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BlurNormalMap:
+        m_Texture: {fileID: 2800000, guid: d6fdb27e27f6b6644a60f996c973339c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ColorTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Cube:
+        m_Texture: {fileID: 8900000, guid: c8fb6b23ad805e34991b8ba7585c5032, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HeightMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ReflCube:
+        m_Texture: {fileID: 8900000, guid: c8fb6b23ad805e34991b8ba7585c5032, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SmoothnessMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WipersTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaThreshold: 5
+    - _BlurNormalStrean: 0.15
+    - _BlurRadius: 10
+    - _BlurStrength: 0.1
+    - _BumpScale: 1
+    - _CullMode: 0
+    - _Cutoff: 0.5
+    - _DetailNormalMapScale: 1
+    - _Distort: 1
+    - _Distortion: 0.098
+    - _DstBlend: 10
+    - _GlossMapScale: 1
+    - _Glossiness: 0
+    - _GlossyReflections: 1
+    - _HeightThreshold: 0.8
+    - _Metallic: 0
+    - _Mode: 3
+    - _NormalStrength: 1
+    - _NormalTexelSize: 0.001
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
+    - _Power: 1
+    - _RainAmount: 1
+    - _RainSmoothness: 0.83
+    - _RainStreakBlurStrength: 1
+    - _RainStreakImpact: 10
+    - _RainStreakThreshold: 0.5
+    - _RainStrength: 1
+    - _ReflectMaskThreshold: 0.95
+    - _ReflectPower: 5
+    - _ReflectStren: 1
+    - _Scale: 1
+    - _Smoothness: 0.95
+    - _SmoothnessTextureChannel: 0
+    - _SmudgeBlurRadius: 10
+    - _SmudgeBlurStrength: 1
+    - _SmudgeSmoothness: 0.8
+    - _SmudgesDisapearSpeed: 0
+    - _SmudgesStrength: 0.8
+    - _SmudgesTexelSize: 0.01
+    - _SmudgesThreshold: 0.5
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _UVSec: 0
+    - _ZWrite: 0
+    m_Colors:
+    - _BlurColor: {r: 1, g: 1, b: 1, a: 0.039215688}
+    - _BlurNormalScaleAndOffset: {r: 40, g: 20, b: 0, a: 0}
+    - _Color: {r: 0.38007298, g: 0.67703366, b: 0.6886792, a: 0.15686275}
+    - _ColorTexColorMultiplier: {r: 1, g: 1, b: 1, a: 1}
+    - _ColorTexScaleAndOffset: {r: 1, g: 1, b: 0, a: 0}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _ReflectColor: {r: 0.5754717, g: 0.5754717, b: 0.5754717, a: 1}
+    - _SSSColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}
+    - _SmoothnessMapScaleAndOffset: {r: 1, g: 1, b: 0, a: 0}
+    - _SmudgesColor: {r: 1, g: 1, b: 1, a: 0.039215688}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

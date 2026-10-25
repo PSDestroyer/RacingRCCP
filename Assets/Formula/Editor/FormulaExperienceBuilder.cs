@@ -245,6 +245,7 @@ public static class FormulaExperienceBuilder
     public static void StyleResults(GameObject root)
     {
         var view = root.GetComponent<FormulaResultsView>();
+        var resultReveal = root.GetComponent<CanvasGroup>(); if (resultReveal == null) resultReveal = root.AddComponent<CanvasGroup>(); resultReveal.alpha = 1; resultReveal.interactable = true; resultReveal.blocksRaycasts = true; Set(view, "resultPresentation", resultReveal);
         Set(view, "resultCaption", root.transform.Find("Result Caption").GetComponent<TMP_Text>());
         Place(root.transform.Find("Header/Formula Logo"), 23, -6, 322, 110);
         Format(Ref<TMP_Text>(view, "eventName"), 30, 144, 1220, 60, 44, true);
@@ -270,7 +271,8 @@ public static class FormulaExperienceBuilder
         Format(root.transform.Find("Level Bonus").GetComponent<TMP_Text>(), 650, 402, 390, 28, 19);
         Format(root.transform.Find("Unlocks").GetComponent<TMP_Text>(), 30, 414, 580, 62, 20);
         root.transform.Find("Unlocks").GetComponent<TMP_Text>().textWrappingMode = TextWrappingModes.Normal;
-        var art = Group(root.transform, "Reward Livery", 1050, 414, 200, 100); var thumbnail = art.GetComponent<UnityEngine.UI.RawImage>() ?? art.gameObject.AddComponent<UnityEngine.UI.RawImage>(); thumbnail.raycastTarget = false; art.gameObject.SetActive(false); Set(view, "rewardLivery", thumbnail);
+        var art = Group(root.transform, "Reward Livery", 930, 342, 320, 176); var thumbnail = art.GetComponent<UnityEngine.UI.RawImage>() ?? art.gameObject.AddComponent<UnityEngine.UI.RawImage>(); thumbnail.raycastTarget = false; art.gameObject.SetActive(false); Set(view, "rewardLivery", thumbnail);
+        var reveal = art.GetComponent<CanvasGroup>(); if (reveal == null) reveal = art.gameObject.AddComponent<CanvasGroup>(); reveal.alpha = 1; reveal.interactable = false; reveal.blocksRaycasts = false; Set(view, "rewardPresentation", reveal);
         var next = Label(root.transform, "Next Event", "", 650, 432, 390, 44, 18); next.textWrappingMode = TextWrappingModes.Normal; Set(view, "nextContext", next);
     }
     private static void BuildRace() { FormulaRaceAuthoring.Build(); }

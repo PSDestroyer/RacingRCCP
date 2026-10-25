@@ -26,6 +26,7 @@ namespace FormulaGame
         [SerializeField] private GameObject careerGoal;
         [SerializeField] private RectTransform timingRoot;
         private PauseGameplay pauseController;
+        private GamePlayManager race;
         private Action pending;
         private bool wasPaused, finished, loadingVolumes, audioDirty, confirmFromError;
         private bool raceStarted, wasInvalid;
@@ -43,6 +44,7 @@ namespace FormulaGame
         public GameObject Hud => hud;
         public void Bind(GamePlayManager game)
         {
+            race = game;
             pauseController = PauseGameplay.Instance;
             if (pauseController == null) pauseController = new GameObject("Formula Pause").AddComponent<PauseGameplay>();
             if (pauseController.pausePanel != null) pauseController.pausePanel.SetActive(false);
@@ -241,6 +243,7 @@ namespace FormulaGame
         private void OnLapCompleted()
         {
             bool best = FormulaSession.LastLapValid && (previousBest <= 0 || FormulaSession.LastLap < previousBest);
+            if (best && race != null && race.FormulaCompletedLaps < race.totalRaceLaps && race.totalRaceLaps > 1) FormulaAudio.Play(FormulaAudio.Cue.Record);
             if (best)
             {
                 Array.Copy(currentSplits, bestSplits, currentSplits.Length);

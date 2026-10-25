@@ -61,15 +61,15 @@ namespace FormulaGame
             homeRail.color = FormulaUI.Red;
             homeArrow.color = new Color(ink.r, ink.g, ink.b, alpha);
         }
-        public void OnSelect(BaseEventData data) => selected = true;
+        public void OnSelect(BaseEventData data) { selected = true; FormulaAudio.Play(FormulaAudio.Cue.Focus); }
         public void OnDeselect(BaseEventData data) => selected = false;
         public void OnPointerEnter(PointerEventData data) { hovered = true; SetColor(strength); }
         public void OnPointerExit(PointerEventData data) { hovered = false; pressed = false; SetColor(strength); }
         private void OnDisable() { selected = hovered = pressed = false; strength = 0; SetColor(0); }
         public void OnPointerDown(PointerEventData data) { pressed = data.button == PointerEventData.InputButton.Left; SetColor(strength); }
         public void OnPointerUp(PointerEventData data) { pressed = false; SetColor(strength); }
-        public void OnSubmit(BaseEventData data) => SoundManager.Instance?.PlayButtonClick();
-        public void OnPointerClick(PointerEventData data) { if (data.button == PointerEventData.InputButton.Left) SoundManager.Instance?.PlayButtonClick(); }
+        public void OnSubmit(BaseEventData data) => FormulaAudio.Play(FormulaAudio.Cue.Confirm);
+        public void OnPointerClick(PointerEventData data) { if (data.button == PointerEventData.InputButton.Left) FormulaAudio.Play(FormulaAudio.Cue.Confirm); }
         private void Update()
         {
             if (frame == null) return;

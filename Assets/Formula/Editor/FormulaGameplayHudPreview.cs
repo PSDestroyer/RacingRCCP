@@ -15,7 +15,7 @@ using UnityEngine.InputSystem.LowLevel;
 public static class FormulaGameplayHudPreview
 {
     private const string Active = "Formula.Hud.Active", Stage = "Formula.Hud.Stage", Previous = "Formula.Hud.StartScene";
-    private const string Folder = "Docs/AI/FormulaUI/GameplayComposition";
+    private const string Folder = "Docs/AI/FormulaUI/GameplayPolish";
     [Serializable] private sealed class Report
     {
         public string phase, unityVersion, method = "Graphical Editor, isolated save, real race and input. Split/RPM/proximity and career finishes are scripted boundary checks; no natural race completion claim.";
@@ -162,6 +162,8 @@ public static class FormulaGameplayHudPreview
                     Require(rect.Contains(map.WorldToMap(point.transform.position)), "Circuit route extends outside its minimap.");
                 Pass("Minimap fits the live Racing Visuals circuit and includes all three real AI cars");
                 CheckLayout(view); frame = Time.frameCount; Next(2, "quiet-hud");
+                CheckDryRoad("Racing_Game", "Asphalt");
+                CheckAudio();
             }
             else if (stage == 2 && age > 8)
             {
@@ -255,6 +257,7 @@ public static class FormulaGameplayHudPreview
                 Require(game.GetComponent<FormulaCircuit>().trackId == "rtg_02" && map.RoutePointCount == game.raceWaypoints.waypoints.Count && map.GetComponentInChildren<FormulaMinimapMarkers>().OpponentMarkerCount == 0, "RTG minimap must use its own route and show no stale rival markers in solo mode.");
                 Require(!view.Hud.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "RIVALS"), "Solo minimap retains an unused rivals legend.");
                 Pass("RTG circuit map rebinds on scene change with its own geometry and no rivals in solo mode");
+                CheckDryRoad("RTG", "Road");
                 FormulaSession.InvalidateLap(); Next(13, "invalid-feedback");
             }
             else if (stage == 13)
@@ -382,14 +385,28 @@ public static class FormulaGameplayHudPreview
             else if (stage == 30)
             {
                 previewResult.GetComponent<FormulaResultsView>().Present(new FormulaReceipt { eventId = "g01", medal = Medal.Bronze, elapsedSeconds = 250, bestLapSeconds = 250, credits = 1200, xp = 1000, levelCredits = 150, newLiveries = new System.Collections.Generic.List<string> { FormulaCatalog.Current.liveries[1].id } });
+                Require(previewResult.transform.Find("Reward Livery").GetComponent<CanvasGroup>().alpha == 0, "Livery reveal did not begin from its authored transition state.");
+                Require(previewResult.GetComponent<CanvasGroup>().interactable && UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.name == "next", "Result transition blocks immediate navigation.");
                 Next(31, "livery-result-preview");
             }
             else if (stage == 31)
             {
-                CheckTextLayout(previewResult.transform); Capture("Livery-Reward-Text115"); Next(32, "reward-capture");
+                Require(previewResult.transform.Find("Reward Livery").GetComponent<CanvasGroup>().alpha == 1 && previewResult.GetComponent<CanvasGroup>().alpha == 1, "Result/livery reveal did not settle.");
+                CheckTextLayout(previewResult.transform); Capture("Livery-Reward-Text115");
+                Next(32, "reward-capture");
             }
             else if (stage == 32)
             {
+                pad = InputSystem.AddDevice<Gamepad>("Results navigation acceptance");
+                InputSystem.QueueStateEvent(pad, new GamepadState().WithButton(GamepadButton.DpadRight));
+                Next(33, "result-gamepad-navigation");
+            }
+            else if (stage == 33)
+            {
+                InputSystem.QueueStateEvent(pad, new GamepadState());
+                Require(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.name == "menu", "Gamepad cannot move from Next Event to Menu on results.");
+                InputSystem.RemoveDevice(pad); pad = null;
+                Pass("Result and livery fades settle without delaying focus; real UI actions respond to a virtual gamepad");
                 UnityEngine.Object.Destroy(previewResult); previewResult = null;
                 report.phase = "complete"; Save(); EditorApplication.ExitPlaymode();
             }
@@ -433,8 +450,10 @@ public static class FormulaGameplayHudPreview
         var result = root.GetComponent<FormulaResultsView>();
         race.GetComponentInParent<FormulaPresentation>().Register((RectTransform)root.transform);
         int money = FormulaProgression.Data.money;
+        bool reducedMotion = state.reducedMotion;
         try
         {
+            state.reducedMotion = true; // All text is visible during immediate variant geometry checks.
             state.activeMode = "career";
             result.Present(new FormulaReceipt { eventId = "g02", bestLapSeconds = 999, elapsedSeconds = 1000, credits = 300, xp = 100 });
             Require(root.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "TARGET MISSED") && system.currentSelectedGameObject.name == "retry", "Missed career time target must explain failure and focus Retry.");
@@ -447,20 +466,41 @@ public static class FormulaGameplayHudPreview
             result.Present(new FormulaReceipt { eventId = "trial:rtg_02", elapsedSeconds = 100 });
             Require(root.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "NO VALID LAP") && system.currentSelectedGameObject.name == "retry", "Free session without a valid lap must also focus Retry.");
             CheckTextLayout(root.transform);
+            Require(((RectTransform)root.transform.Find("Unlocks")).anchoredPosition.x == 30 && ((RectTransform)root.transform.Find("Next Medal")).anchoredPosition.x == 30, "Failure status is detached from its explanation and Retry.");
             result.Present(new FormulaReceipt { eventId = "trial:rtg_02", elapsedSeconds = 100, bestLapSeconds = 90, personalBest = true });
             Require(!root.transform.Find("Result credits").gameObject.activeSelf && !root.transform.Find("Result xp").gameObject.activeSelf && ((RectTransform)root.transform.Find("Result bestLap")).anchoredPosition.y == -208, "Free session should emphasize lap performance instead of zero rewards.");
             CheckTextLayout(root.transform);
             state.activeMode = "career";
             result.Present(new FormulaReceipt { eventId = "g01", medal = Medal.Bronze, bestLapSeconds = 250, elapsedSeconds = 250, credits = 1200, xp = 1000, levelCredits = 150, newLiveries = new System.Collections.Generic.List<string> { FormulaCatalog.Current.liveries[1].id } });
+            Require(!root.transform.Find("Result bestLap").gameObject.activeSelf && root.transform.Find("Result elapsed/Caption").GetComponent<TMP_Text>().text == "LAP TIME", "Single-lap result repeats the same clock.");
+            var art = (RectTransform)root.transform.Find("Reward Livery");
+            Require(art.rect.width * art.rect.height >= 200 * 100 * 2.8f && art.GetComponent<CanvasGroup>().alpha == 1 && !art.GetComponent<CanvasGroup>().blocksRaycasts, "Livery art is too small, animated in reduced motion or blocks input.");
             Require(system.currentSelectedGameObject.name == "next" && ((RectTransform)root.transform.Find("retry")).rect.width == 390, "Reused results must restore the three-action layout and Next Event focus after failure.");
             Require(FormulaProgression.Data.money == money, "Result presentation variants altered the economy.");
             CheckTextLayout(root.transform);
             Pass("Synthetic result variants at 115 percent verify missed time, P4, free-session failure/success, real nonzero rewards and repeated outcome layouts without changing credits");
+            Pass("Single-lap clock is unique; failure explanation, saved status and Retry align; livery art is 2.8 times larger and reduced motion is immediate");
         }
         finally
         {
-            state.activeMode = mode; system.SetSelectedGameObject(selection); UnityEngine.Object.Destroy(root);
+            state.activeMode = mode; state.reducedMotion = reducedMotion; system.SetSelectedGameObject(selection); UnityEngine.Object.Destroy(root);
         }
+    }
+    private static void CheckDryRoad(string family, string name)
+    {
+        var materials = UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None).SelectMany(r => r.sharedMaterials).Where(m => m != null && m.name.StartsWith(name) && m.name.EndsWith("_Dry")).Distinct().ToArray();
+        Require(materials.Length > 0 && materials.All(m => Mathf.Approximately(m.GetFloat("_Smoothness"), .22f) && (!m.HasProperty("_Metallic") || m.GetFloat("_Metallic") == 0)), family + " dry road was not rebound to the matte asphalt material.");
+        Require(UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None).Where(l => l.type == LightType.Directional).All(l => l.intensity <= 2), "Gameplay sun still clips the vehicle highlights.");
+        Pass(family + " live scene uses Formula-owned dry asphalt, with smoothness 0.22 and metallic 0");
+    }
+    private static void CheckAudio()
+    {
+        var assets = FormulaMenuAssets.Current;
+        var clips = new[] { assets.focusSound, assets.confirmSound, assets.recordSound, assets.resultSound, assets.unlockSound, assets.endSound };
+        Require(SoundManager.Instance != null && clips.All(c => c != null && c.length > 0 && c.length < 1 && c.channels == 1), "Formula UI audio cues are missing or incorrectly imported.");
+        var source = (AudioSource)typeof(SoundManager).GetField("sfxSource", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(SoundManager.Instance);
+        Require(source != null && source.outputAudioMixerGroup == SoundManager.Instance.sfxMixerGroup && source.spatialBlend == 0, "UI cues do not use the existing 2D SFX mixer route.");
+        Pass("Six original mono cues under one second use the existing 2D SFX source and mixer; no additional AudioSources are created for feedback");
     }
     private static void OnLog(string message, string trace, LogType type)
     {

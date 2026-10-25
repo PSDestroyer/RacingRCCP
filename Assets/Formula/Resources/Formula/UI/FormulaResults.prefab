@@ -2100,6 +2100,7 @@ GameObject:
   - component: {fileID: 2394480749222434116}
   - component: {fileID: 7543340319667218779}
   - component: {fileID: 1969733257931756525}
+  - component: {fileID: 510885218511439345}
   m_Layer: 0
   m_Name: Reward Livery
   m_TagString: Untagged
@@ -2123,8 +2124,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1050, y: -414}
-  m_SizeDelta: {x: 200, y: 100}
+  m_AnchoredPosition: {x: 930, y: -342}
+  m_SizeDelta: {x: 320, y: 176}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &7543340319667218779
 CanvasRenderer:
@@ -2161,6 +2162,18 @@ MonoBehaviour:
     y: 0
     width: 1
     height: 1
+--- !u!225 &510885218511439345
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2627950952039337836}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &2652035282656596784
 GameObject:
   m_ObjectHideFlags: 0
@@ -5529,6 +5542,7 @@ GameObject:
   - component: {fileID: 7559770179686110104}
   - component: {fileID: 1573768404702101732}
   - component: {fileID: 349936044776406826}
+  - component: {fileID: 4282269579599313694}
   m_Layer: 0
   m_Name: FormulaResults
   m_TagString: Untagged
@@ -5648,6 +5662,20 @@ MonoBehaviour:
   - {fileID: 4291211769697886852}
   - {fileID: 6865942604489840953}
   - {fileID: 2396004170110968234}
+  rewardPresentation: {fileID: 510885218511439345}
+  resultPresentation: {fileID: 4282269579599313694}
+--- !u!225 &4282269579599313694
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5983823373867688659}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &6090124395433071909
 GameObject:
   m_ObjectHideFlags: 0

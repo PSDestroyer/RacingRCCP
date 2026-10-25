@@ -150,7 +150,9 @@ public class SoundManager : MonoBehaviour
         musicSource.clip = null;
     }
 
-    public void PlaySfx(AudioClip clip)
+    public void PlaySfx(AudioClip clip) => PlaySfx(clip, 1f);
+
+    public void PlaySfx(AudioClip clip, float gain)
     {
         EnsureAudioSources();
 
@@ -162,7 +164,7 @@ public class SoundManager : MonoBehaviour
         if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
             volume = SaveManager.Instance.saveData.soundLevel;
 
-        sfxSource.PlayOneShot(clip, volume);
+        sfxSource.PlayOneShot(clip, volume * Mathf.Clamp01(gain));
     }
 
     public void PlayButtonClick()

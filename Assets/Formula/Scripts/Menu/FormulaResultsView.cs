@@ -14,6 +14,9 @@ namespace FormulaGame
         [SerializeField] private TMP_Text resultCaption;
         [SerializeField] private RectTransform progressionRoot;
         [SerializeField] private TMP_Text[] metricCaptions;
+        [SerializeField] private CanvasGroup rewardPresentation;
+        [SerializeField] private CanvasGroup resultPresentation;
+        private float revealStarted;
         public void OnCancel(UnityEngine.EventSystems.BaseEventData data) => FormulaSession.ReturnToMenu();
         public void Present(FormulaReceipt receipt)
         {
@@ -50,6 +53,10 @@ namespace FormulaGame
                 if (receipt.newLiveries.Count > 0) rewardLivery.texture = FormulaMenuAssets.Current.liveries[FormulaCatalog.Current.liveries.FindIndex(l => l.id == receipt.newLiveries[0])];
             }
             LayoutOutcome(receipt, failed, career);
+            revealStarted = Time.unscaledTime;
+            if (resultPresentation != null) resultPresentation.alpha = FormulaProgression.State.reducedMotion ? 1 : 0;
+            if (rewardPresentation != null) rewardPresentation.alpha = FormulaProgression.State.reducedMotion ? 1 : 0;
+            FormulaAudio.Play(receipt.newLiveries.Count > 0 ? FormulaAudio.Cue.Unlock : failed ? FormulaAudio.Cue.End : FormulaAudio.Cue.Result);
             retry.onClick.RemoveAllListeners(); next.onClick.RemoveAllListeners(); menu.onClick.RemoveAllListeners();
             retry.GetComponentInChildren<TMP_Text>().text = "RETRY";
             menu.GetComponentInChildren<TMP_Text>().text = "MENU";
@@ -77,12 +84,17 @@ namespace FormulaGame
             FormulaMenuTheme.Place(eventName.rectTransform, 30, 144, 1220, 60);
             FormulaMenuTheme.Place(medal.rectTransform, 30, 208, failed ? 1220 : 580, 78);
             bool earned = receipt.credits > 0 || receipt.xp > 0 || receipt.levelCredits > 0;
-            Metric(0, elapsed, 30, failed ? 386 : 320, 84);
-            Metric(1, bestLap, 340, failed ? 386 : 320, 84);
-            Metric(2, credits, 650, failed ? 386 : 208, failed ? 94 : 116);
-            Metric(3, xp, 960, failed ? 386 : 208, failed ? 94 : 116);
+            bool singleLap = FormulaCatalog.Current.Event(receipt.eventId).laps == 1;
+            bool livery = receipt.newLiveries.Count > 0;
+            metricCaptions[0].text = singleLap && !failed ? "LAP TIME" : "SESSION TIME";
+            if (singleLap && !failed) elapsed.text = FormulaRaceUI.TimeText(receipt.bestLapSeconds);
+            metricCaptions[1].text = "BEST LAP";
+            Metric(0, elapsed, failed ? 650 : 30, failed ? 300 : 320, 84);
+            Metric(1, bestLap, failed ? 960 : 340, failed ? 300 : 320, 84);
+            Metric(2, credits, 650, failed ? 402 : 208, failed ? 84 : 116);
+            Metric(3, xp, 960, failed ? 402 : 208, failed ? 84 : 116);
             elapsed.transform.parent.gameObject.SetActive(true);
-            bestLap.transform.parent.gameObject.SetActive(receipt.bestLapSeconds > 0);
+            bestLap.transform.parent.gameObject.SetActive(!singleLap && receipt.bestLapSeconds > 0);
             credits.transform.parent.gameObject.SetActive(receipt.credits > 0);
             xp.transform.parent.gameObject.SetActive(receipt.xp > 0);
             credits.color = FormulaUI.Accent; xp.color = FormulaUI.Accent;
@@ -91,16 +103,29 @@ namespace FormulaGame
                 Metric(0, elapsed, 650, 208, 116); Metric(1, bestLap, 960, 208, 116);
             }
             progressionRoot.gameObject.SetActive(career && (receipt.xp > 0 || receipt.levelCredits > 0));
-            FormulaMenuTheme.Place(progressionRoot, 650, failed ? 482 : 348, 600, failed ? 40 : 52);
-            FormulaMenuTheme.Place(progress.rectTransform, 0, 0, 600, 28);
+            float progressWidth = livery ? 260 : 600;
+            FormulaMenuTheme.Place(progressionRoot, 650, failed ? 492 : livery ? 414 : 348, progressWidth, livery ? 50 : failed ? 36 : 52);
+            FormulaMenuTheme.Place(progress.rectTransform, 0, 0, progressWidth, livery ? 48 : 28);
+            progress.textWrappingMode = livery ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
             var bar = (RectTransform)xpFill.transform.parent;
-            FormulaMenuTheme.Place(bar, 0, failed ? 32 : 44, 600, 4);
-            FormulaMenuTheme.Place(xpFill.rectTransform, 0, 0, 600, 4);
-            FormulaMenuTheme.Place(target.rectTransform, 30, failed ? 292 : 482, failed ? 600 : 1000, failed ? 80 : 40);
-            FormulaMenuTheme.Place(unlocks.rectTransform, failed ? 650 : 30, failed ? 304 : 414, failed ? 390 : 580, failed ? 48 : 62);
-            FormulaMenuTheme.Place(bonus.rectTransform, 650, failed ? 354 : 402, 390, 28);
+            FormulaMenuTheme.Place(bar, 0, livery ? 48 : failed ? 30 : 44, progressWidth, 4);
+            FormulaMenuTheme.Place(xpFill.rectTransform, 0, 0, progressWidth, 4);
+            FormulaMenuTheme.Place(target.rectTransform, 30, failed ? 292 : livery ? 414 : 482, failed || livery ? 600 : 1000, failed || livery ? 86 : 40);
+            FormulaMenuTheme.Place(unlocks.rectTransform, livery ? 650 : 30, failed ? 394 : livery ? 342 : 414, livery ? 260 : 580, livery ? 66 : 62);
+            FormulaMenuTheme.Place(bonus.rectTransform, failed ? 30 : 650, livery ? 474 : failed ? 464 : 402, failed ? 580 : livery ? 280 : 390, livery ? 38 : 28);
+            bonus.textWrappingMode = livery ? TextWrappingModes.Normal : TextWrappingModes.NoWrap;
             FormulaMenuTheme.Place(nextContext.rectTransform, 650, 432, 390, 44);
-            if (rewardLivery != null) FormulaMenuTheme.Place(rewardLivery.rectTransform, 1050, failed ? 300 : 414, 200, failed ? 84 : 100);
+            nextContext.gameObject.SetActive(!livery);
+            if (rewardLivery != null) FormulaMenuTheme.Place(rewardLivery.rectTransform, 930, 342, 320, 176);
+        }
+        private void Update()
+        {
+            // A short reveal never delays focus, navigation or the next session.
+            if (resultPresentation != null && resultPresentation.alpha < 1)
+                resultPresentation.alpha = FormulaProgression.State.reducedMotion ? 1 : Mathf.Clamp01((Time.unscaledTime - revealStarted) / .18f);
+            if (rewardPresentation == null || !rewardLivery.gameObject.activeSelf || rewardPresentation.alpha >= 1) return;
+            float t = Mathf.Clamp01((Time.unscaledTime - revealStarted) / .28f);
+            rewardPresentation.alpha = FormulaProgression.State.reducedMotion ? 1 : t * t * (3 - 2 * t);
         }
         private void Metric(int index, TMP_Text value, float x, float y, float height)
         {

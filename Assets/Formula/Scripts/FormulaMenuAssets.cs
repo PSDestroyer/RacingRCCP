@@ -13,6 +13,7 @@ namespace FormulaGame
         public Sprite panelSprite;
         public Texture2D vignette;
         public TMP_FontAsset strongFont;
+        public AudioClip focusSound, confirmSound, recordSound, resultSound, unlockSound, endSound;
         [System.Serializable] public sealed class TrackGraphic { public string id; public Vector2[] points; }
         public TrackGraphic[] trackMaps;
         public static FormulaMenuAssets Current => Resources.Load<FormulaMenuAssets>("Formula/UI/MenuAssets");

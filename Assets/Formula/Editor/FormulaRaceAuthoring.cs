@@ -11,6 +11,7 @@ public static class FormulaRaceAuthoring
     public static void RefineHud()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) throw new System.InvalidOperationException("Exit Play Mode first.");
+        FormulaGameplayPolishAuthoring.Audio();
         var root = PrefabUtility.LoadPrefabContents(RacePath);
         try
         {
