@@ -1,0 +1,75 @@
+{
+  "completedUtc": "2026-10-24T09:46:50.104380+00:00",
+  "scope": "Eight original Generic racing liveries; approved menu layout retained",
+  "artworkTool": "Built-in image_gen; final assets copied into the Unity project",
+  "assetFolder": "Assets/Formula/Liveries/Textures",
+  "promptSet": [
+    "Docs/AI/FormulaLiveries/ArtworkPrompts.json",
+    "Docs/AI/FormulaLiveries/ArtworkCorrection.json",
+    "Docs/AI/FormulaLiveries/ForestCorrection.json"
+  ],
+  "liveries": [
+    {
+      "id": "generic_orange",
+      "name": "Apex Works",
+      "priceCredits": 0
+    },
+    {
+      "id": "generic_black",
+      "name": "Velocity Night",
+      "priceCredits": null
+    },
+    {
+      "id": "generic_red",
+      "name": "Corsa Heritage",
+      "priceCredits": 1500
+    },
+    {
+      "id": "generic_blue",
+      "name": "Azure Tidal",
+      "priceCredits": 0
+    },
+    {
+      "id": "generic_pulse",
+      "name": "Pulse Signal",
+      "priceCredits": null
+    },
+    {
+      "id": "generic_yellow",
+      "name": "Volt Factory",
+      "priceCredits": 2200
+    },
+    {
+      "id": "generic_purple",
+      "name": "Nova Crown",
+      "priceCredits": null
+    },
+    {
+      "id": "generic_green",
+      "name": "Forest Summit",
+      "priceCredits": 2800
+    }
+  ],
+  "integration": [
+    "Existing material GUIDs retained for all eight RCCP prefabs and the gameplay Generic",
+    "Unbranded tyre albedo; rim and carbon source maps replaced with unbranded material finishes",
+    "Derived body mesh separates painted body from carbon floor without changing vertices or UVs",
+    "Editor parked car and runtime Generic share the new artwork",
+    "Eight menu thumbnails regenerated with an isolated URP camera",
+    "Livery card names are serialized and refreshed from the catalog"
+  ],
+  "validation": {
+    "unityVersion": "6000.0.55f1",
+    "playModeResolution": "1920x1080",
+    "passed": 35,
+    "errors": [],
+    "staticCatalogCheck": "Only displayName changed; IDs, conditions, prices, acquisition rules and performance modifiers retained",
+    "visualReview": "Front and opposite rear views reviewed for all eight liveries; actual Home and Liveries captures reviewed",
+    "buildsRun": [],
+    "hardwareValidated": []
+  },
+  "compilerAssemblies": {
+    "Assembly-CSharp.dll": "a66b30d281ae8d42ce040390bd0ff18883dcffab5c2b772b61076de5469bc84e",
+    "Assembly-CSharp-Editor.dll": "914f77c86c09a0e9c17da3c46b76fa7ec97347d61c6080c56363d82ddaa8ed8c"
+  }
+}

@@ -13,6 +13,7 @@ namespace FormulaGame
         private readonly List<WheelCollider> wheels = new List<WheelCollider>();
         private readonly List<JointSpring> springs = new List<JointSpring>();
         private bool ready;
+        private FormulaVehicleSurface surface;
         public bool IsReady => ready;
         private IEnumerator Start()
         {
@@ -74,7 +75,11 @@ namespace FormulaGame
             int index = skins.FindIndex(l => l.id == id);
             var assets = FormulaAssets.Current;
             if (body != null && assets != null && index >= 0 && index < assets.liveryMaterials.Length)
+            {
                 body.sharedMaterial = assets.liveryMaterials[index];
+                if (surface == null) surface = GetComponent<FormulaVehicleSurface>();
+                if (surface != null) surface.RefreshMaterials();
+            }
         }
     }
 }

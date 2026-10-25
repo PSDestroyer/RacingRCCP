@@ -1,0 +1,97 @@
+{
+  "scope": "Generic vehicle PBR finishes and cosmetic wetness; existing liveries and menu layout retained",
+  "generatedUtc": "2026-10-24T11:04:29.983507+00:00",
+  "runtimeComponent": "Assets/Formula/Scripts/FormulaVehicleSurface.cs",
+  "authoringCommand": "Tools/Formula Career/Apply Vehicle PBR Finishes",
+  "inspection": "Select the Generic root in scene or prefab, then Formula Vehicle Surface > Wetness: 0 dry, 1 wet. Runtime API: SetWetness(float).",
+  "dryFinishAuthority": "Native URP material assets; roughness = 1 - smoothness. Dry cars have no wetness property blocks.",
+  "surfaces": {
+    "paint": {
+      "shader": "Universal Render Pipeline/Complex Lit",
+      "smoothness": 0.68,
+      "metallic": 0.16,
+      "coatMask": 0.85,
+      "coatSmoothness": 0.94
+    },
+    "velocityNight": {
+      "smoothness": 0.46,
+      "coatMask": 0.45,
+      "coatSmoothness": 0.84
+    },
+    "novaCrown": {
+      "metallic": 0.3
+    },
+    "carbon": {
+      "shader": "Universal Render Pipeline/Lit",
+      "smoothness": 0.42,
+      "metallic": 0,
+      "normalScale": 0.035
+    },
+    "rim": {
+      "shader": "Universal Render Pipeline/Lit",
+      "smoothness": 0.72,
+      "metallic": 0.92
+    },
+    "rubber": {
+      "shader": "Universal Render Pipeline/Lit",
+      "smoothness": 0.2,
+      "metallic": 0
+    }
+  },
+  "wetSmoothness": {
+    "paint": 0.9,
+    "carbon": 0.78,
+    "rim": 0.9,
+    "rubber": 0.72
+  },
+  "behavior": [
+    "11 explicit per-material renderer bindings on each of 8 RCCP Generic prefabs and gameplay prefab",
+    "Same native finishes on the parked Editor car and runtime garage/race car",
+    "Wetness uses per-slot property blocks and preserves shared materials, metallic values, livery selection and physics",
+    "Drying restores original renderer overrides and removes its property blocks",
+    "No per-frame material creation; surface updates only on changes",
+    "Preview rendering and all 8 thumbnails use native PBR finishes and the studio reflection"
+  ],
+  "texturesReusedUnchanged": [
+    {
+      "destination": "Assets/Formula/Materials/SurfaceDetails/CarbonWeave.png",
+      "source": "Assets/CarImport/Wave1/2015-bmw-30-csl-hommage-concept/source/FINAL_MODEL/common_carbon05_black_diff.png"
+    },
+    {
+      "destination": "Assets/Formula/Materials/SurfaceDetails/CarbonWeaveNormal.png",
+      "source": "Assets/CarImport/Wave1/2015-bmw-30-csl-hommage-concept/source/FINAL_MODEL/common_carbon05_norm.png"
+    },
+    {
+      "destination": "Assets/Formula/Materials/SurfaceDetails/MicroSurfaceNormal.png",
+      "source": "Assets/Car Paint Shader/VoronoiN.png"
+    }
+  ],
+  "validation": {
+    "menuPlayModeChecks": 36,
+    "menuErrors": [],
+    "shaderErrors": 0,
+    "resolution": "1920x1080 Editor",
+    "circuitReport": "Docs/AI/FormulaMaterials/CircuitValidation.json",
+    "buildsRun": [],
+    "SwitchDeviceProfilingRun": false,
+    "circuitPlayModeChecks": 7,
+    "circuitErrors": [],
+    "actualCircuitCaptures": [
+      "Docs/AI/FormulaMaterials/RaceDry.png",
+      "Docs/AI/FormulaMaterials/RaceWet.png"
+    ],
+    "visualReview": "Actual Home, dry/wet studio render and real-circuit wet capture inspected; final capture waits for ShaderUtil.anythingCompiling to finish."
+  },
+  "limitations": [
+    "Wetness is a cosmetic water-film response; no precipitation, water droplets, track water or tyre-grip simulation added",
+    "Native clearcoat used on painted panels only; no SSR or screen-space refraction added"
+  ],
+  "references": [
+    "https://docs.unity.com/en-us/engine/7000.0/manual/materials-and-shaders/built-in/shaders-in-universalrp/reference/shader-complex-lit",
+    "Installed URP 17 shader sources in Library/PackageCache"
+  ],
+  "compilerAssemblies": {
+    "Assembly-CSharp.dll": "62ea6b0623552502aa4c2cc344c8556d13c1641cef7b1bfb1f04c7a603931850",
+    "Assembly-CSharp-Editor.dll": "233b58013db94a43c7198c18b27ba45f8722fba66f0ffcde36182dce56c4c5c2"
+  }
+}

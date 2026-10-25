@@ -9,6 +9,7 @@ namespace FormulaGame
         [SerializeField] private string liveryId;
         [SerializeField] private UnityEngine.UI.Button button;
         [SerializeField] private TMP_Text ownership;
+        [SerializeField] private TMP_Text liveryName;
         [SerializeField] private GameObject equippedMarker;
         private Action<string> select;
         public string LiveryId => liveryId;
@@ -19,6 +20,7 @@ namespace FormulaGame
         {
             var p = FormulaProgression.State; bool equipped = p.equippedLivery == liveryId;
             var livery = FormulaCatalog.Current.Skin(liveryId);
+            if (liveryName != null) liveryName.text = livery.displayName;
             ownership.text = equipped ? "EQUIPPED" : p.ownedLiveries.Contains(liveryId) ? "OWNED" : livery.acquisition == "credit_purchase" ? livery.priceCredits.Value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR" : "REWARD";
             ownership.color = Color.white;
             equippedMarker.SetActive(equipped);

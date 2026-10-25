@@ -19,6 +19,7 @@ namespace FormulaGame
         public List<Setup> freeSetups;
         public string catalogVersion;
         private static FormulaCatalog cached;
+        private readonly Dictionary<string, CareerEvent> sessions = new Dictionary<string, CareerEvent>();
         public static FormulaCatalog Current
         {
             get
@@ -33,7 +34,27 @@ namespace FormulaGame
             }
         }
         public static FormulaCatalog Parse(string json) => JsonConvert.DeserializeObject<FormulaCatalog>(json);
-        public CareerEvent Event(string id) => careerEvents.Find(e => e.id == id);
+        public CareerEvent Event(string id)
+        {
+            var career = careerEvents.Find(e => e.id == id);
+            if (career != null || string.IsNullOrEmpty(id)) return career;
+            if (sessions.TryGetValue(id, out var session)) return session;
+            var parts = id.Split(':');
+            if (parts.Length != 2 || (parts[0] != "race" && parts[0] != "trial" && parts[0] != "practice")) return null;
+            var track = FormulaAssets.Current?.FindTrack(parts[1]);
+            if (track == null) return null;
+            session = new CareerEvent
+            {
+                id = id, trackId = track.id,
+                name = parts[0] == "race" ? "Quick Race" : parts[0] == "trial" ? "Time Attack" : "Practice",
+                mode = parts[0] == "race" ? "race" : parts[0] == "practice" ? "practice" : "time_attack",
+                laps = parts[0] == "practice" ? 1 : 3, opponentCount = parts[0] == "race" ? 3 : 0,
+                vehicleRule = parts[0] == "trial" ? "stock_balanced" : "equipped",
+                baseValidFinishReward = new Reward(), oneTimeMedalRewards = new Dictionary<string, Reward>
+                { { "bronze", new Reward() }, { "silver", new Reward() }, { "gold", new Reward() } }
+            };
+            sessions.Add(id, session); return session;
+        }
         public Branch Upgrade(string id) => upgrades.Find(b => b.id == id);
         public Livery Skin(string id) => liveries.Find(l => l.id == id);
         public static string MedalName(Medal m) => m == Medal.Gold ? "Gold" : m == Medal.Silver ? "Silver" : m == Medal.Bronze ? "Bronze" : "No medal";

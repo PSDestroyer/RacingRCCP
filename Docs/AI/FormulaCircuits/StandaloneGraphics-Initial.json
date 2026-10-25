@@ -1,0 +1,23 @@
+{
+  "utc": "2026-10-24T22:14:18.493201+00:00",
+  "method": "Native Development player with Metal graphics; isolated temporary save; UI interaction through cua_repl.",
+  "executable": "/var/folders/hz/hdljpzkx3k1d8cp3x9x27cn00000gn/T/FormulaG27Validation/FormulaG27.app/Contents/MacOS/RacingRCCP",
+  "log": "/private/tmp/FormulaStandaloneValidation/Player-Graphics.log",
+  "seconds": 378.980436667,
+  "exitCode": 0,
+  "uiChecks": [
+    "Home rendered",
+    "18 circuits across 3 pages",
+    "3 session modes show correct format",
+    "Pinnacle Park race launched",
+    "Player acceleration reached 40 km/h",
+    "3 opponents active",
+    "Pause and return to Home"
+  ],
+  "status": "native_allocator_error_reproduced",
+  "nativeErrors": [
+    "Invalid memory pointer was detected in ThreadsafeLinearAllocator::Deallocate!"
+  ],
+  "managedExceptions": [],
+  "followUp": "Repeat with -diag-job-temp-memory-leak-validation to obtain allocation stacks."
+}

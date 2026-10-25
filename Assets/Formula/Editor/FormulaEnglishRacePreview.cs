@@ -71,7 +71,36 @@ public static class FormulaEnglishRacePreview
                 var texts = Texts(); Require(texts.Any(t => t.text.StartsWith("BEST  ")) && texts.Any(t => t.text == "PAUSE") && texts.Any(t => t.text == "KM/H"), "Authored race HUD is missing timing, pause or vehicle data.");
                 Require(FormulaAssets.Current.FindTrack("track_01").displayName == "Grand Prix Circuit", "Track name is not English.");
                 Require(game.timerUIRoot == null || !game.timerUIRoot.GetComponentInParent<Canvas>().enabled, "Legacy race Canvas remains visible behind the authored HUD.");
-                Pass("Shakedown HUD shows the valid-lap objective in English"); ScreenCapture.CaptureScreenshot("Docs/AI/FormulaUI/English/HUD.png"); Next(2, "scripted-finish");
+                var surface = game.CarController.GetComponent<FormulaVehicleSurface>();
+                var body = game.CarController.GetComponent<FormulaVehicle>().body;
+                Require(surface != null && surface.SurfaceCount == 11 && body.sharedMaterial.shader.name == "Universal Render Pipeline/Complex Lit", "Race Generic did not inherit its PBR materials and wetness bindings.");
+                Pass("Shakedown HUD shows the valid-lap objective in English"); ScreenCapture.CaptureScreenshot("Docs/AI/FormulaUI/English/HUD.png");
+                Directory.CreateDirectory("Docs/AI/FormulaMaterials"); ScreenCapture.CaptureScreenshot("Docs/AI/FormulaMaterials/RaceDry.png"); Next(5000, "race-surface-wetness");
+            }
+            else if (stage == 5000)
+            {
+                var game = UnityEngine.Object.FindFirstObjectByType<GamePlayManager>();
+                game.CarController.GetComponent<FormulaVehicleSurface>().SetWetness(1); Next(5001, "race-wet-capture");
+            }
+            else if (stage == 5001)
+            {
+                // Switching from SRP-batched dry rendering to wet property blocks
+                // may compile an Editor-only variant. Never capture its cyan placeholder.
+                if (ShaderUtil.anythingCompiling || age < 2) return;
+                var game = UnityEngine.Object.FindFirstObjectByType<GamePlayManager>();
+                var body = game.CarController.GetComponent<FormulaVehicle>().body;
+                var block = new MaterialPropertyBlock(); body.GetPropertyBlock(block, 0);
+                Require(block.GetFloat("_Smoothness") >= .89f && block.GetFloat("_ClearCoatMask") > .99f, "Wet surface response did not reach the real race car.");
+                ScreenCapture.CaptureScreenshot("Docs/AI/FormulaMaterials/RaceWet.png"); Next(5002, "race-surface-dry-restore");
+            }
+            else if (stage == 5002)
+            {
+                var game = UnityEngine.Object.FindFirstObjectByType<GamePlayManager>();
+                var body = game.CarController.GetComponent<FormulaVehicle>().body;
+                game.CarController.GetComponent<FormulaVehicleSurface>().SetWetness(0);
+                var block = new MaterialPropertyBlock(); body.GetPropertyBlock(block, 0);
+                Require(block.isEmpty, "Dry race car retained wetness property blocks.");
+                Pass("Actual circuit car renders native PBR paint and restores dry surfaces after a wet capture without residual overrides"); Next(2, "scripted-finish");
             }
             else if (stage == 2)
             {

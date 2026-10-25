@@ -40,21 +40,6 @@ namespace FormulaGame
             }
             foreach (var wheel in root.GetComponentsInChildren<WheelCollider>()) wheel.enabled = false;
             if (Car.Audio != null) Car.Audio.enabled = false;
-            ApplyDisplayFinish(root, vehicle.body);
-        }
-        private static readonly int Smoothness = Shader.PropertyToID("_Smoothness"), Metallic = Shader.PropertyToID("_Metallic");
-        private static void ApplyDisplayFinish(GameObject root, Renderer body)
-        {
-            var block = new MaterialPropertyBlock();
-            foreach (var renderer in root.GetComponentsInChildren<MeshRenderer>())
-            {
-                bool painted = renderer == body, rim = renderer.name.StartsWith("Generic_Rim", StringComparison.Ordinal), tyre = renderer.name.StartsWith("Generic_Tyre", StringComparison.Ordinal);
-                if (!painted && !rim && !tyre) continue;
-                renderer.GetPropertyBlock(block);
-                block.SetFloat(Smoothness, painted ? .54f : rim ? .5f : .18f);
-                block.SetFloat(Metallic, rim ? .65f : painted ? .12f : 0);
-                renderer.SetPropertyBlock(block); block.Clear();
-            }
         }
         public void ShowLivery(string id) { if (vehicle != null) vehicle.PreviewLivery(id); }
         public void Present(string page, string tab, bool instant = false)

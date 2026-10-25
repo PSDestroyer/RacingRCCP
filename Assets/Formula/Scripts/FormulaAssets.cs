@@ -16,6 +16,8 @@ namespace FormulaGame
             public string id, displayName, scenePath;
             public float referenceLapSeconds;
             public bool referenceCalibrated;
+            public string sourcePack;
+            public float lengthMeters;
         }
     }
 }

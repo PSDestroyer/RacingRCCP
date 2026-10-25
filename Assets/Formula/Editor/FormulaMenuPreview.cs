@@ -136,6 +136,7 @@ public static class FormulaMenuPreview
                 var displayWheels = car.GetComponentsInChildren<RCCP_WheelCollider>();
                 Require(displayWheels.Length == 4 && displayWheels.All(w => w.wheelModel != null && w.wheelModel.gameObject.activeInHierarchy && w.wheelModel.GetComponentsInChildren<Renderer>().Any(r => r.enabled)), "Parked Generic must keep all four wheel models visible.");
                 ValidateHomeFraming(car);
+                ValidateSurfaceResponse(car);
                 Require(canvas.GetComponentsInChildren<FormulaPanelGraphic>(true).All(p => p.GetComponent<CanvasRenderer>() != null), "An Upgrade-style surface has no renderer.");
                 Pass("Home renders with Teko/Rajdhani, original Figma artwork, one live Generic and advancing frames");
                 Capture("Home"); Next(97, "home-selection-change");
@@ -189,9 +190,9 @@ public static class FormulaMenuPreview
                 {
                     text.ForceMeshUpdate(); Require(!text.enableAutoSizing && text.preferredWidth<=text.rectTransform.rect.width+1,"Home label does not retain readable 115 percent text.");
                 }
-                var block=new MaterialPropertyBlock(); car.body.GetPropertyBlock(block);
-                Require(block.GetFloat("_Smoothness")>.5f && Mathf.Approximately(car.body.sharedMaterial.GetFloat("_Smoothness"),0),"Display finish changed the original race material or did not reach the preview.");
-                Pass("Home retains five readable actions at 115 percent text and 95 percent safe area; display paint is isolated from race materials");
+                var block=new MaterialPropertyBlock(); car.body.GetPropertyBlock(block,0);
+                Require(block.isEmpty && car.body.sharedMaterial.GetFloat("_Smoothness")>.5f && car.body.sharedMaterial.shader.name=="Universal Render Pipeline/Complex Lit","Dry presentation does not use its native PBR finish.");
+                Pass("Home retains five readable actions at 115 percent text and 95 percent safe area; dry presentation uses the authored PBR paint finish");
                 Capture("HomeLargeText"); Next(997,"home-final-capture");
             }
             else if(stage==997) { Next(998,"complete"); EditorApplication.ExitPlaymode(); }
@@ -343,7 +344,7 @@ public static class FormulaMenuPreview
             else if (stage == 304)
             {
                 InputSystem.QueueStateEvent(simulatedPad, new GamepadState()); InputSystem.RemoveDevice(simulatedPad); simulatedPad = null;
-                Require(!menu.View.Dialogs.IsOpen && menu.CurrentGarageTab == "Livree" && EventSystem.current.currentSelectedGameObject.name == "livery-apply" && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "Corsa Red"), "Back from the prerequisite lost livery preview or focus.");
+                Require(!menu.View.Dialogs.IsOpen && menu.CurrentGarageTab == "Livree" && EventSystem.current.currentSelectedGameObject.name == "livery-apply" && canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == FormulaCatalog.Current.Skin("generic_red").displayName), "Back from the prerequisite lost livery preview or focus.");
                 Require(FormulaProgression.Data.money == 0 && FormulaProgression.State.equippedLivery == "generic_blue" && !FormulaProgression.State.ownedLiveries.Contains("generic_red"), "Locked livery inspection changed the save.");
                 Pass("Locked paid livery shows both medal and credit blockers; virtual gamepad opens its event and returns to the same preview without mutation");
                 Require(FormulaProgression.Commit(d => { d.formula.medals["g03"] = Medal.Bronze; d.money = 400; return null; }, out string error), error);
@@ -399,13 +400,19 @@ public static class FormulaMenuPreview
             }
             else if (stage == 312)
             {
+                float torqueBefore = car.GetComponent<RCCP_CarController>().Engine.maximumTorqueAsNM;
                 foreach(var livery in FormulaCatalog.Current.liveries)
                 {
                     Click(livery.id);
+                    int artIndex = FormulaCatalog.Current.liveries.IndexOf(livery);
+                    Require(Button(livery.id).transform.Find("Livery Name").GetComponent<TMP_Text>().text == livery.displayName, "Livery card does not show the catalog name: " + livery.id);
+                    Require(car.body.sharedMaterials.Length == 2 && car.body.sharedMaterial == FormulaAssets.Current.liveryMaterials[artIndex], "The selected livery artwork or carbon floor did not reach the live car: " + livery.id);
+                    Require(car.body.GetComponent<MeshFilter>().sharedMesh.subMeshCount == 2, "Live Generic lost its separate carbon floor.");
+                    Require(Mathf.Approximately(car.GetComponent<RCCP_CarController>().Engine.maximumTorqueAsNM, torqueBefore), "Livery preview changed performance.");
                     foreach(var text in menu.View.Garage.transform.Find("Livree/Livery Details").GetComponentsInChildren<TMP_Text>()) { text.ForceMeshUpdate(); Require(text.preferredHeight <= text.rectTransform.rect.height + 1 && text.preferredWidth <= text.rectTransform.rect.width + 1, "Livery inspector text exceeds its field: " + text.name + " / " + livery.id); }
                 }
                 Require(FormulaProgression.State.equippedLivery == "generic_blue" && FormulaProgression.Data.money == 0, "Cycling all livery previews changed progression.");
-                Click("generic_blue"); Pass("All eight livery inspector states fit their authored fields and preview without equipping"); Next(30, "livery-render");
+                Click("generic_blue"); Pass("All eight original liveries reach the live car, retain the carbon floor and performance, fit their fields and preview without equipping"); Next(30, "livery-render");
             }
             else if (stage == 30) { Capture("Liveries"); Next(31, "setup-open"); }
             else if (stage == 31) { Click("garage-1"); Click("setup-speed"); Next(4, "setup-capture"); }
@@ -643,7 +650,7 @@ public static class FormulaMenuPreview
             }
             else if (stage == 900)
             {
-                Require(canvas.GetComponentsInChildren<FormulaEventCard>().Length == 2, "Quick sessions still duplicate six circuit cards.");
+                Require(canvas.GetComponentsInChildren<FormulaEventCard>().Length == (FormulaAssets.Current.tracks.Length > 2 ? 6 : 2), "Quick selection must show one card per circuit on its current page.");
                 Click("mode-1"); Click("quick-0");
                 Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text == "TIME ATTACK"), "Selected quick mode was lost in briefing."); Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.text.Contains("No career credits or XP")), "Quick race briefing promises career rewards.");
                 Capture("QuickBriefing"); Next(901, "quick-briefing-back");
@@ -729,8 +736,10 @@ public static class FormulaMenuPreview
                 var root = UnityEngine.Object.Instantiate(FormulaMenuAssets.Current.resultsPrefab, menu.View.Canvas.transform, false);
                 try
                 {
-                    root.GetComponent<FormulaResultsView>().Present(new FormulaReceipt { eventId = events[i] });
+                    root.GetComponent<FormulaResultsView>().Present(new FormulaReceipt { eventId = events[i], bestLapSeconds = 90, finishPosition = 2, personalBest = i == 1 });
                     Require(root.GetComponentsInChildren<TMP_Text>().Any(t => t.text == names[i] + " · No career credits or XP"), "Results mislabels the " + names[i] + " mode.");
+                    string status = i == 0 ? "P2" : i == 1 ? "PERSONAL BEST" : "SESSION COMPLETE";
+                    Require(root.GetComponentsInChildren<TMP_Text>().Any(t => t.text == status), "Free-session result uses an uncalibrated medal target.");
                 }
                 finally { UnityEngine.Object.DestroyImmediate(root); }
             }
@@ -738,6 +747,39 @@ public static class FormulaMenuPreview
         }
         finally { state.activeMode = previous; }
     }
+    private static void ValidateSurfaceResponse(FormulaVehicle car)
+    {
+        var surface = car.GetComponent<FormulaVehicleSurface>();
+        Require(surface != null && surface.SurfaceCount == 11, "Generic has no complete surface bindings.");
+        float originalWetness = surface.Wetness;
+        var originalPaint = car.body.sharedMaterial;
+        float drySmoothness = originalPaint.GetFloat("_Smoothness");
+        var dryColor = originalPaint.GetColor("_BaseColor");
+        float torque = car.GetComponent<RCCP_CarController>().Engine.maximumTorqueAsNM;
+        var tyre = car.GetComponentsInChildren<MeshRenderer>().First(r => r.name.StartsWith("Generic_Tyre", StringComparison.Ordinal));
+        var rim = car.GetComponentsInChildren<MeshRenderer>().First(r => r.name.StartsWith("Generic_Rim", StringComparison.Ordinal));
+        var block = new MaterialPropertyBlock();
+        try
+        {
+            surface.SetWetness(1);
+            car.body.GetPropertyBlock(block, 0); Require(block.GetFloat("_Smoothness") >= .89f && block.GetFloat("_ClearCoatMask") > .99f, "Wet paint did not gain a water-film sheen.");
+            car.body.GetPropertyBlock(block, 1); Require(Mathf.Approximately(block.GetFloat("_Smoothness"), .78f) && block.GetFloat("_Metallic") == 0, "Wet carbon is not independent from paint.");
+            tyre.GetPropertyBlock(block, 0); Require(Mathf.Approximately(block.GetFloat("_Smoothness"), .72f) && block.GetFloat("_Metallic") == 0, "Wet tyre response changed rubber into metal.");
+            rim.GetPropertyBlock(block, 0); Require(Mathf.Approximately(block.GetFloat("_Metallic"), .92f), "Rim lost its metal finish when wet.");
+            Require(Mathf.Approximately(originalPaint.GetFloat("_Smoothness"), drySmoothness) && originalPaint.GetColor("_BaseColor") == dryColor, "Wetness modified a shared paint asset.");
+            car.PreviewLivery("generic_black"); car.body.GetPropertyBlock(block, 0);
+            Require(surface.Wetness == 1 && block.GetFloat("_Smoothness") >= .89f, "Livery change lost the current wetness.");
+            surface.SetWetness(-1); Require(surface.Wetness == 0, "Wetness lower bound is not clamped.");
+            for (int i = 0; i < 10; i++) { surface.SetWetness(2); surface.SetWetness(0); }
+            car.PreviewLivery(FormulaProgression.State.equippedLivery);
+            car.body.GetPropertyBlock(block, 0);
+            Require(block.isEmpty && car.body.sharedMaterial == originalPaint && Mathf.Approximately(originalPaint.GetFloat("_Smoothness"), drySmoothness), "Dry/wet cycles compound the finish or leave property blocks on a dry car.");
+            Require(Mathf.Approximately(car.GetComponent<RCCP_CarController>().Engine.maximumTorqueAsNM, torque), "Surface wetness changed vehicle physics.");
+            Pass("Dry/wet surfaces preserve liveries and physics, retain metal rims/nonmetal rubber, isolate carbon, clamp values and restore without mutating shared materials");
+        }
+        finally { car.PreviewLivery(FormulaProgression.State.equippedLivery); surface.SetWetness(originalWetness); }
+    }
+
     private static void ValidateHomeFraming(FormulaVehicle car)
     {
         Vector2 min=Vector2.one*float.PositiveInfinity,max=Vector2.one*float.NegativeInfinity;

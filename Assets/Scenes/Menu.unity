@@ -611,6 +611,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 316603629}
+  - component: {fileID: 316603630}
   m_Layer: 0
   m_Name: Editor Garage Vehicle
   m_TagString: EditorOnly
@@ -646,6 +647,53 @@ Transform:
   - {fileID: 6448399}
   m_Father: {fileID: 1654862097}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &316603630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 316603628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9f2390e68d6f4023bebc43698c6ee0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wetness: 0
+  surfaces:
+  - renderer: {fileID: 1159245118}
+    materialIndex: 0
+    kind: 0
+  - renderer: {fileID: 1159245118}
+    materialIndex: 1
+    kind: 1
+  - renderer: {fileID: 285820487}
+    materialIndex: 0
+    kind: 1
+  - renderer: {fileID: 1613448708}
+    materialIndex: 0
+    kind: 3
+  - renderer: {fileID: 1223580054}
+    materialIndex: 0
+    kind: 2
+  - renderer: {fileID: 1621527670}
+    materialIndex: 0
+    kind: 3
+  - renderer: {fileID: 217032591}
+    materialIndex: 0
+    kind: 2
+  - renderer: {fileID: 532081506}
+    materialIndex: 0
+    kind: 3
+  - renderer: {fileID: 2053783903}
+    materialIndex: 0
+    kind: 2
+  - renderer: {fileID: 438224765}
+    materialIndex: 0
+    kind: 3
+  - renderer: {fileID: 6448400}
+    materialIndex: 0
+    kind: 2
 --- !u!1 &320580631
 GameObject:
   m_ObjectHideFlags: 0
@@ -2077,6 +2125,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: c02eef6f30b894d6fb960fd489c1f8c8, type: 2}
+  - {fileID: 2100000, guid: 3534717c173e4442dbf2eebbf119bc32, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2105,7 +2154,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1159245116}
-  m_Mesh: {fileID: 8408906642263252741, guid: 3649f41cabf604681b086c131a89453c, type: 3}
+  m_Mesh: {fileID: 4300000, guid: a7a1335f95ab54f43af0422ec06ca773, type: 2}
 --- !u!1 &1159801942
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,0 +1,97 @@
+{
+  "utc": "2026-10-25T13:10:27.109852+00:00",
+  "status": "functional_acceptance_passed_upgrade_copy_validated_main_import_followup",
+  "authoredScenes": {
+    "racingVisuals": 8,
+    "rtg": 10,
+    "gridSlotsEach": 8,
+    "raceOpponents": 3,
+    "defaultRaceLaps": 3,
+    "savedReloadChecks": 18
+  },
+  "catalogAndSelection": {
+    "combinations": 54,
+    "modes": [
+      "Race",
+      "Time Attack",
+      "Practice"
+    ],
+    "cardsPerPage": 6,
+    "pages": 3,
+    "validation": "Catalog, selection, scene inclusion, outlines and free-session economy guards; physical race traversal is reported separately."
+  },
+  "realDriving": {
+    "status": "passed",
+    "circuits": 18,
+    "playerTransport": false,
+    "scriptedFinish": false,
+    "minimumPlayerValidLapsEach": 1,
+    "minimumOpponentLapsEach": 1,
+    "errors": []
+  },
+  "naturalRace": {
+    "status": "passed",
+    "scene": "Formula_RTG_10",
+    "laps": 3,
+    "validLaps": 3,
+    "returnedToHome": true,
+    "credits": 0,
+    "xp": 0,
+    "scriptedFinish": false
+  },
+  "menu": {
+    "status": "complete",
+    "checks": 36,
+    "errors": [],
+    "textScale": 115,
+    "measuredTextFields": 350,
+    "layoutFailures": []
+  },
+  "hudRegression": {
+    "status": "complete",
+    "checks": 7,
+    "errors": [],
+    "method": "Temporary save, real circuit scene, scripted finish; no driving validation"
+  },
+  "desktopJob": {
+    "status": "build_and_editor_regressions_passed",
+    "reports": [
+      "Docs/AI/FormulaCircuits/FullDesktopBuildValidation.json",
+      "Docs/AI/FormulaCareer/BuildValidation.json",
+      "Docs/AI/FormulaCircuits/StandaloneGraphicsValidation.json"
+    ]
+  },
+  "platformLimitations": {
+    "nativeDesktopTarget": "StandaloneOSX",
+    "WindowsBuildValidated": false,
+    "SwitchBuildValidated": false,
+    "SwitchHardwarePerformanceValidated": false
+  },
+  "nativePlayer": {
+    "standardRendering": "6000.0.55f1 baseline: failed_native_particle_allocator",
+    "directRendering": "smoke_passed",
+    "investigation": "NativeParticleInvestigation.json",
+    "projectRenderingSettingsChanged": false,
+    "baselineUnityVersion": "6000.0.55f1",
+    "validatedUpgradeVersion": "6000.3.19f1",
+    "upgradeStandardRendering": "passed_two_native_processes",
+    "upgradeReport": "Unity6319/Validation.json",
+    "mainProjectUnityVersionChanged": true,
+    "mainProjectMigrationObservedVia": "Unity Hub"
+  },
+  "releaseReady": false,
+  "remaining": [
+    "Validate the main project after its Unity Hub migration and investigate its two material postprocessor import exceptions.",
+    "Windows/Switch builds and target hardware profiling remain unvalidated."
+  ],
+  "engineUpgradeCandidate": {
+    "version": "6000.3.19f1",
+    "status": "validated_in_copy",
+    "buildErrors": 0,
+    "buildWarnings": 42,
+    "normalMetalNativeProcesses": 2,
+    "nativeAllocatorErrors": 0,
+    "report": "Unity6319/Validation.json"
+  },
+  "mainProjectMigrationObservation": "Unity6319/SourceStateAfterHubOpen.json"
+}

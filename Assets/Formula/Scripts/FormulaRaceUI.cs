@@ -71,6 +71,8 @@ namespace FormulaGame
         }
         private void HideLegacyHud()
         {
+            foreach (var legacyCanvas in game.transform.root.GetComponentsInChildren<Canvas>(true))
+                if (legacyCanvas != canvas) legacyCanvas.enabled = false;
             foreach (var source in new[] { game.lapUIRoot, game.timerUIRoot })
                 if (source != null)
                 {

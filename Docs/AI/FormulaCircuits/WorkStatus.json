@@ -1,0 +1,93 @@
+{
+  "status": "functional_acceptance_passed_engine_upgrade_copy_validated_main_import_followup",
+  "requested": {
+    "racingVisualScenes": 8,
+    "rtgScenes": 10
+  },
+  "authoredScenes": 18,
+  "structureValidatedScenes": 18,
+  "startingPositionsPerScene": 8,
+  "raceOpponents": 3,
+  "selectionModeCombinations": 54,
+  "playModeValidatedTracks": [
+    "track_01",
+    "track_02",
+    "track_03",
+    "track_04",
+    "track_05",
+    "track_06",
+    "track_07",
+    "track_08",
+    "rtg_03",
+    "rtg_01",
+    "rtg_02",
+    "rtg_04",
+    "rtg_05",
+    "rtg_06",
+    "rtg_07",
+    "rtg_08",
+    "rtg_09",
+    "rtg_10"
+  ],
+  "currentInvestigation": "Completed isolated 6000.3.19f1 validation. Main project was separately opened through Unity Hub under that version; two import-time material postprocessor exceptions observed.",
+  "remaining": [
+    "Validate the main project after its Unity Hub migration and investigate its two material postprocessor import exceptions.",
+    "Windows/Switch builds and target hardware profiling remain unvalidated."
+  ],
+  "targetHardwareValidated": false,
+  "savedSceneReloadsValidated": 18,
+  "utc": "2026-10-25T13:10:27.109852+00:00",
+  "assetReferenceAudit": "AssetReferenceValidation.json",
+  "referenceRepairs": "ReferenceRepairs.json",
+  "naturalRaceValidation": {
+    "laps": 3,
+    "validLaps": 3,
+    "opponents": 3,
+    "scriptedFinish": false,
+    "playerTransport": false,
+    "returnedToHome": true,
+    "careerEconomyUnchanged": true
+  },
+  "menuValidation": {
+    "checks": 36,
+    "errors": [],
+    "textScalePercent": 115,
+    "measuredTextFields": 350,
+    "layoutFailures": []
+  },
+  "racePresentationValidation": {
+    "checks": 7,
+    "errors": [],
+    "scriptedFinish": true,
+    "purpose": "HUD, pause, keyboard input, PBR wetness/dry restoration and results regression; separate from real driving acceptance."
+  },
+  "desktopUiState": "Unlocked; native Home, catalog, two circuits, driving, pause, confirmation and return were inspected through cua_repl.",
+  "desktopBuild": {
+    "fullResult": "Succeeded",
+    "fullErrors": 0,
+    "fullWarnings": 61,
+    "scriptsResult": "Succeeded",
+    "scriptsErrors": 0,
+    "scriptsWarnings": 32,
+    "target": "StandaloneOSX",
+    "sceneCount": 22
+  },
+  "standaloneSmoke": "6000.3.19f1 isolated-copy build passes both native runs without the diagnostic rendering workaround.",
+  "sourceFingerprints": {
+    "Assets/_GarageV2/Scripts/SoundManager.cs": "35cafeabf6fc73adcd83fea4a722a275402094d3a2b8ef093dd6ea81473826a3",
+    "Assets/Formula/Scripts/Menu/FormulaMenuDialogs.cs": "490bce24ae7a3d7688f0c6be1a95e71deacffebf24bbf0ee1cff351be11ff813",
+    "Assets/Formula/Scripts/Menu/FormulaRaceView.cs": "df1de2a96705a81bb9d140a9b031db3ef8d94282b287bf97bfe7f1884791a228"
+  },
+  "releaseReady": false,
+  "engineValidationReport": "Docs/AI/FormulaCircuits/Unity6319/Validation.json",
+  "engineUpgradeCandidate": {
+    "version": "6000.3.19f1",
+    "status": "validated_in_copy",
+    "buildErrors": 0,
+    "buildWarnings": 42,
+    "normalMetalNativeProcesses": 2,
+    "nativeAllocatorErrors": 0,
+    "report": "Unity6319/Validation.json"
+  },
+  "mainProjectMigrationObservation": "Unity6319/SourceStateAfterHubOpen.json"
+}

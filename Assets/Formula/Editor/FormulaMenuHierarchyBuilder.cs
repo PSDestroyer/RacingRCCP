@@ -219,14 +219,14 @@ public static class FormulaMenuHierarchyBuilder
         s.ApplyModifiedPropertiesWithoutUndo();
         var skinRoot = sections[2].transform; var details = FormulaMenuStyle.Surface(skinRoot, "Livery Details", 0, 74, 360, 264);
         Text(details, "Category", "LIVREE / FORMULA G27", 18, 12, 324, 28, 19, false, FormulaUI.Accent);
-        Set(view, "liveryName", Text(details, "Livery Name", "Apex Orange", 18, 47, 324, 49, 37, true)); Set(view, "liveryStatus", Text(details, "Ownership", "ECHIPATĂ", 18, 103, 324, 32, 23, false, FormulaUI.Accent));
+        Set(view, "liveryName", Text(details, "Livery Name", FormulaCatalog.Current.liveries[0].displayName, 18, 47, 324, 49, 37, true)); Set(view, "liveryStatus", Text(details, "Ownership", "ECHIPATĂ", 18, 103, 324, 32, 23, false, FormulaUI.Accent));
         Set(view, "liveryCondition", Text(details, "Unlock Condition", "Aspect cosmetic. Dezvoltarea se păstrează.", 18, 144, 324, 51, 21));
         var apply = Button(details, "livery-apply", "Echipată", 18, 204, 324, 46); Set(view, "liveryAction", apply); Set(view, "liveryActionText", Label(apply)); apply.interactable = false;
         var liveryCards = new FormulaLiveryCard[8]; var carousel = Group(skinRoot, "Livery Cards");
         for (int i = 0; i < liveryCards.Length; i++)
         {
             var l = FormulaCatalog.Current.liveries[i]; var b = Button(carousel, l.id, "", i * 153, 366, 145, 128); var card = b.gameObject.AddComponent<FormulaLiveryCard>(); liveryCards[i] = card;
-            Set(card, "liveryId", l.id); Set(card, "button", b); Text(b.transform, "Livery Name", l.displayName, 9, 3, 127, 30, 23, true);
+            Set(card, "liveryId", l.id); Set(card, "button", b); Set(card, "liveryName", Text(b.transform, "Livery Name", l.displayName, 9, 3, 127, 30, 23, true));
             FormulaMenuStyle.Art(b.transform, "Generic Livery Thumbnail", FormulaMenuAssets.Current.liveries[i], 7, 37, 131, 66.54f);
             Set(card, "ownership", Text(b.transform, "Ownership", i == 0 ? "ECHIPATĂ" : i == 3 ? "DEȚINUTĂ" : "BLOCATĂ", 9, 105, 127, 21, 17, false, FormulaUI.Accent)); Set(card, "equippedMarker", Marker(b, i == 0));
         }

@@ -15,7 +15,12 @@ namespace FormulaGame
         public void Present(FormulaReceipt receipt)
         {
             eventName.text = FormulaCatalog.Current.Event(receipt.eventId).name.ToUpperInvariant();
-            medal.text = FormulaUI.MedalName(receipt.medal).ToUpperInvariant();
+            bool career = FormulaProgression.State.activeMode == "career";
+            var session = FormulaCatalog.Current.Event(receipt.eventId);
+            medal.text = career ? FormulaUI.MedalName(receipt.medal).ToUpperInvariant()
+                : receipt.bestLapSeconds <= 0 ? "NO VALID LAP"
+                : session.mode == "race" ? "P" + receipt.finishPosition
+                : receipt.personalBest ? "PERSONAL BEST" : "SESSION COMPLETE";
             elapsed.text = FormulaRaceUI.TimeText(receipt.elapsedSeconds); bestLap.text = FormulaRaceUI.TimeText(receipt.bestLapSeconds);
             credits.text = "+" + receipt.credits.ToString("N0") + " CR"; xp.text = "+" + receipt.xp.ToString("N0") + " XP";
             bonus.gameObject.SetActive(receipt.levelCredits > 0);
@@ -34,7 +39,6 @@ namespace FormulaGame
                 if (receipt.newLiveries.Count > 0) rewardLivery.texture = FormulaMenuAssets.Current.liveries[FormulaCatalog.Current.liveries.FindIndex(l => l.id == receipt.newLiveries[0])];
             }
             retry.onClick.AddListener(() => FormulaSession.Launch(receipt.eventId, FormulaProgression.State.activeMode));
-            bool career = FormulaProgression.State.activeMode == "career";
             var nextEvent = career ? FormulaCatalog.Current.careerEvents.Find(e => FormulaProgression.State.Best(e.id) < Medal.Bronze) : null;
             next.gameObject.SetActive(nextEvent != null); if (nextEvent != null) next.onClick.AddListener(() => FormulaSession.ReviewEvent(nextEvent.id));
             if (nextContext != null) nextContext.text = nextEvent == null ? "" : "UP NEXT  /  " + nextEvent.name.ToUpperInvariant() + " · " + FormulaAssets.Current.FindTrack(nextEvent.trackId).displayName;

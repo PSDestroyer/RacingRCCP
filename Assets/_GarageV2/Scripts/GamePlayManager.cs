@@ -598,8 +598,10 @@ public class GamePlayManager : MonoBehaviour
             displayName = "Player",
             racerTransform = CarController != null ? CarController.transform : null,
             aiDriver = null,
-            currentWaypointIndex = GetClosestWaypointIndex(CarController != null ? CarController.transform : null),
-            startWaypointIndex = GetClosestWaypointIndex(CarController != null ? CarController.transform : null),
+            // Authored Formula grids sit behind the line. Starting at the nearest
+            // waypoint there can award a lap as soon as the grid leaves the line.
+            currentWaypointIndex = FormulaGame.FormulaSession.InRace ? 0 : GetClosestWaypointIndex(CarController != null ? CarController.transform : null),
+            startWaypointIndex = FormulaGame.FormulaSession.InRace ? 0 : GetClosestWaypointIndex(CarController != null ? CarController.transform : null),
             lapCountingArmed = false,
             completedLaps = 0,
             finished = false,
@@ -1087,9 +1089,12 @@ public class GamePlayManager : MonoBehaviour
             aiDriver.behaviour = RCCP_AI.BehaviourType.RaceWaypoints;
             if (FormulaGame.FormulaSession.InRace)
             {
-                aiDriver.waypointReachThreshold = 12f;
-                aiDriver.raceLookAhead = 20f;
-                aiDriver.agressiveness = 1f;
+                var circuit = GetComponent<FormulaGame.FormulaCircuit>();
+                if (circuit != null)
+                {
+                    circuit.ConfigureDriver(aiDriver);
+                    opponentObject.AddComponent<FormulaGame.FormulaAIRecovery>().Initialize(this, circuit, aiDriver);
+                }
                 var visual = opponentObject.GetComponent<FormulaGame.FormulaVehicle>();
                 if (visual != null) visual.PreviewLivery(FormulaGame.FormulaCatalog.Current.liveries[(i + 2) % 8].id);
             }

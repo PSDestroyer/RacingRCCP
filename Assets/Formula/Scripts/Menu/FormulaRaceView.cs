@@ -123,7 +123,17 @@ namespace FormulaGame
         private static void Wire(Transform root)
         {
             var controls = root.GetComponentsInChildren<UnityEngine.UI.Selectable>();
-            for (int i = 0; i < controls.Length; i++) controls[i].navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.Explicit, selectOnUp = controls[(i + controls.Length - 1) % controls.Length], selectOnDown = controls[(i + 1) % controls.Length] };
+            for (int i = 0; i < controls.Length; i++)
+            {
+                var previous = controls[(i + controls.Length - 1) % controls.Length];
+                var next = controls[(i + 1) % controls.Length];
+                controls[i].navigation = new UnityEngine.UI.Navigation
+                {
+                    mode = UnityEngine.UI.Navigation.Mode.Explicit,
+                    selectOnUp = previous, selectOnDown = next,
+                    selectOnLeft = previous, selectOnRight = next
+                };
+            }
         }
     }
 }

@@ -1,0 +1,43 @@
+{
+  "stage": "copy_validation_complete",
+  "buildSession": 87279,
+  "buildEditorPid": 59386,
+  "buildJobWorkers": 4,
+  "buildLog": "/private/tmp/FormulaStandaloneValidation6319/Build-Raw.log",
+  "buildOrchestrator": "/private/tmp/FormulaStandaloneValidation/engine6319_build.py",
+  "primaryCopy": "/private/tmp/FormulaG27-Unity-6000.3.19f1-20261025",
+  "editorRegressionCopy": "/private/tmp/FormulaG27-Unity6319-EditorChecks-20261025",
+  "editorRegressionSession": 56125,
+  "editorRegressionStatus": "passed; Editor exited 0",
+  "passed": {
+    "savedScenes": 18,
+    "progressionChecks": 25,
+    "uiChecks": 36,
+    "hudChecks": 7,
+    "naturalRaceLaps": 3,
+    "naturalValidLaps": 3,
+    "originalSourceFilesUnchanged": 20805
+  },
+  "remaining": [
+    "Main project import follow-up after Unity Hub migration is separate from completed copy validation."
+  ],
+  "nativeHarness": "/private/tmp/FormulaStandaloneValidation/engine6319_native.py",
+  "nativeLabels": [
+    "pinnacle",
+    "grand-prix",
+    "pinnacle-repeat"
+  ],
+  "expectedApp": "/private/tmp/FormulaG27Validation-Unity6319/FormulaG27.app",
+  "nativeNotes": "Harness launches current BuildValidation.json output with isolated save, -diag-job-temp-memory-leak-validation, 1280x720; no -force-gfx-direct. It waits for UI quit then saves report/log. Use escalation for native Cocoa launch.",
+  "toolNotes": "No Pipeline installed. Unity CLI latest beta.14 verified. Unity 6.3 getApp binding failed with procNotFound even though graphical automated tests rendered images; native player binding may work. Existing Editor tests were invoked through CLI executeMethod and passed.",
+  "safety": "Raw Editor logs contain CLI-injected access tokens. Redact before copying or printing. No real save changed. No subagents.",
+  "utc": "2026-10-25T13:10:27.109852+00:00",
+  "remainingCopyValidation": [],
+  "buildStatus": "Succeeded: 0 errors, 42 warnings",
+  "nativeStatus": "Both native runs passed normal threaded Metal with zero allocator and managed errors.",
+  "validationProcessesExited": true,
+  "mainProjectEditorRemainsOpen": true,
+  "mainProjectEditorPid": 62603,
+  "originalProjectMigrated": true,
+  "sourceStateReport": "SourceStateAfterHubOpen.json"
+}

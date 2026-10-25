@@ -172,6 +172,7 @@ public static class FormulaExperienceBuilder
     }
     private static void Quick(FormulaQuickView view)
     {
+        if (FormulaAssets.Current.tracks.Length > 2) { FormulaCircuitSelectionBuilder.Style(view); return; }
         var list = view.transform.Find("Event Cards"); var cards = list.GetComponentsInChildren<FormulaEventCard>(true);
         var kept = cards.Take(2).ToArray(); SetArray(view, "events", kept.Cast<UnityEngine.Object>().ToArray());
         foreach (var card in cards.Skip(2)) UnityEngine.Object.DestroyImmediate(card.gameObject);

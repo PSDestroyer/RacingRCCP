@@ -16,6 +16,16 @@ namespace FormulaGame
         public string EventId => eventId;
         public string Mode => mode;
         public void Bind(Action<string, string> inspect) => button.onClick.AddListener(() => inspect(eventId, mode));
+        public void ShowCircuit(FormulaAssets.Track track, int index, string session)
+        {
+            eventId = session + ":" + track.id; mode = session == "trial" ? "time_trial" : "quick";
+            if (eventName != null) eventName.text = track.displayName.ToUpperInvariant();
+            if (trackName != null) trackName.text = "REVIEW SESSION  ›";
+            if (stage != null) stage.text = "CIRCUIT " + (index + 1).ToString("00");
+            if (format != null) format.text = track.lengthMeters > 0 ? (track.lengthMeters / 1000).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + " KM" : "CLOSED CIRCUIT";
+            var map = GetComponentInChildren<FormulaTrackMap>(true); if (map != null) map.SetTrack(track.id);
+            GetComponent<FormulaMenuFocus>()?.RefreshVisuals();
+        }
         public void Refresh(int index)
         {
             var e = FormulaCatalog.Current.Event(eventId); var p = FormulaProgression.State;

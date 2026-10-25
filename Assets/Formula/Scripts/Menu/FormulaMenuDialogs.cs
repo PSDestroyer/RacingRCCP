@@ -104,7 +104,7 @@ namespace FormulaGame
             medalGoals[2].text = e.mode == "race" ? "Win the race" : "≤ " + FormulaRaceUI.TimeText(t * (e.mode == "familiarization" ? 1.12 : 1.03));
             if (medalTiers != null && medalTiers.Length == 3)
             {
-                string[] tiers = career ? new[] { "BRONZE", "SILVER", "GOLD" } : new[] { "FORMAT", "OPPONENTS", "SESSION" };
+                string[] tiers = career ? new[] { "BRONZE", "SILVER", "GOLD" } : new[] { "FORMAT", "RIVALS", "SESSION" };
                 for (int i = 0; i < 3; i++) medalTiers[i].text = tiers[i];
             }
             if (!career)

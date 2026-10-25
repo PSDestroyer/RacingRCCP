@@ -79,8 +79,8 @@ public class SoundManager : MonoBehaviour
 
         float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
 
-        bool ok = audioMixer.SetFloat("VehicleVolume", db);
-        bool ok1 = audioMixer.SetFloat("volume", db);
+        // RCCP_AudioMixer exposes its master gain as "volume".
+        bool ok = audioMixer.SetFloat("volume", db);
         SaveManager.Instance.saveData.VehicleLevel = value;
 
         // Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");

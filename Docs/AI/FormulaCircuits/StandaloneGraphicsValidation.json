@@ -1,0 +1,40 @@
+{
+  "utc": "2026-10-24T22:26:34.957402+00:00",
+  "method": "Native Development player with Metal graphics; isolated temporary save; UI interaction through cua_repl.",
+  "executable": "/var/folders/hz/hdljpzkx3k1d8cp3x9x27cn00000gn/T/FormulaG27Validation/FormulaG27.app/Contents/MacOS/RacingRCCP",
+  "log": "/private/tmp/FormulaStandaloneValidation/Player-Graphics-Final.log",
+  "seconds": 131.8554335,
+  "exitCode": 0,
+  "uiChecks": [
+    "Home rendered with isolated profile",
+    "Quick Race keyboard navigation",
+    "Briefing RIVALS label fits at 1280x720",
+    "Grand Prix Circuit launched with 3 opponents",
+    "Keyboard throttle produced 26 km/h",
+    "HUD and pause rendered",
+    "Right arrow selected LEAVE SESSION from KEEP RACING",
+    "Confirmed leave returned to Home",
+    "Credits remained 0"
+  ],
+  "status": "passed_with_diagnostic_rendering_workaround",
+  "launchArguments": [
+    "-force-gfx-direct",
+    "-diag-job-temp-memory-leak-validation",
+    "-screen-fullscreen 0",
+    "-screen-width 1280",
+    "-screen-height 720"
+  ],
+  "graphicsApi": "Metal",
+  "device": "Apple M2 Pro",
+  "directRenderingVerified": true,
+  "invalidPointerErrors": 0,
+  "tempAllocationWarnings": 0,
+  "managedExceptions": 0,
+  "invalidMixerParameterErrors": 0,
+  "limitations": [
+    "The standard multithreaded rendering configuration reproduced native particle allocator errors twice on Unity 6000.0.55f1.",
+    "This clean run used a temporary diagnostic rendering argument; it is not a fix to the project Unity version or rendering settings.",
+    "Native smoke on Grand Prix Circuit and Pinnacle Park; full 18-circuit traversal was validated in Editor Play Mode.",
+    "No Windows/Switch build or target-hardware performance validation."
+  ]
+}

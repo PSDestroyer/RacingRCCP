@@ -33,6 +33,7 @@ namespace FormulaGame
             var e = FormulaCatalog.Current.Event(id);
             var track = e == null ? null : FormulaAssets.Current?.FindTrack(e.trackId);
             if (track == null || string.IsNullOrEmpty(track.scenePath) || !Application.CanStreamedLevelBeLoaded(track.scenePath)) return "This circuit is not available in this build.";
+            if (mode == "career" && id.Contains(":")) return "Select a career event to earn career rewards.";
             if (!FormulaProgression.Commit(d => FormulaProgression.BeginRun(d, id, mode), out string error)) return error;
             launching = true;
             Time.timeScale = 1f; AudioListener.pause = false;
@@ -58,10 +59,13 @@ namespace FormulaGame
         {
             launching = false;
             if (game.GetComponent<FormulaRaceUI>() == null) { InRace = false; return; }
-            if (CurrentEvent == null || string.IsNullOrEmpty(FormulaProgression.State.activeRunId))
+            var circuit = game.GetComponent<FormulaCircuit>();
+            var eventTrack = CurrentEvent == null ? null : FormulaAssets.Current.FindTrack(CurrentEvent.trackId);
+            if (CurrentEvent == null || string.IsNullOrEmpty(FormulaProgression.State.activeRunId) || eventTrack?.scenePath != game.gameObject.scene.path)
             {
-                // Direct scene play is practice and cannot award career rewards.
-                FormulaProgression.BeginRun(FormulaProgression.Data, "g03", "quick");
+                // Direct scene play starts the authored race and cannot award career rewards.
+                string id = circuit != null ? "race:" + circuit.trackId : "g03";
+                FormulaProgression.BeginRun(FormulaProgression.Data, id, "quick");
             }
             InRace = true; LastError = null; reachedBrakingSpeed = false; BrakeStopCompleted = false; BestLap = 0; ValidLaps = 0; lastLapEnd = 0; lapInvalid = false;
             var e = CurrentEvent;

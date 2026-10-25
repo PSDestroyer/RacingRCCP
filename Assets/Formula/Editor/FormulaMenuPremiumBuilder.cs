@@ -99,7 +99,7 @@ public static class FormulaMenuPremiumBuilder
         var t = p.Find("Circuit Outline") as RectTransform ?? FormulaUI.Rect(p, "Circuit Outline", x, y, w, h); Rect(t, x, y, w, h);
         var map = t.GetComponent<FormulaTrackMap>() ?? t.gameObject.AddComponent<FormulaTrackMap>(); map.color = new Color(1, 1, 1, .8f); map.raycastTarget = false; map.SetTrack(track); return map;
     }
-    private static void PrepareArt()
+    public static void PrepareArt()
     {
         var art = FormulaMenuAssets.Current;
         if (art.strongFont == null)
@@ -115,7 +115,7 @@ public static class FormulaMenuPremiumBuilder
                 AssetDatabase.CreateAsset(f, path); AssetDatabase.AddObjectToAsset(f.material, f); foreach (var texture in f.atlasTextures) AssetDatabase.AddObjectToAsset(texture, f); art.strongFont = f;
             }
         }
-        if (art.trackMaps == null || art.trackMaps.Length != 2)
+        if (art.trackMaps == null || art.trackMaps.Length != FormulaAssets.Current.tracks.Length)
         {
             art.trackMaps = FormulaAssets.Current.tracks.Select(track =>
             {

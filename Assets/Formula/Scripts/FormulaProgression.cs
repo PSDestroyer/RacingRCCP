@@ -116,7 +116,7 @@ namespace FormulaGame
         public static string BeginRun(SaveManager.SaveData d, string eventId, string mode)
         {
             var p = Ensure(d); var e = FormulaCatalog.Current.Event(eventId);
-            if (e == null || (mode == "career" && !Unlocked(e.unlock, p))) return "This event is locked.";
+            if (e == null || (mode == "career" && (eventId.Contains(":") || !Unlocked(e.unlock, p)))) return "This event is locked.";
             if (mode != "career" && mode != "quick" && mode != "time_trial") return "Unknown mode.";
             p.activeEventId = eventId; p.activeMode = mode; p.activeRunId = Guid.NewGuid().ToString("N"); p.lastEventId = eventId;
             return null;
@@ -150,6 +150,8 @@ namespace FormulaGame
                     if (l.acquisition == "achievement_grant" && !p.ownedLiveries.Contains(l.id) && Unlocked(l.unlock, p))
                     { p.ownedLiveries.Add(l.id); receipt.newLiveries.Add(l.id); }
             }
+            if (valid && p.activeMode == "time_trial" && bestLap > 0 && (!p.bestLapSeconds.TryGetValue(eventId, out double previousLap) || bestLap < previousLap))
+            { p.bestLapSeconds[eventId] = bestLap; receipt.personalBest = true; }
             p.processedRuns.Add(runId);
             // Only the active run can commit. Older IDs can be bounded safely.
             if (p.processedRuns.Count > 128) p.processedRuns.RemoveAt(0);

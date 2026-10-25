@@ -1,0 +1,114 @@
+Mono path[0] = '/var/folders/hz/hdljpzkx3k1d8cp3x9x27cn00000gn/T/FormulaG27Validation/FormulaG27.app/Contents/Resources/Data/Managed'
+Mono config path = '/var/folders/hz/hdljpzkx3k1d8cp3x9x27cn00000gn/T/FormulaG27Validation/FormulaG27.app/Contents/MonoBleedingEdge/etc'
+Found 1 interfaces on host : 0) 192.168.100.9
+Player connection [8387911040]  Target information:
+
+Player connection [8387911040]  * "[IP] 192.168.100.9 [Port] 55000 [Flags] 2 [Guid] 629207248 [EditorId] 2367849738 [Version] 1048832 [Id] OSXPlayer(1,Gheorghes-MacBook-Pro.local) [Debug] 0 [PackageName] OSXPlayer [ProjectName] RacingRCCP" 
+
+Player connection [8387911040] Started UDP target info broadcast (1) on [225.0.0.222:54997].
+
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Initialize engine version: 6000.0.55f1 (c5f59906196d)
+[Subsystems] Discovering subsystems at path /var/folders/hz/hdljpzkx3k1d8cp3x9x27cn00000gn/T/FormulaG27Validation/FormulaG27.app/Contents/Resources/Data/UnitySubsystems
+GfxDevice: creating device client; kGfxThreadingModeDirect
+ preferred device: Apple M2 Pro (high power)
+Metal devices available: 1
+0: Apple M2 Pro (high power)
+Using device Apple M2 Pro (high power)
+Initializing Metal device caps: Apple M2 Pro
+Begin MonoManager ReloadAssembly
+Symbol file LoadedFromMemory is not a mono symbol file
+- Loaded All Assemblies, in  0.143 seconds
+- Finished resetting the current domain, in  0.003 seconds
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+UnloadTime: 1.544959 ms
+INIT SCENE AWAKE!
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+Init:Awake () (at /Users/gheorghe/GitHub/RacingRCCP/Assets/_PlatformSpeciffics/Init.cs:11)
+
+(Filename: /Users/gheorghe/GitHub/RacingRCCP/Assets/_PlatformSpeciffics/Init.cs Line: 11)
+
+Initializing SaveManager...
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+HalvaStudio.Save.SaveManager:AwakeInit () (at /Users/gheorghe/GitHub/RacingRCCP/Assets/_PlatformSpeciffics/SaveManager.cs:25)
+Singleton`1<HalvaStudio.Save.SaveManager>:Awake () (at /Users/gheorghe/GitHub/RacingRCCP/Assets/_PlatformSpeciffics/Singleton.cs:45)
+UnityEngine.GameObject:Internal_AddComponentWithType (System.Type)
+UnityEngine.GameObject:AddComponent (System.Type) (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:246)
+UnityEngine.GameObject:AddComponent<HalvaStudio.Save.SaveManager> () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/GameObject.bindings.cs:251)
+Singleton`1<HalvaStudio.Save.SaveManager>:get_Instance () (at /Users/gheorghe/GitHub/RacingRCCP/Assets/_PlatformSpeciffics/Singleton.cs:22)
+HalvaStudio.Save.SaveManager:get_Instance () (at /Users/gheorghe/GitHub/RacingRCCP/Assets/_PlatformSpeciffics/SaveManager.cs:14)
+Init:Start () (at /Users/gheorghe/GitHub/RacingRCCP/Assets/_PlatformSpeciffics/Init.cs:20)
+
+(Filename: /Users/gheorghe/GitHub/RacingRCCP/Assets/_PlatformSpeciffics/SaveManager.cs Line: 25)
+
+Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
+RenderGraph is now enabled.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:35)
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEngine.Rendering.Universal.UniversalRenderPipeline:.ctor (UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset) (at ./Library/PackageCache/com.unity.render-pipelines.universal@dd24be0d7cf1/Runtime/UniversalRenderPipeline.cs:259)
+UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset:CreatePipeline () (at ./Library/PackageCache/com.unity.render-pipelines.universal@dd24be0d7cf1/Runtime/Data/UniversalRenderPipelineAsset.cs:799)
+UnityEngine.Rendering.RenderPipelineAsset:InternalCreatePipeline () (at /Users/bokken/build/output/unity/unity/Runtime/Export/RenderPipeline/RenderPipelineAsset.cs:15)
+UnityEngine.Rendering.RenderPipelineManager:TryPrepareRenderPipeline (UnityEngine.Rendering.RenderPipelineAsset) (at /Users/bokken/build/output/unity/unity/Runtime/Export/RenderPipeline/RenderPipelineManager.cs:165)
+UnityEngine.Rendering.RenderPipelineManager:DoRenderLoop_Internal (UnityEngine.Rendering.RenderPipelineAsset,intptr,UnityEngine.Object) (at /Users/bokken/build/output/unity/unity/Runtime/Export/RenderPipeline/RenderPipelineManager.cs:139)
+
+(Filename: ./Library/PackageCache/com.unity.render-pipelines.universal@dd24be0d7cf1/Runtime/UniversalRenderPipeline.cs Line: 259)
+
+UnloadTime: 0.203458 ms
+Unloading 6 unused Assets / (65.3 KB). Loaded Objects now: 14237.
+Memory consumption went from 300.4 MB to 300.3 MB.
+Total: 6.605000 ms (FindLiveObjects: 0.273917 ms CreateObjectMapping: 0.139208 ms MarkObjects: 6.146792 ms  DeleteObjects: 0.045041 ms)
+
+Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
+The tree Pine_2 must use the Nature/Soft Occlusion shader. Otherwise billboarding/lighting will not work correctly.
+The tree Pine_3 must use the Nature/Soft Occlusion shader. Otherwise billboarding/lighting will not work correctly.
+The tree Pine_4 must use the Nature/Soft Occlusion shader. Otherwise billboarding/lighting will not work correctly.
+UnloadTime: 13.681166 ms
+Unloading 1223 unused Assets / (0.5 MB). Loaded Objects now: 20249.
+Memory consumption went from 0.52 GB to 0.52 GB.
+Total: 9.078042 ms (FindLiveObjects: 2.091917 ms CreateObjectMapping: 0.327666 ms MarkObjects: 5.371000 ms  DeleteObjects: 1.287292 ms)
+
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 17.282834 ms
+Unloading 1454 unused Assets / (186.0 MB). Loaded Objects now: 14968.
+Memory consumption went from 0.52 GB to 346.6 MB.
+Total: 43.986625 ms (FindLiveObjects: 8.757542 ms CreateObjectMapping: 0.195750 ms MarkObjects: 10.587958 ms  DeleteObjects: 24.445166 ms)
+
+Thread 0x16f5c7000 may have been prematurely finalized
+[Physics::Module] Cleanup current backned.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+Thread 0x16e1cb000 may have been prematurely finalized
+Thread 0x16e257000 may have been prematurely finalized
+Thread 0x16e743000 may have been prematurely finalized
+Thread 0x16e36f000 may have been prematurely finalized
+Thread 0x16e3fb000 may have been prematurely finalized
+Thread 0x16e487000 may have been prematurely finalized
+Thread 0x16e513000 may have been prematurely finalized
+Thread 0x16e59f000 may have been prematurely finalized
+Thread 0x16e62b000 may have been prematurely finalized
+Thread 0x16e6b7000 may have been prematurely finalized
+Thread 0x16e2e3000 may have been prematurely finalized
+PlayerConnection::Cleanup##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1792880794925,"processId":50049,"allocatedMemory":4240663,"memoryLabels":[{"Default":14017},{"Permanent":1352},{"NewDelete":1285585},{"Thread":39352},{"Manager":541807},{"VertexData":8},{"Geometry":408},{"Texture":16},{"Shader":77812},{"Material":24},{"GfxDevice":40548},{"Animation":328},{"Audio":4600},{"FontEngine":272},{"Physics":3160},{"Serialization":688},{"Input":9488},{"JobScheduler":104736},{"TextLib":160},{"Mono":32},{"ScriptingNativeRuntime":128},{"BaseObject":1609216},{"Resource":464},{"Renderer":3456},{"Transform":4654},{"File":816},{"WebCam":32},{"Culling":32},{"Terrain":11250},{"Wind":24},{"String":2975},{"DynamicArray":31468},{"HashMap":10240},{"Utility":300216},{"PoolAlloc":1344},{"TypeTree":4688},{"ScriptManager":64},{"RuntimeInitializeOnLoadManager":64},{"SpriteAtlas":112},{"GI":7240},{"Director":8152},{"WebRequest":776},{"VR":45409},{"SceneManager":360},{"Video":2080},{"LazyScriptCache":32},{"NativeArray":656},{"Camera":9},{"Secure":1},{"SerializationCache":1576},{"APIUpdating":10320},{"Subsystems":336},{"VirtualTexturing":57496},{"Baselib":16},{"Hierarchy":384},{"Gui":32},{"CoreBusinessMetrics":120},{"AssetReference":32}]}

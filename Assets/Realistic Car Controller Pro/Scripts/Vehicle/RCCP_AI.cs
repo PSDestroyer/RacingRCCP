@@ -84,6 +84,9 @@ public class RCCP_AI : RCCP_Component {
     [Tooltip("Friction coefficient for safe cornering speed calculation.")]
     public float roadGrip = 1.1f;
 
+    [Tooltip("Use an authored brake-zone speed profile instead of estimating curvature from NavMesh triangles. Requires an active brake zone; steering and obstacle braking remain enabled.")]
+    public bool useBrakeZoneSpeedProfile;
+
     [Tooltip("Maximum throttle input (0 to 1).")]
     [Range(0f, 1f)] public float maxThrottle = 1f;
 
@@ -565,6 +568,11 @@ public class RCCP_AI : RCCP_Component {
         float aLat = roadGrip * 9.81f;
         float safeSpeedKph = Mathf.Sqrt(aLat * minRadius) * 3.6f;
         safeSpeedKph = Mathf.Min(safeSpeedKph, GetCornerAwareSpeedCap(cornerAngle, safeSpeedKph));
+
+        // Dense sloped navigation meshes can contain tiny, nearly collinear
+        // corners. An authored circuit profile supplies actual road curvature.
+        if (useBrakeZoneSpeedProfile && currentBrakeZone != null)
+            safeSpeedKph = currentBrakeZone.targetSpeed;
 
         // Cap speed to brake zone target if inside one
         if (currentBrakeZone != null)

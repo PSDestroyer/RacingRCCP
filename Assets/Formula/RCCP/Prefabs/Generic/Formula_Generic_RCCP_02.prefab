@@ -1397,7 +1397,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2877880059645326480}
-  m_Mesh: {fileID: 8408906642263252741, guid: 3649f41cabf604681b086c131a89453c, type: 3}
+  m_Mesh: {fileID: 4300000, guid: a7a1335f95ab54f43af0422ec06ca773, type: 2}
 --- !u!23 &8770189731974698457
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1422,6 +1422,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: a184faaa6a05c45c8bf935ced4a9bc78, type: 2}
+  - {fileID: 2100000, guid: 3534717c173e4442dbf2eebbf119bc32, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2776,6 +2777,7 @@ GameObject:
   - component: {fileID: 7601390979122426652}
   - component: {fileID: 5960146994011040414}
   - component: {fileID: 7412095027858925948}
+  - component: {fileID: 9045972408512413491}
   m_Layer: 8
   m_Name: Formula_Generic_RCCP_02
   m_TagString: Untagged
@@ -2915,6 +2917,53 @@ MonoBehaviour:
   indicatorsLeftLights: 0
   indicatorsRightLights: 0
   indicatorsAllLights: 0
+--- !u!114 &9045972408512413491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6542517667332716082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9f2390e68d6f4023bebc43698c6ee0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wetness: 0
+  surfaces:
+  - renderer: {fileID: 8770189731974698457}
+    materialIndex: 0
+    kind: 0
+  - renderer: {fileID: 8770189731974698457}
+    materialIndex: 1
+    kind: 1
+  - renderer: {fileID: 8964832017306830037}
+    materialIndex: 0
+    kind: 1
+  - renderer: {fileID: 7722112098543149934}
+    materialIndex: 0
+    kind: 3
+  - renderer: {fileID: 387031141192679466}
+    materialIndex: 0
+    kind: 2
+  - renderer: {fileID: 8028049695220958608}
+    materialIndex: 0
+    kind: 3
+  - renderer: {fileID: 9081013143243057820}
+    materialIndex: 0
+    kind: 2
+  - renderer: {fileID: 7206187559790674059}
+    materialIndex: 0
+    kind: 3
+  - renderer: {fileID: 1847294441015080175}
+    materialIndex: 0
+    kind: 2
+  - renderer: {fileID: 4863563561054683522}
+    materialIndex: 0
+    kind: 3
+  - renderer: {fileID: 5273813216190935232}
+    materialIndex: 0
+    kind: 2
 --- !u!1 &6571622115927544751
 GameObject:
   m_ObjectHideFlags: 0

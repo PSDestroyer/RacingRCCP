@@ -165,7 +165,7 @@ public static class FormulaHomeReferenceBuilder
                 {
                     bool painted=renderer.name==paintedName, rim=renderer.name.StartsWith("Generic_Rim",StringComparison.Ordinal), tyre=renderer.name.StartsWith("Generic_Tyre",StringComparison.Ordinal);
                     if (!painted && !rim && !tyre) continue;
-                    renderer.sharedMaterials = renderer.sharedMaterials.Select(source=>DisplayMaterial(source,painted ? .54f : rim ? .5f : .18f,rim ? .65f : painted ? .12f : 0)).ToArray();
+                    renderer.sharedMaterials = renderer.sharedMaterials.Select(DisplayMaterial).ToArray();
                 }
             }
             preview.Present(path==FormulaGarageBuilder.GarageScene ? "Garaj" : "Acasă","Livree",true);
@@ -175,16 +175,21 @@ public static class FormulaHomeReferenceBuilder
         }
         finally { if (!loaded) EditorSceneManager.CloseScene(scene,true); }
     }
-    private static Material DisplayMaterial(Material source,float smoothness,float metallic)
+    private static Material DisplayMaterial(Material source)
     {
         const string folder="Assets/Formula/Garage/Materials/Vehicle";
         if (!AssetDatabase.IsValidFolder(folder)) AssetDatabase.CreateFolder("Assets/Formula/Garage/Materials","Vehicle");
         string sourcePath=AssetDatabase.GetAssetPath(source), filename=Path.GetFileNameWithoutExtension(sourcePath);
-        if (filename.EndsWith("_Display",StringComparison.Ordinal)) { source.SetFloat("_Smoothness",smoothness); source.SetFloat("_Metallic",metallic); EditorUtility.SetDirty(source); return source; }
+        if (filename.EndsWith("_Display",StringComparison.Ordinal))
+        {
+            var original=AssetDatabase.LoadAssetAtPath<Material>("Assets/Formula/RCCP/Materials/"+filename.Replace("_Display","")+".mat");
+            if(original!=null) { source.shader=original.shader; source.CopyPropertiesFromMaterial(original); EditorUtility.SetDirty(source); }
+            return source;
+        }
         string path=folder+"/"+filename+"_Display.mat";
         var material=AssetDatabase.LoadAssetAtPath<Material>(path);
         if (material==null) { material=new Material(source); AssetDatabase.CreateAsset(material,path); }
-        material.SetFloat("_Smoothness",smoothness); material.SetFloat("_Metallic",metallic); EditorUtility.SetDirty(material); return material;
+        material.shader=source.shader; material.CopyPropertiesFromMaterial(source); EditorUtility.SetDirty(material); return material;
     }
     private static RectTransform Group(Transform parent,string name,float x,float y,float w,float h)
     {

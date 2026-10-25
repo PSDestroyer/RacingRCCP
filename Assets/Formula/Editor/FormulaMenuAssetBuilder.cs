@@ -20,10 +20,15 @@ public static class FormulaMenuAssetBuilder
         skin.titleFont = Font(Folder + "Teko-Regular.ttf", "Teko");
         skin.career = Texture("Career"); skin.garage = Texture("Garage"); skin.upgrade = Texture("Upgrade");
         skin.settings = Texture("Settings"); skin.helmet = Texture("Helmet"); skin.footerGlow = Texture("FooterGlow");
-        skin.liveries = new Texture2D[FormulaCatalog.Current.liveries.Count];
-        for (int i = 0; i < skin.liveries.Length; i++) skin.liveries[i] = RenderLivery(i);
+        BuildLiveryPreviews(skin);
         EditorUtility.SetDirty(skin); AssetDatabase.SaveAssets();
         Debug.Log("Formula Figma menu: fonts, original icons and 8 Generic livery previews built.");
+    }
+    public static void BuildLiveryPreviews(FormulaMenuAssets skin)
+    {
+        skin.liveries = new Texture2D[FormulaCatalog.Current.liveries.Count];
+        for (int i = 0; i < skin.liveries.Length; i++) skin.liveries[i] = RenderLivery(i);
+        EditorUtility.SetDirty(skin);
     }
     private static Texture2D Texture(string name)
     {
@@ -56,40 +61,9 @@ public static class FormulaMenuAssetBuilder
     }
     private static Texture2D RenderLivery(int index)
     {
-        var source = FormulaAssets.Current.vehiclePrefab;
-        var root = new GameObject("Generic thumbnail meshes");
-        var utility = new PreviewRenderUtility();
-        try
-        {
-            foreach (var filter in source.GetComponentsInChildren<MeshFilter>(true))
-            {
-                var renderer = filter.GetComponent<MeshRenderer>(); if (renderer == null || !renderer.enabled) continue;
-                var go = new GameObject(filter.name, typeof(MeshFilter), typeof(MeshRenderer)); go.transform.SetParent(root.transform, false);
-                go.transform.localPosition = source.transform.InverseTransformPoint(filter.transform.position);
-                go.transform.localRotation = Quaternion.Inverse(source.transform.rotation) * filter.transform.rotation;
-                go.transform.localScale = filter.transform.lossyScale;
-                go.GetComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
-                go.GetComponent<MeshRenderer>().sharedMaterials = renderer.sharedMaterials;
-                if (renderer == source.GetComponent<FormulaVehicle>().body) go.GetComponent<MeshRenderer>().sharedMaterial = FormulaAssets.Current.liveryMaterials[index];
-            }
-            utility.AddSingleGO(root);
-            var bounds = root.GetComponentsInChildren<Renderer>().Select(r => r.bounds).Aggregate((a, b) => { a.Encapsulate(b); return a; });
-            utility.camera.fieldOfView = 25; utility.camera.clearFlags = CameraClearFlags.SolidColor; utility.camera.backgroundColor = Color.clear;
-            utility.camera.nearClipPlane = .1f; utility.camera.farClipPlane = 50;
-            utility.camera.transform.position = bounds.center + new Vector3(8.5f, 3.1f, 4.6f);
-            utility.camera.transform.LookAt(bounds.center);
-            utility.lights[0].intensity = 2.2f; utility.lights[0].transform.rotation = Quaternion.Euler(35, 20, 0);
-            utility.lights[1].intensity = 1.4f; utility.lights[1].transform.rotation = Quaternion.Euler(315, 210, 0);
-            utility.ambientColor = new Color(.65f, .65f, .65f);
-            utility.BeginPreview(new Rect(0, 0, 504, 256), GUIStyle.none);
-            utility.Render(true);
-            var render = (RenderTexture)utility.EndPreview();
-            var previous = RenderTexture.active;
-            var texture = new Texture2D(504, 256, TextureFormat.RGBA32, false);
-            try { RenderTexture.active = render; texture.ReadPixels(new Rect(0, 0, 504, 256), 0, 0); texture.Apply(); File.WriteAllBytes(Folder + "Livery" + index + ".png", texture.EncodeToPNG()); }
-            finally { RenderTexture.active = previous; UnityEngine.Object.DestroyImmediate(texture); }
-        }
-        finally { utility.Cleanup(); if (root != null) UnityEngine.Object.DestroyImmediate(root); }
+        var texture = FormulaLiveryArtBuilder.RenderCar(index, 504, 256, new Vector3(7, 3.2f, 5.1f), true);
+        try { File.WriteAllBytes(Folder + "Livery" + index + ".png", texture.EncodeToPNG()); }
+        finally { UnityEngine.Object.DestroyImmediate(texture); }
         AssetDatabase.ImportAsset(Folder + "Livery" + index + ".png");
         return Texture("Livery" + index);
     }

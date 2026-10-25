@@ -1,0 +1,36 @@
+{
+  "utc": "2026-10-25T13:10:27.109852+00:00",
+  "unityVersion": "6000.0.55f1",
+  "status": "upgrade_candidate_validated_in_copy",
+  "symptom": "JobTempAlloc lifetime warnings followed by Invalid memory pointer in ThreadsafeLinearAllocator::Deallocate",
+  "allocationStack": [
+    "GeometryJobTasks::ScheduleSharedGeometryJobs",
+    "ParticleSystemGeometryJob::ScheduleJobs",
+    "CullScriptable",
+    "UniversalRenderPipeline.RenderSingleCamera"
+  ],
+  "managedExceptions": [],
+  "sourceLog": "/private/tmp/FormulaStandaloneValidation/Player-Graphics-Diagnostic.log",
+  "matchingOfficialIssue": "UUM-113839",
+  "officialFixVersion": "6000.0.59f1",
+  "reference": "https://issuetracker.unity.com/api/v1.0/redirects/slug/memory-leak-warnings-are-thrown-when-creating-a-particle-system-gameobject-2?page=2",
+  "inference": "Local allocation stack matched the documented particle regression. Two native runs with the migrated 6000.3.19f1 engine/package combination did not reproduce it on Apple M2 Pro Metal; exact issue attribution remains an inference.",
+  "directRenderingProbe": {
+    "argument": "-force-gfx-direct",
+    "threadModeVerified": true,
+    "tempAllocatorWarnings": 0,
+    "invalidPointerErrors": 0,
+    "managedExceptions": 0,
+    "returnedToHome": true,
+    "note": "Temporary diagnostic launch option only. Project rendering settings and Unity version are unchanged. No target-platform performance claim."
+  },
+  "nextExperiment": {
+    "unityVersion": "6000.3.19f1",
+    "projectCopy": "/private/tmp/FormulaG27-Unity-6000.3.19f1-20261025",
+    "userSelected": true,
+    "standardRendering": true,
+    "status": "passed",
+    "report": "Unity6319/Validation.json"
+  },
+  "mainProjectState": "Also opened under 6000.3.19f1 through Unity Hub; separate import exceptions observed. See Unity6319/SourceStateAfterHubOpen.json."
+}

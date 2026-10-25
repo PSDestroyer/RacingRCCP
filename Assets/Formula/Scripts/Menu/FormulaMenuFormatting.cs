@@ -44,7 +44,7 @@ namespace FormulaGame
         public static string NextReward()
         {
             var next = FormulaCatalog.Current.liveries.Where(l => l.acquisition == "achievement_grant" && !FormulaProgression.State.ownedLiveries.Contains(l.id) && l.id != "generic_purple").OrderBy(l => (string)l.unlock["eventId"]).FirstOrDefault();
-            return next != null ? next.displayName + " · " + FormulaProgression.LockReason(next.unlock, FormulaProgression.State) : "Nova Purple · Gold in every event";
+            return next != null ? next.displayName + " · " + FormulaProgression.LockReason(next.unlock, FormulaProgression.State) : FormulaCatalog.Current.Skin("generic_purple").displayName + " · Gold in every event";
         }
     }
 }
