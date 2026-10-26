@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "catalogVersion": "generic_v1",
-  "status": "runtime_configuration_v1",
+  "catalogVersion": "generic_v2",
+  "status": "runtime_configuration_v2",
   "language": "en",
   "vehicle": {
     "id": "generic_2027",
@@ -524,7 +524,8 @@
       },
       "medalMetric": "valid_completion_then_total_lap_time",
       "calendarRound": 1,
-      "missionIcon": "helmet"
+      "missionIcon": "helmet",
+      "opponentUpgradeLevel": 0
     },
     {
       "id": "g02",
@@ -571,7 +572,8 @@
       "medalMetric": "best_valid_lap_in_three_lap_session",
       "minimumValidLapsForReward": 1,
       "calendarRound": 2,
-      "missionIcon": "stopwatch"
+      "missionIcon": "stopwatch",
+      "opponentUpgradeLevel": 0
     },
     {
       "id": "g03",
@@ -616,7 +618,8 @@
         }
       },
       "calendarRound": 3,
-      "missionIcon": "race"
+      "missionIcon": "race",
+      "opponentUpgradeLevel": 0
     },
     {
       "id": "g04",
@@ -661,7 +664,8 @@
         }
       },
       "calendarRound": 4,
-      "missionIcon": "sprint"
+      "missionIcon": "sprint",
+      "opponentUpgradeLevel": 1
     },
     {
       "id": "g05",
@@ -708,7 +712,8 @@
       "medalMetric": "best_valid_lap_in_three_lap_session",
       "minimumValidLapsForReward": 1,
       "calendarRound": 5,
-      "missionIcon": "precision"
+      "missionIcon": "precision",
+      "opponentUpgradeLevel": 0
     },
     {
       "id": "g06",
@@ -753,7 +758,744 @@
         }
       },
       "calendarRound": 6,
-      "missionIcon": "trophy"
+      "missionIcon": "trophy",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g07",
+      "name": "Alpine Grand Prix",
+      "mode": "race",
+      "trackId": "track_03",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g06",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 7,
+      "missionIcon": "race",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g08",
+      "name": "Autumn Sprint",
+      "mode": "race",
+      "trackId": "track_04",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g07",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 8,
+      "missionIcon": "sprint",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g09",
+      "name": "Winter Challenge",
+      "mode": "race",
+      "trackId": "track_05",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g08",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 9,
+      "missionIcon": "race",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g10",
+      "name": "Wet Weather Race",
+      "mode": "race",
+      "trackId": "track_06",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g09",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 10,
+      "missionIcon": "race",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g11",
+      "name": "City Lights GP",
+      "mode": "race",
+      "trackId": "track_07",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g10",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 11,
+      "missionIcon": "race",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g12",
+      "name": "Terrain Sprint",
+      "mode": "race",
+      "trackId": "track_08",
+      "laps": 4,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g11",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 12,
+      "missionIcon": "sprint",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g13",
+      "name": "Apex Park GP",
+      "mode": "race",
+      "trackId": "rtg_01",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g12",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 13,
+      "missionIcon": "race",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g14",
+      "name": "Velocity Sprint",
+      "mode": "race",
+      "trackId": "rtg_02",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g13",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 14,
+      "missionIcon": "sprint",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g15",
+      "name": "Crown Valley GP",
+      "mode": "race",
+      "trackId": "rtg_03",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g14",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 15,
+      "missionIcon": "race",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g16",
+      "name": "Summit Grand Prix",
+      "mode": "race",
+      "trackId": "rtg_04",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g15",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 16,
+      "missionIcon": "race",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g17",
+      "name": "Horizon Grand Prix",
+      "mode": "race",
+      "trackId": "rtg_05",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g16",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 17,
+      "missionIcon": "race",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g18",
+      "name": "Falcon Sprint",
+      "mode": "race",
+      "trackId": "rtg_06",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g17",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 18,
+      "missionIcon": "sprint",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g19",
+      "name": "Aurora Grand Prix",
+      "mode": "race",
+      "trackId": "rtg_07",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g18",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 2000,
+        "xp": 1600
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1600,
+          "xp": 800
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 19,
+      "missionIcon": "race",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g20",
+      "name": "Meridian Sprint",
+      "mode": "race",
+      "trackId": "rtg_08",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g19",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 2000,
+        "xp": 1600
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1600,
+          "xp": 800
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 20,
+      "missionIcon": "sprint",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g21",
+      "name": "Vertex Grand Prix",
+      "mode": "race",
+      "trackId": "rtg_09",
+      "laps": 3,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g20",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 2000,
+        "xp": 1600
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1600,
+          "xp": 800
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 21,
+      "missionIcon": "race",
+      "opponentUpgradeLevel": 2
+    },
+    {
+      "id": "g22",
+      "name": "Season Finale",
+      "mode": "race",
+      "trackId": "rtg_10",
+      "laps": 4,
+      "opponentCount": 3,
+      "unlock": {
+        "type": "event_medal",
+        "eventId": "g21",
+        "minimumMedal": "bronze"
+      },
+      "vehicleRule": "owned_generic_configuration",
+      "baseValidFinishReward": {
+        "credits": 2400,
+        "xp": 1800
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 2000,
+          "xp": 1000
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      },
+      "medalTargets": {
+        "bronze": {
+          "maximumFinishPosition": 3
+        },
+        "silver": {
+          "maximumFinishPosition": 2
+        },
+        "gold": {
+          "maximumFinishPosition": 1
+        }
+      },
+      "calendarRound": 22,
+      "missionIcon": "trophy",
+      "opponentUpgradeLevel": 2
     }
   ],
   "balanceChecks": {

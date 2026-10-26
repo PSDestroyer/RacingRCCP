@@ -97,13 +97,51 @@ public static class FormulaProgressionValidation
         Check("Quick mode cannot grant career credits, XP or medals", () => { var d = New(); Finish(d, "g06", Medal.Gold, "quick"); Assert(d.money == 0 && d.exp == 0 && d.formula.Best("g06") == Medal.None, "Quick rewards leaked"); });
         Check("Invalid finish pays no rewards", () => { var d = New(); Finish(d, "g01", Medal.Gold, "career", false); Assert(d.money == 0 && d.exp == 0 && d.formula.Best("g01") == Medal.None, "Invalid finish rewarded"); });
         foreach (var tier in new[] { Medal.Bronze, Medal.Gold })
-            Check("Full first career " + tier + " matches catalog balance", () =>
+            Check("Opening six events " + tier + " retain their original economy", () =>
             {
-                var d = New(); foreach (var e in FormulaCatalog.Current.careerEvents) Finish(d, e.id, tier);
+                var d = New(); foreach (var e in FormulaCatalog.Current.careerEvents.Take(6)) Finish(d, e.id, tier);
                 Assert(d.money == (tier == Medal.Gold ? 18400 : 14500) && d.exp == (tier == Medal.Gold ? 13200 : 9600), "Economy totals differ");
                 Assert(d.formula.ownedLiveries.Contains("generic_black"), "Final livery missing");
                 Assert(d.formula.ownedLiveries.Contains("generic_purple") == (tier == Medal.Gold), "Prestige livery gate incorrect");
             });
+        Check("All 18 circuits are represented in the 22-event career", () =>
+        {
+            var events = FormulaCatalog.Current.careerEvents;
+            Assert(events.Count == 22 && events.Select(e => e.id).Distinct().Count() == events.Count, "Career event IDs are missing or duplicated");
+            Assert(new HashSet<string>(events.Select(e => e.trackId)).SetEquals(FormulaAssets.Current.tracks.Select(t => t.id)), "Career circuit coverage differs from the circuit catalog");
+        });
+        Check("Every career gate unlocks in order from bronze without upgrades", () =>
+        {
+            var d = New(); var events = FormulaCatalog.Current.careerEvents;
+            for (int i = 0; i < events.Count; i++)
+            {
+                if (i + 1 < events.Count) Assert(FormulaProgression.BeginRun(d, events[i + 1].id, "career") != null, "A future event opened early");
+                var receipt = Finish(d, events[i].id, Medal.Bronze);
+                Assert(receipt != null && d.formula.Best(events[i].id) == Medal.Bronze, "Bronze progression stalled at " + events[i].id);
+            }
+        });
+        Check("An existing completed opening series survives reload and opens Alpine", () =>
+        {
+            var d = New(); foreach (var e in FormulaCatalog.Current.careerEvents.Take(6)) Finish(d, e.id, Medal.Gold);
+            FormulaProgression.BuyUpgrade(d, "engine", 1); FormulaProgression.BuyOrEquipLivery(d, "generic_blue");
+            d.formula.catalogVersion = "generic_v1";
+            int cr = d.money, xp = d.exp, mask = d.formula.claimedMedalMasks["g06"];
+            var saved = JsonConvert.DeserializeObject<SaveManager.SaveData>(JsonConvert.SerializeObject(d)); FormulaProgression.Ensure(saved);
+            Assert(saved.money == cr && saved.exp == xp && saved.formula.Owned("engine") == 1 && saved.formula.equippedLivery == "generic_blue", "Expansion changed existing player progress");
+            Assert(saved.formula.claimedMedalMasks["g06"] == mask && saved.formula.ownedLiveries.Contains("generic_purple"), "Opening rewards were reset");
+            Assert(FormulaProgression.BeginRun(saved, "g07", "career") == null && FormulaProgression.BeginRun(saved, "g08", "career") != null, "Existing save entered the wrong expansion event");
+        });
+        Check("Final-event rewards and records persist and cannot pay twice", () =>
+        {
+            var d = New(); foreach (var e in FormulaCatalog.Current.careerEvents.Take(21)) Finish(d, e.id, Medal.Bronze);
+            var receipt = Finish(d, "g22", Medal.Gold); int cr = d.money, xp = d.exp;
+            FormulaProgression.Complete(d, receipt.runId, "g22", true, Medal.Gold, 100, 30);
+            Assert(d.money == cr && d.exp == xp, "Final-event reward duplicated");
+            var saved = JsonConvert.DeserializeObject<SaveManager.SaveData>(JsonConvert.SerializeObject(d)); FormulaProgression.Ensure(saved);
+            Assert(saved.formula.Best("g22") == Medal.Gold && saved.formula.bestLapSeconds["g22"] == 30, "Expansion results were lost on reload");
+            var replay = Finish(saved, "g22", Medal.Gold);
+            Assert(replay.credits == FormulaCatalog.Current.Event("g22").baseValidFinishReward.credits, "Final-event medal bonus replayed");
+        });
         Check("Purchased livery charges once and preserves progress", () =>
         {
             var d = New(); foreach (var e in FormulaCatalog.Current.careerEvents.Take(3)) Finish(d, e.id, Medal.Bronze);

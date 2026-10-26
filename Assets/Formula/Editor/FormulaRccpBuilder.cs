@@ -586,7 +586,7 @@ public static class FormulaRccpBuilder
             renderer.shadowCastingMode = ShadowCastingMode.Off;
             renderer.receiveShadows = false;
             var light = lens.AddComponent<Light>();
-            light.type = UnityEngine.LightType.Point; light.color = Color.red; light.range = 2f; light.intensity = 0f;
+            light.type = UnityEngine.LightType.Point; light.color = Color.red; light.range = i == 0 ? .9f : .6f; light.intensity = 0f;
             light.shadows = LightShadows.None;
             var rccp = lens.AddComponent<RCCP_Light>();
             rccp.lightType = i == 0 ? RCCP_Light.LightType.Brakelight : RCCP_Light.LightType.Taillight;

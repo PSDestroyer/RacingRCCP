@@ -199,6 +199,7 @@ public class GamePlayManager : MonoBehaviour
     public bool showOnlyNextCheckpoint = true;
 
     private RaceRacer playerRacer = new RaceRacer { displayName = "Player" };
+    private FormulaGame.FormulaRouteProgress formulaRouteProgress;
     private RaceRacer[] allRacers = Array.Empty<RaceRacer>();
     private GameObject[] checkpointVisuals = Array.Empty<GameObject>();
     private readonly List<GameObject> spawnedOpponentObjects = new List<GameObject>();
@@ -212,6 +213,8 @@ public class GamePlayManager : MonoBehaviour
     public float FormulaElapsed => raceElapsedTime;
     public int FormulaCompletedLaps => playerRacer != null ? playerRacer.completedLaps : 0;
     public bool FormulaRaceStarted => raceStarted;
+    public bool FormulaWrongWay => raceStarted && !playerRacer.finished && formulaRouteProgress != null && formulaRouteProgress.WrongWay;
+    public int FormulaNextCheckpoint => playerRacer.currentWaypointIndex;
     public int FormulaPosition => GetPlayerRacePosition();
     public int FormulaParticipants => GetTotalRaceParticipants();
     private static readonly string[] formulaRivalNames = { "A. Vale", "M. Costa", "L. Reed", "N. Serra", "E. Frost", "S. Arden", "J. Voss", "R. Quinn" };
@@ -622,6 +625,14 @@ public class GamePlayManager : MonoBehaviour
             eliminated = false,
             finishOrder = 0
         };
+
+        formulaRouteProgress = null;
+        if (FormulaGame.FormulaSession.InRace && TryGetComponent<FormulaGame.FormulaCircuit>(out var formulaCircuit))
+        {
+            var points = new Vector3[raceWaypoints.waypoints.Count];
+            for (int i = 0; i < points.Length; i++) points[i] = raceWaypoints.waypoints[i].transform.position;
+            formulaRouteProgress = new FormulaGame.FormulaRouteProgress(points, formulaCircuit.halfWidth, playerRacer.racerTransform.position);
+        }
 
         int aiCount = ShouldSpawnRaceOpponents() && aiRacers != null ? aiRacers.Length : 0;
         allRacers = new RaceRacer[aiCount + 1];
@@ -1641,6 +1652,12 @@ public class GamePlayManager : MonoBehaviour
        if (playerRacer.finished)
            return;
 
+       if (FormulaGame.FormulaSession.InRace && formulaRouteProgress != null)
+       {
+           UpdateFormulaPlayerRaceProgress();
+           return;
+       }
+
        int waypointCount = raceWaypoints.waypoints.Count;
        Transform targetWaypoint = raceWaypoints.waypoints[playerRacer.currentWaypointIndex].transform;
        playerRacer.distanceToNextWaypoint = Vector3.Distance(playerRacer.racerTransform.position, targetWaypoint.position);
@@ -1684,6 +1701,26 @@ public class GamePlayManager : MonoBehaviour
 
        if (!playerRacer.lapCountingArmed && playerRacer.currentWaypointIndex != playerRacer.startWaypointIndex)
            playerRacer.lapCountingArmed = true;
+   }
+
+   private void UpdateFormulaPlayerRaceProgress()
+   {
+       var step = formulaRouteProgress.Step(CarController.transform.position, CarController.Rigid.linearVelocity, Time.deltaTime);
+       if (step.invalidateLap) FormulaGame.FormulaSession.InvalidateLap();
+       for (int i = 0; i < step.passedCount; i++) FormulaGame.FormulaSession.Checkpoint(step.passedFrom + i, raceElapsedTime);
+       playerRacer.currentWaypointIndex = step.nextWaypoint;
+       playerRacer.distanceToNextWaypoint = Vector3.Distance(CarController.transform.position, raceWaypoints.waypoints[step.nextWaypoint].transform.position);
+       playerRacer.lapCountingArmed |= step.nextWaypoint > 0;
+       if (!step.completedLap) return;
+       playerRacer.completedLaps++;
+       FormulaGame.FormulaSession.Lap(raceElapsedTime);
+       if (playerRacer.completedLaps >= totalRaceLaps)
+       {
+           MarkRacerFinished(playerRacer);
+           CompleteRaceMission(true, "Finish");
+           return;
+       }
+       for (int i = 0; i < step.newLapPassedCount; i++) FormulaGame.FormulaSession.Checkpoint(i, raceElapsedTime);
    }
 
    private void UpdateAIRaceProgress()

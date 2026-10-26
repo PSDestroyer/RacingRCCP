@@ -10,7 +10,7 @@ namespace FormulaGame
         public static bool InRace { get; private set; }
         public static FormulaCatalog.CareerEvent CurrentEvent => FormulaCatalog.Current.Event(FormulaProgression.State.activeEventId);
         public static bool StockVehicle => InRace && (FormulaProgression.State.activeMode == "time_trial" || (FormulaProgression.State.activeMode == "career" && CurrentEvent?.vehicleRule == "stock_balanced"));
-        public static int OpponentLevel => CurrentEvent?.id == "g06" ? 2 : CurrentEvent?.id == "g04" ? 1 : 0;
+        public static int OpponentLevel => Mathf.Clamp(CurrentEvent?.opponentUpgradeLevel ?? 0, 0, 3);
         public static double BestLap { get; private set; }
         public static int ValidLaps { get; private set; }
         public static double LastLap { get; private set; }

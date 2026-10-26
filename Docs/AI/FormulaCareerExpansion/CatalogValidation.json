@@ -1,0 +1,606 @@
+{
+  "status": "passed",
+  "unity": "6000.3.19f1",
+  "events": 22,
+  "circuits": 18,
+  "racingVisuals": 8,
+  "rtg": 10,
+  "pages": 4,
+  "openingSeriesRewardsPreserved": true,
+  "schedule": [
+    {
+      "id": "g01",
+      "name": "Shakedown",
+      "trackId": "track_01",
+      "laps": 1,
+      "opponentCount": 0,
+      "opponentUpgradeLevel": 0,
+      "date": "12–14 MAR",
+      "baseValidFinishReward": {
+        "credits": 0,
+        "xp": 0
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 1000
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g02",
+      "name": "First Flying Lap",
+      "trackId": "track_01",
+      "laps": 3,
+      "opponentCount": 0,
+      "opponentUpgradeLevel": 0,
+      "date": "19–21 MAR",
+      "baseValidFinishReward": {
+        "credits": 800,
+        "xp": 800
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 800,
+          "xp": 400
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g03",
+      "name": "Race Debut",
+      "trackId": "track_01",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 0,
+      "date": "02–04 APR",
+      "baseValidFinishReward": {
+        "credits": 1000,
+        "xp": 1000
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1000,
+          "xp": 500
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g04",
+      "name": "Sprint",
+      "trackId": "track_02",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 1,
+      "date": "09–11 APR",
+      "baseValidFinishReward": {
+        "credits": 1400,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g05",
+      "name": "Precision Lap",
+      "trackId": "track_02",
+      "laps": 3,
+      "opponentCount": 0,
+      "opponentUpgradeLevel": 0,
+      "date": "16–18 APR",
+      "baseValidFinishReward": {
+        "credits": 1200,
+        "xp": 1100
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g06",
+      "name": "Generic Finale",
+      "trackId": "track_02",
+      "laps": 5,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "30 APR–02 MAY",
+      "baseValidFinishReward": {
+        "credits": 2000,
+        "xp": 1600
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1800,
+          "xp": 800
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g07",
+      "name": "Alpine Grand Prix",
+      "trackId": "track_03",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "21–23 MAY",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g08",
+      "name": "Autumn Sprint",
+      "trackId": "track_04",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "04–06 JUN",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g09",
+      "name": "Winter Challenge",
+      "trackId": "track_05",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "18–20 JUN",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g10",
+      "name": "Wet Weather Race",
+      "trackId": "track_06",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "02–04 JUL",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g11",
+      "name": "City Lights GP",
+      "trackId": "track_07",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "09–11 JUL",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g12",
+      "name": "Terrain Sprint",
+      "trackId": "track_08",
+      "laps": 4,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "23–25 JUL",
+      "baseValidFinishReward": {
+        "credits": 1600,
+        "xp": 1200
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1200,
+          "xp": 600
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g13",
+      "name": "Apex Park GP",
+      "trackId": "rtg_01",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "30 JUL–01 AUG",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g14",
+      "name": "Velocity Sprint",
+      "trackId": "rtg_02",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "03–05 SEP",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g15",
+      "name": "Crown Valley GP",
+      "trackId": "rtg_03",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "10–12 SEP",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g16",
+      "name": "Summit Grand Prix",
+      "trackId": "rtg_04",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "24–26 SEP",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g17",
+      "name": "Horizon Grand Prix",
+      "trackId": "rtg_05",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "01–03 OCT",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g18",
+      "name": "Falcon Sprint",
+      "trackId": "rtg_06",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "08–10 OCT",
+      "baseValidFinishReward": {
+        "credits": 1800,
+        "xp": 1400
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1400,
+          "xp": 700
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g19",
+      "name": "Aurora Grand Prix",
+      "trackId": "rtg_07",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "22–24 OCT",
+      "baseValidFinishReward": {
+        "credits": 2000,
+        "xp": 1600
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1600,
+          "xp": 800
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g20",
+      "name": "Meridian Sprint",
+      "trackId": "rtg_08",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "29–31 OCT",
+      "baseValidFinishReward": {
+        "credits": 2000,
+        "xp": 1600
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1600,
+          "xp": 800
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g21",
+      "name": "Vertex Grand Prix",
+      "trackId": "rtg_09",
+      "laps": 3,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "05–07 NOV",
+      "baseValidFinishReward": {
+        "credits": 2000,
+        "xp": 1600
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 1600,
+          "xp": 800
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    },
+    {
+      "id": "g22",
+      "name": "Season Finale",
+      "trackId": "rtg_10",
+      "laps": 4,
+      "opponentCount": 3,
+      "opponentUpgradeLevel": 2,
+      "date": "18–20 NOV",
+      "baseValidFinishReward": {
+        "credits": 2400,
+        "xp": 1800
+      },
+      "oneTimeMedalRewards": {
+        "bronze": {
+          "credits": 2000,
+          "xp": 1000
+        },
+        "silver": {
+          "credits": 200,
+          "xp": 200
+        },
+        "gold": {
+          "credits": 400,
+          "xp": 400
+        }
+      }
+    }
+  ]
+}

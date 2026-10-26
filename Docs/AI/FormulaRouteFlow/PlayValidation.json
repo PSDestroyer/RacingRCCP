@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "unity": "6000.3.19f1",
+  "phase": 8,
+  "isolatedSave": true,
+  "method": "Real RCCP reverse input, braking to a stop and natural AI-driven player laps through the production GamePlayManager. No player transports, seeded velocities or scripted lap completion.",
+  "reverseSpeedKmh": 27.13896,
+  "reverseDistanceMetres": 5.43022537,
+  "telemetry": {
+    "elapsed": 139.990509,
+    "laps": 1,
+    "checkpoint": 0,
+    "wrongWay": false,
+    "signedSpeed": 170.771835,
+    "reverse": false,
+    "throttle": 0.132062942,
+    "brake": 0.0
+  },
+  "checks": [
+    "Real RCCP brake/reverse input backs the car away from the grid; sustained opposite travel shows WRONG WAY and awards no laps",
+    "Stopping actual reverse motion clears WRONG WAY, independently of the selected gear",
+    "The real RCCP player completes a valid lap on Racing Visuals and RTG using production lap progression, without seeded poses, velocities or lap completion"
+  ],
+  "laps": [
+    {
+      "track": "track_01",
+      "completedLaps": 1,
+      "validLaps": 1,
+      "bestLap": 115.38993072509766,
+      "elapsed": 115.389931,
+      "nextCheckpoint": 0
+    },
+    {
+      "track": "rtg_01",
+      "completedLaps": 1,
+      "validLaps": 1,
+      "bestLap": 139.82719421386719,
+      "elapsed": 139.8272,
+      "nextCheckpoint": 0
+    }
+  ],
+  "invalidations": [],
+  "errors": []
+}

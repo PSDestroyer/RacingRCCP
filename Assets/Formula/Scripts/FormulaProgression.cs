@@ -30,6 +30,7 @@ namespace FormulaGame
             p.textScale = p.textScale >= 115 ? 115 : 100;
             p.safeAreaPercent = p.safeAreaPercent == 95 ? 95 : 100;
             var catalog = FormulaCatalog.Current;
+            p.catalogVersion = catalog.catalogVersion;
             if (!catalog.freeSetups.Exists(s => s.id == p.setup)) p.setup = "balanced";
             foreach (var b in catalog.upgrades)
             {
@@ -67,7 +68,7 @@ namespace FormulaGame
             if (Unlocked(rule, p)) return "";
             if (rule["all"] is JArray all)
             {
-                if (all.Count > 3 && all.All(r => (string)r["type"] == "event_medal")) return "Gold in all 6 events";
+                if (all.Count > 3 && all.All(r => (string)r["type"] == "event_medal" && (string)r["minimumMedal"] == "gold")) return "Gold in all " + all.Count + " required events";
                 return string.Join(" · ", all.Cast<JObject>().Where(r => !Unlocked(r, p)).Select(r => LockReason(r, p)));
             }
             if ((string)rule["type"] == "event_medal")

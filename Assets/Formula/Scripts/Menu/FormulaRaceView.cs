@@ -41,6 +41,9 @@ namespace FormulaGame
         private double passTime;
         private bool career;
         private float leftUntil, rightUntil;
+        private bool wrongWayPresented;
+        private string toastTitle, toastBody;
+        private Color toastColor;
         public GameObject Hud => hud;
         public void Bind(GamePlayManager game)
         {
@@ -159,7 +162,18 @@ namespace FormulaGame
             double currentLap = FormulaSession.LapElapsed(game.FormulaElapsed);
             SetClock(lapTime, currentLap, false);
             if (sessionTime.gameObject.activeSelf) SetClock(sessionTime, game.FormulaElapsed, true);
-            float targetAlpha = Time.time < messageUntil ? 1 : 0;
+            bool wrongWay = game.FormulaWrongWay && game.FormulaRaceStarted && Time.timeScale > 0;
+            if (wrongWay != wrongWayPresented)
+            {
+                wrongWayPresented = wrongWay;
+                if (wrongWay)
+                {
+                    validity.text = "WRONG WAY"; validity.color = FormulaUI.Red;
+                    objective.text = "Turn around and follow the circuit direction";
+                }
+                else if (Time.time < messageUntil) PresentToast();
+            }
+            float targetAlpha = wrongWay || Time.time < messageUntil ? 1 : 0;
             notification.alpha = FormulaProgression.State.reducedMotion ? targetAlpha : Mathf.MoveTowards(notification.alpha, targetAlpha, Time.unscaledDeltaTime * 5);
             speed.SetText("{0:0}", car.absoluteSpeed);
             int currentGear = car.reversingNow || car.direction < 0 ? -1 : car.NGearNow ? 0 : Mathf.Max(1, car.currentGear);
@@ -227,9 +241,11 @@ namespace FormulaGame
         }
         private void ShowMessage(string title, string body, float seconds, bool warning = false)
         {
-            validity.text = title; validity.color = warning ? FormulaUI.Red : FormulaUI.Accent;
-            objective.text = body; messageUntil = Time.time + seconds;
+            toastTitle = title; toastBody = body; toastColor = warning ? FormulaUI.Red : FormulaUI.Accent;
+            messageUntil = Time.time + seconds;
+            if (!wrongWayPresented) PresentToast();
         }
+        private void PresentToast() { validity.text = toastTitle; validity.color = toastColor; objective.text = toastBody; }
         private void OnCheckpoint(int index, double elapsed)
         {
             if (index < 0 || index >= currentSplits.Length) return;

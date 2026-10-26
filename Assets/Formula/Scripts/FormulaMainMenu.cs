@@ -62,7 +62,7 @@ namespace FormulaGame
             view.Back.onClick.AddListener(Back);
             view.Home.Bind(() => Show("Carieră"),
                 OpenGarage, () => Show("Curse rapide"), () => Show("Profil"), () => Show("Setări"));
-            view.Career.Bind(InspectEvent, Back); view.Quick.Bind(InspectEvent);
+            view.Career.Bind(InspectEvent, Back); view.Quick.Bind(InspectEvent); view.Profile.Bind();
             view.Garage.Bind(ChangeGarageTab, UpgradeLevels, BuyUpgrade, id => Mutate(d => FormulaProgression.EquipSetup(d, id)), SelectLivery, ApplySelectedLivery);
             if (view.Garage.Upgrade != null) view.Garage.Upgrade.Bind(SelectUpgradeLevel, Back);
             view.Dialogs.Bind(CloseModal, OpenGarageFromBriefing); view.Dialogs.Close();
@@ -75,7 +75,7 @@ namespace FormulaGame
             {
                 string id = FormulaSession.PendingReviewEvent; FormulaSession.PendingReviewEvent = null;
                 Show("Carieră");
-                RestoreFocus(view.Career.GetComponentsInChildren<FormulaEventCard>().FirstOrDefault(card => card.EventId == id)?.gameObject);
+                RestoreFocus(view.Career.ShowEvent(id));
                 InspectEvent(id, "career");
             }
         }
@@ -93,6 +93,16 @@ namespace FormulaGame
                 if (previous || next)
                 {
                     ChangeGarageTab((Array.IndexOf(GarageTabs, garageTab) + (next ? 1 : 2)) % 3);
+                }
+            }
+            if (!view.Dialogs.IsOpen && (page == "Carieră" || page == "Profil"))
+            {
+                bool previous = Gamepad.current?.leftShoulder.wasPressedThisFrame == true || Keyboard.current?.qKey.wasPressedThisFrame == true;
+                bool next = Gamepad.current?.rightShoulder.wasPressedThisFrame == true || Keyboard.current?.eKey.wasPressedThisFrame == true;
+                if (previous || next)
+                {
+                    if (page == "Carieră") view.Career.SetPage(view.Career.Page + (next ? 1 : -1));
+                    else view.Profile.SetPage(view.Profile.Page + (next ? 1 : -1));
                 }
             }
             bool cancel = cancelAction?.WasPerformedThisFrame() == true || Keyboard.current?.escapeKey.wasPressedThisFrame == true;
@@ -166,6 +176,7 @@ namespace FormulaGame
             RememberFocus(); string previousKey = renderedKey; page = target;
             renderedKey = page + "|" + (page == "Garaj" ? garageTab : "");
             activeScreen = view.Activate(page); view.Garage.ShowSection(Array.IndexOf(GarageTabs, garageTab));
+            if (page == "Carieră") view.Career.Open();
             vehiclePreview.Present(page, garageTab, previousKey == null);
             string hints = page == "Garaj" ? FormulaInputHints.Sections + "\n" + FormulaInputHints.Confirm : FormulaInputHints.Menu;
             view.SetChrome(page == "Acasă" ? "MAIN MENU" : page == "Garaj" ? FormulaMenuFormatting.PageName(garageTab).ToUpperInvariant() : FormulaMenuFormatting.PageName(page).ToUpperInvariant(), hints, page != "Acasă");

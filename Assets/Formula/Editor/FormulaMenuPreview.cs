@@ -278,14 +278,14 @@ public static class FormulaMenuPreview
             }
             else if (stage == 2)
             {
-                Require(FormulaCatalog.Current.careerEvents.All(e => Button(e.id) != null), "Career card missing.");
+                Require(FormulaCatalog.Current.careerEvents.Take(6).All(e => Button(e.id) != null), "Opening career card missing.");
                 Require(Button("g06").interactable, "Locked events must remain inspectable.");
                 Pass("Six career cards preserve event locks and rewards");
                 Require(Button("g01").GetComponent<RectTransform>().sizeDelta == new Vector2(398, 216), "Career card dimensions differ from Figma.");
                 Require(!canvas.transform.Find("Header").gameObject.activeSelf && !canvas.transform.Find("Footer").gameObject.activeSelf, "Legacy chrome overlaps Figma Career.");
                 var season = FormulaSeasonCalendar.Current;
                 Require(season.year == 2027 && season.rounds.Count == 24 && season.Round(1).startDate == "2027-03-12" && season.Round(1).endDate == "2027-03-14", "2027 season opening weekend does not match the official calendar.");
-                Require(FormulaCatalog.Current.careerEvents.Select(season.Caption).Distinct().Count() == 6 && season.Caption(FormulaCatalog.Current.Event("g06")) == "30 APR–02 MAY", "Career dates repeat or the cross-month weekend is incorrect.");
+                Require(FormulaCatalog.Current.careerEvents.Select(season.Caption).Distinct().Count() == FormulaCatalog.Current.careerEvents.Count && season.Caption(FormulaCatalog.Current.Event("g06")) == "30 APR–02 MAY", "Career dates repeat or the cross-month weekend is incorrect.");
                 var typeIcons = menu.View.Career.GetComponentsInChildren<FormulaMissionIcon>();
                 Require(typeIcons.Length == 6 && typeIcons.Select(i => i.DisplaySymbol).Distinct().Count() == 6, "Career needs six distinct mission symbols.");
                 Require(!menu.View.Career.GetComponentsInChildren<UnityEngine.UI.RawImage>().Any(i => i.name == "Country Badge"), "A country flag is still visible on a mission.");

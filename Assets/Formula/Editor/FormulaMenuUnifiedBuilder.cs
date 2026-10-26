@@ -174,6 +174,7 @@ public static class FormulaMenuUnifiedBuilder
             Hide(card.transform,"Figma Card Surface");Hide(card.transform,"Figma Selected Surface");FormulaMenuTheme.StyleButton(card.GetComponent<UnityEngine.UI.Button>());
             card.GetComponent<FormulaMenuFocus>().StyleFigma(card.transform.Find("Upgrade Focus").GetComponent<FormulaPanelGraphic>(),card.transform.Find("Figma To Race").GetComponent<UnityEngine.UI.RawImage>(),card.transform.Find("Upgrade Normal").GetComponent<FormulaPanelGraphic>());
         }
+        FormulaCareerExpansionBuilder.StyleCareer(view);
     }
     private static void StyleQuick(FormulaQuickView view)
     {
@@ -195,6 +196,7 @@ public static class FormulaMenuUnifiedBuilder
         {
             Place(row,0,i++*73,830,63);Panel(row);Format(row.Find("Event").GetComponent<TMP_Text>(),20,8,585,47,26);Format(row.Find("Medal").GetComponent<TMP_Text>(),620,8,190,47,24);
         }
+        FormulaCareerExpansionBuilder.StyleProfile(view);
     }
     private static void StyleSettings(FormulaSettingsView view)
     {

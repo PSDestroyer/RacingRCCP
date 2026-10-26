@@ -69,7 +69,7 @@ namespace FormulaGame
         public sealed class CareerEvent
         {
             public string id, name, mode, trackId, vehicleRule, missionIcon;
-            public int laps, opponentCount, calendarRound;
+            public int laps, opponentCount, calendarRound, opponentUpgradeLevel;
             public JObject unlock, medalTargets;
             public Reward baseValidFinishReward;
             public Dictionary<string, Reward> oneTimeMedalRewards;

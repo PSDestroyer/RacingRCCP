@@ -16,6 +16,13 @@ namespace FormulaGame
         public string EventId => eventId;
         public string Mode => mode;
         public void Bind(Action<string, string> inspect) => button.onClick.AddListener(() => inspect(eventId, mode));
+        public void ShowCareer(FormulaCatalog.CareerEvent entry, int index)
+        {
+            eventId = entry.id; mode = "career"; gameObject.name = entry.id;
+            var map = GetComponentInChildren<FormulaTrackMap>(true);
+            if (map != null) map.SetTrack(entry.trackId);
+            Refresh(index);
+        }
         public void ShowCircuit(FormulaAssets.Track track, int index, string session)
         {
             eventId = session + ":" + track.id; mode = session == "trial" ? "time_trial" : "quick";

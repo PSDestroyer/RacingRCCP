@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "unity": "6000.3.19f1",
+  "logicChecksPassed": 31,
+  "savedCircuitsCovered": 18,
+  "physicalValidLaps": [
+    "track_01",
+    "rtg_01"
+  ],
+  "wrongWayHudObserved": true,
+  "wrongWayThresholdKmh": 10.08,
+  "wrongWayGraceSeconds": 0.9,
+  "wrongWayClearSeconds": 0.25,
+  "routeChanges": "Player progress uses continuous projection along the circuit, including signed travel through the start/finish seam. Dense AI navigation points remain authored as before. Invalid rejoins advance the attempt without granting valid-lap timing.",
+  "unchanged": "Scenes, car handling, AI configuration, catalog, upgrade prices and saved progression were not edited by this change.",
+  "runtimeErrorsInFinalAcceptance": [],
+  "devicePerformanceProfiling": "not performed",
+  "testMethod": "Real RCCP reverse input, braking to a stop and natural AI-driven player laps through the production GamePlayManager. No player transports, seeded velocities or scripted lap completion.",
+  "earlierAcceptanceNotes": "Two preliminary reverse-stop probes used unsuitable input assumptions, including a handbrake absent from Formula axles; service-brake acceptance passed. One earlier autonomous lap was invalid; subsequent instrumented acceptance runs completed valid laps on both circuits without route invalidations. Earlier attempts preserved under /tmp/formula-route-*-attempt.json."
+}
