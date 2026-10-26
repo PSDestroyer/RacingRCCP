@@ -937,6 +937,9 @@ public class GamePlayManager : MonoBehaviour
             if (raceStateText != null)
                 raceStateText.text = countdownTexts[i];
 
+            if (FormulaGame.FormulaSession.InRace)
+                FormulaGame.FormulaAudio.Play(FormulaGame.FormulaAudio.Cue.Countdown);
+
             yield return new WaitForSeconds(countdownStepDuration);
         }
 
@@ -954,6 +957,9 @@ public class GamePlayManager : MonoBehaviour
     {
         gameplayStarted = true;
         SetPauseAvailability(true);
+
+        if (FormulaGame.FormulaSession.InRace)
+            FormulaGame.FormulaAudio.Play(FormulaGame.FormulaAudio.Cue.Go);
 
         if (IsRaceMode())
         {

@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf55fb0864cd544f8a86b4ae4dc46482, type: 3}
+  m_Name: SoundBank
+  m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaSoundBank
+  mixer: {fileID: 24100000, guid: a3fba796d006f40dd96894caf3136ff7, type: 2}
+  playerEngine: {fileID: 24300006, guid: a3fba796d006f40dd96894caf3136ff7, type: 2}
+  opponents: {fileID: 24300007, guid: a3fba796d006f40dd96894caf3136ff7, type: 2}
+  tyres: {fileID: 24300008, guid: a3fba796d006f40dd96894caf3136ff7, type: 2}
+  contacts: {fileID: 24300009, guid: a3fba796d006f40dd96894caf3136ff7, type: 2}
+  world: {fileID: 24300010, guid: a3fba796d006f40dd96894caf3136ff7, type: 2}
+  ui: {fileID: 24300011, guid: a3fba796d006f40dd96894caf3136ff7, type: 2}
+  music: {fileID: 24300012, guid: a3fba796d006f40dd96894caf3136ff7, type: 2}
+  rollAsphalt: {fileID: 8300000, guid: 88c436d41fc7a42398cd3fd50b6b6016, type: 3}
+  rollKerb: {fileID: 8300000, guid: ca62af8f575bc40309da5f600d4ec4ba, type: 3}
+  rollGrass: {fileID: 8300000, guid: c62e1783eb5324a9ca6973dac7480551, type: 3}
+  rollGravel: {fileID: 8300000, guid: 49f5e3296eceb4567aab321f79b0484c, type: 3}
+  rollWet: {fileID: 8300000, guid: c3da4c1a44f694f238306aa7f40ca056, type: 3}
+  rollSnow: {fileID: 8300000, guid: f023b1704e5144350b7c9a329f258081, type: 3}
+  scrapeAsphalt: {fileID: 8300000, guid: 749660a0888ca4c358e24833fc270acf, type: 3}
+  scrapeMetal: {fileID: 8300000, guid: de22abbe817e144fcad60aeb9272ec9a, type: 3}
+  suspensionHit: {fileID: 8300000, guid: 948b55abd80345b4aab96053dbe0c2ba, type: 3}
+  skidAsphalt: {fileID: 8300000, guid: cd9122599cbb06444921dbb3637ed9ac, type: 3}
+  skidGrass: {fileID: 8300000, guid: 7b144cd82aa04ff4caaa799c8e189162, type: 3}
+  skidSand: {fileID: 8300000, guid: 59e038dfc28ad83419aff1c81f974134, type: 3}
+  lightImpacts:
+  - {fileID: 8300000, guid: 1b6d0736e7b15446d9ce2e38145260a5, type: 3}
+  - {fileID: 8300000, guid: 2723066abf7eb4d8a85cf53c6f094ca3, type: 3}
+  - {fileID: 8300000, guid: 0bd737b41c7e3475480dfb3a427a9114, type: 3}
+  - {fileID: 8300000, guid: 5ae80774fa1f140b6977aafcc27bbb41, type: 3}
+  heavyImpacts:
+  - {fileID: 8300000, guid: 4c05a8cdfbec615458d075d1e07a7d4c, type: 3}
+  - {fileID: 8300000, guid: 17550b365ac51f2418915bf82b519630, type: 3}
+  - {fileID: 8300000, guid: 82f3ac1f97a9a384db5bcb1fd1966b16, type: 3}
+  - {fileID: 8300000, guid: 370cb2e9c8bccfe48bdec70db08e4644, type: 3}
+  metalImpacts:
+  - {fileID: 8300000, guid: ec7bbebaca3d548708a20aace9510742, type: 3}
+  - {fileID: 8300000, guid: bafb821dc8c57443aa604317b8588031, type: 3}
+  - {fileID: 8300000, guid: fe35dfebc354c4cfdaa0609b61437aa5, type: 3}
+  - {fileID: 8300000, guid: c8c9e924a3ca143c79b63c05bc3995ad, type: 3}
+  bodyImpacts:
+  - {fileID: 8300000, guid: 3e1269fae6c1749ac8b14dab8261bc47, type: 3}
+  - {fileID: 8300000, guid: 3b4f594cf9cec49d6bbe426388790f94, type: 3}
+  - {fileID: 8300000, guid: a822c689ec67844b786aba300bfbc47a, type: 3}
+  - {fileID: 8300000, guid: abdb60ddff6e1442ea713fb34a14f5a8, type: 3}
+  crowd: {fileID: 8300000, guid: c7aefaf5ce087204cb235fcca5fdd88a, type: 3}
+  rain: {fileID: 8300000, guid: 6f856520838514b90b20a5a9c7e25e2e, type: 3}
+  garageRoom: {fileID: 8300000, guid: 95a25b66cb95b43a1bec39871b1d3fad, type: 3}
+  menuMusic: {fileID: 8300000, guid: 530c3bf0e5fe749e1b77a785dbc759f9, type: 3}
+  cues:
+  - cue: 0
+    clip: {fileID: 8300000, guid: e3a2735b44d2a4d6bb040da110b8ccba, type: 3}
+  - cue: 1
+    clip: {fileID: 8300000, guid: a569d1d6ff93e44acb345ab50690fc7a, type: 3}
+  - cue: 2
+    clip: {fileID: 8300000, guid: a5516900bd98d41de9dada72baccd6cd, type: 3}
+  - cue: 3
+    clip: {fileID: 8300000, guid: 0a1cc8ab3c586430b8ff8b1c5f9657d3, type: 3}
+  - cue: 4
+    clip: {fileID: 8300000, guid: 408100c0609594595ad63b2f85a0a60d, type: 3}
+  - cue: 5
+    clip: {fileID: 8300000, guid: 018419862423a4853992b646822ca89b, type: 3}
+  - cue: 6
+    clip: {fileID: 8300000, guid: 243433a33a7af45d3b83b26e6348f98f, type: 3}
+  - cue: 7
+    clip: {fileID: 8300000, guid: 050c699be765645638d739b341f4967e, type: 3}
+  - cue: 8
+    clip: {fileID: 8300000, guid: fdce6780675ee4414a23630bfa242e6d, type: 3}
+  - cue: 9
+    clip: {fileID: 8300000, guid: 02a86dc24c044421f8af101347dbc7ee, type: 3}
+  - cue: 10
+    clip: {fileID: 8300000, guid: 102d90822d24e47a8bc0fe5fa69be7ec, type: 3}
+  - cue: 11
+    clip: {fileID: 8300000, guid: 25eb25d297f574b38b94576e7976ee95, type: 3}
+  - cue: 12
+    clip: {fileID: 8300000, guid: bc4aff70fbf954214985437ed5479d33, type: 3}
+  - cue: 13
+    clip: {fileID: 8300000, guid: 4eecc1f04f9b74c589d9bec7982c33a9, type: 3}
+  - cue: 14
+    clip: {fileID: 8300000, guid: de70a4f4d2c19477eb91d8d4aec20f6d, type: 3}

@@ -38,6 +38,11 @@ namespace FormulaGame
         private string splitText = "—";
         private double splitDifference;
         private int displayedGear = int.MinValue;
+        private RCCP_CarController feedbackCar;
+        private FormulaEngineAudio engineFeedback;
+        public float InstrumentRpm { get; private set; }
+        public int InstrumentFrame { get; private set; } = -1;
+        public int InstrumentGear => displayedGear;
         private double passTime;
         private bool career;
         private float leftUntil, rightUntil;
@@ -56,12 +61,12 @@ namespace FormulaGame
             pauseController.OptionsOverride = HandleOptions;
             pauseController.SetPauseAvailability(game.FormulaRaceStarted);
             pauseButton.onClick.AddListener(pauseController.PauseGame);
-            resume.onClick.AddListener(pauseController.ResumeGameplay);
+            resume.onClick.AddListener(() => { FormulaAudio.Play(FormulaAudio.Cue.Back); pauseController.ResumeGameplay(); });
             restart.onClick.AddListener(() => Confirm("RESTART SESSION?", "Your current run will end. Earned career progress is retained.", () => { pauseController.ResumeGameplay(); FormulaSession.Launch(FormulaProgression.State.activeEventId, FormulaProgression.State.activeMode); }));
             leave.onClick.AddListener(() => Confirm("LEAVE SESSION?", "This unfinished run will not award credits or XP. Your saved progress is retained.", FormulaSession.ReturnToMenu));
             cancel.onClick.AddListener(CancelConfirmation); confirm.onClick.AddListener(() => pending?.Invoke());
             settings.onClick.AddListener(() => { pauseController.OpenSettingsPanel(); RefreshVolumes(); FormulaUI.Focus(options.transform); });
-            optionsBack.onClick.AddListener(() => { SaveAudio(); pauseController.CloseSettingsPanel(); EventSystem.current?.SetSelectedGameObject(settings.gameObject); });
+            optionsBack.onClick.AddListener(() => { FormulaAudio.Play(FormulaAudio.Cue.Back); SaveAudio(); pauseController.CloseSettingsPanel(); EventSystem.current?.SetSelectedGameObject(settings.gameObject); });
             retrySave.onClick.AddListener(() => { error.SetActive(false); FormulaSession.RetryResult(); });
             leaveError.onClick.AddListener(() => { error.SetActive(false); pause.SetActive(true); Confirm("LEAVE WITHOUT SAVING?", "This result has not been saved. Its credits and XP will be lost.", FormulaSession.ReturnToMenu, true); });
             for (int i = 0; i < volumes.Length; i++) { int index = i; volumes[i].onValueChanged.AddListener(value => ChangeVolume(index, value)); }
@@ -130,7 +135,11 @@ namespace FormulaGame
                 // Career already has its exact target on screen; no duplicate objective toast.
                 if (!career) ShowMessage(e.name.ToUpperInvariant(), racing ? game.totalRaceLaps + " laps · " + e.opponentCount + " rivals" : "Set your fastest valid lap", 3);
             }
-            if (invalid && !wasInvalid) ShowMessage("LAP INVALID · TRACK LIMITS", InvalidRecovery(game), 5, true);
+            if (invalid && !wasInvalid)
+            {
+                ShowMessage("LAP INVALID · TRACK LIMITS", InvalidRecovery(game), 5, true);
+                FormulaAudio.Play(FormulaAudio.Cue.LapInvalid);
+            }
             wasInvalid = invalid;
             UpdateTelemetry(game);
             if (racing && Time.unscaledTime >= nextStandings)
@@ -158,6 +167,18 @@ namespace FormulaGame
         {
             if (finished || game.CarController == null || !hud.activeSelf) return;
             var car = game.CarController;
+            if (feedbackCar != car)
+            {
+                feedbackCar = car; engineFeedback = car.GetComponent<FormulaEngineAudio>();
+            }
+            var sample = engineFeedback != null && engineFeedback.isActiveAndEnabled ? engineFeedback.Feedback
+                : new FormulaEngineAudio.PowertrainFrame
+                {
+                    frame = Time.frameCount, rpm = car.engineRPM, idleRpm = car.minEngineRPM, maxRpm = car.maxEngineRPM,
+                    shiftRpm = car.maxEngineRPM * .95f,
+                    displayGear = FormulaEngineAudio.DisplayGearFor(car.currentGear, car.reversingNow || car.direction < 0, car.NGearNow)
+                };
+            InstrumentRpm = sample.rpm; InstrumentFrame = sample.frame;
             startMessage.text = game.FormulaRaceStarted ? "" : game.raceStateText != null ? game.raceStateText.text : "";
             double currentLap = FormulaSession.LapElapsed(game.FormulaElapsed);
             SetClock(lapTime, currentLap, false);
@@ -170,28 +191,30 @@ namespace FormulaGame
                 {
                     validity.text = "WRONG WAY"; validity.color = FormulaUI.Red;
                     objective.text = "Turn around and follow the circuit direction";
+                    FormulaAudio.Play(FormulaAudio.Cue.WrongWay);
                 }
                 else if (Time.time < messageUntil) PresentToast();
             }
             float targetAlpha = wrongWay || Time.time < messageUntil ? 1 : 0;
             notification.alpha = FormulaProgression.State.reducedMotion ? targetAlpha : Mathf.MoveTowards(notification.alpha, targetAlpha, Time.unscaledDeltaTime * 5);
             speed.SetText("{0:0}", car.absoluteSpeed);
-            int currentGear = car.reversingNow || car.direction < 0 ? -1 : car.NGearNow ? 0 : Mathf.Max(1, car.currentGear);
+            int currentGear = sample.displayGear;
             if (displayedGear != currentGear)
             {
                 displayedGear = currentGear; gear.text = currentGear < 0 ? "R" : currentGear == 0 ? "N" : currentGear.ToString();
             }
-            float fraction = Mathf.InverseLerp(car.minEngineRPM, car.maxEngineRPM, car.engineRPM);
+            float fraction = sample.RevFraction;
             revFill.fillAmount = fraction; revFill.color = fraction > .9f ? FormulaUI.Red : FormulaUI.Accent;
-            rpm.SetText("{0:0} RPM", Mathf.Round(car.engineRPM / 100) * 100);
+            rpm.SetText("{0:0} RPM", Mathf.Round(sample.rpm / 100) * 100);
+            bool pulseOff = sample.ShiftDue && !FormulaProgression.State.reducedMotion && Time.unscaledTime % .25f >= .125f;
             for (int i = 0; i < shiftLights.Length; i++)
             {
-                bool lit = fraction >= .45f + i * .045f;
+                bool lit = sample.ShiftFraction >= FormulaEngineAudio.ShiftLightThreshold(i, shiftLights.Length);
                 Color tint = i >= 8 ? FormulaUI.Red : i >= 4 ? FormulaUI.Accent : Color.white;
-                tint.a = lit ? 1 : .16f;
+                tint.a = lit ? pulseOff ? .35f : 1 : .16f;
                 if (shiftLights[i].color != tint) shiftLights[i].color = tint;
             }
-            gear.color = fraction >= .95f && currentGear > 0 ? FormulaUI.Accent : Color.white;
+            gear.color = (sample.shifting || sample.ShiftDue) && currentGear > 0 ? FormulaUI.Accent : Color.white;
         }
         private static void SetClock(TMP_Text text, double seconds, bool lapPrefix)
         {
@@ -259,7 +282,10 @@ namespace FormulaGame
         private void OnLapCompleted()
         {
             bool best = FormulaSession.LastLapValid && (previousBest <= 0 || FormulaSession.LastLap < previousBest);
-            if (best && race != null && race.FormulaCompletedLaps < race.totalRaceLaps && race.totalRaceLaps > 1) FormulaAudio.Play(FormulaAudio.Cue.Record);
+            bool anotherLap = race != null && race.FormulaCompletedLaps < race.totalRaceLaps && race.totalRaceLaps > 1;
+            // The final-lap cue takes priority if this crossing also sets a record.
+            if (anotherLap && race.FormulaCompletedLaps == race.totalRaceLaps - 1) FormulaAudio.Play(FormulaAudio.Cue.FinalLap);
+            else if (best && anotherLap) FormulaAudio.Play(FormulaAudio.Cue.Record);
             if (best)
             {
                 Array.Copy(currentSplits, bestSplits, currentSplits.Length);
@@ -280,6 +306,7 @@ namespace FormulaGame
         }
         private void CancelConfirmation()
         {
+            FormulaAudio.Play(FormulaAudio.Cue.Back);
             pending = null; pauseConfirmation.SetActive(false);
             if (confirmFromError) { confirmFromError = false; pause.SetActive(false); error.SetActive(true); FormulaUI.Focus(error.transform); }
             else { pauseOverview.SetActive(true); FormulaUI.Focus(pauseOverview.transform); }
@@ -287,12 +314,13 @@ namespace FormulaGame
         private bool HandleOptions()
         {
             if (pauseConfirmation.activeSelf) { CancelConfirmation(); return true; }
-            if (options.activeSelf) { SaveAudio(); pauseController.CloseSettingsPanel(); EventSystem.current?.SetSelectedGameObject(settings.gameObject); return true; }
+            if (options.activeSelf) { FormulaAudio.Play(FormulaAudio.Cue.Back); SaveAudio(); pauseController.CloseSettingsPanel(); EventSystem.current?.SetSelectedGameObject(settings.gameObject); return true; }
             return false;
         }
         public void SaveError(string message)
         {
             if (error.activeSelf) return;
+            FormulaAudio.Play(FormulaAudio.Cue.Error);
             errorDetails.text = "Your result could not be saved. Retry saving to keep your credits and XP.\n" + message;
             hud.SetActive(false); pause.SetActive(false); options.SetActive(false); error.SetActive(true); FormulaUI.Focus(error.transform);
         }
@@ -322,7 +350,7 @@ namespace FormulaGame
         public void OnCancel(BaseEventData data)
         {
             if (confirmFromError) CancelConfirmation();
-            else if (pause.activeSelf || options.activeSelf) pauseController.TogglePause();
+            else if (pause.activeSelf || options.activeSelf) { FormulaAudio.Play(FormulaAudio.Cue.Back); pauseController.TogglePause(); }
         }
         private void OnDestroy()
         {

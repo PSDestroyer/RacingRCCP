@@ -1,0 +1,46 @@
+{
+  "status": "passed",
+  "unity": "6000.3.19f1",
+  "phase": 9,
+  "isolatedSave": true,
+  "method": "Actual menu/race/countdown, 20 seconds autonomous RCCP driving with explicit public gearbox up/down commands, pause and scene return. Per-rendered-frame source/HUD telemetry; separate Play-only cloned-chassis PhysX contact fixture. Does not measure speaker latency or subjective sound quality.",
+  "peakSpeedKmh": 91.4919739,
+  "shifts": 2,
+  "maxPlayerLoops": 8,
+  "maxScheduledSources": 35,
+  "maxVirtualSources": 8,
+  "listenerOutput": {
+    "frames": 961536,
+    "channels": 2,
+    "sampleRate": 48000,
+    "clippedSamples": 0,
+    "peak": 0.274015456,
+    "rms": 0.0615024231
+  },
+  "synchronization": {
+    "frames": 1176,
+    "frameMismatches": 0,
+    "gearMismatches": 0,
+    "rpmTextMismatches": 0,
+    "risingFrames": 400,
+    "fallingFrames": 335,
+    "shiftFrames": 9,
+    "maxAudioHudRpmDifference": 0.0,
+    "maxPlaybackPitchErrorCents": 0.0
+  },
+  "fixtureImpulseNs": 0.0,
+  "fixtureImpactGain": 0.182696939,
+  "fixture": null,
+  "checks": [
+    "Menu music is scheduled; UI uses its own mixer route and one slider attenuation. Synthetic same-frame Confirm/Purchase dispatches only Purchase.",
+    "Normal Menu to track01 quick-race flow emits exactly three countdown cues and one GO with four participants.",
+    "Per-rendered-frame CSV verifies rising/falling RPM and shifts: actual TMP labels, audio source pitch and HUD share one powertrain sample.",
+    "Twenty seconds of real RCCP autonomous input produces speed, shifts and engine/road voices; player and opponents suppress the legacy engine path.",
+    "Synthetic cue probe during an actual race pause suppresses Wrong Way and allows Back on the UI source.",
+    "Controlled Play-only cloned chassis: 3cm drop produces an actual PhysX contact and a positive impact voice below the old800Ns gate.",
+    "Controlled Play-only cloned chassis sliding at an initial8m/s activates sustained asphalt scrape audio from real CollisionStay contacts.",
+    "Stopping the controlled contact fixture fades the scrape, leaves no contact voices and does not spam impacts.",
+    "Returning to Menu restores music and leaves no racing engine loops."
+  ],
+  "errors": []
+}

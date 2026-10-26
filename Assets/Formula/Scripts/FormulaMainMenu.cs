@@ -63,9 +63,9 @@ namespace FormulaGame
             view.Home.Bind(() => Show("Carieră"),
                 OpenGarage, () => Show("Curse rapide"), () => Show("Profil"), () => Show("Setări"));
             view.Career.Bind(InspectEvent, Back); view.Quick.Bind(InspectEvent); view.Profile.Bind();
-            view.Garage.Bind(ChangeGarageTab, UpgradeLevels, BuyUpgrade, id => Mutate(d => FormulaProgression.EquipSetup(d, id)), SelectLivery, ApplySelectedLivery);
+            view.Garage.Bind(ChangeGarageTab, UpgradeLevels, BuyUpgrade, id => Mutate(d => FormulaProgression.EquipSetup(d, id), FormulaAudio.Cue.Equip), SelectLivery, ApplySelectedLivery);
             if (view.Garage.Upgrade != null) view.Garage.Upgrade.Bind(SelectUpgradeLevel, Back);
-            view.Dialogs.Bind(CloseModal, OpenGarageFromBriefing); view.Dialogs.Close();
+            view.Dialogs.Bind(() => { FormulaAudio.Play(FormulaAudio.Cue.Back); CloseModal(); }, OpenGarageFromBriefing); view.Dialogs.Close();
             view.Settings.Bind(id => Mutate(d => { if (id == "abs") d.formula.abs = !d.formula.abs; else if (id == "tcs") d.formula.tcs = !d.formula.tcs; else d.formula.esp = !d.formula.esp; return null; }));
             initialized = true;
             garageTab = GarageTabs[FormulaProgression.State.lastGarageTab];
@@ -111,6 +111,7 @@ namespace FormulaGame
         public void Back()
         {
             if (!initialized) return;
+            if (view.Dialogs.IsOpen || page != "Acasă") FormulaAudio.Play(FormulaAudio.Cue.Back);
             if (view.Dialogs.IsOpen) CloseModal();
             else if (page == "Garaj" && garageReturnEvent != null)
             {
@@ -230,7 +231,7 @@ namespace FormulaGame
         }
         private void UpgradeLevels(string branchId)
         {
-            OpenDialog(); view.Dialogs.SelectLevel(branchId, level => Mutate(d => FormulaProgression.EquipUpgrade(d, branchId, level)));
+            OpenDialog(); view.Dialogs.SelectLevel(branchId, level => Mutate(d => FormulaProgression.EquipUpgrade(d, branchId, level), FormulaAudio.Cue.Equip));
         }
         private void SelectUpgradeLevel(string branchId, int level)
         {
@@ -244,7 +245,7 @@ namespace FormulaGame
             if (level <= p.Owned(branchId))
             {
                 requirement = "OWNED\nSwitch between purchased levels for free."; cost = "Free to equip"; label = "Equip · Free";
-                action = () => Mutate(d => FormulaProgression.EquipUpgrade(d, branchId, level)); focusAction = true;
+                action = () => Mutate(d => FormulaProgression.EquipUpgrade(d, branchId, level), FormulaAudio.Cue.Equip); focusAction = true;
             }
             else if (level != next)
             {
@@ -273,7 +274,7 @@ namespace FormulaGame
                 {
                     requirement = "AVAILABLE\nPurchase once. Switch between owned levels for free.";
                     label = "Buy and equip · " + target.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
-                    action = () => Mutate(d => FormulaProgression.BuyUpgrade(d, branchId, level));
+                    action = () => Mutate(d => FormulaProgression.BuyUpgrade(d, branchId, level), FormulaAudio.Cue.Purchase);
                 }
             }
             // Credits and progression are independent requirements: show both when both are missing.
@@ -281,6 +282,7 @@ namespace FormulaGame
             int shortfall = unowned ? Math.Max(0, target.incrementalPriceCredits - FormulaProgression.Data.money) : 0;
             string funds = unowned ? "Balance: " + FormulaProgression.Data.money.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR · Upgrade cost: " + target.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR" : null;
             if (shortfall > 0) cost = "MISSING " + shortfall.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
+            if (unowned && (shortfall > 0 || !FormulaProgression.Unlocked(target.unlock, p))) FormulaAudio.Play(FormulaAudio.Cue.Error);
             OpenDialog(); view.Dialogs.Upgrade(branch.name + " / " + (level == 0 ? "Stock" : "Level " + level), effect, tradeoff, benefit, requirement, cost, label, action, actionable, focusAction, funds, shortfall > 0);
         }
         private static string UpgradePrice(FormulaCatalog.UpgradeLevel level) => "Upgrade cost · " + level.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
@@ -307,22 +309,27 @@ namespace FormulaGame
             var livery = FormulaCatalog.Current.Skin(selectedLivery);
             var offer = new FormulaLiveryOffer(livery, FormulaProgression.State, FormulaProgression.Data.money);
             if (offer.Equipped) return;
-            if (offer.Owned) { Mutate(d => FormulaProgression.BuyOrEquipLivery(d, livery.id)); return; }
+            if (offer.Owned) { Mutate(d => FormulaProgression.BuyOrEquipLivery(d, livery.id), FormulaAudio.Cue.Equip); return; }
             bool ready = offer.Unlocked && offer.Shortfall == 0;
+            if (!ready) FormulaAudio.Play(FormulaAudio.Cue.Error);
             string actionName = ready ? offer.Purchase ? offer.Action : "Claim and equip · Free" : offer.Unlocked ? "Earn credits · " + offer.Event.name : "View " + offer.Event.name;
-            Action action = ready ? () => Mutate(d => FormulaProgression.BuyOrEquipLivery(d, livery.id)) : () => ViewGarageEvent(offer.Event);
+            Action action = ready ? () => Mutate(d => FormulaProgression.BuyOrEquipLivery(d, livery.id), offer.Purchase ? FormulaAudio.Cue.Purchase : FormulaAudio.Cue.Unlock) : () => ViewGarageEvent(offer.Event);
             OpenDialog(); view.Dialogs.Livery(livery, offer, actionName, action, !ready || !offer.Purchase);
         }
         private void Launch(string id, string mode) { string error = FormulaSession.Launch(id, mode); if (error != null) { CloseModal(); ShowError(error); } }
-        private void Mutate(Func<SaveManager.SaveData, string> action)
+        private void Mutate(Func<SaveManager.SaveData, string> action, FormulaAudio.Cue successCue = FormulaAudio.Cue.Confirm)
         {
             if (transactionBusy) return;
             var origin = view.Dialogs.IsOpen ? modalOrigin : EventSystem.current?.currentSelectedGameObject;
             transactionBusy = true; bool ok = FormulaProgression.Commit(action, out string error);
             CloseModal(); transactionBusy = false;
-            if (ok) RestoreFocus(origin); else ShowError(error);
+            if (ok) { FormulaAudio.Play(successCue); RestoreFocus(origin); } else ShowError(error);
         }
-        private void ShowError(string message) => Confirm("ACTION NOT COMPLETED", message, "OK", CloseModal);
+        private void ShowError(string message)
+        {
+            FormulaAudio.Play(FormulaAudio.Cue.Error);
+            Confirm("ACTION NOT COMPLETED", message, "OK", CloseModal);
+        }
         private void OpenDialog()
         {
             modalOrigin = EventSystem.current?.currentSelectedGameObject; view.SetBaseInteraction(false);

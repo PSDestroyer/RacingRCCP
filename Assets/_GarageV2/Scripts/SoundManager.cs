@@ -2,6 +2,7 @@ using HalvaStudio.Save;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
+using FormulaGame;
 
 public class SoundManager : MonoBehaviour
 {
@@ -20,6 +21,9 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioClip buttonClickClip;
     [SerializeField] private AudioClip buttonErrorClip;
     [SerializeField] private AudioClip NewCarClip;
+    private float musicPresentationGain;
+    public AudioSource UiSource => sfxSource;
+    public AudioSource MusicSource => musicSource;
 
     private void Awake()
     {
@@ -32,20 +36,13 @@ public class SoundManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         EnsureAudioSources();
+        if (FormulaSoundBank.Current != null && GetComponent<FormulaSoundscape>() == null)
+            gameObject.AddComponent<FormulaSoundscape>();
     }
 
     private void Start()
     {
         EnsureAudioSources();
-        
-        // RCCP_Audio audio = FindAnyObjectByType<RCCP_Audio>();
-        //
-        // if (audio != null)
-        // {
-        //     audio.audioMixer = vehicleMixer;
-        //     audio.Reload();
-        // }
-        
         
         if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
         {
@@ -54,6 +51,16 @@ public class SoundManager : MonoBehaviour
             SetMusicVolume(SaveManager.Instance.saveData.musicLevel);
         }
     }
+
+    private void LateUpdate()
+    {
+        FormulaAudio.Flush();
+        if (musicSource == null) return;
+        musicSource.volume = Mathf.MoveTowards(musicSource.volume, musicPresentationGain, Time.unscaledDeltaTime * .4f);
+        if (musicSource.volume <= .001f && musicSource.isPlaying) musicSource.Pause();
+        else if (musicSource.volume > .001f && !musicSource.isPlaying && musicSource.clip != null) musicSource.UnPause();
+    }
+    public void SetMusicPresentationGain(float gain) { musicPresentationGain = Mathf.Clamp01(gain); }
 
     private void OnEnable()
     {
@@ -72,46 +79,34 @@ public class SoundManager : MonoBehaviour
 
     public void SetVehicleVolume(float value)
     {
-        if (audioMixer == null || SaveManager.Instance == null || SaveManager.Instance.saveData == null)
-            return;
-
         value = Mathf.Clamp01(value);
 
         float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
 
         // RCCP_AudioMixer exposes its master gain as "volume".
-        bool ok = audioMixer.SetFloat("volume", db);
-        SaveManager.Instance.saveData.VehicleLevel = value;
-
-        // Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");
+        if (audioMixer != null) audioMixer.SetFloat("volume", db);
+        FormulaAudioMix.SetVehicleLevel(value);
+        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null) SaveManager.Instance.saveData.VehicleLevel = value;
     }
     public void SetSfxVolume(float value)
     {
-        if (GlobalaudioMixer == null || SaveManager.Instance == null || SaveManager.Instance.saveData == null)
-            return;
-
         value = Mathf.Clamp01(value);
 
         float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
 
-        bool ok = GlobalaudioMixer.SetFloat("SfxVolume", db);
-        SaveManager.Instance.saveData.soundLevel = value;
-
-        // Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");
+        if (GlobalaudioMixer != null) GlobalaudioMixer.SetFloat("SfxVolume", db);
+        FormulaAudioMix.SetSfxLevel(value);
+        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null) SaveManager.Instance.saveData.soundLevel = value;
     }
     public void SetMusicVolume(float value)
     {
-        if (GlobalaudioMixer == null || SaveManager.Instance == null || SaveManager.Instance.saveData == null)
-            return;
-
         value = Mathf.Clamp01(value);
 
         float db = value <= 0.0001f ? -80f : Mathf.Log10(value) * 20f;
 
-        bool ok = GlobalaudioMixer.SetFloat("MusicVolume", db);
-        SaveManager.Instance.saveData.musicLevel = value;
-
-        // Debug.Log($"Set VehicleVolume -> {db}, success = {ok}");
+        if (GlobalaudioMixer != null) GlobalaudioMixer.SetFloat("MusicVolume", db);
+        FormulaAudioMix.SetMusicLevel(value);
+        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null) SaveManager.Instance.saveData.musicLevel = value;
     }
     private void OnDestroy()
     {
@@ -136,6 +131,7 @@ public class SoundManager : MonoBehaviour
 
         musicSource.clip = clip;
         musicSource.loop = loop;
+        musicSource.volume = 0;
         musicSource.Play();
     }
 
@@ -159,12 +155,8 @@ public class SoundManager : MonoBehaviour
         if (sfxSource == null || clip == null)
             return;
 
-        float volume = 1f;
-
-        if (SaveManager.Instance != null && SaveManager.Instance.saveData != null)
-            volume = SaveManager.Instance.saveData.soundLevel;
-
-        sfxSource.PlayOneShot(clip, volume * Mathf.Clamp01(gain));
+        // The saved slider is applied once, on the mixer. Cue gain is artistic.
+        sfxSource.PlayOneShot(clip, Mathf.Clamp01(gain));
     }
 
     public void PlayButtonClick()
@@ -189,6 +181,14 @@ public class SoundManager : MonoBehaviour
 
         if (sfxSource == null)
             sfxSource = FindOrCreateAudioSource("Sfx Source", loop: false, mixerGroup: sfxMixerGroup);
+        var bank = FormulaSoundBank.Current;
+        if (bank != null)
+        {
+            musicSource.outputAudioMixerGroup = bank.music;
+            sfxSource.outputAudioMixerGroup = bank.ui;
+        }
+        musicSource.ignoreListenerPause = true; musicSource.priority = 200; musicSource.spatialBlend = 0;
+        sfxSource.ignoreListenerPause = true; sfxSource.priority = 8; sfxSource.spatialBlend = 0;
     }
 
     private AudioSource FindOrCreateAudioSource(string sourceName, bool loop, AudioMixerGroup mixerGroup)

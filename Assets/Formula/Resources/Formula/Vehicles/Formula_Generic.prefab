@@ -1079,6 +1079,9 @@ GameObject:
   - component: {fileID: 7924292930229514758}
   - component: {fileID: 3440292064501736546}
   - component: {fileID: 1304708504035923461}
+  - component: {fileID: 1647397098859625305}
+  - component: {fileID: 2037106826941794276}
+  - component: {fileID: 7537990273961156919}
   m_Layer: 8
   m_Name: Formula_Generic
   m_TagString: Untagged
@@ -1302,6 +1305,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c15a0b1c9db024f54816b9471ebef81a, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaTractionControl
+--- !u!114 &1647397098859625305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3377091455269629680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efa5ae5c7c7534330933bcac83db0fdf, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaEngineAudio
+  layers: []
+  engineGain: 0.48
+  shiftGain: 0.22
+  windGain: 0.12
+--- !u!114 &2037106826941794276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3377091455269629680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7585db432b02f48e2a178943772ff3d0, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaContactAudio
+--- !u!114 &7537990273961156919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3377091455269629680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89073527f39fb4b6fab858e447df06f0, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaTransmission
+  shiftCooldown: 0.18
+  clutchEngagementSeconds: 0.06
+  launchEngagementSeconds: 0.22
+  wheelCoupling: 8
 --- !u!1 &3438539044495844432
 GameObject:
   m_ObjectHideFlags: 0

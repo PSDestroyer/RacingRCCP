@@ -137,7 +137,7 @@ public class GameplayMangerCarHud : MonoBehaviour
             return;
         }
 
-        int gearValue = Mathf.Max(1, currentCar.currentGear);
+        int gearValue = Mathf.Max(0, currentCar.currentGear) + 1;
         currentGearText.text = gearValue.ToString();
         SetGearVisualColor(GetGearColor(gearValue));
     }
