@@ -16,11 +16,7 @@ namespace FormulaGame
         }
         private void OnEnable()
         {
-            Texture texture = null;
-#if UNITY_SWITCH && !UNITY_EDITOR
-            texture = _Assets._PlatformSpeciffics.Switch.NintendoManager.GetProfileImage();
-#endif
-            Present(texture);
+            Present(null);
         }
         public void Present(Texture texture)
         {
