@@ -84,6 +84,7 @@ public static class FormulaHomeReferenceBuilder
         Format(footer.Find("Page Title").GetComponent<TMP_Text>(), 48, 23, 500, 60, 45); footer.Find("Page Title").GetComponent<TMP_Text>().font = FormulaMenuAssets.Current.titleFont;
         Place(footer.Find("Title Rule"), 48, 0, 1184, 1);
         Place(view.transform.Find("Shell Lower Shade"),0,568,1280,152);
+        FormulaPlayerAvatarBuilder.Configure(account.Find("Player Name").GetComponent<TMP_Text>());
     }
     private static FormulaMissionIcon Icon(Transform parent, string name, FormulaMissionIcon.Symbol symbol, float x, float y, float size)
     {

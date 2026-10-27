@@ -56,12 +56,12 @@ public class Username : MonoBehaviour
 
     IEnumerator LoadGame()
     {
-        Saving.text = "Saving .";
+        Saving.text = FormulaGame.FormulaLocalization.T("Saving") + " .";
         Saving.gameObject.SetActive(true);
         yield return new WaitForSeconds(1);
-        Saving.text = "Saving ..";
+        Saving.text = FormulaGame.FormulaLocalization.T("Saving") + " ..";
         yield return new WaitForSeconds(1);
-        Saving.text = "Saving ...";
+        Saving.text = FormulaGame.FormulaLocalization.T("Saving") + " ...";
         yield return new WaitForSeconds(1);
         SaveManager.Instance.Save();
       

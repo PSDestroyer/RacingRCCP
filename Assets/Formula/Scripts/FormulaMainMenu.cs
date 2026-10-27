@@ -79,8 +79,9 @@ namespace FormulaGame
                 InspectEvent(id, "career");
             }
         }
-        private void OnEnable() => FormulaProgression.Changed += Refresh;
-        private void OnDisable() => FormulaProgression.Changed -= Refresh;
+        private void OnEnable() { FormulaProgression.Changed += Refresh; FormulaLocalization.Changed += LocaleChanged; }
+        private void OnDisable() { FormulaProgression.Changed -= Refresh; FormulaLocalization.Changed -= LocaleChanged; }
+        private void LocaleChanged() { if (initialized) { Refresh(); RefreshPrompts(); } }
         private void Update()
         {
             if (!initialized) return;
@@ -180,7 +181,7 @@ namespace FormulaGame
             if (page == "Carieră") view.Career.Open();
             vehiclePreview.Present(page, garageTab, previousKey == null);
             string hints = page == "Garaj" ? FormulaInputHints.Sections + "\n" + FormulaInputHints.Confirm : FormulaInputHints.Menu;
-            view.SetChrome(page == "Acasă" ? "MAIN MENU" : page == "Garaj" ? FormulaMenuFormatting.PageName(garageTab).ToUpperInvariant() : FormulaMenuFormatting.PageName(page).ToUpperInvariant(), hints, page != "Acasă");
+            view.SetChrome(page == "Acasă" ? FormulaLocalization.T("MAIN MENU") : page == "Garaj" ? FormulaMenuFormatting.PageName(garageTab).ToUpperInvariant() : FormulaMenuFormatting.PageName(page).ToUpperInvariant(),hints,page != "Acasă");
             selectedLivery = FormulaProgression.State.equippedLivery;
             vehiclePreview.ShowLivery(selectedLivery); view.Garage.InspectLivery(selectedLivery); statsDirty = true;
             view.Garage.WireNavigation(); RestoreFocus();
@@ -191,7 +192,7 @@ namespace FormulaGame
         }
         private void RefreshPrompts()
         {
-            view.SetChrome(page == "Acasă" ? "MAIN MENU" : page == "Garaj" ? FormulaMenuFormatting.PageName(garageTab).ToUpperInvariant() : FormulaMenuFormatting.PageName(page).ToUpperInvariant(), page == "Garaj" ? FormulaInputHints.Sections + "\n" + FormulaInputHints.Confirm : FormulaInputHints.Menu, page != "Acasă");
+            view.SetChrome(page == "Acasă" ? FormulaLocalization.T("MAIN MENU") : page == "Garaj" ? FormulaMenuFormatting.PageName(garageTab).ToUpperInvariant() : FormulaMenuFormatting.PageName(page).ToUpperInvariant(),page == "Garaj" ? FormulaInputHints.Sections + "\n" + FormulaInputHints.Confirm : FormulaInputHints.Menu,page != "Acasă");
             view.Garage.WireNavigation();
         }
         private void LateUpdate()
@@ -211,18 +212,18 @@ namespace FormulaGame
             switch (branch)
             {
                 case "engine":
-                    effect = $"Torque  +{previous * 3}% → +{next * 3}%"; tradeoff = "No additional tradeoff";
-                    benefit = "Higher torque improves acceleration when grip is available."; break;
+                    effect = FormulaLocalization.F("Torque  +{0}% → +{1}%", previous * 3, next * 3); tradeoff = FormulaLocalization.T("No additional tradeoff");
+                    benefit = FormulaLocalization.T("Higher torque improves acceleration when grip is available."); break;
                 case "brakes":
-                    effect = $"Brake torque  +{previous * 4}% → +{next * 4}%"; tradeoff = "Front-to-rear brake balance is retained";
-                    benefit = "Higher brake torque adds braking force. Grip and ABS still limit stopping distance."; break;
+                    effect = FormulaLocalization.F("Brake torque  +{0}% → +{1}%", previous * 4, next * 4); tradeoff = FormulaLocalization.T("Front-to-rear brake balance is retained");
+                    benefit = FormulaLocalization.T("Higher brake torque adds braking force. Grip and ABS still limit stopping distance."); break;
                 case "suspension":
-                    effect = $"Springs  +{previous * 1.5f:0.#}% → +{next * 1.5f:0.#}%";
-                    tradeoff = $"Damping +{next * 3.5f:0.#}% · Anti-roll +{next * 2.5f:0.#}%";
-                    benefit = "Firmer chassis response, with less compliance over bumps."; break;
+                    effect = FormulaLocalization.F("Springs  +{0:0.#}% → +{1:0.#}%", previous * 1.5f, next * 1.5f);
+                    tradeoff = FormulaLocalization.F("Damping +{0:0.#}% · Anti-roll +{1:0.#}%", next * 3.5f, next * 2.5f);
+                    benefit = FormulaLocalization.T("Firmer chassis response, with less compliance over bumps."); break;
                 default:
-                    effect = $"Downforce  +{previous * 4}% → +{next * 4}%"; tradeoff = $"Drag  +{previous}% → +{next}%";
-                    benefit = "More grip in fast corners, with increased air resistance."; break;
+                    effect = FormulaLocalization.F("Downforce  +{0}% → +{1}%", previous * 4, next * 4); tradeoff = FormulaLocalization.F("Drag  +{0}% → +{1}%", previous, next);
+                    benefit = FormulaLocalization.T("More grip in fast corners, with increased air resistance."); break;
             }
         }
         private void BuyUpgrade(string branchId)
@@ -244,12 +245,12 @@ namespace FormulaGame
             int next = p.Owned(branchId) + 1;
             if (level <= p.Owned(branchId))
             {
-                requirement = "OWNED\nSwitch between purchased levels for free."; cost = "Free to equip"; label = "Equip · Free";
+                requirement = FormulaLocalization.T("OWNED") + "\n" + FormulaLocalization.T("Choose an owned level. Switching is free."); cost = FormulaLocalization.T("Free to equip"); label = FormulaLocalization.T("Equip · Free");
                 action = () => Mutate(d => FormulaProgression.EquipUpgrade(d, branchId, level), FormulaAudio.Cue.Equip); focusAction = true;
             }
             else if (level != next)
             {
-                requirement = "PREVIOUS LEVEL REQUIRED\nPurchase Level " + next + " first."; cost = UpgradePrice(target); label = "View Level " + next;
+                requirement = FormulaLocalization.T("Previous level required") + "\n" + FormulaLocalization.F("Purchase Level {0} first.", next); cost = UpgradePrice(target); label = FormulaLocalization.F("View Level {0}", next);
                 action = () => { CloseModal(); view.Garage.Upgrade.FocusLevel(next); SelectUpgradeLevel(branchId, next); }; focusAction = true;
             }
             else
@@ -260,32 +261,32 @@ namespace FormulaGame
                 cost = UpgradePrice(target);
                 if (!unlocked)
                 {
-                    requirement = "LOCKED\n" + (careerEvent != null ? "Earn " + FormulaCatalog.MedalName(FormulaCatalog.ParseMedal((string)eventRule["minimumMedal"])) + " in " + careerEvent.name + " to unlock this upgrade." : FormulaProgression.LockReason(target.unlock, p));
-                    label = careerEvent != null ? "View " + careerEvent.name : "Locked"; actionable = careerEvent != null;
+                    requirement = FormulaLocalization.T("LOCKED") + "\n" + (careerEvent != null ? FormulaLocalization.F("Earn {0} in {1} to unlock this upgrade.", FormulaCatalog.MedalName(FormulaCatalog.ParseMedal((string)eventRule["minimumMedal"])), FormulaLocalization.T(careerEvent.name)) : FormulaProgression.LockReason(target.unlock, p));
+                    label = careerEvent != null ? FormulaLocalization.F("View {0}", FormulaLocalization.T(careerEvent.name)) : FormulaLocalization.T("Locked"); actionable = careerEvent != null;
                     action = () => ViewGarageEvent(careerEvent); focusAction = true;
                 }
                 else if (!affordable)
                 {
-                    requirement = "INSUFFICIENT CREDITS\nComplete a career event to earn credits.";
-                    label = careerEvent != null ? "Earn credits · " + careerEvent.name : "Not enough credits"; actionable = careerEvent != null;
+                    requirement = FormulaLocalization.T("INSUFFICIENT CREDITS") + "\n" + FormulaLocalization.T("Select a career event to earn career rewards.");
+                    label = careerEvent != null ? FormulaLocalization.F("Earn credits · {0}", FormulaLocalization.T(careerEvent.name)) : FormulaLocalization.T("Not enough credits."); actionable = careerEvent != null;
                     action = () => ViewGarageEvent(careerEvent); focusAction = true;
                 }
                 else
                 {
-                    requirement = "AVAILABLE\nPurchase once. Switch between owned levels for free.";
-                    label = "Buy and equip · " + target.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
+                    requirement = FormulaLocalization.T("AVAILABLE") + "\n" + FormulaLocalization.T("Purchase once. Switch between owned levels for free.");
+                    label = FormulaLocalization.T("Buy and equip · ") + target.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + FormulaLocalization.T(" CR");
                     action = () => Mutate(d => FormulaProgression.BuyUpgrade(d, branchId, level), FormulaAudio.Cue.Purchase);
                 }
             }
             // Credits and progression are independent requirements: show both when both are missing.
             bool unowned = level > p.Owned(branchId);
             int shortfall = unowned ? Math.Max(0, target.incrementalPriceCredits - FormulaProgression.Data.money) : 0;
-            string funds = unowned ? "Balance: " + FormulaProgression.Data.money.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR · Upgrade cost: " + target.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR" : null;
-            if (shortfall > 0) cost = "MISSING " + shortfall.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
+            string funds = unowned ? FormulaLocalization.T("Balance: ") + FormulaProgression.Data.money.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + FormulaLocalization.T(" CR · Upgrade cost: ") + target.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + FormulaLocalization.T(" CR") : null;
+            if (shortfall > 0) cost = FormulaLocalization.T("MISSING ") + shortfall.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + FormulaLocalization.T(" CR");
             if (unowned && (shortfall > 0 || !FormulaProgression.Unlocked(target.unlock, p))) FormulaAudio.Play(FormulaAudio.Cue.Error);
-            OpenDialog(); view.Dialogs.Upgrade(branch.name + " / " + (level == 0 ? "Stock" : "Level " + level), effect, tradeoff, benefit, requirement, cost, label, action, actionable, focusAction, funds, shortfall > 0);
+            OpenDialog(); view.Dialogs.Upgrade(FormulaLocalization.T(branch.name) + " / " + (level == 0 ? FormulaLocalization.T("Stock") : FormulaLocalization.T("Level ") + level),effect,tradeoff,benefit,requirement,cost,label,action,actionable,focusAction,funds,shortfall > 0);
         }
-        private static string UpgradePrice(FormulaCatalog.UpgradeLevel level) => "Upgrade cost · " + level.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
+        private static string UpgradePrice(FormulaCatalog.UpgradeLevel level) => FormulaLocalization.T("Upgrade cost · ") + level.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + FormulaLocalization.T(" CR");
         private static JObject UpgradeEventRule(JObject rule, FormulaProgress progress, bool unmetOnly)
         {
             if (rule == null || (unmetOnly && FormulaProgression.Unlocked(rule, progress))) return null;
@@ -312,7 +313,7 @@ namespace FormulaGame
             if (offer.Owned) { Mutate(d => FormulaProgression.BuyOrEquipLivery(d, livery.id), FormulaAudio.Cue.Equip); return; }
             bool ready = offer.Unlocked && offer.Shortfall == 0;
             if (!ready) FormulaAudio.Play(FormulaAudio.Cue.Error);
-            string actionName = ready ? offer.Purchase ? offer.Action : "Claim and equip · Free" : offer.Unlocked ? "Earn credits · " + offer.Event.name : "View " + offer.Event.name;
+            string actionName = ready ? offer.Purchase ? offer.Action : FormulaLocalization.T("Claim and equip · Free") : offer.Unlocked ? FormulaLocalization.F("Earn credits · {0}", FormulaLocalization.T(offer.Event.name)) : FormulaLocalization.F("View {0}", FormulaLocalization.T(offer.Event.name));
             Action action = ready ? () => Mutate(d => FormulaProgression.BuyOrEquipLivery(d, livery.id), offer.Purchase ? FormulaAudio.Cue.Purchase : FormulaAudio.Cue.Unlock) : () => ViewGarageEvent(offer.Event);
             OpenDialog(); view.Dialogs.Livery(livery, offer, actionName, action, !ready || !offer.Purchase);
         }
@@ -328,7 +329,7 @@ namespace FormulaGame
         private void ShowError(string message)
         {
             FormulaAudio.Play(FormulaAudio.Cue.Error);
-            Confirm("ACTION NOT COMPLETED", message, "OK", CloseModal);
+            Confirm(FormulaLocalization.T("ACTION NOT COMPLETED"),message,FormulaLocalization.T("OK"),CloseModal);
         }
         private void OpenDialog()
         {
@@ -336,7 +337,7 @@ namespace FormulaGame
         }
         private void Confirm(string title, string details, string accept, Action action, bool canConfirm = true)
         {
-            OpenDialog(); view.Dialogs.Confirm(title, details, accept, () => { if (canConfirm) action(); }, canConfirm);
+            OpenDialog(); view.Dialogs.Confirm(title,details,accept,() => { if (canConfirm) action(); },canConfirm);
         }
         private void CloseModal()
         {

@@ -20,32 +20,32 @@ namespace FormulaGame
         public void OnCancel(UnityEngine.EventSystems.BaseEventData data) => FormulaSession.ReturnToMenu();
         public void Present(FormulaReceipt receipt)
         {
-            eventName.text = FormulaCatalog.Current.Event(receipt.eventId).name.ToUpperInvariant();
+            eventName.text = FormulaLocalization.T(FormulaCatalog.Current.Event(receipt.eventId).name).ToUpperInvariant();
             bool career = FormulaProgression.State.activeMode == "career";
             var session = FormulaCatalog.Current.Event(receipt.eventId);
             bool noValidLap = receipt.bestLapSeconds <= 0;
             bool failed = noValidLap || career && receipt.medal == Medal.None;
-            if (resultCaption != null) resultCaption.text = failed ? "SESSION ENDED" : career ? "EVENT PASSED" : "SESSION COMPLETE";
-            medal.text = noValidLap ? "NO VALID LAP" : career && failed ? session.mode == "race" ? "OUTSIDE TOP 3" : "TARGET MISSED"
+            if (resultCaption != null) resultCaption.text = failed ? FormulaLocalization.T("SESSION ENDED") : career ? FormulaLocalization.T("EVENT PASSED") : FormulaLocalization.T("SESSION COMPLETE");
+            medal.text = noValidLap ? FormulaLocalization.T("NO VALID LAP") : career && failed ? session.mode == "race" ? FormulaLocalization.T("OUTSIDE TOP 3") : FormulaLocalization.T("TARGET MISSED")
                 : career ? FormulaUI.MedalName(receipt.medal).ToUpperInvariant()
-                : receipt.bestLapSeconds <= 0 ? "NO VALID LAP"
-                : session.mode == "race" ? "P" + receipt.finishPosition
-                : receipt.personalBest ? "PERSONAL BEST" : "SESSION COMPLETE";
+                : receipt.bestLapSeconds <= 0 ? FormulaLocalization.T("NO VALID LAP")
+                : session.mode == "race" ? FormulaLocalization.T("P") + receipt.finishPosition
+                : receipt.personalBest ? FormulaLocalization.T("PERSONAL BEST") : FormulaLocalization.T("SESSION COMPLETE");
             medal.color = failed ? FormulaUI.Red : FormulaUI.Accent;
             elapsed.text = FormulaRaceUI.TimeText(receipt.elapsedSeconds); bestLap.text = FormulaRaceUI.TimeText(receipt.bestLapSeconds);
-            credits.text = "+" + receipt.credits.ToString("N0") + " CR"; xp.text = "+" + receipt.xp.ToString("N0") + " XP";
+            credits.text = "+" + receipt.credits.ToString("N0") + FormulaLocalization.T(" CR"); xp.text = "+" + receipt.xp.ToString("N0") + FormulaLocalization.T(" XP");
             bonus.gameObject.SetActive(receipt.levelCredits > 0);
-            bonus.text = "LEVEL UP BONUS  +" + receipt.levelCredits.ToString("N0") + " CR";
+            bonus.text = FormulaLocalization.T("LEVEL UP BONUS  +") + receipt.levelCredits.ToString("N0") + FormulaLocalization.T(" CR");
             var data = FormulaProgression.Data;
             string xpText = FormulaMenuFormatting.Experience(data.exp, data.currentLevel, out float fraction);
-            if (progress != null) progress.text = "LEVEL " + data.currentLevel + "  /  " + xpText;
+            if (progress != null) progress.text = FormulaLocalization.T("LEVEL ") + data.currentLevel + "  /  " + xpText;
             if (xpFill != null) xpFill.fillAmount = fraction;
-            if (target != null) target.text = noValidLap ? "Complete a lap within track limits, passing every checkpoint."
-                : failed && session.mode == "race" ? "Finish in the top 3. You finished P" + receipt.finishPosition + "."
-                : failed ? "Record a valid lap in " + FormulaRaceUI.TimeText(FormulaAssets.Current.FindTrack(session.trackId).referenceLapSeconds * 1.2) + " or faster.\nImprove by " + (receipt.bestLapSeconds - FormulaAssets.Current.FindTrack(session.trackId).referenceLapSeconds * 1.2).ToString("0.000", System.Globalization.CultureInfo.InvariantCulture) + " s."
+            if (target != null) target.text = noValidLap ? FormulaLocalization.T("Complete a lap within track limits, passing every checkpoint.")
+                : failed && session.mode == "race" ? FormulaLocalization.T("Finish in the top 3. You finished P") + receipt.finishPosition + "."
+                : failed ? FormulaLocalization.T("Record a valid lap in ") + FormulaRaceUI.TimeText(FormulaAssets.Current.FindTrack(session.trackId).referenceLapSeconds * 1.2) + FormulaLocalization.T(" or faster.\nImprove by ") + (receipt.bestLapSeconds - FormulaAssets.Current.FindTrack(session.trackId).referenceLapSeconds * 1.2).ToString("0.000", System.Globalization.CultureInfo.InvariantCulture) + FormulaLocalization.T(" s.")
                 : NextTarget(receipt);
             wallet.text = FormulaProgression.Data.money.ToString("N0"); driver.text = FormulaMenuFormatting.DriverName;
-            unlocks.text = receipt.newLiveries.Count == 0 ? receipt.personalBest && career ? "PERSONAL BEST\nResult saved" : "RESULT SAVED" : "LIVERY UNLOCKED\n" + string.Join(" · ", receipt.newLiveries.Select(id => FormulaCatalog.Current.Skin(id).displayName));
+            unlocks.text = receipt.newLiveries.Count == 0 ? receipt.personalBest && career ? FormulaLocalization.T("PERSONAL BEST\nResult saved") : FormulaLocalization.T("RESULT SAVED") : FormulaLocalization.T("LIVERY UNLOCKED\n") + string.Join(" · ", receipt.newLiveries.Select(id => FormulaCatalog.Current.Skin(id).displayName));
             unlocks.color = receipt.newLiveries.Count > 0 ? FormulaUI.Accent : Color.white;
             if (rewardLivery != null)
             {
@@ -58,13 +58,13 @@ namespace FormulaGame
             if (rewardPresentation != null) rewardPresentation.alpha = FormulaProgression.State.reducedMotion ? 1 : 0;
             FormulaAudio.Play(receipt.newLiveries.Count > 0 ? FormulaAudio.Cue.Unlock : failed ? FormulaAudio.Cue.End : FormulaAudio.Cue.Result);
             retry.onClick.RemoveAllListeners(); next.onClick.RemoveAllListeners(); menu.onClick.RemoveAllListeners();
-            retry.GetComponentInChildren<TMP_Text>().text = "RETRY";
-            menu.GetComponentInChildren<TMP_Text>().text = "MENU";
+            retry.GetComponentInChildren<TMP_Text>().text = FormulaLocalization.T("RETRY");
+            menu.GetComponentInChildren<TMP_Text>().text = FormulaLocalization.T("MENU");
             retry.onClick.AddListener(() => FormulaSession.Launch(receipt.eventId, FormulaProgression.State.activeMode));
             var nextEvent = career && !failed ? FormulaCatalog.Current.careerEvents.Find(e => FormulaProgression.State.Best(e.id) < Medal.Bronze) : null;
             next.gameObject.SetActive(nextEvent != null); if (nextEvent != null) next.onClick.AddListener(() => FormulaSession.ReviewEvent(nextEvent.id));
-            if (nextContext != null) nextContext.text = nextEvent == null ? "" : "UP NEXT  /  " + nextEvent.name.ToUpperInvariant() + " · " + FormulaAssets.Current.FindTrack(nextEvent.trackId).displayName;
-            if (nextEvent != null) next.GetComponentInChildren<TMP_Text>().text = nextEvent.id == receipt.eventId ? "REVIEW EVENT" : "NEXT EVENT";
+            if (nextContext != null) nextContext.text = nextEvent == null ? "" : FormulaLocalization.T("UP NEXT  /  ") + FormulaLocalization.T(nextEvent.name).ToUpperInvariant() + " · " + FormulaLocalization.T(FormulaAssets.Current.FindTrack(nextEvent.trackId).displayName);
+            if (nextEvent != null) next.GetComponentInChildren<TMP_Text>().text = nextEvent.id == receipt.eventId ? FormulaLocalization.T("REVIEW EVENT") : FormulaLocalization.T("NEXT EVENT");
             menu.onClick.AddListener(FormulaSession.ReturnToMenu);
             var buttons = new[] { retry, next, menu }.Where(b => b.gameObject.activeSelf).ToArray();
             for (int i = 0; i < buttons.Length; i++) buttons[i].navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.Explicit, selectOnLeft = buttons[(i + buttons.Length - 1) % buttons.Length], selectOnRight = buttons[(i + 1) % buttons.Length] };
@@ -86,9 +86,9 @@ namespace FormulaGame
             bool earned = receipt.credits > 0 || receipt.xp > 0 || receipt.levelCredits > 0;
             bool singleLap = FormulaCatalog.Current.Event(receipt.eventId).laps == 1;
             bool livery = receipt.newLiveries.Count > 0;
-            metricCaptions[0].text = singleLap && !failed ? "LAP TIME" : "SESSION TIME";
+            metricCaptions[0].text = singleLap && !failed ? FormulaLocalization.T("LAP TIME") : FormulaLocalization.T("SESSION TIME");
             if (singleLap && !failed) elapsed.text = FormulaRaceUI.TimeText(receipt.bestLapSeconds);
-            metricCaptions[1].text = "BEST LAP";
+            metricCaptions[1].text = FormulaLocalization.T("BEST LAP");
             Metric(0, elapsed, failed ? 650 : 30, failed ? 300 : 320, 84);
             Metric(1, bestLap, failed ? 960 : 340, failed ? 300 : 320, 84);
             Metric(2, credits, 650, failed ? 402 : 208, failed ? 84 : 116);
@@ -139,19 +139,19 @@ namespace FormulaGame
         {
             if (FormulaProgression.State.activeMode != "career")
             {
-                string mode = FormulaProgression.State.activeMode == "time_trial" ? "Time Attack"
-                    : FormulaCatalog.Current.Event(r.eventId).mode == "race" ? "Quick Race" : "Practice";
-                return mode + " · No career credits or XP";
+                string mode = FormulaProgression.State.activeMode == "time_trial" ? FormulaLocalization.T("Time Attack")
+                    : FormulaCatalog.Current.Event(r.eventId).mode == "race" ? FormulaLocalization.T("Quick Race") : FormulaLocalization.T("Practice");
+                return mode + FormulaLocalization.T(" · No career credits or XP");
             }
-            if (r.medal == Medal.Gold) return "GOLD TARGET ACHIEVED";
+            if (r.medal == Medal.Gold) return FormulaLocalization.T("GOLD TARGET ACHIEVED");
             var e = FormulaCatalog.Current.Event(r.eventId);
             var tier = r.medal == Medal.None ? Medal.Bronze : r.medal + 1;
-            if (e.mode == "race") return "NEXT MEDAL  /  " + tier.ToString().ToUpperInvariant() + " · Finish " + (tier == Medal.Gold ? "1st" : tier == Medal.Silver ? "in the top 2" : "in the top 3") + (r.finishPosition > 0 ? " · You finished P" + r.finishPosition : "");
+            if (e.mode == "race") return FormulaLocalization.T("NEXT MEDAL  /  ") + FormulaCatalog.MedalName(tier).ToUpperInvariant() + FormulaLocalization.T(" · Finish ") + (tier == Medal.Gold ? FormulaLocalization.T("1st") : tier == Medal.Silver ? FormulaLocalization.T("in the top 2") : FormulaLocalization.T("in the top 3")) + (r.finishPosition > 0 ? FormulaLocalization.T(" · You finished P") + r.finishPosition : "");
             double reference = FormulaAssets.Current.FindTrack(e.trackId).referenceLapSeconds;
             double factor = tier == Medal.Gold ? e.mode == "familiarization" ? 1.12 : 1.03 : tier == Medal.Silver ? e.mode == "familiarization" ? 1.25 : 1.1 : 1.2;
             double goal = reference * factor, actual = e.mode == "familiarization" ? r.elapsedSeconds : r.bestLapSeconds;
-            if (e.mode == "familiarization" && tier == Medal.Bronze) return "NEXT MEDAL  /  BRONZE · Complete a valid lap";
-            return "NEXT MEDAL  /  " + tier.ToString().ToUpperInvariant() + " · " + FormulaRaceUI.TimeText(goal) + (actual > goal ? " · Improve by " + (actual - goal).ToString("0.000", System.Globalization.CultureInfo.InvariantCulture) + " s" : " · Complete a valid lap");
+            if (e.mode == "familiarization" && tier == Medal.Bronze) return FormulaLocalization.T("NEXT MEDAL  /  BRONZE · Complete a valid lap");
+            return FormulaLocalization.T("NEXT MEDAL  /  ") + FormulaCatalog.MedalName(tier).ToUpperInvariant() + " · " + FormulaRaceUI.TimeText(goal) + (actual > goal ? FormulaLocalization.T(" · Improve by ") + (actual - goal).ToString("0.000", System.Globalization.CultureInfo.InvariantCulture) + FormulaLocalization.T(" s") : FormulaLocalization.T(" · Complete a valid lap"));
         }
         private static void ResizeAction(UnityEngine.UI.Button button, float x, float width)
         {

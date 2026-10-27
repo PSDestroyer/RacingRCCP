@@ -33,11 +33,11 @@ namespace FormulaGame
         public static void EnterMenu() { launching = false; InRace = false; LastError = null; Time.timeScale = 1f; AudioListener.pause = false; }
         public static string Launch(string id, string mode)
         {
-            if (launching) return "An event is already loading.";
+            if (launching) return FormulaLocalization.T("An event is already loading.");
             var e = FormulaCatalog.Current.Event(id);
             var track = e == null ? null : FormulaAssets.Current?.FindTrack(e.trackId);
-            if (track == null || string.IsNullOrEmpty(track.scenePath) || !Application.CanStreamedLevelBeLoaded(track.scenePath)) return "This circuit is not available in this build.";
-            if (mode == "career" && id.Contains(":")) return "Select a career event to earn career rewards.";
+            if (track == null || string.IsNullOrEmpty(track.scenePath) || !Application.CanStreamedLevelBeLoaded(track.scenePath)) return FormulaLocalization.T("This circuit is not available in this build.");
+            if (mode == "career" && id.Contains(":")) return FormulaLocalization.T("Select a career event to earn career rewards.");
             if (!FormulaProgression.Commit(d => FormulaProgression.BeginRun(d, id, mode), out string error)) return error;
             launching = true;
             Time.timeScale = 1f; AudioListener.pause = false;
@@ -47,7 +47,7 @@ namespace FormulaGame
                 if (loader == null) loader = new GameObject("Formula Loading Manager").AddComponent<LoadingManager>();
                 loader.LoadScene(track.scenePath);
             }
-            catch (Exception failure) { launching = false; return "Failed to load the circuit: " + failure.Message; }
+            catch (Exception failure) { launching = false; return FormulaLocalization.T("Failed to load the circuit: ") + failure.Message; }
             return null;
         }
         public static void PrepareAgent(GameObject vehicle)
@@ -76,6 +76,7 @@ namespace FormulaGame
                 FormulaProgression.BeginRun(FormulaProgression.Data, id, "quick");
             }
             InRace = true; LastError = null; reachedBrakingSpeed = false; BrakeStopCompleted = false; BestLap = 0; ValidLaps = 0; LastLap = 0; LastLapValid = false; lastLapEnd = 0; lapInvalid = false;
+            if (game.GetComponent<FormulaControllerHaptics>() == null) game.gameObject.AddComponent<FormulaControllerHaptics>();
             var e = CurrentEvent;
             CorridorHalfWidth = game.GetComponent<FormulaRaceUI>().trackHalfWidth;
             game.useCurrentMapModeSettings = false;

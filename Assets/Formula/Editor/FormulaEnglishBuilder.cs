@@ -64,12 +64,13 @@ public static class FormulaEnglishBuilder
         if (english == null) throw new InvalidOperationException("Existing English locale was not found.");
         var selectors = settings.GetStartupLocaleSelectors();
         selectors.RemoveAll(s => s is SpecificLocaleSelector);
-        selectors.Insert(0, new SpecificLocaleSelector { LocaleId = english.Identifier });
+        int savedSelector = selectors.FindIndex(s => s is FormulaSavedLocaleSelector);
+        selectors.Insert(savedSelector < 0 ? 0 : savedSelector + 1, new SpecificLocaleSelector { LocaleId = english.Identifier });
         LocalizationSettings.ProjectLocale = english;
         EditorUtility.SetDirty(settings);
         var table = LocalizationEditorSettings.GetStringTableCollection("UI");
         if (table == null || !table.StringTables.Any(t => t.LocaleIdentifier.Code == "en")) throw new InvalidOperationException("Existing English UI string table was not found.");
-        // Keep existing translated languages/tables; English now wins the startup selection.
+        // Keep existing tables and the player's saved language; English remains the fallback.
         int count = 0;
         var root = PrefabUtility.LoadPrefabContents(FormulaMenuHierarchyBuilder.PrefabPath);
         try { count += TranslateHierarchy(root); PrefabUtility.SaveAsPrefabAsset(root, FormulaMenuHierarchyBuilder.PrefabPath); }

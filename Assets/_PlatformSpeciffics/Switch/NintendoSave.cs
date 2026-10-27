@@ -28,6 +28,7 @@ namespace _Assets._PlatformSpeciffics.Switch
         private const float minimumDelayBetweenSaves = 5f;
         // Remembers the last Time.time that data was written to disk so we don't save too often.
         private static float lastSaveTime = 0f;
+        private static bool initialized;
 
         #region Start
 
@@ -44,6 +45,7 @@ namespace _Assets._PlatformSpeciffics.Switch
         /// Gets the preselected user information and mounts the save data drive.
         public static void Initialize()
         {
+            if (initialized) return;
             // Be sure to initialise the user account first (opened the user, etc.)
             NintendoManager.Initialize();
 
@@ -73,6 +75,7 @@ namespace _Assets._PlatformSpeciffics.Switch
 
             // Abort if any of the initialization steps failed.
             result.abortUnlessSuccess();
+            initialized = true;
 
         }
 

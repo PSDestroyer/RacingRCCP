@@ -61,7 +61,7 @@ namespace FormulaGame
                 events[i].gameObject.SetActive(index < catalog.Count);
                 if (index < catalog.Count) events[i].ShowCareer(catalog[index], index);
             }
-            if (pageLabel != null) pageLabel.text = "EVENTS " + (page * events.Length + 1).ToString("00") + "–" + Mathf.Min((page + 1) * events.Length, catalog.Count).ToString("00") + "  /  " + catalog.Count.ToString("00");
+            if (pageLabel != null) pageLabel.text = FormulaLocalization.T("EVENTS ") + (page * events.Length + 1).ToString("00") + "–" + Mathf.Min((page + 1) * events.Length, catalog.Count).ToString("00") + "  /  " + catalog.Count.ToString("00");
             if (previousPage != null) previousPage.interactable = PageCount > 1;
             if (nextPage != null) nextPage.interactable = PageCount > 1;
             WireNavigation();

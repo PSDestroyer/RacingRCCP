@@ -32,11 +32,17 @@ namespace FormulaGame
         public string Caption(FormulaCatalog.CareerEvent e)
         {
             var weekend = Round(e.calendarRound);
-            if (weekend == null) return "SEASON " + year;
+            if (weekend == null) return FormulaLocalization.T("SEASON ") + year;
             var start = DateTime.ParseExact(weekend.startDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
             var end = DateTime.ParseExact(weekend.endDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
-            return (start.Month == end.Month ? start.ToString("dd", CultureInfo.InvariantCulture) : start.ToString("dd MMM", CultureInfo.InvariantCulture)).ToUpperInvariant()
-                + "–" + end.ToString("dd MMM", CultureInfo.InvariantCulture).ToUpperInvariant();
+            string code = FormulaLocalization.Culture.TwoLetterISOLanguageName;
+            if (code == "ja" || code == "zh" || code == "ko")
+            {
+                string month = code == "ko" ? "월" : "月", day = code == "ko" ? "일" : "日";
+                return start.Month + month + start.Day + (start.Month == end.Month ? "–" : day + "–" + end.Month + month) + end.Day + day;
+            }
+            return (start.Month == end.Month ? start.ToString("dd", CultureInfo.InvariantCulture) : start.ToString("dd MMM", FormulaLocalization.Culture)).ToUpperInvariant()
+                + "–" + end.ToString("dd MMM", FormulaLocalization.Culture).ToUpperInvariant();
         }
         public sealed class Weekend
         {

@@ -43,8 +43,8 @@ namespace FormulaGame
         public void RefreshWallet()
         {
             var d = FormulaProgression.Data;
-            wallet.text = upgradeTheme ? d.money.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) : driver != null ? $"{d.money:N0} <size=16>CR</size>" : $"{d.PlayerName ?? "Pilot"}  ·  LEVEL {d.currentLevel}\n{d.money:N0} CR  /  {d.exp % 3000:N0}/3.000 XP";
-            if (driver != null) driver.text = upgradeTheme ? FormulaMenuFormatting.DriverName : $"{d.PlayerName ?? "Pilot"}   /   LEVEL {d.currentLevel}";
+            wallet.text = upgradeTheme ? d.money.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) : driver != null ? FormulaLocalization.F("{0:N0} <size=16>CR</size>", d.money) : FormulaLocalization.F("{0}  ·  LEVEL {1}\n{2:N0} CR  /  {3:N0}/3.000 XP", d.PlayerName ?? "Pilot", d.currentLevel, d.money, d.exp % 3000);
+            if (driver != null) driver.text = upgradeTheme ? FormulaMenuFormatting.DriverName : FormulaLocalization.F("{0}   /   LEVEL {1}", d.PlayerName ?? "Pilot", d.currentLevel);
             if (xpFill != null) xpFill.fillAmount = (d.exp % 3000) / 3000f;
         }
         private string activePage = "Acasă";

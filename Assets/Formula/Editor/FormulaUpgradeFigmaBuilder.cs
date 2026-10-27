@@ -44,6 +44,7 @@ public static class FormulaUpgradeFigmaBuilder
         var logo=Copy(menu.Career.transform.Find("Figma Logo 2027"),root,"Upgrade Logo"); Place(logo,23,0,429,147);
         var account=Copy(menu.Career.transform.Find("Figma Driver and Wallet"),root,"Upgrade Driver and Wallet"); Place(account,953,21,301,46);
         Set(view,"driver",account.Find("Player Name").GetComponent<TMP_Text>()); Set(view,"wallet",account.Find("Credits").GetComponent<TMP_Text>());
+        FormulaPlayerAvatarBuilder.Configure(account.Find("Player Name").GetComponent<TMP_Text>());
         var categoryRoot=Group(root,"Component Categories",0,100,1280,47);
         Art(categoryRoot,"Category Surface","CategorySurface",-20,-20,1320,95).transform.SetAsFirstSibling();
         string[] ids={"engine","suspension","aero","brakes"}; string[] names={"ENGINE","SUSPENSION","AERO","BRAKES"};

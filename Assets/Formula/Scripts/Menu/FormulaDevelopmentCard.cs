@@ -18,8 +18,8 @@ namespace FormulaGame
         {
             var p = FormulaProgression.State; var branch = FormulaCatalog.Current.Upgrade(branchId);
             var level = branch.levels.Find(l => l.level == p.Owned(branchId) + 1);
-            equippedLevel.text = "LEVEL " + p.Equipped(branchId) + " >"; equip.interactable = p.Owned(branchId) > 0;
-            purchase.text = level == null ? "FULLY UPGRADED" : "UPGRADE / " + level.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR";
+            equippedLevel.text = FormulaLocalization.T("LEVEL ") + p.Equipped(branchId) + " >"; equip.interactable = p.Owned(branchId) > 0;
+            purchase.text = level == null ? FormulaLocalization.T("FULLY UPGRADED") : FormulaLocalization.T("UPGRADE / ") + level.incrementalPriceCredits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + FormulaLocalization.T(" CR");
             buy.interactable = level != null; FormulaStatisticsView.SetSegments(segments, p.Equipped(branchId), p.Owned(branchId));
         }
         public void RefreshComparison(RCCP_CarController car, WheelCollider wheel)
@@ -35,7 +35,7 @@ namespace FormulaGame
                 default: current = car.AeroDynamics.downForce; step = .04f; unit = "coef."; break;
             }
             float target = current / (1 + step * equipped) * (1 + step * next);
-            effect.text = FormulaProgression.State.Owned(branchId) == 3 ? "Fully upgraded · " + current.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + " " + unit : current.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + " → <color=#FFE13B>" + target.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + " " + unit + "</color>";
+            effect.text = FormulaProgression.State.Owned(branchId) == 3 ? FormulaLocalization.T("Fully upgraded · ") + current.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + " " + unit : current.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + FormulaLocalization.T(" → <color=#FFE13B>") + target.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + " " + unit + "</color>";
         }
     }
 }

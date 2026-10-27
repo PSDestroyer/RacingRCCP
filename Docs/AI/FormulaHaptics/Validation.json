@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "failure": null,
+  "unity": "6000.3.19f1",
+  "platform": "OSXEditor",
+  "checks": [
+    "Actual race acceleration produces bounded motor commands through the normal Gamepad API.",
+    "Saved 0% intensity immediately stops both motors without changing the On/Off preference.",
+    "Live strength changes are consumed by the actual race haptics owner.",
+    "Pause stops both motors immediately.",
+    "Existing Vibration Off preference suppresses output.",
+    "Keyboard takeover stops controller feedback.",
+    "Switching active gamepads stops the old motors and drives only the new pad.",
+    "Focus-loss callback stops rumble.",
+    "External/AI input takeover suppresses player feedback.",
+    "Disable/re-enable clears pending impulses and motor output.",
+    "Actual player/body collision generates an impact pulse through RCCP collision events.",
+    "Device-disable notification stops the motors.",
+    "Leaving the race stops feedback; all observed output values stay in [0,1]."
+  ],
+  "errors": [],
+  "maximumSpeed": 12.2568321,
+  "impactPulses": 1,
+  "firstCommands": 44,
+  "secondCommands": 31,
+  "firstMaximum": 0.227499992,
+  "secondMaximum": 0.1625,
+  "outputHzLimit": 20,
+  "isolatedSave": true,
+  "physicalControllerTested": false,
+  "switchDeviceTested": false,
+  "switchNativeInputPackageInstalled": false
+}

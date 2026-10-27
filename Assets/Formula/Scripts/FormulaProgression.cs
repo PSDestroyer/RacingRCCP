@@ -16,6 +16,9 @@ namespace FormulaGame
         public static FormulaProgress Ensure(SaveManager.SaveData data)
         {
             if (data == null) throw new ArgumentNullException(nameof(data));
+            if (!FormulaLocalization.IsSupported(data.language)) data.language = FormulaLocalization.SystemLanguageCode();
+            data.vibrationIntensity = float.IsNaN(data.vibrationIntensity) || float.IsInfinity(data.vibrationIntensity)
+                ? .65f : Math.Clamp(data.vibrationIntensity, 0, 1);
             bool migrating = data.formula == null;
             var p = data.formula ?? (data.formula = new FormulaProgress());
             p.ownedChassis = (p.ownedChassis ?? new List<string>()).Distinct().ToList();
@@ -68,23 +71,23 @@ namespace FormulaGame
             if (Unlocked(rule, p)) return "";
             if (rule["all"] is JArray all)
             {
-                if (all.Count > 3 && all.All(r => (string)r["type"] == "event_medal" && (string)r["minimumMedal"] == "gold")) return "Gold in all " + all.Count + " required events";
+                if (all.Count > 3 && all.All(r => (string)r["type"] == "event_medal" && (string)r["minimumMedal"] == "gold")) return FormulaLocalization.F("Gold in all {0} required events", all.Count);
                 return string.Join(" · ", all.Cast<JObject>().Where(r => !Unlocked(r, p)).Select(r => LockReason(r, p)));
             }
             if ((string)rule["type"] == "event_medal")
-                return $"{FormulaCatalog.MedalName(FormulaCatalog.ParseMedal((string)rule["minimumMedal"]))} · {FormulaCatalog.Current.Event((string)rule["eventId"])?.name}";
-            return $"Previous level required";
+                return FormulaCatalog.MedalName(FormulaCatalog.ParseMedal((string)rule["minimumMedal"])) + " · " + FormulaLocalization.T(FormulaCatalog.Current.Event((string)rule["eventId"])?.name);
+            return FormulaLocalization.F("Previous level required");
         }
         public static string BuyUpgrade(SaveManager.SaveData d, string branchId, int expectedLevel = -1)
         {
             var p = Ensure(d); var b = FormulaCatalog.Current.Upgrade(branchId);
-            if (b == null) return "Unknown upgrade.";
+            if (b == null) return FormulaLocalization.T("Unknown upgrade.");
             int next = p.Owned(branchId) + 1;
-            if (expectedLevel > 0 && expectedLevel != next) return "This purchase has already been processed.";
-            if (next > b.maxLevel) return "Maximum level already owned.";
+            if (expectedLevel > 0 && expectedLevel != next) return FormulaLocalization.T("This purchase has already been processed.");
+            if (next > b.maxLevel) return FormulaLocalization.T("Maximum level already owned.");
             var level = b.levels.Find(l => l.level == next);
             if (!Unlocked(level.unlock, p)) return LockReason(level.unlock, p);
-            if (d.money < level.incrementalPriceCredits) return "Not enough credits.";
+            if (d.money < level.incrementalPriceCredits) return FormulaLocalization.T("Not enough credits.");
             d.money -= level.incrementalPriceCredits;
             p.ownedLevels[branchId] = next; p.equippedLevels[branchId] = next;
             return null;
@@ -92,33 +95,33 @@ namespace FormulaGame
         public static string EquipUpgrade(SaveManager.SaveData d, string branch, int level)
         {
             var p = Ensure(d);
-            if (FormulaCatalog.Current.Upgrade(branch) == null || level < 0 || level > p.Owned(branch)) return "Level not owned.";
+            if (FormulaCatalog.Current.Upgrade(branch) == null || level < 0 || level > p.Owned(branch)) return FormulaLocalization.T("Level not owned.");
             p.equippedLevels[branch] = level; return null;
         }
         public static string BuyOrEquipLivery(SaveManager.SaveData d, string id)
         {
             var p = Ensure(d); var livery = FormulaCatalog.Current.Skin(id);
-            if (livery == null) return "Unknown livery.";
+            if (livery == null) return FormulaLocalization.T("Unknown livery.");
             if (!p.ownedLiveries.Contains(id))
             {
                 if (!Unlocked(livery.unlock, p)) return LockReason(livery.unlock, p);
-                if (livery.acquisition != "credit_purchase" && livery.acquisition != "achievement_grant") return "This livery is not available.";
+                if (livery.acquisition != "credit_purchase" && livery.acquisition != "achievement_grant") return FormulaLocalization.T("This livery is not available.");
                 int price = livery.acquisition == "achievement_grant" ? 0 : livery.priceCredits ?? int.MaxValue;
-                if (d.money < price) return "Not enough credits.";
+                if (d.money < price) return FormulaLocalization.T("Not enough credits.");
                 d.money -= price; p.ownedLiveries.Add(id);
             }
             p.equippedLivery = id; return null;
         }
         public static string EquipSetup(SaveManager.SaveData d, string id)
         {
-            if (!FormulaCatalog.Current.freeSetups.Exists(s => s.id == id)) return "Unknown setup.";
+            if (!FormulaCatalog.Current.freeSetups.Exists(s => s.id == id)) return FormulaLocalization.T("Unknown setup.");
             Ensure(d).setup = id; return null;
         }
         public static string BeginRun(SaveManager.SaveData d, string eventId, string mode)
         {
             var p = Ensure(d); var e = FormulaCatalog.Current.Event(eventId);
-            if (e == null || (mode == "career" && (eventId.Contains(":") || !Unlocked(e.unlock, p)))) return "This event is locked.";
-            if (mode != "career" && mode != "quick" && mode != "time_trial") return "Unknown mode.";
+            if (e == null || (mode == "career" && (eventId.Contains(":") || !Unlocked(e.unlock, p)))) return FormulaLocalization.T("This event is locked.");
+            if (mode != "career" && mode != "quick" && mode != "time_trial") return FormulaLocalization.T("Unknown mode.");
             p.activeEventId = eventId; p.activeMode = mode; p.activeRunId = Guid.NewGuid().ToString("N"); p.lastEventId = eventId;
             return null;
         }
@@ -166,7 +169,7 @@ namespace FormulaGame
             error = mutation(next);
             if (error != null) return false;
             manager.saveData = next;
-            if (!manager.TrySave(true)) { manager.saveData = previous; error = "Save failed. Your changes were not applied."; return false; }
+            if (!manager.TrySave(true)) { manager.saveData = previous; error = FormulaLocalization.T("Save failed. Your changes were not applied."); return false; }
             Changed?.Invoke(); return true;
         }
     }

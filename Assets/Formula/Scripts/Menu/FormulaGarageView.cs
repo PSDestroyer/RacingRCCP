@@ -44,10 +44,10 @@ namespace FormulaGame
             foreach (var card in setups)
             {
                 var setup = FormulaCatalog.Current.freeSetups.Find(s => s.id == card.id);
-                string description = card.id == "balanced" ? "Balanced cornering and speed." : card.id == "speed" ? "Downforce −8% · Drag −4%" : "Downforce +8% · Drag +4%";
-                card.label.text = card.description == null ? setup.name.ToUpperInvariant() + (p.setup == card.id ? " · EQUIPPED" : " · FREE") + "\n" + description : setup.name.ToUpperInvariant();
+                string description = card.id == "balanced" ? FormulaLocalization.T("Balanced cornering and speed.") : card.id == "speed" ? FormulaLocalization.T("Downforce −8% · Drag −4%") : FormulaLocalization.T("Downforce +8% · Drag +4%");
+                card.label.text = card.description == null ? FormulaLocalization.T(setup.name).ToUpperInvariant() + (p.setup == card.id ? FormulaLocalization.T(" · EQUIPPED") : FormulaLocalization.T(" · FREE")) + "\n" + description : FormulaLocalization.T(setup.name).ToUpperInvariant();
                 if (card.description != null) card.description.text = description;
-                if (card.status != null) card.status.text = p.setup == card.id ? "APPLIED" : "FREE · APPLY";
+                if (card.status != null) card.status.text = p.setup == card.id ? FormulaLocalization.T("APPLIED") : FormulaLocalization.T("FREE · APPLY");
                 card.equippedMarker.SetActive(p.setup == card.id);
             }
             foreach (var card in liveries) card.Refresh();
@@ -61,7 +61,7 @@ namespace FormulaGame
         public void SetEventContext(FormulaCatalog.CareerEvent entry, string mode)
         {
             if (contextLabel == null) return;
-            contextLabel.text = entry == null ? "" : entry.name.ToUpperInvariant() + "\n" + ((mode == "career" && entry.vehicleRule == "stock_balanced") || mode == "time_trial" ? "Stock event · Your car changes will not apply" : "Your equipped upgrades and setup will be used");
+            contextLabel.text = entry == null ? "" : FormulaLocalization.T(entry.name).ToUpperInvariant() + "\n" + ((mode == "career" && entry.vehicleRule == "stock_balanced") || mode == "time_trial" ? FormulaLocalization.T("Stock event · Your car changes will not apply") : FormulaLocalization.T("Your equipped upgrades and setup will be used"));
         }
         public void PreviewSetup(string id)
         {
@@ -91,10 +91,10 @@ namespace FormulaGame
         {
             inspectedLivery = id; var livery = FormulaCatalog.Current.Skin(id);
             var offer = new FormulaLiveryOffer(livery, FormulaProgression.State, FormulaProgression.Data.money);
-            liveryName.text = livery.displayName;
+            liveryName.text = FormulaLocalization.T(livery.displayName);
             liveryStatus.text = offer.Status; liveryStatus.color = offer.Owned ? Color.white : FormulaUI.Accent;
             liveryCondition.text = offer.Condition; liveryCondition.color = offer.Unlocked || offer.Owned ? Color.white : FormulaUI.Accent;
-            if (liveryFunds != null) liveryFunds.text = offer.Funds ?? (offer.Owned ? "Cosmetic only · No performance changes" : "Not sold for credits");
+            if (liveryFunds != null) liveryFunds.text = offer.Funds ?? (offer.Owned ? FormulaLocalization.T("Cosmetic only · No performance changes") : FormulaLocalization.T("Not sold for credits"));
             if (liveryCost != null) { liveryCost.text = offer.Cost; liveryCost.color = offer.Shortfall > 0 ? FormulaUI.Red : Color.white; }
             liveryAction.interactable = !offer.Equipped;
             liveryActionText.text = offer.Action; WireNavigation();

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Localization Settings
   m_EditorClassIdentifier: 
   m_StartupSelectors:
+  - rid: 4450308028255699238
   - rid: 4450307913435840651
   - rid: 3608244797941743850
   - rid: 3608244797941743851
@@ -64,7 +65,7 @@ MonoBehaviour:
         m_CustomTablePostprocessor:
           rid: -2
         m_AsynchronousBehaviour: 0
-        m_UseFallback: 0
+        m_UseFallback: 1
         m_MissingTranslationState: 1
         m_NoTranslationFoundMessage: No translation found for '{key}' in {table.TableCollectionName}
         m_SmartFormat:
@@ -205,3 +206,6 @@ MonoBehaviour:
       data:
         m_LocaleId:
           m_Code: en
+    - rid: 4450308028255699238
+      type: {class: FormulaSavedLocaleSelector, ns: FormulaGame, asm: Assembly-CSharp}
+      data:

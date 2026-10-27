@@ -32,12 +32,19 @@ namespace HalvaStudio.Save
         private void Load()
         {
 #if UNITY_SWITCH && !UNITY_EDITOR
+            // SaveManager can be requested by another Awake before Init.Awake.
+            NintendoSave.Initialize();
             saveData = (SaveData)LoadSwitch(typeof(SaveData));
 #else
             saveData = (SaveData)LoadEditor(typeof(SaveData));
 #endif
             saveData ??= new SaveData();
             FormulaGame.FormulaProgression.Ensure(saveData);
+#if UNITY_SWITCH && !UNITY_EDITOR
+            // Re-read each launch so changes to the selected system profile win
+            // over an older saved name. Failed reads retain the existing name.
+            if (NintendoManager.TryGetNickname(out string nickname)) saveData.PlayerName = nickname;
+#endif
         }
 
         public void Save(bool forceSave = false) => TrySave(forceSave);
@@ -173,12 +180,14 @@ namespace HalvaStudio.Save
             public int currentRacePay;
 
             [Header("Settings")]
+            public string language = "";
             public int lookSensitivity;
             public string difficulty;
             public float soundLevel = 0.7f;
             public float VehicleLevel = 0.7f;
             public float musicLevel = 0.4f;
             public bool vibrationsState = true;
+            [Range(0, 1)] public float vibrationIntensity = .65f;
             public bool easyDriftMode = false;
             public bool indicatorState;
             public string inputRebindsJson = string.Empty;

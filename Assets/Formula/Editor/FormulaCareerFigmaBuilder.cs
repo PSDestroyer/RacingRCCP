@@ -78,6 +78,7 @@ public static class FormulaCareerFigmaBuilder
         var coin = Art(account, "Coin", "CoinMatte", 268, 11, 26, 26);
         coin.color = new Color(.72f, .72f, .72f, 1);
         Set(view, "driver", driver); Set(view, "wallet", wallet);
+        FormulaPlayerAvatarBuilder.Configure(driver);
 
         var footer = Group(root, "Figma Career Footer", 0, 624, 1280, 96);
         Art(footer, "Figma Glow Left", "FooterGlow", 72, 0, 350, 22, true);

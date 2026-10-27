@@ -42,15 +42,15 @@ namespace FormulaGame
             for (int i = 0; i < action.bindings.Count; i++) if (action.bindings[i].path == original) action.ApplyBindingOverride(i, replacement);
         }
 #endif
-        public static string Confirm => Gamepad ? "A · Select" : "Enter · Select";
-        public static string Back => Gamepad ? "B · Back" : "Esc · Back";
+        public static string Confirm => Gamepad ? FormulaLocalization.T("A · Select") : FormulaLocalization.T("Enter · Select");
+        public static string Back => Gamepad ? FormulaLocalization.T("B · Back") : FormulaLocalization.T("Esc · Back");
         public static string Sections => Gamepad ?
 #if UNITY_SWITCH
-            "L/R · Tabs"
+            FormulaLocalization.T("L/R · Tabs")
 #else
-            "LB/RB · Tabs"
+            FormulaLocalization.T("LB/RB · Tabs")
 #endif
-            : "Q/E · Tabs";
+            : FormulaLocalization.T("Q/E · Tabs");
         public static string Menu => Confirm;
     }
 }

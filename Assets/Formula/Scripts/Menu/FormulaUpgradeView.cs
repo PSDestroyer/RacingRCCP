@@ -77,18 +77,18 @@ namespace FormulaGame
             {
                 var row = levels[i]; bool installed = i == equipped, purchased = i <= owned;
                 row.surface.texture = installed ? installedSurface : normalSurface;
-                row.status.text = installed ? "INSTALLED" : purchased ? "OWNED · EQUIP" : branch.levels.Find(l => l.level == i).incrementalPriceCredits.ToString("N0", CultureInfo.InvariantCulture);
+                row.status.text = installed ? FormulaLocalization.T("INSTALLED") : purchased ? FormulaLocalization.T("OWNED · EQUIP") : branch.levels.Find(l => l.level == i).incrementalPriceCredits.ToString("N0", CultureInfo.InvariantCulture);
                 row.status.color = !purchased && FormulaProgression.Data.money < branch.levels.Find(l => l.level == i).incrementalPriceCredits ? FormulaUI.Red : Color.white;
                 row.coin.gameObject.SetActive(!purchased);
                 row.value.text = car != null ? ValueAtLevel(BranchId, i, car, wheel).ToString(BranchId == "aero" ? "0.##" : "0.#", CultureInfo.InvariantCulture) + " " + Unit(BranchId) : "—";
             }
             var selected = previewLevel == 0 ? null : branch.levels.Find(l => l.level == previewLevel);
-            string state = previewLevel == equipped ? "Installed" : previewLevel <= owned ? "Owned · Select to equip" : previewLevel != owned + 1 ? "Purchase Level " + (owned + 1) + " first" : !FormulaProgression.Unlocked(selected.unlock, p) ? "Requires " + FormulaProgression.LockReason(selected.unlock, p).Replace(" · ", " in ") : "Select to review purchase";
-            string effect = BranchId == "engine" ? "Torque +3% per level" : BranchId == "brakes" ? "Brake torque +4% per level" : BranchId == "suspension" ? "Firmer springs, damping and anti-roll" : "Downforce +4% / Drag +1% per level";
-            description.text = branch.name.ToUpperInvariant() + " · " + (previewLevel == 0 ? "STOCK" : "LEVEL " + previewLevel) + "\n" + state + "\n" + effect;
+            string state = previewLevel == equipped ? FormulaLocalization.T("Installed") : previewLevel <= owned ? FormulaLocalization.T("Owned · Select to equip") : previewLevel != owned + 1 ? FormulaLocalization.F("Purchase Level {0} first.", owned + 1) : !FormulaProgression.Unlocked(selected.unlock, p) ? FormulaLocalization.T("Requires ") + FormulaProgression.LockReason(selected.unlock, p) : FormulaLocalization.T("Select to review purchase");
+            string effect = BranchId == "engine" ? FormulaLocalization.T("Torque +3% per level") : BranchId == "brakes" ? FormulaLocalization.T("Brake torque +4% per level") : BranchId == "suspension" ? FormulaLocalization.T("Firmer springs, damping and anti-roll") : FormulaLocalization.T("Downforce +4% / Drag +1% per level");
+            description.text = FormulaLocalization.T(branch.name).ToUpperInvariant() + " · " + (previewLevel == 0 ? FormulaLocalization.T("STOCK") : FormulaLocalization.T("LEVEL ") + previewLevel) + "\n" + state + "\n" + effect;
             statistics.PreviewUpgrade(BranchId, previewLevel);
         }
-        public static string Unit(string branch) => branch == "suspension" ? "N/m" : branch == "aero" ? "coef." : "Nm";
+        public static string Unit(string branch) => branch == "suspension" ? FormulaLocalization.T("N/m") : branch == "aero" ? FormulaLocalization.T("coef.") : FormulaLocalization.T("Nm");
         public static float ValueAtLevel(string branch, int level, RCCP_CarController car, WheelCollider wheel)
         {
             float current, step;

@@ -57,7 +57,7 @@ namespace FormulaGame
         }
         public Branch Upgrade(string id) => upgrades.Find(b => b.id == id);
         public Livery Skin(string id) => liveries.Find(l => l.id == id);
-        public static string MedalName(Medal m) => m == Medal.Gold ? "Gold" : m == Medal.Silver ? "Silver" : m == Medal.Bronze ? "Bronze" : "No medal";
+        public static string MedalName(Medal m) => m == Medal.Gold ? FormulaLocalization.T("Gold") : m == Medal.Silver ? FormulaLocalization.T("Silver") : m == Medal.Bronze ? FormulaLocalization.T("Bronze") : FormulaLocalization.T("No medal");
         public static Medal ParseMedal(string value) => Enum.TryParse(value, true, out Medal result) ? result : Medal.None;
         public sealed class Vehicle { public string id, displayName, defaultLiveryId, defaultSetupId; }
         public sealed class ProfileRules { public int initialCredits, initialXp, initialLevel, xpPerLevel, creditsPerLevelUp; }

@@ -44,7 +44,7 @@ namespace FormulaGame
         }
         public void Upgrade(string heading, string effect, string tradeoff, string benefit, string requirement, string cost, string actionName, Action action, bool canConfirm, bool focusAction, string funds = null, bool creditsMissing = false)
         {
-            Confirm(heading, effect + "\n" + tradeoff + "\n" + benefit + "\n\n" + requirement + "\n" + funds + "\n" + cost, actionName, action, canConfirm);
+            Confirm(heading,effect + "\n" + tradeoff + "\n" + benefit + "\n\n" + requirement + "\n" + funds + "\n" + cost,actionName,action,canConfirm);
             if (upgradeContent != null)
             {
                 details.gameObject.SetActive(false); upgradeContent.SetActive(true);
@@ -57,11 +57,11 @@ namespace FormulaGame
         }
         public void Livery(FormulaCatalog.Livery livery, FormulaLiveryOffer offer, string actionName, Action action, bool focusAction)
         {
-            Confirm(livery.displayName + " / Livery", offer.Requirements + "\n" + offer.Funds + "\n" + offer.Cost, actionName, action, true);
+            Confirm(FormulaLocalization.T(livery.displayName) + FormulaLocalization.T(" / Livery"),offer.Requirements + "\n" + offer.Funds + "\n" + offer.Cost,actionName,action,true);
             if (liveryContent != null)
             {
                 details.gameObject.SetActive(false); liveryContent.SetActive(true);
-                liveryAcquisition.text = offer.Purchase ? "CREDIT PURCHASE" : "CAREER REWARD · FREE";
+                liveryAcquisition.text = offer.Purchase ? FormulaLocalization.T("CREDIT PURCHASE") : FormulaLocalization.T("CAREER REWARD · FREE");
                 liveryRequirements.text = offer.Requirements;
                 liveryFunds.text = offer.Funds; liveryFunds.gameObject.SetActive(!string.IsNullOrEmpty(offer.Funds));
                 liveryCost.text = offer.Cost; liveryCost.color = offer.Shortfall > 0 ? FormulaUI.Red : Color.white;
@@ -71,13 +71,13 @@ namespace FormulaGame
         public void SelectLevel(string branchId, Action<int> action)
         {
             gameObject.SetActive(true); confirmation.SetActive(false); levelSelection.SetActive(true); if (eventBriefing != null) eventBriefing.SetActive(false); selectLevel = action;
-            levelTitle.text = FormulaCatalog.Current.Upgrade(branchId).name.ToUpperInvariant() + " / EQUIP";
+            levelTitle.text = FormulaLocalization.T(FormulaCatalog.Current.Upgrade(branchId).name).ToUpperInvariant() + FormulaLocalization.T(" / EQUIP");
             for (int i = 0; i < levels.Length; i++)
             {
                 bool owned = i <= FormulaProgression.State.Owned(branchId);
-                string state = FormulaProgression.State.Equipped(branchId) == i ? "EQUIPPED" : owned ? "OWNED" : "NOT PURCHASED";
+                string state = FormulaProgression.State.Equipped(branchId) == i ? FormulaLocalization.T("EQUIPPED") : owned ? FormulaLocalization.T("OWNED") : FormulaLocalization.T("NOT PURCHASED");
                 levels[i].name = "level-" + branchId + "-" + i;
-                levels[i].interactable = owned; levelLabels[i].text = (i == 0 ? "STOCK CONFIGURATION" : "LEVEL " + i) + " / " + state;
+                levels[i].interactable = owned; levelLabels[i].text = (i == 0 ? FormulaLocalization.T("STOCK CONFIGURATION") : FormulaLocalization.T("LEVEL ") + i) + " / " + state;
             }
             Wire(levelSelection.transform); FormulaUI.Focus(levelSelection.transform);
         }
@@ -87,33 +87,33 @@ namespace FormulaGame
             // Older authored prefabs remain playable until the explicit editor migration runs.
             if (eventBriefing == null)
             {
-                Confirm(e.name, FormulaMenuFormatting.EventGoal(e) + "\n" + FormulaAssets.Current.FindTrack(e.trackId).displayName + "\n" + (unlocked ? "" : FormulaProgression.LockReason(e.unlock, FormulaProgression.State)), unlocked ? "Start race" : "Event locked", action, unlocked);
+                Confirm(FormulaLocalization.T(e.name),FormulaMenuFormatting.EventGoal(e) + "\n" + FormulaLocalization.T(FormulaAssets.Current.FindTrack(e.trackId).displayName) + "\n" + (unlocked ? "" : FormulaProgression.LockReason(e.unlock, FormulaProgression.State)),unlocked ? FormulaLocalization.T("Start race") : FormulaLocalization.T("Event locked"),action,unlocked);
                 return;
             }
             gameObject.SetActive(true); confirmation.SetActive(false); levelSelection.SetActive(false); eventBriefing.SetActive(true);
             bool career = mode == "career";
-            string freeTitle = mode == "time_trial" ? "TIME ATTACK" : e.mode == "race" ? "QUICK RACE" : "PRACTICE";
-            confirm = action; eventTitle.text = career ? e.name.ToUpperInvariant() : freeTitle; eventMap.SetTrack(e.trackId);
+            string freeTitle = mode == "time_trial" ? FormulaLocalization.T("TIME ATTACK") : e.mode == "race" ? FormulaLocalization.T("QUICK RACE") : FormulaLocalization.T("PRACTICE");
+            confirm = action; eventTitle.text = career ? FormulaLocalization.T(e.name).ToUpperInvariant() : freeTitle; eventMap.SetTrack(e.trackId);
             var track = FormulaAssets.Current.FindTrack(e.trackId); float t = track.referenceLapSeconds;
-            eventState.text = mode == "career" ? "CAREER / EVENT " + e.id.Substring(1) + " · " + FormulaSeasonCalendar.Current.Caption(e) + " " + FormulaSeasonCalendar.Current.year : mode == "time_trial" ? "TIME ATTACK" : "FREE RACE";
-            eventTrack.text = track.displayName + "\n" + e.laps + (e.laps == 1 ? " lap" : " laps") + "  ·  " + (e.opponentCount == 0 ? "Solo" : e.opponentCount + " opponents");
-            eventGoal.text = career ? FormulaMenuFormatting.EventGoal(e) : e.mode == "race" ? "Race for your best result on this circuit." : "Learn the circuit and complete valid laps.";
-            eventVehicle.text = (mode == "career" && e.vehicleRule == "stock_balanced") || mode == "time_trial" ? "STOCK CAR\nBalanced setup" : "YOUR CAR\nEquipped upgrades and setup";
-            medalGoals[0].text = e.mode == "race" ? "Finish in the top 3" : e.mode == "familiarization" ? "Complete a valid lap" : "≤ " + FormulaRaceUI.TimeText(t * 1.2);
-            medalGoals[1].text = e.mode == "race" ? "Finish in the top 2" : "≤ " + FormulaRaceUI.TimeText(t * (e.mode == "familiarization" ? 1.25 : 1.1));
-            medalGoals[2].text = e.mode == "race" ? "Win the race" : "≤ " + FormulaRaceUI.TimeText(t * (e.mode == "familiarization" ? 1.12 : 1.03));
+            eventState.text = mode == "career" ? FormulaLocalization.T("CAREER / EVENT ") + e.id.Substring(1) + " · " + FormulaSeasonCalendar.Current.Caption(e) + " " + FormulaSeasonCalendar.Current.year : mode == "time_trial" ? FormulaLocalization.T("TIME ATTACK") : FormulaLocalization.T("FREE RACE");
+            eventTrack.text = FormulaLocalization.T(track.displayName) + "\n" + e.laps + (e.laps == 1 ? FormulaLocalization.T(" lap") : FormulaLocalization.T(" laps")) + "  ·  " + (e.opponentCount == 0 ? FormulaLocalization.T("Solo") : e.opponentCount + FormulaLocalization.T(" opponents"));
+            eventGoal.text = career ? FormulaMenuFormatting.EventGoal(e) : e.mode == "race" ? FormulaLocalization.T("Race for your best result on this circuit.") : FormulaLocalization.T("Learn the circuit and complete valid laps.");
+            eventVehicle.text = (mode == "career" && e.vehicleRule == "stock_balanced") || mode == "time_trial" ? FormulaLocalization.T("STOCK CAR\nBalanced setup") : FormulaLocalization.T("YOUR CAR\nEquipped upgrades and setup");
+            medalGoals[0].text = e.mode == "race" ? FormulaLocalization.T("Finish in the top 3") : e.mode == "familiarization" ? FormulaLocalization.T("Complete a valid lap") : "≤ " + FormulaRaceUI.TimeText(t * 1.2);
+            medalGoals[1].text = e.mode == "race" ? FormulaLocalization.T("Finish in the top 2") : "≤ " + FormulaRaceUI.TimeText(t * (e.mode == "familiarization" ? 1.25 : 1.1));
+            medalGoals[2].text = e.mode == "race" ? FormulaLocalization.T("Win the race") : "≤ " + FormulaRaceUI.TimeText(t * (e.mode == "familiarization" ? 1.12 : 1.03));
             if (medalTiers != null && medalTiers.Length == 3)
             {
                 string[] tiers = career ? new[] { "BRONZE", "SILVER", "GOLD" } : new[] { "FORMAT", "RIVALS", "SESSION" };
-                for (int i = 0; i < 3; i++) medalTiers[i].text = tiers[i];
+                for (int i = 0; i < 3; i++) medalTiers[i].text = FormulaLocalization.T(tiers[i]);
             }
             if (!career)
             {
-                medalGoals[0].text = e.laps + (e.laps == 1 ? " lap" : " laps");
-                medalGoals[1].text = e.opponentCount == 0 ? "No opponents" : e.opponentCount + " AI drivers";
-                medalGoals[2].text = mode == "time_trial" ? "Stock car" : e.mode == "race" ? "Race" : "Practice";
+                medalGoals[0].text = e.laps + (e.laps == 1 ? FormulaLocalization.T(" lap") : FormulaLocalization.T(" laps"));
+                medalGoals[1].text = e.opponentCount == 0 ? FormulaLocalization.T("No opponents") : e.opponentCount + FormulaLocalization.T(" AI drivers");
+                medalGoals[2].text = mode == "time_trial" ? FormulaLocalization.T("Stock car") : e.mode == "race" ? FormulaLocalization.T("Race") : FormulaLocalization.T("Practice");
             }
-            eventReward.text = career ? "TOTAL REWARD" : "NO CAREER REWARDS";
+            eventReward.text = career ? FormulaLocalization.T("TOTAL REWARD") : FormulaLocalization.T("NO CAREER REWARDS");
             if (medalRewards != null && medalRewards.Length == 3)
             {
                 FormulaProgression.State.claimedMedalMasks.TryGetValue(e.id, out int claimed);
@@ -124,11 +124,11 @@ namespace FormulaGame
                     {
                         var bonus = e.oneTimeMedalRewards[((Medal)(i + 1)).ToString().ToLowerInvariant()]; credits += bonus.credits; xp += bonus.xp;
                     }
-                    medalRewards[i].text = career ? credits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " CR · " + xp.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " XP" : "—";
+                    medalRewards[i].text = career ? credits.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + FormulaLocalization.T(" CR · ") + xp.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + FormulaLocalization.T(" XP") : "—";
                 }
             }
-            eventNote.text = !unlocked ? "LOCKED · " + FormulaProgression.LockReason(e.unlock, FormulaProgression.State) : !career ? "No career credits or XP. Your career progress is unchanged." : "Rewards include your finish reward and unclaimed medal bonuses.\nValid laps require staying within track limits and passing every checkpoint.";
-            eventAccept.interactable = unlocked; eventActionText.text = unlocked ? "START EVENT" : "EVENT LOCKED";
+            eventNote.text = !unlocked ? FormulaLocalization.T("LOCKED · ") + FormulaProgression.LockReason(e.unlock, FormulaProgression.State) : !career ? FormulaLocalization.T("No career credits or XP. Your career progress is unchanged.") : FormulaLocalization.T("Rewards include your finish reward and unclaimed medal bonuses.\nValid laps require staying within track limits and passing every checkpoint.");
+            eventAccept.interactable = unlocked; eventActionText.text = unlocked ? FormulaLocalization.T("START EVENT") : FormulaLocalization.T("EVENT LOCKED");
             Wire(eventBriefing.transform); UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(unlocked ? eventAccept.gameObject : eventCancel.gameObject);
         }
         private static void Wire(Transform panel)

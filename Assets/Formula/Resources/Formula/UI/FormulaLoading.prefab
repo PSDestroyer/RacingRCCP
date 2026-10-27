@@ -87,6 +87,7 @@ GameObject:
   - component: {fileID: 8811704755300888872}
   - component: {fileID: 332334732355113731}
   - component: {fileID: 1568315234150525124}
+  - component: {fileID: 4961546858005344143}
   m_Layer: 0
   m_Name: Progress
   m_TagString: Untagged
@@ -212,6 +213,29 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &4961546858005344143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 777551962981038783}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b5d78ebfc2c43bc84e392630fc5f7e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaLocalizedFont
+  fontReference:
+    m_TableReference:
+      m_TableCollectionName: FormulaFonts
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: Body
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+  authoredSize: 26
+  condensedHeading: 0
+  authoredFont: {fileID: 11400000, guid: 6a852e41f6219491c874ebc821ad0747, type: 2}
 --- !u!1 &1022798695899698361
 GameObject:
   m_ObjectHideFlags: 0
@@ -304,6 +328,8 @@ GameObject:
   - component: {fileID: 7555196756342084608}
   - component: {fileID: 3864302515374673506}
   - component: {fileID: 5651800461937636170}
+  - component: {fileID: 3083551428257204450}
+  - component: {fileID: 9058855730037670592}
   m_Layer: 0
   m_Name: Tip
   m_TagString: Untagged
@@ -429,6 +455,70 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3083551428257204450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2356521713855259651}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Components.LocalizeStringEvent
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: FormulaUI
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: Stay within track limits and pass every checkpoint to record a valid
+        lap.
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5651800461937636170}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName:
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument:
+          m_BoolArgument: 0
+        m_CallState: 1
+  references:
+    version: 2
+    RefIds: []
+--- !u!114 &9058855730037670592
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2356521713855259651}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b5d78ebfc2c43bc84e392630fc5f7e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaLocalizedFont
+  fontReference:
+    m_TableReference:
+      m_TableCollectionName: FormulaFonts
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: Body
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+  authoredSize: 22
+  condensedHeading: 0
+  authoredFont: {fileID: 11400000, guid: 6a852e41f6219491c874ebc821ad0747, type: 2}
 --- !u!1 &3957519882375747011
 GameObject:
   m_ObjectHideFlags: 0
@@ -493,6 +583,8 @@ GameObject:
   - component: {fileID: 6214819110081662024}
   - component: {fileID: 6558798951162575461}
   - component: {fileID: 5216594291462938070}
+  - component: {fileID: 6207834491254592686}
+  - component: {fileID: 3404190947661853563}
   m_Layer: 0
   m_Name: Brand
   m_TagString: Untagged
@@ -618,6 +710,69 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &6207834491254592686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4367961396829787549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Components.LocalizeStringEvent
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: FormulaUI
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: FORMULA G27
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5216594291462938070}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName:
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument:
+          m_BoolArgument: 0
+        m_CallState: 1
+  references:
+    version: 2
+    RefIds: []
+--- !u!114 &3404190947661853563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4367961396829787549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b5d78ebfc2c43bc84e392630fc5f7e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaLocalizedFont
+  fontReference:
+    m_TableReference:
+      m_TableCollectionName: FormulaFonts
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: Heading
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+  authoredSize: 76
+  condensedHeading: 1
+  authoredFont: {fileID: 11400000, guid: cef7f9acce66941e1aab6cf58c4c5c79, type: 2}
 --- !u!1 &6647832242903077256
 GameObject:
   m_ObjectHideFlags: 0
@@ -629,6 +784,7 @@ GameObject:
   - component: {fileID: 8164008311824465962}
   - component: {fileID: 6624998817422548917}
   - component: {fileID: 5698962634417533578}
+  - component: {fileID: 3658916289008082482}
   m_Layer: 0
   m_Name: Circuit
   m_TagString: Untagged
@@ -754,6 +910,29 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3658916289008082482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6647832242903077256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b5d78ebfc2c43bc84e392630fc5f7e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaLocalizedFont
+  fontReference:
+    m_TableReference:
+      m_TableCollectionName: FormulaFonts
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: Heading
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+  authoredSize: 58
+  condensedHeading: 1
+  authoredFont: {fileID: 11400000, guid: cef7f9acce66941e1aab6cf58c4c5c79, type: 2}
 --- !u!1 &7857018427885363019
 GameObject:
   m_ObjectHideFlags: 0
@@ -840,6 +1019,7 @@ GameObject:
   - component: {fileID: 196540640584362247}
   - component: {fileID: 6542252909854544799}
   - component: {fileID: 2471045150181495399}
+  - component: {fileID: 4223077871101136887}
   m_Layer: 0
   m_Name: Caption
   m_TagString: Untagged
@@ -965,3 +1145,26 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &4223077871101136887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8705298016522293186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b5d78ebfc2c43bc84e392630fc5f7e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaLocalizedFont
+  fontReference:
+    m_TableReference:
+      m_TableCollectionName: FormulaFonts
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: Body
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+  authoredSize: 22
+  condensedHeading: 0
+  authoredFont: {fileID: 11400000, guid: 6a852e41f6219491c874ebc821ad0747, type: 2}

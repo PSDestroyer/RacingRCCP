@@ -73,6 +73,6 @@ namespace FormulaGame
             var first = Array.Find(parent.GetComponentsInChildren<UnityEngine.UI.Selectable>(), s => s.IsInteractable() && s.IsActive());
             if (first != null && EventSystem.current != null) EventSystem.current.SetSelectedGameObject(first.gameObject);
         }
-        public static string MedalName(Medal m) => m == Medal.Gold ? "Gold" : m == Medal.Silver ? "Silver" : m == Medal.Bronze ? "Bronze" : "No medal";
+        public static string MedalName(Medal m) => m == Medal.Gold ? FormulaLocalization.T("Gold") : m == Medal.Silver ? FormulaLocalization.T("Silver") : m == Medal.Bronze ? FormulaLocalization.T("Bronze") : FormulaLocalization.T("No medal");
     }
 }

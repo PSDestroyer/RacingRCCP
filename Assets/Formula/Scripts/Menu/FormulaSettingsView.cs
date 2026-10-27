@@ -13,22 +13,28 @@ namespace FormulaGame
         [SerializeField] private TMP_Text[] assistLabels;
         [SerializeField] private UnityEngine.UI.Button openDetails, audioTab, controlsTab, vibration;
         [SerializeField] private TMP_Text vibrationLabel;
+        [SerializeField] private UnityEngine.UI.Slider vibrationIntensity;
+        [SerializeField] private TMP_Text vibrationIntensityValue;
         [SerializeField] private UnityEngine.UI.Slider[] volumes;
         [SerializeField] private TMP_Text[] volumeValues;
         [SerializeField] private UnityEngine.UI.Button[] preferenceTabs, preferenceButtons, preferenceShortcuts;
         [SerializeField] private GameObject[] preferencePages, preferenceMarkers;
         [SerializeField] private TMP_Text[] preferenceLabels;
         private bool audioDirty;
+        [SerializeField] private UnityEngine.UI.Button language;
+        [SerializeField] private TMP_Text languageLabel;
         public bool DetailsOpen => details.activeSelf;
         public bool IsRebinding => controls.IsRebinding;
         public FormulaControlsView Controls => controls;
         public void Bind(Action<string> toggleAssist)
         {
+            if (language != null) language.onClick.AddListener(ChangeLanguage);
             string[] ids = { "abs", "tcs", "esp" };
             for (int i = 0; i < assists.Length; i++) { string id = ids[i]; assists[i].onClick.AddListener(() => toggleAssist(id)); }
             openDetails.onClick.AddListener(OpenDetails);
             audioTab.onClick.AddListener(() => ShowDetails(false)); controlsTab.onClick.AddListener(() => ShowDetails(true));
             vibration.onClick.AddListener(() => { FormulaProgression.Data.vibrationsState = !FormulaProgression.Data.vibrationsState; audioDirty = true; Refresh(); });
+            if (vibrationIntensity != null) vibrationIntensity.onValueChanged.AddListener(SetVibrationIntensity);
             for (int i = 0; i < volumes.Length; i++) { int index = i; volumes[i].onValueChanged.AddListener(value => SetVolume(index, value)); }
             controls.Initialize();
             for (int i = 0; i < preferenceTabs.Length; i++) { int index = i; preferenceTabs[i].onClick.AddListener(() => OpenPreferences(index)); }
@@ -37,23 +43,26 @@ namespace FormulaGame
         }
         public void Refresh()
         {
+            if (languageLabel != null) languageLabel.text = FormulaLocalization.F("LANGUAGE  /  {0}", FormulaLocalization.LanguageName);
             var p = FormulaProgression.State;
-            assistLabels[0].text = "ABS · " + (p.abs ? "On" : "Off"); assistLabels[1].text = "TCS · " + (p.tcs ? "On" : "Off"); assistLabels[2].text = "ESP · " + (p.esp ? "On" : "Off");
+            assistLabels[0].text = FormulaLocalization.T("ABS · ") + (p.abs ? FormulaLocalization.T("On") : FormulaLocalization.T("Off")); assistLabels[1].text = FormulaLocalization.T("TCS · ") + (p.tcs ? FormulaLocalization.T("On") : FormulaLocalization.T("Off")); assistLabels[2].text = FormulaLocalization.T("ESP · ") + (p.esp ? FormulaLocalization.T("On") : FormulaLocalization.T("Off"));
             var d = FormulaProgression.Data; float[] values = { d.soundLevel, d.VehicleLevel, d.musicLevel };
             for (int i = 0; i < volumes.Length; i++) { volumes[i].SetValueWithoutNotify(values[i]); volumeValues[i].text = Mathf.RoundToInt(values[i] * 100) + "%"; }
-            vibrationLabel.text = "Vibration · " + (d.vibrationsState ? "On" : "Off");
+            vibrationLabel.text = d.vibrationsState ? FormulaLocalization.T("Vibration · On") : FormulaLocalization.T("Vibration · Off");
+            if (vibrationIntensity != null) vibrationIntensity.SetValueWithoutNotify(Mathf.RoundToInt(d.vibrationIntensity * 100));
+            if (vibrationIntensityValue != null) vibrationIntensityValue.text = Mathf.RoundToInt(d.vibrationIntensity * 100) + "%";
             if (preferenceLabels == null || preferenceLabels.Length < 8) return;
-            preferenceLabels[0].text = "DISPLAY MODE  /  " + (Screen.fullScreen ? "Full screen" : "Windowed");
+            preferenceLabels[0].text = FormulaLocalization.T("DISPLAY MODE  /  ") + (Screen.fullScreen ? FormulaLocalization.T("Full screen") : FormulaLocalization.T("Windowed"));
 #if UNITY_EDITOR || UNITY_SWITCH
-            preferenceLabels[0].text = "DISPLAY MODE  /  Platform managed"; preferenceButtons[0].interactable = false;
+            preferenceLabels[0].text = FormulaLocalization.T("DISPLAY MODE  /  Platform managed"); preferenceButtons[0].interactable = false;
 #endif
-            preferenceLabels[1].text = "SAFE AREA  /  " + p.safeAreaPercent + "%";
-            preferenceLabels[2].text = "FRAME LIMIT  /  " + (Application.targetFrameRate > 0 ? Application.targetFrameRate.ToString() + " FPS" : "Unlimited");
-            preferenceLabels[3].text = "QUALITY  /  " + QualitySettings.names[QualitySettings.GetQualityLevel()];
-            preferenceLabels[4].text = "V-SYNC  /  " + (QualitySettings.vSyncCount > 0 ? "On" : "Off");
-            preferenceLabels[5].text = "TEXT SIZE  /  " + p.textScale + "%";
-            preferenceLabels[6].text = "REDUCED MOTION  /  " + (p.reducedMotion ? "On" : "Off");
-            preferenceLabels[7].text = "HIGH CONTRAST  /  " + (p.highContrast ? "On" : "Off");
+            preferenceLabels[1].text = FormulaLocalization.T("SAFE AREA  /  ") + p.safeAreaPercent + "%";
+            preferenceLabels[2].text = FormulaLocalization.T("FRAME LIMIT  /  ") + (Application.targetFrameRate > 0 ? Application.targetFrameRate.ToString() + FormulaLocalization.T(" FPS") : FormulaLocalization.T("Unlimited"));
+            preferenceLabels[3].text = FormulaLocalization.T("QUALITY  /  ") + QualitySettings.names[QualitySettings.GetQualityLevel()];
+            preferenceLabels[4].text = FormulaLocalization.T("V-SYNC  /  ") + (QualitySettings.vSyncCount > 0 ? FormulaLocalization.T("On") : FormulaLocalization.T("Off"));
+            preferenceLabels[5].text = FormulaLocalization.T("TEXT SIZE  /  ") + p.textScale + "%";
+            preferenceLabels[6].text = FormulaLocalization.T("REDUCED MOTION  /  ") + (p.reducedMotion ? FormulaLocalization.T("On") : FormulaLocalization.T("Off"));
+            preferenceLabels[7].text = FormulaLocalization.T("HIGH CONTRAST  /  ") + (p.highContrast ? FormulaLocalization.T("On") : FormulaLocalization.T("Off"));
         }
         private void SetVolume(int index, float value)
         {
@@ -62,6 +71,18 @@ namespace FormulaGame
             else if (index == 1) { SoundManager.Instance?.SetVehicleVolume(value); d.VehicleLevel = value; }
             else { SoundManager.Instance?.SetMusicVolume(value); d.musicLevel = value; }
             audioDirty = true; volumeValues[index].text = Mathf.RoundToInt(value * 100) + "%";
+        }
+        private void ChangeLanguage()
+        {
+            string code = FormulaLocalization.NextLanguage;
+            if (!FormulaLocalization.ChangeLanguage(code, out string error)) languageLabel.text = error;
+        }
+        private void SetVibrationIntensity(float percentage)
+        {
+            float value = Mathf.Clamp01(percentage / 100f);
+            FormulaProgression.Data.vibrationIntensity = value;
+            audioDirty = true;
+            vibrationIntensityValue.text = Mathf.RoundToInt(value * 100) + "%";
         }
         private void OpenDetails() { overview.SetActive(false); details.SetActive(true); ShowDetails(false); }
         private void OpenPreferences(int index)

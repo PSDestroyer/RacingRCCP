@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "failure": null,
+  "unity": "6000.3.19f1",
+  "checks": [
+    "Old saves default to 65%; invalid values are sanitized and unrelated save data survives.",
+    "Gamepad D-pad adjusts the authored slider by 1% and updates the displayed/saved value immediately.",
+    "Controller navigation moves between Vibration On/Off and intensity without trapping focus.",
+    "0% and 100% boundaries work, and On/Off preserves the chosen strength.",
+    "Settings save through SaveManager, reload from disk and restore the slider correctly.",
+    "Intensity label and value fit at 115% text size."
+  ],
+  "errors": [],
+  "isolatedSave": true
+}

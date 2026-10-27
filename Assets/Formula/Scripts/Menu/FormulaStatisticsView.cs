@@ -20,18 +20,18 @@ namespace FormulaGame
         public void Refresh(RCCP_CarController car, WheelCollider wheel)
         {
             currentCar = car; currentWheel = wheel;
-            torque.text = $"{car.Engine.maximumTorqueAsNM:0.#} Nm";
-            brakes.text = $"{car.FrontAxle.maxBrakeTorque:0} Nm";
-            spring.text = wheel != null ? $"{wheel.suspensionSpring.spring:0} N/m" : "—";
+            torque.text = FormulaLocalization.F("{0:0.#} Nm", car.Engine.maximumTorqueAsNM);
+            brakes.text = FormulaLocalization.F("{0:0} Nm", car.FrontAxle.maxBrakeTorque);
+            spring.text = wheel != null ? FormulaLocalization.F("{0:0} N/m", wheel.suspensionSpring.spring) : "—";
             aero.text = $"{car.AeroDynamics.downForce:0.##}";
-            drag.text = $"Aero drag {car.AeroDynamics.airResistance:0.##} · Mass {car.Rigid.mass:0} kg";
+            drag.text = FormulaLocalization.F("Aero drag {0:0.##} · Mass {1:0} kg", car.AeroDynamics.airResistance, car.Rigid.mass);
             if (setupComparison && !string.IsNullOrEmpty(inspectedSetup) && inspectedSetup != FormulaProgression.State.setup)
             {
                 string installed = FormulaProgression.State.setup;
                 float down = car.AeroDynamics.downForce / SetupFactor(installed, false) * SetupFactor(inspectedSetup, false);
                 float resistance = car.AeroDynamics.airResistance / SetupFactor(installed, true) * SetupFactor(inspectedSetup, true);
                 aero.text += " → " + down.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
-                drag.text = "Aero drag " + car.AeroDynamics.airResistance.ToString("0.##") + " → " + resistance.ToString("0.##");
+                drag.text = FormulaLocalization.T("Aero drag ") + car.AeroDynamics.airResistance.ToString("0.##") + " → " + resistance.ToString("0.##");
             }
             if (!setupComparison && !string.IsNullOrEmpty(previewBranch))
             {
@@ -42,15 +42,15 @@ namespace FormulaGame
                 if (previewBranch == "aero" && previewLevel != FormulaProgression.State.Equipped("aero"))
                 {
                     float proposedDrag = car.AeroDynamics.airResistance / (1 + .01f * FormulaProgression.State.Equipped("aero")) * (1 + .01f * previewLevel);
-                    drag.text = $"Drag {car.AeroDynamics.airResistance:0.##} → {proposedDrag:0.##}";
+                    drag.text = FormulaLocalization.F("Drag {0:0.##} → {1:0.##}", car.AeroDynamics.airResistance, proposedDrag);
                 }
             }
-            if (comparison != null) comparison.text = setupComparison ? "CURRENT → SETUP PREVIEW" : previewBranch != null && previewLevel != FormulaProgression.State.Equipped(previewBranch) ? "CURRENT → LEVEL " + previewLevel + " PREVIEW" : "CURRENT CONFIGURATION";
+            if (comparison != null) comparison.text = setupComparison ? FormulaLocalization.T("CURRENT → SETUP PREVIEW") : previewBranch != null && previewLevel != FormulaProgression.State.Equipped(previewBranch) ? FormulaLocalization.T("CURRENT → LEVEL ") + previewLevel + FormulaLocalization.T(" PREVIEW") : FormulaLocalization.T("CURRENT CONFIGURATION");
             RefreshDevelopment();
             if (setupComparison)
             {
-                foreach (var row in development) if (row.branchId == "aero" && row.label != null) row.label.text = "DOWNFORCE";
-                if (string.IsNullOrEmpty(inspectedSetup) || inspectedSetup == FormulaProgression.State.setup) drag.text = "Aero drag " + car.AeroDynamics.airResistance.ToString("0.##");
+                foreach (var row in development) if (row.branchId == "aero" && row.label != null) row.label.text = FormulaLocalization.T("DOWNFORCE");
+                if (string.IsNullOrEmpty(inspectedSetup) || inspectedSetup == FormulaProgression.State.setup) drag.text = FormulaLocalization.T("Aero drag ") + car.AeroDynamics.airResistance.ToString("0.##");
             }
         }
         private static float SetupFactor(string id, bool drag) => id == "speed" ? drag ? .96f : .92f : id == "corners" ? drag ? 1.04f : 1.08f : 1f;
@@ -61,7 +61,7 @@ namespace FormulaGame
                 int equipped = FormulaProgression.State.Equipped(row.branchId), owned = FormulaProgression.State.Owned(row.branchId);
                 if (!figmaLevels) SetSegments(row.segments, equipped, owned);
                 else for (int i = 0; i < row.segments.Length; i++) row.segments[i].color = i / 3 < equipped ? Color.white : row.branchId == previewBranch && i / 3 < previewLevel ? new Color32(255, 30, 0, 255) : new Color32(116, 18, 5, 255);
-                if (row.label != null) row.label.text = (figmaLevels && row.branchId == "aero" ? "AERO" : FormulaCatalog.Current.Upgrade(row.branchId).name.ToUpperInvariant()) + "  " + equipped + "/3";
+                if (row.label != null) row.label.text = (figmaLevels && row.branchId == "aero" ? FormulaLocalization.T("AERO") : FormulaLocalization.T(FormulaCatalog.Current.Upgrade(row.branchId).name).ToUpperInvariant()) + "  " + equipped + "/3";
             }
         }
         public static void SetSegments(UnityEngine.UI.Image[] segments, int equipped, int owned)

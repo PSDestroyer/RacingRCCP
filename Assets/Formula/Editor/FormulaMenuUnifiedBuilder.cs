@@ -48,6 +48,8 @@ public static class FormulaMenuUnifiedBuilder
         StyleCareer(view.Career); StyleQuick(view.Quick); StyleProfile(view.Profile); StyleSettings(view.Settings); StyleDialogs(view.Dialogs);
         FormulaEnglishBuilder.TranslateHierarchy(view.gameObject);
         FormulaExperienceBuilder.Style(view);
+        FormulaPlayerAvatarBuilder.Configure(view.gameObject);
+        FormulaLocalizationBuilder.ConfigureLanguage(view.gameObject);
     }
     private static void StyleShell(FormulaMenuView view)
     {
@@ -215,7 +217,8 @@ public static class FormulaMenuUnifiedBuilder
         foreach(Transform row in audioPage)
         {
             if(row.name.StartsWith("Volume ")){Place(row,30,190+index++*94,1220,78);Panel(row);}
-            if(row.name=="settings-vibration"){Place(row,30,490,1220,66);FormulaMenuTheme.StyleButton(row.GetComponent<UnityEngine.UI.Button>());}
+            if(row.name=="settings-vibration"){Place(row,30,475,1220,66);FormulaMenuTheme.StyleButton(row.GetComponent<UnityEngine.UI.Button>());}
+            if(row.name=="Vibration Intensity"){Place(row,30,553,1220,60);Panel(row);}
         }
         var controls=details.Find("Controls");Place(controls,0,0,1280,624);var bindings=controls.Find("Bindings");Place(bindings,0,0,1280,624);
         string[] devices={"controls-keyboard","controls-gamepad","controls-wheel"};for(int i=0;i<3;i++){var b=bindings.Find(devices[i]).GetComponent<UnityEngine.UI.Button>();Place(b.transform,30+i*257,173,245,42);Format(b.GetComponentInChildren<TMP_Text>(true),16,0,213,42,23);FormulaMenuTheme.StyleButton(b);}
@@ -280,6 +283,7 @@ public static class FormulaMenuUnifiedBuilder
             var retry=Button(root.transform,"retry","Retry event",30,532,390,64);var next=Button(root.transform,"next","Continue career",440,532,390,64);var back=Button(root.transform,"menu","Menu",850,532,400,64);
             Set(view,"retry",retry);Set(view,"next",next);Set(view,"menu",back);
             FormulaExperienceBuilder.StyleResults(root);
+            FormulaPlayerAvatarBuilder.Configure(root);
             var prefab=PrefabUtility.SaveAsPrefabAsset(root,path);FormulaMenuAssets.Current.resultsPrefab=prefab;EditorUtility.SetDirty(FormulaMenuAssets.Current);
         }
         finally{UnityEngine.Object.DestroyImmediate(root);}

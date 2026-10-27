@@ -62,24 +62,16 @@ namespace FormulaGame
             pauseController.SetPauseAvailability(game.FormulaRaceStarted);
             pauseButton.onClick.AddListener(pauseController.PauseGame);
             resume.onClick.AddListener(() => { FormulaAudio.Play(FormulaAudio.Cue.Back); pauseController.ResumeGameplay(); });
-            restart.onClick.AddListener(() => Confirm("RESTART SESSION?", "Your current run will end. Earned career progress is retained.", () => { pauseController.ResumeGameplay(); FormulaSession.Launch(FormulaProgression.State.activeEventId, FormulaProgression.State.activeMode); }));
-            leave.onClick.AddListener(() => Confirm("LEAVE SESSION?", "This unfinished run will not award credits or XP. Your saved progress is retained.", FormulaSession.ReturnToMenu));
+            restart.onClick.AddListener(() => Confirm(FormulaLocalization.T("RESTART SESSION?"),FormulaLocalization.T("Your current run will end. Earned career progress is retained."),() => { pauseController.ResumeGameplay(); FormulaSession.Launch(FormulaProgression.State.activeEventId, FormulaProgression.State.activeMode); }, isRestart: true));
+            leave.onClick.AddListener(() => Confirm(FormulaLocalization.T("LEAVE SESSION?"),FormulaLocalization.T("This unfinished run will not award credits or XP. Your saved progress is retained."),FormulaSession.ReturnToMenu));
             cancel.onClick.AddListener(CancelConfirmation); confirm.onClick.AddListener(() => pending?.Invoke());
             settings.onClick.AddListener(() => { pauseController.OpenSettingsPanel(); RefreshVolumes(); FormulaUI.Focus(options.transform); });
             optionsBack.onClick.AddListener(() => { FormulaAudio.Play(FormulaAudio.Cue.Back); SaveAudio(); pauseController.CloseSettingsPanel(); EventSystem.current?.SetSelectedGameObject(settings.gameObject); });
             retrySave.onClick.AddListener(() => { error.SetActive(false); FormulaSession.RetryResult(); });
-            leaveError.onClick.AddListener(() => { error.SetActive(false); pause.SetActive(true); Confirm("LEAVE WITHOUT SAVING?", "This result has not been saved. Its credits and XP will be lost.", FormulaSession.ReturnToMenu, true); });
+            leaveError.onClick.AddListener(() => { error.SetActive(false); pause.SetActive(true); Confirm(FormulaLocalization.T("LEAVE WITHOUT SAVING?"),FormulaLocalization.T("This result has not been saved. Its credits and XP will be lost."),FormulaSession.ReturnToMenu,true); });
             for (int i = 0; i < volumes.Length; i++) { int index = i; volumes[i].onValueChanged.AddListener(value => ChangeVolume(index, value)); }
             pause.SetActive(false); options.SetActive(false); error.SetActive(false);
-            eventName.text = FormulaSession.CurrentEvent.name.ToUpperInvariant();
-            career = FormulaProgression.State.activeMode == "career";
-            var activeEvent = FormulaSession.CurrentEvent;
-            passTime = career && activeEvent.mode == "time_attack" ? FormulaAssets.Current.FindTrack(activeEvent.trackId).referenceLapSeconds * 1.2 : 0;
-            careerGoal.SetActive(career);
-            goalCaption.text = passTime > 0 ? "TIME TO BEAT" : career ? "PASS TARGET" : "SESSION GOAL";
-            goalValue.text = activeEvent.opponentCount > 0 ? career ? "TOP 3 + VALID LAP" : "RACE FOR POSITION"
-                : passTime > 0 ? FormulaRaceUI.TimeText(passTime) : career ? "ONE VALID LAP" : "FASTEST VALID LAP";
-            ((RectTransform)standingsRoot.transform).anchoredPosition = new Vector2(32, career ? -224 : -144);
+            RefreshLocale();
             int count = Mathf.Max(1, game.raceWaypoints != null ? game.raceWaypoints.waypoints.Count : 1);
             currentSplits = new double[count]; bestSplits = new double[count];
             recordedSplits = new bool[count]; referenceSplits = new bool[count];
@@ -89,6 +81,20 @@ namespace FormulaGame
             standingsRoot.SetActive(FormulaSession.CurrentEvent.opponentCount > 0);
             minimap.Bind(game);
             Wire(pauseOverview.transform); Wire(pauseConfirmation.transform); Wire(options.transform); Wire(error.transform);
+        }
+        private void OnEnable() => FormulaLocalization.Changed += RefreshLocale;
+        private void RefreshLocale()
+        {
+            if (race == null) return;
+            eventName.text = FormulaLocalization.T(FormulaSession.CurrentEvent.name).ToUpperInvariant();
+            career = FormulaProgression.State.activeMode == "career";
+            var activeEvent = FormulaSession.CurrentEvent;
+            passTime = career && activeEvent.mode == "time_attack" ? FormulaAssets.Current.FindTrack(activeEvent.trackId).referenceLapSeconds * 1.2 : 0;
+            careerGoal.SetActive(career);
+            goalCaption.text = passTime > 0 ? FormulaLocalization.T("TIME TO BEAT") : career ? FormulaLocalization.T("PASS TARGET") : FormulaLocalization.T("SESSION GOAL");
+            goalValue.text = activeEvent.opponentCount > 0 ? career ? FormulaLocalization.T("TOP 3 + VALID LAP") : FormulaLocalization.T("RACE FOR POSITION")
+                : passTime > 0 ? FormulaRaceUI.TimeText(passTime) : career ? FormulaLocalization.T("ONE VALID LAP") : FormulaLocalization.T("FASTEST VALID LAP");
+            ((RectTransform)standingsRoot.transform).anchoredPosition = new Vector2(32, career ? -224 : -144);
         }
         public void Tick(GamePlayManager game)
         {
@@ -100,20 +106,20 @@ namespace FormulaGame
             hud.SetActive(!paused && !finished && !error.activeSelf);
             if (game.CarController == null || finished) return;
             var e = FormulaSession.CurrentEvent;
-            startMessage.text = game.FormulaRaceStarted ? "" : game.raceStateText != null ? game.raceStateText.text : "";
+            startMessage.text = game.FormulaRaceStarted ? "" : game.raceStateText != null ? FormulaLocalization.T(game.raceStateText.text) : "";
             bool racing = e.opponentCount > 0;
-            position.text = racing ? "P" + game.FormulaPosition : "SOLO";
+            position.text = racing ? FormulaLocalization.T("P") + game.FormulaPosition : FormulaLocalization.T("SOLO");
             position.fontSize = racing ? 52 : 32;
             participantCount.text = racing ? "/ " + game.FormulaParticipants : "";
             lap.text = Mathf.Min(game.FormulaCompletedLaps + 1, game.totalRaceLaps) + " / " + game.totalRaceLaps;
             bool invalid = FormulaSession.LapInvalid;
-            lapStatus.text = invalid ? "LAP INVALID" : game.FormulaCompletedLaps == game.totalRaceLaps - 1 ? "FINAL LAP" : "";
+            lapStatus.text = invalid ? FormulaLocalization.T("LAP INVALID") : game.FormulaCompletedLaps == game.totalRaceLaps - 1 ? FormulaLocalization.T("FINAL LAP") : "";
             lapStatus.color = invalid ? FormulaUI.Red : FormulaUI.Accent;
-            timingCaption.text = "CURRENT LAP";
+            timingCaption.text = FormulaLocalization.T("CURRENT LAP");
             sessionTime.gameObject.SetActive(racing);
-            bestLap.text = FormulaSession.BestLap > 0 ? "BEST LAP  " + FormulaRaceUI.TimeText(FormulaSession.BestLap) : "FIRST TIMED LAP";
+            bestLap.text = FormulaSession.BestLap > 0 ? FormulaLocalization.T("BEST LAP  ") + FormulaRaceUI.TimeText(FormulaSession.BestLap) : FormulaLocalization.T("FIRST TIMED LAP");
             deltaCaption.gameObject.SetActive(!racing && (FormulaSession.BestLap > 0 || invalid));
-            deltaCaption.text = invalid ? "LAP NOT COUNTED" : splitText == "—" ? "AWAITING SPLIT" : "SPLIT TO BEST";
+            deltaCaption.text = invalid ? FormulaLocalization.T("LAP NOT COUNTED") : splitText == "—" ? FormulaLocalization.T("AWAITING SPLIT") : FormulaLocalization.T("SPLIT TO BEST");
             deltaCaption.color = Color.white;
             delta.text = invalid ? "—" : splitText;
             delta.gameObject.SetActive(!racing && !invalid && splitText != "—");
@@ -126,18 +132,18 @@ namespace FormulaGame
 #if UNITY_SWITCH
                 "+"
 #else
-                "MENU"
+                FormulaLocalization.T("MENU")
 #endif
-                : "ESC";
+                : FormulaLocalization.T("ESC");
             if (game.FormulaRaceStarted && !raceStarted)
             {
                 raceStarted = true;
                 // Career already has its exact target on screen; no duplicate objective toast.
-                if (!career) ShowMessage(e.name.ToUpperInvariant(), racing ? game.totalRaceLaps + " laps · " + e.opponentCount + " rivals" : "Set your fastest valid lap", 3);
+                if (!career) ShowMessage(FormulaLocalization.T(e.name).ToUpperInvariant(),racing ? game.totalRaceLaps + FormulaLocalization.T(" laps · ") + e.opponentCount + FormulaLocalization.T(" rivals") : FormulaLocalization.T("Set your fastest valid lap"),3);
             }
             if (invalid && !wasInvalid)
             {
-                ShowMessage("LAP INVALID · TRACK LIMITS", InvalidRecovery(game), 5, true);
+                ShowMessage(FormulaLocalization.T("LAP INVALID · TRACK LIMITS"),InvalidRecovery(game),5,true);
                 FormulaAudio.Play(FormulaAudio.Cue.LapInvalid);
             }
             wasInvalid = invalid;
@@ -155,7 +161,7 @@ namespace FormulaGame
                     if (!visible) continue;
                     var racer = rankedRacers[index]; bool player = game.IsPlayerRacer(racer.racerTransform);
                     // Rich text is reserved for our formatting, not driver names.
-                    string name = player ? "YOU" : (racer.displayName ?? "DRIVER").Replace("<", "").Replace(">", "").ToUpperInvariant();
+                    string name = player ? FormulaLocalization.T("YOU") : (racer.displayName ?? "DRIVER").Replace("<", "").Replace(">", "").ToUpperInvariant();
                     standings[i].text = (index + 1).ToString("00") + "   " + name;
                     standings[i].color = player ? FormulaUI.Accent : Color.white;
                     standingHighlights[i].color = player ? new Color(.24f, .025f, 0, 1) : new Color(0, 0, 0, 1);
@@ -179,7 +185,7 @@ namespace FormulaGame
                     displayGear = FormulaEngineAudio.DisplayGearFor(car.currentGear, car.reversingNow || car.direction < 0, car.NGearNow)
                 };
             InstrumentRpm = sample.rpm; InstrumentFrame = sample.frame;
-            startMessage.text = game.FormulaRaceStarted ? "" : game.raceStateText != null ? game.raceStateText.text : "";
+            startMessage.text = game.FormulaRaceStarted ? "" : game.raceStateText != null ? FormulaLocalization.T(game.raceStateText.text) : "";
             double currentLap = FormulaSession.LapElapsed(game.FormulaElapsed);
             SetClock(lapTime, currentLap, false);
             if (sessionTime.gameObject.activeSelf) SetClock(sessionTime, game.FormulaElapsed, true);
@@ -189,8 +195,8 @@ namespace FormulaGame
                 wrongWayPresented = wrongWay;
                 if (wrongWay)
                 {
-                    validity.text = "WRONG WAY"; validity.color = FormulaUI.Red;
-                    objective.text = "Turn around and follow the circuit direction";
+                    validity.text = FormulaLocalization.T("WRONG WAY"); validity.color = FormulaUI.Red;
+                    objective.text = FormulaLocalization.T("Turn around and follow the circuit direction");
                     FormulaAudio.Play(FormulaAudio.Cue.WrongWay);
                 }
                 else if (Time.time < messageUntil) PresentToast();
@@ -201,7 +207,7 @@ namespace FormulaGame
             int currentGear = sample.displayGear;
             if (displayedGear != currentGear)
             {
-                displayedGear = currentGear; gear.text = currentGear < 0 ? "R" : currentGear == 0 ? "N" : currentGear.ToString();
+                displayedGear = currentGear; gear.text = currentGear < 0 ? FormulaLocalization.T("R") : currentGear == 0 ? FormulaLocalization.T("N") : currentGear.ToString();
             }
             float fraction = sample.RevFraction;
             revFill.fillAmount = fraction; revFill.color = fraction > .9f ? FormulaUI.Red : FormulaUI.Accent;
@@ -223,23 +229,23 @@ namespace FormulaGame
         }
         private string InvalidRecovery(GamePlayManager game)
         {
-            if (game.FormulaCompletedLaps + 1 < game.totalRaceLaps) return "Next lap starts a fresh attempt";
-            return FormulaSession.ValidLaps > 0 ? "Finish session · valid lap retained" : "Finish session, then select Retry";
+            if (game.FormulaCompletedLaps + 1 < game.totalRaceLaps) return FormulaLocalization.T("Next lap starts a fresh attempt");
+            return FormulaSession.ValidLaps > 0 ? FormulaLocalization.T("Finish session · valid lap retained") : FormulaLocalization.T("Finish session, then select Retry");
         }
         private void UpdateGoal(GamePlayManager game, bool invalid)
         {
             bool hasValid = FormulaSession.ValidLaps > 0;
-            string progress = !game.FormulaRaceStarted ? "STARTS AT LIGHTS OUT" : invalid ?
-                hasValid ? "VALID LAP RETAINED" : game.FormulaCompletedLaps + 1 < game.totalRaceLaps ? "NEXT LAP: FRESH ATTEMPT" : "RETRY AFTER FINISH"
-                : passTime > 0 && hasValid ? FormulaSession.BestLap <= passTime ? "PASS TARGET ACHIEVED" : "TO FIND  " + FormulaRaceUI.TimeText(FormulaSession.BestLap - passTime)
-                : hasValid ? "VALID LAP RECORDED" : "STAY WITHIN TRACK LIMITS";
+            string progress = !game.FormulaRaceStarted ? FormulaLocalization.T("STARTS AT LIGHTS OUT") : invalid ?
+                hasValid ? FormulaLocalization.T("VALID LAP RETAINED") : game.FormulaCompletedLaps + 1 < game.totalRaceLaps ? FormulaLocalization.T("NEXT LAP: FRESH ATTEMPT") : FormulaLocalization.T("RETRY AFTER FINISH")
+                : passTime > 0 && hasValid ? FormulaSession.BestLap <= passTime ? FormulaLocalization.T("PASS TARGET ACHIEVED") : FormulaLocalization.T("TO FIND  ") + FormulaRaceUI.TimeText(FormulaSession.BestLap - passTime)
+                : hasValid ? FormulaLocalization.T("VALID LAP RECORDED") : FormulaLocalization.T("STAY WITHIN TRACK LIMITS");
             goalProgress.text = progress;
             goalProgress.color = invalid && !hasValid ? FormulaUI.Red : hasValid && (passTime <= 0 || FormulaSession.BestLap <= passTime) ? FormulaUI.Accent : Color.white;
             goalValue.color = passTime > 0 && hasValid && FormulaSession.BestLap <= passTime ? FormulaUI.Accent : Color.white;
-            string requirement = FormulaSession.CurrentEvent.opponentCount > 0 ? career ? "Finish in the top 3 and record a valid lap." : "Race for your best finishing position."
-                : passTime > 0 ? "Record a valid lap in " + FormulaRaceUI.TimeText(passTime) + " or faster."
-                : "Pass every checkpoint and stay within track limits.";
-            string pauseTarget = passTime > 0 ? "PASS TIME  /  " + goalValue.text + " OR FASTER" : goalCaption.text + "  /  " + goalValue.text;
+            string requirement = FormulaSession.CurrentEvent.opponentCount > 0 ? career ? FormulaLocalization.T("Finish in the top 3 and record a valid lap.") : FormulaLocalization.T("Race for your best finishing position.")
+                : passTime > 0 ? FormulaLocalization.T("Record a valid lap in ") + FormulaRaceUI.TimeText(passTime) + FormulaLocalization.T(" or faster.")
+                : FormulaLocalization.T("Pass every checkpoint and stay within track limits.");
+            string pauseTarget = passTime > 0 ? FormulaLocalization.T("PASS TIME  /  ") + goalValue.text + FormulaLocalization.T(" OR FASTER") : goalCaption.text + "  /  " + goalValue.text;
             pauseObjective.text = pauseTarget + "\n" + requirement + "\n" + progress;
         }
         private void UpdateProximity(GamePlayManager game, bool enabled)
@@ -291,17 +297,16 @@ namespace FormulaGame
                 Array.Copy(currentSplits, bestSplits, currentSplits.Length);
                 Array.Copy(recordedSplits, referenceSplits, recordedSplits.Length);
             }
-            ShowMessage(!FormulaSession.LastLapValid ? "LAP NOT COUNTED" : best ? "NEW BEST LAP" : "LAP COMPLETE",
-                FormulaSession.LastLapValid ? FormulaRaceUI.TimeText(FormulaSession.LastLap) : "Track limits · lap excluded from timing", 4, !FormulaSession.LastLapValid);
+            ShowMessage(!FormulaSession.LastLapValid ? FormulaLocalization.T("LAP NOT COUNTED") : best ? FormulaLocalization.T("NEW BEST LAP") : FormulaLocalization.T("LAP COMPLETE"),                FormulaSession.LastLapValid ? FormulaRaceUI.TimeText(FormulaSession.LastLap) : FormulaLocalization.T("Track limits · lap excluded from timing"),4,!FormulaSession.LastLapValid);
             previousBest = FormulaSession.BestLap;
             Array.Clear(recordedSplits, 0, recordedSplits.Length);
             splitText = "—"; splitDifference = 0;
         }
-        private void Confirm(string title, string details, Action action, bool fromError = false)
+        private void Confirm(string title, string details, Action action, bool fromError = false, bool isRestart = false)
         {
             confirmFromError = fromError; wasPaused = true; pending = action; confirmTitle.text = title; confirmDetails.text = details;
-            confirm.GetComponentInChildren<TMP_Text>().text = fromError ? "LEAVE WITHOUT SAVING" : title.StartsWith("RESTART", StringComparison.Ordinal) ? "RESTART SESSION" : "LEAVE SESSION";
-            cancel.GetComponentInChildren<TMP_Text>().text = fromError ? "BACK TO RESULT" : "KEEP RACING";
+            confirm.GetComponentInChildren<TMP_Text>().text = fromError ? FormulaLocalization.T("LEAVE WITHOUT SAVING") : isRestart ? FormulaLocalization.T("RESTART SESSION") : FormulaLocalization.T("LEAVE SESSION");
+            cancel.GetComponentInChildren<TMP_Text>().text = fromError ? FormulaLocalization.T("BACK TO RESULT") : FormulaLocalization.T("KEEP RACING");
             pauseOverview.SetActive(false); pauseConfirmation.SetActive(true); EventSystem.current?.SetSelectedGameObject(cancel.gameObject);
         }
         private void CancelConfirmation()
@@ -321,7 +326,7 @@ namespace FormulaGame
         {
             if (error.activeSelf) return;
             FormulaAudio.Play(FormulaAudio.Cue.Error);
-            errorDetails.text = "Your result could not be saved. Retry saving to keep your credits and XP.\n" + message;
+            errorDetails.text = FormulaLocalization.T("Your result could not be saved. Retry saving to keep your credits and XP.\n") + message;
             hud.SetActive(false); pause.SetActive(false); options.SetActive(false); error.SetActive(true); FormulaUI.Focus(error.transform);
         }
         public void Finish()
@@ -346,7 +351,7 @@ namespace FormulaGame
             volumeValues[index].text = Mathf.RoundToInt(value * 100) + "%";
         }
         private void SaveAudio() { if (audioDirty && HalvaStudio.Save.SaveManager.Instance != null) { if (HalvaStudio.Save.SaveManager.Instance.TrySave(true)) audioDirty = false; } }
-        private void OnDisable() { if (Application.isPlaying) SaveAudio(); }
+        private void OnDisable() { FormulaLocalization.Changed -= RefreshLocale; if (Application.isPlaying) SaveAudio(); }
         public void OnCancel(BaseEventData data)
         {
             if (confirmFromError) CancelConfirmation();

@@ -285,6 +285,8 @@ public static class FormulaMenuHierarchyBuilder
         }
         Set(view, "volumes", sliders); Set(view, "volumeValues", values);
         var vibration = Button(audio, "settings-vibration", "Vibrații · Active", 0, 374, 590, 76); Set(view, "vibration", vibration); Set(view, "vibrationLabel", Label(vibration));
+        FormulaVibrationSettingsBuilder.Configure(view);
+        FormulaLocalizationBuilder.ConfigureLanguage(view.gameObject);
         var controls = BuildControls(details); Set(view, "controls", controls); controls.gameObject.SetActive(false); details.gameObject.SetActive(false); return view;
     }
     private static FormulaControlsView BuildControls(Transform parent)

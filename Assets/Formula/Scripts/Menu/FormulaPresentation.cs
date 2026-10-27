@@ -45,6 +45,8 @@ namespace FormulaGame
                 {
                     var text = entry.Key; if (text == null || entry.Value > 32) continue;
                     float size = entry.Value * textScale / 100f;
+                    var localizedFont = text.GetComponent<FormulaLocalizedFont>();
+                    if (localizedFont != null) { localizedFont.SetSize(size); continue; }
                     text.fontSize = size;
                     text.fontSizeMax = size;
                     // Accessibility sizing is a minimum, never a suggestion for auto-fit.

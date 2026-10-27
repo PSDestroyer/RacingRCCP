@@ -13,7 +13,7 @@ namespace FormulaGame
         public readonly int Price, Shortfall;
         public readonly string Status, Condition, Requirements, Funds, Cost, Action;
         public readonly FormulaCatalog.CareerEvent Event;
-        private static string Credits(int value) => value.ToString("N0", CultureInfo.InvariantCulture) + " CR";
+        private static string Credits(int value) => value.ToString("N0", CultureInfo.InvariantCulture) + FormulaLocalization.T(" CR");
         public FormulaLiveryOffer(FormulaCatalog.Livery livery, FormulaProgress progress, int balance)
         {
             Owned = progress.ownedLiveries.Contains(livery.id); Equipped = progress.equippedLivery == livery.id;
@@ -25,21 +25,21 @@ namespace FormulaGame
             Requirements = string.Join("\n", rules.Select(r =>
             {
                 bool met = FormulaProgression.Unlocked(r, progress);
-                return "<color=" + (met ? "#FFFFFF" : "#FFE13B") + ">" + (met ? "MET" : "NEEDED") + " · " + FormulaCatalog.MedalName(FormulaCatalog.ParseMedal((string)r["minimumMedal"])) + " in " + FormulaCatalog.Current.Event((string)r["eventId"]).name + "</color>";
+                return "<color=" + (met ? "#FFFFFF" : "#FFE13B") + ">" + FormulaLocalization.T(met ? "MET" : "NEEDED") + " · " + FormulaCatalog.MedalName(FormulaCatalog.ParseMedal((string)r["minimumMedal"])) + FormulaLocalization.T(" in ") + FormulaLocalization.T(FormulaCatalog.Current.Event((string)r["eventId"]).name) + "</color>";
             }));
             if (Owned)
             {
-                Status = Equipped ? "EQUIPPED" : "OWNED"; Condition = "Your upgrades and setup are retained.";
-                Requirements = "OWNED\nSwitch between owned liveries for free."; Cost = "Free to equip"; Action = Equipped ? "Equipped" : "Equip · Free";
+                Status = Equipped ? FormulaLocalization.T("EQUIPPED") : FormulaLocalization.T("OWNED"); Condition = FormulaLocalization.T("Your upgrades and setup are retained.");
+                Requirements = FormulaLocalization.T("OWNED\nSwitch between owned liveries for free."); Cost = FormulaLocalization.T("Free to equip"); Action = Equipped ? FormulaLocalization.T("Equipped") : FormulaLocalization.T("Equip · Free");
                 return;
             }
-            Status = !Unlocked ? "LOCKED" : Purchase && Shortfall > 0 ? "INSUFFICIENT CREDITS" : Purchase ? "AVAILABLE" : "REWARD READY";
-            Condition = missing.Length == 0 ? Purchase ? "Medal requirement met. Cosmetic only." : "All requirements met. Claim your reward." : rules.Length > 1
-                ? "Gold medals: " + (rules.Length - missing.Length) + " / " + rules.Length + " · Next: " + Event.name
-                : "Earn " + FormulaCatalog.MedalName(FormulaCatalog.ParseMedal((string)missing[0]["minimumMedal"])) + " in " + Event.name + ".";
-            Funds = Purchase ? "Balance: " + Credits(balance) + " · Price: " + Credits(Price) : null;
-            Cost = Shortfall > 0 ? "MISSING " + Credits(Shortfall) : Purchase ? "Price · " + Credits(Price) : "Career reward · Free";
-            Action = !Unlocked ? "View requirements" : !Purchase ? "Claim reward · Free" : Shortfall > 0 ? "Earn credits" : "Buy and equip · " + Credits(Price);
+            Status = !Unlocked ? FormulaLocalization.T("LOCKED") : Purchase && Shortfall > 0 ? FormulaLocalization.T("INSUFFICIENT CREDITS") : Purchase ? FormulaLocalization.T("AVAILABLE") : FormulaLocalization.T("REWARD READY");
+            Condition = missing.Length == 0 ? Purchase ? FormulaLocalization.T("Medal requirement met. Cosmetic only.") : FormulaLocalization.T("All requirements met. Claim your reward.") : rules.Length > 1
+                ? FormulaLocalization.T("Gold medals: ") + (rules.Length - missing.Length) + " / " + rules.Length + FormulaLocalization.T(" · Next: ") + FormulaLocalization.T(Event.name)
+                : FormulaLocalization.T("Earn ") + FormulaCatalog.MedalName(FormulaCatalog.ParseMedal((string)missing[0]["minimumMedal"])) + FormulaLocalization.T(" in ") + FormulaLocalization.T(Event.name) + ".";
+            Funds = Purchase ? FormulaLocalization.T("Balance: ") + Credits(balance) + FormulaLocalization.T(" · Price: ") + Credits(Price) : null;
+            Cost = Shortfall > 0 ? FormulaLocalization.T("MISSING ") + Credits(Shortfall) : Purchase ? FormulaLocalization.T("Price · ") + Credits(Price) : FormulaLocalization.T("Career reward · Free");
+            Action = !Unlocked ? FormulaLocalization.T("View requirements") : !Purchase ? FormulaLocalization.T("Claim reward · Free") : Shortfall > 0 ? FormulaLocalization.T("Earn credits") : FormulaLocalization.T("Buy and equip · ") + Credits(Price);
         }
         private static IEnumerable<JObject> MedalRules(JObject rule)
         {

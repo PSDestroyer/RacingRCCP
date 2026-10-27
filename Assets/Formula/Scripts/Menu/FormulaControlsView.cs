@@ -24,7 +24,6 @@ namespace FormulaGame
         private bool wasEnabled;
         private string conflictMessage;
         private TMP_Text cancelLabel;
-        private string cancelCaption;
         private string device = "<Keyboard>";
         private int pageIndex;
         private static readonly string[] DrivingActions = { "Throttle", "Brake", "Steering", "Gear Shift Up", "Gear Shift Down", "Clutch", "Change Camera", "Look Back", "Options", "Pause" };
@@ -32,7 +31,7 @@ namespace FormulaGame
         public bool IsRebinding => operation != null || conflictMessage != null;
         public void Initialize()
         {
-            cancelLabel = cancelRebind.GetComponentInChildren<TMP_Text>(true); cancelCaption = cancelLabel.text;
+            cancelLabel = cancelRebind.GetComponentInChildren<TMP_Text>(true);
             keyboard.onClick.AddListener(() => SelectDevice("<Keyboard>")); gamepad.onClick.AddListener(() => SelectDevice("<Gamepad>")); wheel.onClick.AddListener(() => SelectDevice("Wheel"));
             previous.onClick.AddListener(() => { pageIndex--; RefreshRows(); }); next.onClick.AddListener(() => { pageIndex++; RefreshRows(); });
             reset.onClick.AddListener(ResetDevice); cancelRebind.onClick.AddListener(CancelRebind);
@@ -56,14 +55,14 @@ namespace FormulaGame
         {
             int pages = Mathf.Max(1, Mathf.CeilToInt(entries.Count / (float)rows.Length)); pageIndex = Mathf.Clamp(pageIndex, 0, pages - 1);
             previous.interactable = pageIndex > 0; next.interactable = pageIndex < pages - 1;
-            pageLabel.text = (device == "<Keyboard>" ? "KEYBOARD" : device == "<Gamepad>" ? "GAMEPAD" : "STEERING WHEEL") + "  /  PAGE " + (pageIndex + 1) + " OF " + pages;
+            pageLabel.text = FormulaLocalization.F("{0} / PAGE {1} OF {2}", device == "<Keyboard>" ? FormulaLocalization.T("KEYBOARD") : device == "<Gamepad>" ? FormulaLocalization.T("GAMEPAD") : FormulaLocalization.T("STEERING WHEEL"), pageIndex + 1, pages);
             for (int i = 0; i < rows.Length; i++)
             {
                 int index = pageIndex * rows.Length + i; var row = rows[i]; row.button.gameObject.SetActive(index < entries.Count);
                 if (index >= entries.Count) continue;
                 var entry = entries[index]; var b = entry.action.bindings[entry.index];
                 row.action.text = ActionName(entry.action.name) + BindingPart(entry.action, entry.index);
-                row.binding.text = entry.action.GetBindingDisplayString(entry.index);
+                row.binding.text = entry.action.GetBindingDisplayString(entry.index, InputBinding.DisplayStringOptions.DontIncludeInteractions);
             }
         }
         private static bool IsSecondaryComposite(InputAction action, int index)
@@ -76,12 +75,12 @@ namespace FormulaGame
         {
             var binding = action.bindings[index];
             if (!binding.isPartOfComposite) return "";
-            if (action.name == "Steering") return binding.name.Equals("negative", StringComparison.OrdinalIgnoreCase) ? " / Left" : " / Right";
+            if (action.name == "Steering") return binding.name.Equals("negative", StringComparison.OrdinalIgnoreCase) ? FormulaLocalization.T(" / Left") : FormulaLocalization.T(" / Right");
             for (int i = index - 1; i >= 0; i--)
                 if (action.bindings[i].isComposite)
                 {
                     string name = action.bindings[i].name;
-                    return name == "wasd" ? " / WASD" : name == "arrows" ? " / Arrow keys" : "";
+                    return name == "wasd" ? FormulaLocalization.T(" / WASD") : name == "arrows" ? FormulaLocalization.T(" / Arrow keys") : "";
                 }
             return "";
         }
@@ -89,25 +88,25 @@ namespace FormulaGame
         {
             switch (name)
             {
-                case "Throttle": return "Throttle";
-                case "Brake": return "Brake";
-                case "Steering": return "Steering";
-                case "Handbrake": return "Handbrake";
-                case "Start/Stop Engine": return "Start / stop engine";
-                case "Low Beam Lights": return "Low beam";
-                case "High Beam Lights": return "High beam";
-                case "Indicator Right": return "Right indicator";
-                case "Indicator Left": return "Left indicator";
-                case "Indicator Hazard": return "Hazard lights";
-                case "Gear Shift Up": return "Shift up";
-                case "Gear Shift Down": return "Shift down";
-                case "Change Camera": return "Change camera";
-                case "Look Back": return "Look back";
-                case "MouseInput": return "Camera movement";
-                case "Clutch": return "Clutch";
-                case "Pause": case "Options": return "Pause / menu";
-                case "Record": return "Record";
-                case "Replay": return "Replay";
+                case "Throttle": return FormulaLocalization.T("Throttle");
+                case "Brake": return FormulaLocalization.T("Brake");
+                case "Steering": return FormulaLocalization.T("Steering");
+                case "Handbrake": return FormulaLocalization.T("Handbrake");
+                case "Start/Stop Engine": return FormulaLocalization.T("Start / stop engine");
+                case "Low Beam Lights": return FormulaLocalization.T("Low beam");
+                case "High Beam Lights": return FormulaLocalization.T("High beam");
+                case "Indicator Right": return FormulaLocalization.T("Right indicator");
+                case "Indicator Left": return FormulaLocalization.T("Left indicator");
+                case "Indicator Hazard": return FormulaLocalization.T("Hazard lights");
+                case "Gear Shift Up": return FormulaLocalization.T("Shift up");
+                case "Gear Shift Down": return FormulaLocalization.T("Shift down");
+                case "Change Camera": return FormulaLocalization.T("Change camera");
+                case "Look Back": return FormulaLocalization.T("Look back");
+                case "MouseInput": return FormulaLocalization.T("Camera movement");
+                case "Clutch": return FormulaLocalization.T("Clutch");
+                case "Pause": case "Options": return FormulaLocalization.T("Pause / menu");
+                case "Record": return FormulaLocalization.T("Record");
+                case "Replay": return FormulaLocalization.T("Replay");
                 default: return name;
             }
         }
@@ -117,14 +116,13 @@ namespace FormulaGame
             var entry = entries[pageIndex * rows.Length + row]; reboundAction = entry.action; wasEnabled = reboundAction.enabled;
             returnFocus = rows[row].button.gameObject; reboundAction.Disable();
             waiting.SetActive(true); listInteraction.interactable = false; listInteraction.blocksRaycasts = false;
-            prompt.text = "Press a new input for\n" + rows[row].action.text + "\nEsc · Cancel";
+            prompt.text = FormulaLocalization.T("Press a new input for\n") + rows[row].action.text + FormulaLocalization.T("\nEsc · Cancel");
             operation = reboundAction.PerformInteractiveRebinding(entry.index).WithCancelingThrough("<Keyboard>/escape").WithTimeout(15)
                 .OnApplyBinding((candidate, path) =>
                 {
                     string conflict = BindingConflict(actions, entry.action, entry.index, path, candidate.selectedControl);
                     if (conflict == null) entry.action.ApplyBindingOverride(entry.index, path);
-                    else conflictMessage = "INPUT ALREADY IN USE\n" + InputControlPath.ToHumanReadableString(path, InputControlPath.HumanReadableStringOptions.OmitDevice)
-                        + " is assigned to " + conflict + ".\nYour previous binding is unchanged.";
+                    else conflictMessage = FormulaLocalization.T("INPUT ALREADY IN USE\n") + FormulaLocalization.F("{0} is already assigned to {1}.\nYour previous binding is unchanged.", InputControlPath.ToHumanReadableString(path, InputControlPath.HumanReadableStringOptions.OmitDevice), conflict);
                 })
                 .OnCancel(_ => Finish(false)).OnComplete(_ => Finish(true));
             if (device != "Wheel") operation.WithControlsHavingToMatchPath(device);
@@ -137,7 +135,7 @@ namespace FormulaGame
             if (wasEnabled) reboundAction?.Enable(); reboundAction = null;
             if (conflictMessage != null)
             {
-                prompt.text = conflictMessage; cancelLabel.text = "Back";
+                prompt.text = conflictMessage; cancelLabel.text = FormulaLocalization.T("Back");
                 EventSystem.current?.SetSelectedGameObject(cancelRebind.gameObject); return;
             }
             if (save) RCCP_RebindSaveLoad.Save();
@@ -165,7 +163,7 @@ namespace FormulaGame
         private void CloseRebind()
         {
             conflictMessage = null; waiting.SetActive(false); listInteraction.interactable = true; listInteraction.blocksRaycasts = true;
-            if (cancelLabel != null) cancelLabel.text = cancelCaption;
+            if (cancelLabel != null) cancelLabel.text = FormulaLocalization.T("Cancel");
             RefreshRows();
             if (isActiveAndEnabled && returnFocus != null) EventSystem.current?.SetSelectedGameObject(returnFocus);
         }

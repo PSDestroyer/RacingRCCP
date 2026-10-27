@@ -44,11 +44,11 @@ namespace FormulaGame
                 int index = page * events.Length + i; events[i].gameObject.SetActive(index < tracks.Length);
                 if (index < tracks.Length) events[i].ShowCircuit(tracks[index], index, Session);
             }
-            if (pageLabel != null) pageLabel.text = "CIRCUITS " + (page * events.Length + 1).ToString("00") + "–" + Mathf.Min((page + 1) * events.Length, tracks.Length).ToString("00") + "  /  " + tracks.Length.ToString("00");
+            if (pageLabel != null) pageLabel.text = FormulaLocalization.T("CIRCUITS ") + (page * events.Length + 1).ToString("00") + "–" + Mathf.Min((page + 1) * events.Length, tracks.Length).ToString("00") + "  /  " + tracks.Length.ToString("00");
             // Keep both pager controls focusable so changing page never strands controller focus.
             if (previousPage != null) previousPage.interactable = PageCount > 1;
             if (nextPage != null) nextPage.interactable = PageCount > 1;
-            if (sessionDetails != null) sessionDetails.text = selectedMode == 0 ? "RACE  /  3 LAPS  /  3 AI DRIVERS  ·  Equipped car" : selectedMode == 1 ? "TIME ATTACK  /  3 LAPS  /  SOLO  ·  Stock car · Balanced setup" : "PRACTICE  /  1 LAP  /  SOLO  ·  Equipped car";
+            if (sessionDetails != null) sessionDetails.text = selectedMode == 0 ? FormulaLocalization.T("RACE  /  3 LAPS  /  3 AI DRIVERS  ·  Equipped car") : selectedMode == 1 ? FormulaLocalization.T("TIME ATTACK  /  3 LAPS  /  SOLO  ·  Stock car · Balanced setup") : FormulaLocalization.T("PRACTICE  /  1 LAP  /  SOLO  ·  Equipped car");
         }
     }
 }
