@@ -28,6 +28,7 @@ namespace FormulaGame
         public FormulaControlsView Controls => controls;
         public void Bind(Action<string> toggleAssist)
         {
+            ConfigurePlatformPresentation();
             if (language != null) language.onClick.AddListener(ChangeLanguage);
             string[] ids = { "abs", "tcs", "esp" };
             for (int i = 0; i < assists.Length; i++) { string id = ids[i]; assists[i].onClick.AddListener(() => toggleAssist(id)); }
@@ -41,8 +42,30 @@ namespace FormulaGame
             for (int i = 0; i < preferenceShortcuts.Length; i++) { int index = i; preferenceShortcuts[i].onClick.AddListener(() => OpenPreferences(index)); }
             for (int i = 0; i < preferenceButtons.Length; i++) { int index = i; preferenceButtons[i].onClick.AddListener(() => TogglePreference(index)); }
         }
+        private void ConfigurePlatformPresentation()
+        {
+            if (!FormulaPlatform.IsNintendoSwitch) return;
+            // Video controls are absent, including their overview shortcuts and
+            // navigation targets. Safe-area adjustment remains an accessibility aid.
+            for (int i = 0; i < 2; i++)
+            {
+                preferenceTabs[i].gameObject.SetActive(false); preferenceShortcuts[i].gameObject.SetActive(false);
+                preferencePages[i].SetActive(false); preferenceMarkers[i].SetActive(false);
+            }
+            foreach (int i in new[] { 0, 2, 3, 4 }) preferenceButtons[i].gameObject.SetActive(false);
+            preferenceButtons[1].transform.SetParent(preferencePages[2].transform, false);
+            int[] accessible = { 5, 6, 7, 1 };
+            for (int i = 0; i < accessible.Length; i++)
+                FormulaMenuTheme.Place((RectTransform)preferenceButtons[accessible[i]].transform, 30, 176 + i * 108, 1220, 106);
+            FormulaMenuTheme.Place((RectTransform)preferenceTabs[2].transform, 494, 0, 232, 42);
+            FormulaMenuTheme.Place((RectTransform)preferenceShortcuts[2].transform, 600, 290, 650, 78);
+            foreach (var binding in GetComponentsInChildren<UnityEngine.Localization.Components.LocalizeStringEvent>(true))
+                if (binding.StringReference.TableEntryReference.Key == "Volume and vibration\nKeyboard, gamepad and steering wheel")
+                    binding.StringReference.TableEntryReference = "Volume and vibration\nJoy-Con / Pro Controller";
+        }
         public void Refresh()
         {
+            if (controls.isActiveAndEnabled) controls.Refresh();
             if (languageLabel != null) languageLabel.text = FormulaLocalization.F("LANGUAGE  /  {0}", FormulaLocalization.LanguageName);
             var p = FormulaProgression.State;
             assistLabels[0].text = FormulaLocalization.T("ABS · ") + (p.abs ? FormulaLocalization.T("On") : FormulaLocalization.T("Off")); assistLabels[1].text = FormulaLocalization.T("TCS · ") + (p.tcs ? FormulaLocalization.T("On") : FormulaLocalization.T("Off")); assistLabels[2].text = FormulaLocalization.T("ESP · ") + (p.esp ? FormulaLocalization.T("On") : FormulaLocalization.T("Off"));
@@ -87,6 +110,7 @@ namespace FormulaGame
         private void OpenDetails() { overview.SetActive(false); details.SetActive(true); ShowDetails(false); }
         private void OpenPreferences(int index)
         {
+            if (!FormulaPlatform.AllowsVideoPreferences && index != 2) return;
             controls.CancelRebind(); overview.SetActive(false); details.SetActive(true);
             audioPage.SetActive(false); controls.gameObject.SetActive(false); audioMarker.SetActive(false); controlsMarker.SetActive(false);
             for (int i = 0; i < preferencePages.Length; i++) { preferencePages[i].SetActive(i == index); preferenceMarkers[i].SetActive(i == index); }
@@ -94,6 +118,7 @@ namespace FormulaGame
         }
         private void TogglePreference(int index)
         {
+            if (!FormulaPlatform.AllowsVideoPreferences && index != 1 && index != 5 && index != 6 && index != 7) return;
             bool changed = FormulaProgression.Commit(d =>
             {
                 var p = d.formula;
@@ -102,11 +127,7 @@ namespace FormulaGame
                     case 0: p.displayMode = Screen.fullScreen ? 0 : 1; break;
                     case 1: p.safeAreaPercent = p.safeAreaPercent == 100 ? 95 : 100; break;
                     case 2:
-#if UNITY_SWITCH
-                        p.frameLimit = Application.targetFrameRate == 30 ? 60 : 30;
-#else
                         p.frameLimit = Application.targetFrameRate == 30 ? 60 : Application.targetFrameRate == 60 ? 120 : 30;
-#endif
                         break;
                     case 3: p.qualityLevel = (QualitySettings.GetQualityLevel() + 1) % QualitySettings.names.Length; break;
                     case 4: p.vSync = QualitySettings.vSyncCount > 0 ? 0 : 1; break;

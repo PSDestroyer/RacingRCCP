@@ -18,6 +18,7 @@ namespace FormulaGame
         private void OnDisable() => FormulaSession.Finished -= OnFinished;
         private void Start()
         {
+            if (!FormulaPlatform.AllowsVideoPreferences) FormulaPresentation.ApplyVideoPreferences();
             canvas = FormulaUI.Canvas("Formula Race", 180);
             FormulaInputHints.ConfigureUI(UnityEngine.EventSystems.EventSystem.current?.GetComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>());
             if (FormulaMenuAssets.Current.racePrefab == null) { Debug.LogError("Formula race presentation is not authored."); enabled = false; return; }

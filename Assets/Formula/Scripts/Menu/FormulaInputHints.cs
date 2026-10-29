@@ -8,12 +8,18 @@ namespace FormulaGame
     public static class FormulaInputHints
     {
         private static int frame = -1;
-        public static bool Gamepad { get; private set; }
+        private static bool lastGamepad;
+        public static bool Gamepad => FormulaPlatform.IsNintendoSwitch || lastGamepad;
         public static int Revision { get; private set; }
         public static void Poll()
         {
             if (frame == Time.frameCount) return;
             frame = Time.frameCount;
+            if (FormulaPlatform.IsNintendoSwitch)
+            {
+                if (!lastGamepad) { lastGamepad = true; Revision++; }
+                return;
+            }
             var device = UnityEngine.InputSystem.Gamepad.current;
             bool pad = Gamepad && device != null;
             var keyboard = Keyboard.current; var mouse = Mouse.current;
@@ -25,32 +31,25 @@ namespace FormulaGame
                 if (device.leftStick.ReadValue().sqrMagnitude > .36f || device.rightStick.ReadValue().sqrMagnitude > .36f) pad = true;
             }
             if (pad == Gamepad) return;
-            Gamepad = pad; Revision++;
+            lastGamepad = pad; Revision++;
         }
         public static void ConfigureUI(UnityEngine.InputSystem.UI.InputSystemUIInputModule module)
         {
-#if UNITY_SWITCH
-            if (module == null) return;
-            SwapFaceBinding(module.submit?.action, "<Gamepad>/buttonSouth", "<Gamepad>/buttonEast");
-            SwapFaceBinding(module.cancel?.action, "<Gamepad>/buttonEast", "<Gamepad>/buttonSouth");
-#endif
+            if (module == null || !FormulaPlatform.IsNintendoSwitch) return;
+            SwapFaceBinding(module.submit?.action, "<Gamepad>/buttonSouth", "*/{Submit}", "<Gamepad>/buttonEast");
+            SwapFaceBinding(module.cancel?.action, "<Gamepad>/buttonEast", "*/{Cancel}", "<Gamepad>/buttonSouth");
         }
-#if UNITY_SWITCH
-        private static void SwapFaceBinding(InputAction action, string original, string replacement)
+        private static void SwapFaceBinding(InputAction action, string original, string usage, string replacement)
         {
             if (action == null) return;
-            for (int i = 0; i < action.bindings.Count; i++) if (action.bindings[i].path == original) action.ApplyBindingOverride(i, replacement);
+            for (int i = 0; i < action.bindings.Count; i++)
+                if (action.bindings[i].path == original || action.bindings[i].path == usage) action.ApplyBindingOverride(i, replacement);
         }
-#endif
         public static string Confirm => Gamepad ? FormulaLocalization.T("A · Select") : FormulaLocalization.T("Enter · Select");
         public static string Back => Gamepad ? FormulaLocalization.T("B · Back") : FormulaLocalization.T("Esc · Back");
-        public static string Sections => Gamepad ?
-#if UNITY_SWITCH
-            FormulaLocalization.T("L/R · Tabs")
-#else
-            FormulaLocalization.T("LB/RB · Tabs")
-#endif
-            : FormulaLocalization.T("Q/E · Tabs");
+        public static string Sections => FormulaPlatform.IsNintendoSwitch ? FormulaLocalization.T("L/R · Tabs")
+            : Gamepad ? FormulaLocalization.T("LB/RB · Tabs") : FormulaLocalization.T("Q/E · Tabs");
+        public static string CancelRebind => FormulaPlatform.IsNintendoSwitch ? FormulaLocalization.T("\nB · Cancel") : FormulaLocalization.T("\nEsc · Cancel");
         public static string Menu => Confirm;
     }
 }

@@ -98,6 +98,9 @@ public static class FormulaKeyboardLapValidation
             }
             else if (phase == 1)
             {
+                // A new local input test needs an active Editor before devices
+                // are added. A later focus loss still interrupts the measurement.
+                if (!Application.isFocused) return;
                 if (game == null || game.CarController == null || !game.FormulaRaceStarted) return;
                 if (!Mathf.Approximately(game.CarController.Inputs.steeringCurve.Evaluate(200), FormulaHandlingAuthoring.SteeringCurve().Evaluate(200)) || game.CarController.GetComponent<FormulaSteering>() == null) throw new Exception("Player did not load the progressive steering profile.");
                 if (SessionState.GetBool(Key + ".Profiles", false))

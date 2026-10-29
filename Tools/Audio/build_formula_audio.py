@@ -79,35 +79,9 @@ for name,(notes,seconds) in tones.items():
     data[-int(.015*SR):]*=np.linspace(1,0,int(.015*SR))
     write(name,data,'Short motorsport UI/race cue',.5 if name in ('WrongWay','Error') else .6)
 
-# Original restrained electronic menu bed, 16 bars at108bpm. Every event tail
-# wraps into the loop; no file-boundary fade or cut. Race presentation fades it out.
-bpm=108; beat=60/bpm; duration=64*beat; size=round(duration*SR)
-music=np.zeros((size,2))
-def add_event(start, seconds, freq, gain, pan=0, voice='pluck'):
-    t=np.arange(round(seconds*SR))/SR
-    if voice=='kick':
-        sig=np.sin(2*np.pi*(48*t+5*(1-np.exp(-t*30))))*np.exp(-t*14)
-    elif voice=='hat':
-        sig=noise(seconds,4000,10000,int(start*1234)%10000+5)*np.exp(-t*70)
-    elif voice=='pad':
-        env=(1-np.exp(-t*3))*np.minimum(1,np.maximum(0,(seconds-t)/.7))
-        sig=(np.sin(2*np.pi*freq*t)+.24*np.sin(2*np.pi*freq*2*t))*.5*env
-    else:
-        sig=(np.sin(2*np.pi*freq*t)+.16*np.sin(2*np.pi*freq*2*t))*np.exp(-t*5)*np.minimum(1,t/.008)
-    idx=(round(start*SR)+np.arange(len(t)))%size
-    music[idx,0]+=sig*gain*math.sqrt((1-pan)/2)
-    music[idx,1]+=sig*gain*math.sqrt((1+pan)/2)
-chords=[[45,52,60,64],[41,48,57,60],[48,55,59,64],[43,50,57,62]]
-for bar in range(16):
-    chord=chords[(bar//2)%4]
-    for note in chord[1:]: add_event(bar*4*beat,4*beat+.8,440*2**((note-69)/12),.075,(-.3 if note%2 else .3),'pad')
-    for b in range(4):
-        start=(bar*4+b)*beat
-        add_event(start,.45,0,.12,0,'kick')
-        add_event(start+beat*.5,.09,0,.012,.25,'hat')
-        add_event(start,.6,440*2**((chord[0]-69)/12),.085,0)
-        if b in (1,3): add_event(start+beat*.5,1.1,440*2**((chord[(bar+b)%3+1]+12-69)/12),.055,(-.4 if b==1 else .4))
-write('PaddockTheme',np.tanh(music), 'Original electronic menu/garage/results bed; not used during driving', .62)
+# Original energetic Formula instrumental; rendered offline into the same asset.
+from build_formula_music import build_track
+write('PaddockTheme', build_track(SR), 'Original 128 BPM Formula electronic instrumental; streamed music source', .83)
 (OUT/'Provenance.json').write_text(json.dumps(manifest,indent=2)+'\n')
 
 # Mixer YAML uses the same native attenuation-only structure as existing assets.

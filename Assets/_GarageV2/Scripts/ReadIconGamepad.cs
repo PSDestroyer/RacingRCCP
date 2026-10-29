@@ -49,7 +49,14 @@ public class ReadIconGamepad : MonoBehaviour
         string currentControlScheme = playerInput != null ? playerInput.currentControlScheme : string.Empty;
 
         if (!TryGetBindingDisplayData(actionReference.action, currentControlScheme, out string displayString, out string deviceLayoutName, out string controlPath))
+        {
+            if (FormulaGame.FormulaPlatform.IsNintendoSwitch)
+            {
+                if (keyboardText != null) keyboardText.gameObject.SetActive(false);
+                if (gamepadIcon != null) gamepadIcon.gameObject.SetActive(false);
+            }
             return;
+        }
 
         if (!forceRefresh &&
             lastControlScheme == currentControlScheme &&
@@ -96,11 +103,29 @@ public class ReadIconGamepad : MonoBehaviour
             return false;
 
         displayString = action.GetBindingDisplayString(bindingIndex, out deviceLayoutName, out controlPath);
+        if (FormulaGame.FormulaPlatform.IsNintendoSwitch)
+        {
+            string path = action.bindings[bindingIndex].effectivePath;
+            displayString = FormulaGame.FormulaPlatform.SwitchBindingName(path);
+            int slash = path.IndexOf('/'); controlPath = slash < 0 ? path : path.Substring(slash + 1);
+            if (controlPath == "{Submit}") controlPath = "buttonEast";
+            else if (controlPath == "{Cancel}") controlPath = "buttonSouth";
+            deviceLayoutName = "NPad";
+        }
         return true;
     }
 
     private int ResolveBindingIndex(InputAction action, string controlScheme)
     {
+        if (FormulaGame.FormulaPlatform.IsNintendoSwitch)
+        {
+            for (int i = 0; i < action.bindings.Count; i++)
+                if (!action.bindings[i].isComposite && !action.bindings[i].isPartOfComposite &&
+                    (action.bindings[i].path ?? "").StartsWith("<Gamepad>/", System.StringComparison.OrdinalIgnoreCase)) return i;
+            for (int i = 0; i < action.bindings.Count; i++)
+                if (action.bindings[i].path == "*/{Submit}" || action.bindings[i].path == "*/{Cancel}") return i;
+            return -1;
+        }
         if (!string.IsNullOrWhiteSpace(bindingId))
         {
             for (int i = 0; i < action.bindings.Count; i++)

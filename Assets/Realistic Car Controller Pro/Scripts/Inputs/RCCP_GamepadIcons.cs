@@ -66,6 +66,8 @@ public class RCCP_GamepadIcons : RCCP_GenericComponent {
     }
 
     public Sprite GetSpriteForBinding(string deviceLayoutName, string controlPath) {
+        if (FormulaGame.FormulaPlatform.IsNintendoSwitch)
+            return string.IsNullOrEmpty(controlPath) ? null : switchGamepad.GetSprite(controlPath);
         if (string.IsNullOrWhiteSpace(deviceLayoutName) || string.IsNullOrWhiteSpace(controlPath))
             return null;
 

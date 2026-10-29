@@ -32,12 +32,27 @@ namespace FormulaGame
         public void Initialize()
         {
             cancelLabel = cancelRebind.GetComponentInChildren<TMP_Text>(true);
+            if (FormulaPlatform.IsNintendoSwitch)
+            {
+                device = "<Gamepad>";
+                // There is a single device family on this platform. The page
+                // heading identifies it; a redundant selector would overlap chrome.
+                keyboard.gameObject.SetActive(false); gamepad.gameObject.SetActive(false); wheel.gameObject.SetActive(false);
+                var label = gamepad.GetComponentInChildren<TMP_Text>(true);
+                var binding = label.GetComponent<UnityEngine.Localization.Components.LocalizeStringEvent>();
+                if (binding != null) binding.StringReference.TableEntryReference = FormulaPlatform.SwitchControllerName;
+                label.text = FormulaPlatform.SwitchControllerName;
+            }
             keyboard.onClick.AddListener(() => SelectDevice("<Keyboard>")); gamepad.onClick.AddListener(() => SelectDevice("<Gamepad>")); wheel.onClick.AddListener(() => SelectDevice("Wheel"));
             previous.onClick.AddListener(() => { pageIndex--; RefreshRows(); }); next.onClick.AddListener(() => { pageIndex++; RefreshRows(); });
             reset.onClick.AddListener(ResetDevice); cancelRebind.onClick.AddListener(CancelRebind);
             for (int i = 0; i < rows.Length; i++) { int row = i; rows[i].button.onClick.AddListener(() => Rebind(row)); }
         }
-        private void SelectDevice(string path) { CancelRebind(); device = path; pageIndex = 0; Refresh(); }
+        private void SelectDevice(string path)
+        {
+            if (FormulaPlatform.IsNintendoSwitch && path != "<Gamepad>") return;
+            CancelRebind(); device = path; pageIndex = 0; Refresh();
+        }
         public void Refresh()
         {
             actions = RCCP_InputActions.Instance.inputActions; entries.Clear();
@@ -55,14 +70,14 @@ namespace FormulaGame
         {
             int pages = Mathf.Max(1, Mathf.CeilToInt(entries.Count / (float)rows.Length)); pageIndex = Mathf.Clamp(pageIndex, 0, pages - 1);
             previous.interactable = pageIndex > 0; next.interactable = pageIndex < pages - 1;
-            pageLabel.text = FormulaLocalization.F("{0} / PAGE {1} OF {2}", device == "<Keyboard>" ? FormulaLocalization.T("KEYBOARD") : device == "<Gamepad>" ? FormulaLocalization.T("GAMEPAD") : FormulaLocalization.T("STEERING WHEEL"), pageIndex + 1, pages);
+            pageLabel.text = FormulaLocalization.F("{0} / PAGE {1} OF {2}", FormulaPlatform.IsNintendoSwitch ? FormulaPlatform.SwitchControllerName : device == "<Keyboard>" ? FormulaLocalization.T("KEYBOARD") : device == "<Gamepad>" ? FormulaLocalization.T("GAMEPAD") : FormulaLocalization.T("STEERING WHEEL"), pageIndex + 1, pages);
             for (int i = 0; i < rows.Length; i++)
             {
                 int index = pageIndex * rows.Length + i; var row = rows[i]; row.button.gameObject.SetActive(index < entries.Count);
                 if (index >= entries.Count) continue;
                 var entry = entries[index]; var b = entry.action.bindings[entry.index];
                 row.action.text = ActionName(entry.action.name) + BindingPart(entry.action, entry.index);
-                row.binding.text = entry.action.GetBindingDisplayString(entry.index, InputBinding.DisplayStringOptions.DontIncludeInteractions);
+                row.binding.text = FormulaPlatform.BindingName(entry.action, entry.index);
             }
         }
         private static bool IsSecondaryComposite(InputAction action, int index)
@@ -116,13 +131,13 @@ namespace FormulaGame
             var entry = entries[pageIndex * rows.Length + row]; reboundAction = entry.action; wasEnabled = reboundAction.enabled;
             returnFocus = rows[row].button.gameObject; reboundAction.Disable();
             waiting.SetActive(true); listInteraction.interactable = false; listInteraction.blocksRaycasts = false;
-            prompt.text = FormulaLocalization.T("Press a new input for\n") + rows[row].action.text + FormulaLocalization.T("\nEsc · Cancel");
-            operation = reboundAction.PerformInteractiveRebinding(entry.index).WithCancelingThrough("<Keyboard>/escape").WithTimeout(15)
+            prompt.text = FormulaLocalization.T("Press a new input for\n") + rows[row].action.text + FormulaInputHints.CancelRebind;
+            operation = reboundAction.PerformInteractiveRebinding(entry.index).WithCancelingThrough(FormulaPlatform.IsNintendoSwitch ? "<Gamepad>/buttonSouth" : "<Keyboard>/escape").WithTimeout(15)
                 .OnApplyBinding((candidate, path) =>
                 {
                     string conflict = BindingConflict(actions, entry.action, entry.index, path, candidate.selectedControl);
                     if (conflict == null) entry.action.ApplyBindingOverride(entry.index, path);
-                    else conflictMessage = FormulaLocalization.T("INPUT ALREADY IN USE\n") + FormulaLocalization.F("{0} is already assigned to {1}.\nYour previous binding is unchanged.", InputControlPath.ToHumanReadableString(path, InputControlPath.HumanReadableStringOptions.OmitDevice), conflict);
+                    else conflictMessage = FormulaLocalization.T("INPUT ALREADY IN USE\n") + FormulaLocalization.F("{0} is already assigned to {1}.\nYour previous binding is unchanged.", FormulaPlatform.IsNintendoSwitch ? FormulaPlatform.SwitchBindingName(path) : InputControlPath.ToHumanReadableString(path, InputControlPath.HumanReadableStringOptions.OmitDevice), conflict);
                 })
                 .OnCancel(_ => Finish(false)).OnComplete(_ => Finish(true));
             if (device != "Wheel") operation.WithControlsHavingToMatchPath(device);

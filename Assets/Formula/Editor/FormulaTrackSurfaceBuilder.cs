@@ -111,6 +111,7 @@ public static class FormulaTrackSurfaceBuilder
         asphalt = CopyTexture("Assets/JapaneseCity/Textures/jcGrdAsphaltA.png", "Asphalt Aggregate.png", false, true);
         asphaltNormal = CopyTexture("Assets/JapaneseCity/Textures/jcGrdAsphaltA_n.png", "Asphalt Normal.png", true, false);
         asphaltMask = CopyTexture("Assets/JapaneseCity/Textures/jcGrdAsphaltA_mt.png", "Asphalt Smoothness.png", false, false);
+        asphaltMask = FormulaAsphaltFinishAuthoring.PrepareMask();
         gravel = CopyTexture("Assets/Realistic Car Controller Pro/Addons/Installed/Demo Content/Textures/Terrain/Gravel_2.png", "Runoff Gravel.png", false, true);
         gravelNormal = CopyTexture("Assets/Realistic Car Controller Pro/Addons/Installed/Demo Content/Textures/Terrain/Gravel_2N.png", "Runoff Gravel Normal.png", true, false);
     }
@@ -190,6 +191,7 @@ public static class FormulaTrackSurfaceBuilder
                 material.SetColor("_BaseColor", color);
             }
         }
+        if (kind == "road" || kind == "aggregate") FormulaAsphaltFinishAuthoring.ConfigureAsphalt(material, wet, kind == "aggregate");
         EditorUtility.SetDirty(material); AssetDatabase.SaveAssetIfDirty(material); materials.Add(key, material); return material;
     }
 
@@ -249,7 +251,7 @@ public static class FormulaTrackSurfaceBuilder
     [MenuItem("Tools/Formula Career/Validate Gameplay Surface Materials")]
     public static void Validate()
     {
-        var paths = AssetDatabase.FindAssets("t:Material", new[] { Folder }).Select(AssetDatabase.GUIDToAssetPath).ToArray();
+        var paths = AssetDatabase.FindAssets("t:Material", new[] { Folder + "/Materials" }).Select(AssetDatabase.GUIDToAssetPath).ToArray();
         foreach (string path in paths)
         {
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);

@@ -83,7 +83,7 @@ namespace FormulaGame
             game.RaceType = e.mode == "race" ? RaceType.Racing : RaceType.TimeAttack;
             game.totalRaceLaps = e.laps; game.opponentCount = e.opponentCount;
             game.copyPlayerPerformanceOnSpawn = false;
-            game.enableDynamicRacePacing = false;
+            game.enableDynamicRacePacing = e.mode == "race" && e.opponentCount > 0;
             game.autoSpawnOpponents = e.opponentCount > 0;
             game.showLiveLeaderboard = e.opponentCount > 0;
             // Menu mission indices must not feed the legacy mission economy.

@@ -11,6 +11,8 @@ namespace FormulaGame
         private FormulaCircuit circuit;
         private RCCP_AI driver;
         private RCCP_AIBrakeZone limit;
+        private float multiplier = 1;
+        public float PacingMultiplier { get => multiplier; set => multiplier = Mathf.Clamp(value, .95f, 1.25f); }
         public void Initialize(FormulaCircuit track, RCCP_AI ai)
         {
             circuit = track; driver = ai;
@@ -24,7 +26,8 @@ namespace FormulaGame
         private void FixedUpdate()
         {
             if (driver == null || limit == null || circuit.aiSpeedPlan == null || circuit.aiSpeedPlan.Length == 0) return;
-            limit.targetSpeed = circuit.aiSpeedPlan[Mathf.Clamp(driver.currentWaypointIndex, 0, circuit.aiSpeedPlan.Length - 1)];
+            float planned = circuit.aiSpeedPlan[Mathf.Clamp(driver.currentWaypointIndex, 0, circuit.aiSpeedPlan.Length - 1)];
+            limit.targetSpeed = planned * FormulaRacePacing.SpeedFactor(multiplier, planned);
             driver.EnteredBrakeZone(limit);
         }
         private void OnDisable() { if (driver != null) driver.ExitedBrakeZone(); }

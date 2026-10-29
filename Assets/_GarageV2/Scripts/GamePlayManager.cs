@@ -42,6 +42,7 @@ public class GamePlayManager : MonoBehaviour
         [NonSerialized] public float baseLookAheadPerKph;
         [NonSerialized] public float baseRoadGrip;
         [NonSerialized] public float baseSteerSensitivity;
+        [NonSerialized] public FormulaGame.FormulaAIPace formulaPaceProfile;
     }
 
     [NonSerialized]public GameObject player;
@@ -1909,6 +1910,7 @@ public class GamePlayManager : MonoBehaviour
        racer.baseLookAheadPerKph = racer.aiDriver.lookAheadPerKph;
        racer.baseRoadGrip = racer.aiDriver.roadGrip;
        racer.baseSteerSensitivity = racer.aiDriver.steerSensitivity;
+       racer.formulaPaceProfile = racer.aiDriver.GetComponent<FormulaGame.FormulaAIPace>();
        racer.pacingMultiplier = 1f;
        racer.pacingBaselineCached = true;
    }
@@ -1917,6 +1919,8 @@ public class GamePlayManager : MonoBehaviour
    {
        if (!enableDynamicRacePacing || !raceStarted || missionResultsShown || aiRacers == null || aiRacers.Length == 0 || raceTrackLength <= 0f)
            return;
+       // Let the physical launch/grid separation settle before any assistance.
+       if (FormulaGame.FormulaSession.InRace && raceElapsedTime < 6f) return;
 
        float playerProgress = GetRacerProgressMeters(playerRacer);
        float finishFade = GetPacingFinishFade();
@@ -1946,6 +1950,8 @@ public class GamePlayManager : MonoBehaviour
 
    private float GetTargetPacingMultiplier(float signedGapMeters, float finishFade)
    {
+       if (FormulaGame.FormulaSession.InRace)
+           return FormulaGame.FormulaRacePacing.Multiplier(signedGapMeters, finishFade);
        float multiplier = 1f;
        float behindCorrectionDistance = Mathf.Max(3f, noCorrectionDistance * .6f);
 
@@ -2002,6 +2008,7 @@ public class GamePlayManager : MonoBehaviour
        engine.engineAccelerationRate = racer.baseEngineAccelerationRate * Mathf.Lerp(1f, pace, .9f);
        engine.maxEngineRPM = racer.baseEngineMaxRPM * Mathf.Lerp(1f, pace, .35f);
        engine.maxTurboChargePsi = racer.baseTurboChargePsi * Mathf.Lerp(1f, pace, .4f);
+       if (racer.formulaPaceProfile != null) racer.formulaPaceProfile.PacingMultiplier = pace;
        racer.aiDriver.maxThrottle = Mathf.Clamp01(racer.baseThrottleLimit * Mathf.Min(1.08f, Mathf.Lerp(1f, pace, .75f)));
        racer.aiDriver.agressiveness = Mathf.Clamp(racer.baseAggressiveness * behaviorPace, 0f, 3f);
        racer.aiDriver.raceLookAhead = Mathf.Max(1f, racer.baseRaceLookAhead * Mathf.Lerp(1f, behaviorPace, -.18f));
@@ -2048,6 +2055,15 @@ public class GamePlayManager : MonoBehaviour
        float lapDistance = raceWaypointDistances != null && raceWaypointDistances.Length > previousIndex
            ? raceWaypointDistances[previousIndex] + segmentProgress
            : segmentProgress;
+
+       if (FormulaGame.FormulaSession.InRace && raceWaypointDistances.Length == count)
+       {
+           // Formula's finish is the final waypoint, not waypoint zero. Align
+           // the geometric phase before comparing racers across the start line.
+           lapDistance = Mathf.Repeat(lapDistance - raceWaypointDistances[count - 1], raceTrackLength);
+           if (racer.completedLaps == 0 && !racer.lapCountingArmed && lapDistance > raceTrackLength * .5f)
+               lapDistance -= raceTrackLength;
+       }
 
        return racer.completedLaps * raceTrackLength + lapDistance;
    }

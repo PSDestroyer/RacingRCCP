@@ -73,14 +73,17 @@ namespace FormulaGame
         }
         public static void ApplyVideoPreferences()
         {
+            if (!FormulaPlatform.AllowsVideoPreferences)
+            {
+                // Keep the build's quality/v-sync/display settings. Old profile
+                // values from another platform must not change this configuration.
+                Application.targetFrameRate = FormulaPlatform.SwitchFrameLimit;
+                return;
+            }
             var p = FormulaProgression.State;
             if (p.qualityLevel >= 0) QualitySettings.SetQualityLevel(Mathf.Clamp(p.qualityLevel, 0, QualitySettings.names.Length - 1));
             if (p.vSync >= 0) QualitySettings.vSyncCount = p.vSync;
-#if UNITY_SWITCH
-            Application.targetFrameRate = p.frameLimit == 60 ? 60 : 30;
-#else
             if (p.frameLimit > 0) Application.targetFrameRate = p.frameLimit;
-#endif
 #if !UNITY_EDITOR && !UNITY_SWITCH
             if (p.displayMode >= 0) Screen.fullScreenMode = p.displayMode == 1 ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
 #endif

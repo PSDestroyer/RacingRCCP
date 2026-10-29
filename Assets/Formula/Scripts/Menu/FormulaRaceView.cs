@@ -128,13 +128,7 @@ namespace FormulaGame
             if (timingRoot.sizeDelta.y != timingHeight) timingRoot.sizeDelta = new Vector2(timingRoot.sizeDelta.x, timingHeight);
             UpdateGoal(game, invalid);
             UpdateProximity(game, racing && game.FormulaRaceStarted && !paused);
-            pauseHint.text = FormulaInputHints.Gamepad ?
-#if UNITY_SWITCH
-                "+"
-#else
-                FormulaLocalization.T("MENU")
-#endif
-                : FormulaLocalization.T("ESC");
+            pauseHint.text = FormulaPlatform.IsNintendoSwitch ? "+" : FormulaInputHints.Gamepad ? FormulaLocalization.T("MENU") : FormulaLocalization.T("ESC");
             if (game.FormulaRaceStarted && !raceStarted)
             {
                 raceStarted = true;
