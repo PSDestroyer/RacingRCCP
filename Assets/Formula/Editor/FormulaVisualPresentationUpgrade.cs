@@ -131,9 +131,9 @@ public static class FormulaVisualPresentationUpgrade
         Box(hud.Find("Vehicle"), 1028, 588, 224, 104);
         Box(hud.Find("Vehicle/Shift Lights"), 12, 10, 200, 7);
         for (int i = 0; i < 12; i++) Box(hud.Find("Vehicle/Shift Lights/Light " + i), i * 17, 0, 13, 7);
-        Text(hud, "Vehicle/Speed", 10, 19, 110, 60, 62);
+        Text(hud, "Vehicle/Speed", 10, 12, 110, 72, 56);
         Text(hud, "Vehicle/Unit", 126, 54, 40, 24, 15);
-        Text(hud, "Vehicle/Gear", 170, 19, 44, 60, 52);
+        Text(hud, "Vehicle/Gear", 170, 12, 44, 72, 48);
         Text(hud, "Vehicle/Gear Caption", 170, 79, 44, 23, 15);
         Text(hud, "Vehicle/RPM", 12, 79, 144, 23, 15);
         Box(hud.Find("Vehicle/Gear Divider"), 164, 24, 1, 67);
@@ -211,10 +211,8 @@ public static class FormulaVisualPresentationUpgrade
                     if (copy.HasProperty("_Tint")) copy.SetColor("_Tint", sunset ? new Color(.43f,.48f,.56f) : new Color(.5f,.5f,.5f));
                     EditorUtility.SetDirty(copy); AssetDatabase.SaveAssetIfDirty(copy); RenderSettings.skybox = copy;
                 }
-                var profile = Profile(mood);
-                var volumes = Components<Volume>(scene).Where(v => v.isGlobal).ToArray();
-                if (volumes.Length == 0) { var go = new GameObject("Formula Presentation Grade"); SceneManager.MoveGameObjectToScene(go,scene); volumes = new[] { go.AddComponent<Volume>() }; }
-                foreach (var volume in volumes) { volume.sharedProfile = profile; volume.weight = 1; EditorUtility.SetDirty(volume); }
+                // Keep the original Global Volume profile and its authored settings.
+                var profile = Components<Volume>(scene).FirstOrDefault(v => v.isGlobal)?.sharedProfile;
                 foreach (var camera in Components<Camera>(scene))
                 {
                     var data = camera.GetUniversalAdditionalCameraData(); if (data.renderType != CameraRenderType.Base) continue;
@@ -254,25 +252,6 @@ public static class FormulaVisualPresentationUpgrade
         }
         finally { EditorSceneManager.RestoreSceneManagerSetup(setup); }
         Debug.Log("FORMULA_VISUAL_CIRCUITS_APPLIED");
-    }
-    static VolumeProfile Profile(string mood)
-    {
-        string path = Folder + "/Grades/" + mood + ".asset"; var p = AssetDatabase.LoadAssetAtPath<VolumeProfile>(path);
-        if (p == null) { p = ScriptableObject.CreateInstance<VolumeProfile>(); AssetDatabase.CreateAsset(p,path); }
-        var tone = Override<Tonemapping>(p); tone.mode.Override(TonemappingMode.ACES);
-        var color = Override<ColorAdjustments>(p);
-        color.postExposure.Override(mood == "Winter" ? -.15f : mood == "Sunset" ? -.08f : mood == "Night" ? .1f : .08f);
-        color.contrast.Override(mood == "Wet" ? 10 : 12); color.saturation.Override(mood == "Sunset" ? -9 : -3); color.colorFilter.Override(Color.white);
-        var balance = Override<WhiteBalance>(p); balance.temperature.Override(mood == "Sunset" ? -9 : mood == "Day" ? -3 : 0); balance.tint.Override(0);
-        var bloom = Override<Bloom>(p); bloom.intensity.Override(mood == "Night" ? .065f : .035f); bloom.threshold.Override(1.5f); bloom.scatter.Override(.45f); bloom.clamp.Override(2);
-        var vignette = Override<Vignette>(p); vignette.intensity.Override(.08f); vignette.smoothness.Override(.45f);
-        foreach (var component in p.components) EditorUtility.SetDirty(component);
-        EditorUtility.SetDirty(p); AssetDatabase.SaveAssetIfDirty(p); return p;
-    }
-    static T Override<T>(VolumeProfile profile) where T : VolumeComponent
-    {
-        if (!profile.TryGet<T>(out var component)) { component = profile.Add<T>(); AssetDatabase.AddObjectToAsset(component,profile); }
-        component.active = true; return component;
     }
     static Material EnvironmentMaterial(Material source, Dictionary<string, Material> cache)
     {
@@ -397,7 +376,7 @@ public static class FormulaVisualPresentationUpgrade
             {
                 var scene = EditorSceneManager.OpenScene(track.scenePath);
                 var profiles = Components<Volume>(scene).Where(v => v.isGlobal).Select(v => v.sharedProfile).ToArray();
-                if (profiles.Length == 0 || profiles.Any(p => p == null || !Asset(p).StartsWith(Folder + "/Grades/",StringComparison.Ordinal) || !p.TryGet<Tonemapping>(out var t) || t.mode.value != TonemappingMode.ACES)) throw new InvalidOperationException("Saved presentation grade missing: " + track.id);
+                if (profiles.Length == 0 || profiles.Any(p => p == null || Asset(p) != "Assets/Formula/Racing/Surfaces/Circuit Surface Grade.asset")) throw new InvalidOperationException("Saved presentation grade missing: " + track.id);
                 var rig = Components<RCCP_Camera>(scene).Single();
                 if (rig.TPSAutoFocus || Mathf.Abs(rig.TPSDistance-6.3f)>.01f) throw new InvalidOperationException("Saved game camera was not refined: " + track.id);
                 var circuit = Components<FormulaCircuit>(scene).Single();
@@ -406,7 +385,7 @@ public static class FormulaVisualPresentationUpgrade
             }
         }
         finally { EditorSceneManager.RestoreSceneManagerSetup(setup); }
-        checks.Add("All 18 saved scenes retain their route/road references, the authored game camera and an ACES grade.");
+        checks.Add("All 18 saved scenes retain their route/road references, the authored game camera and the restored original Global Volume profile.");
         File.WriteAllText(Report + "/AssetValidation.json", JsonConvert.SerializeObject(new { status = "passed", unity = Application.unityVersion, checks, scenes, switchHardwareTested = false }, Formatting.Indented));
         Debug.Log("FORMULA_VISUAL_ASSET_VALIDATION_PASSED");
     }

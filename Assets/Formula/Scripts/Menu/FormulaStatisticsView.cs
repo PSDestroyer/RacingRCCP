@@ -15,7 +15,13 @@ namespace FormulaGame
         private string previewBranch;
         private int previewLevel;
         [SerializeField] private TMP_Text comparison;
-        public void PreviewUpgrade(string branch, int level) { previewBranch = branch; previewLevel = level; if (currentCar != null) Refresh(currentCar, currentWheel); else RefreshDevelopment(); }
+        public void PreviewUpgrade(string branch, int level)
+        {
+            bool changed = previewBranch != branch || previewLevel != level;
+            previewBranch = branch; previewLevel = level;
+            if (currentCar != null) Refresh(currentCar, currentWheel); else RefreshDevelopment();
+            if (changed) FormulaUIMotion.Pulse((branch == "engine" ? torque : branch == "brakes" ? brakes : branch == "suspension" ? spring : aero).gameObject);
+        }
         public void PreviewSetup(string id) { if (!setupComparison) return; inspectedSetup = id; if (currentCar != null) Refresh(currentCar, currentWheel); }
         public void Refresh(RCCP_CarController car, WheelCollider wheel)
         {
@@ -60,13 +66,13 @@ namespace FormulaGame
             {
                 int equipped = FormulaProgression.State.Equipped(row.branchId), owned = FormulaProgression.State.Owned(row.branchId);
                 if (!figmaLevels) SetSegments(row.segments, equipped, owned);
-                else for (int i = 0; i < row.segments.Length; i++) row.segments[i].color = i / 3 < equipped ? Color.white : row.branchId == previewBranch && i / 3 < previewLevel ? new Color32(255, 30, 0, 255) : new Color32(116, 18, 5, 255);
+                else for (int i = 0; i < row.segments.Length; i++) FormulaUIMotion.Tint(row.segments[i], i / 3 < equipped ? Color.white : row.branchId == previewBranch && i / 3 < previewLevel ? new Color32(255, 30, 0, 255) : new Color32(116, 18, 5, 255), .18f, i % 3 * .025f);
                 if (row.label != null) row.label.text = (figmaLevels && row.branchId == "aero" ? FormulaLocalization.T("AERO") : FormulaLocalization.T(FormulaCatalog.Current.Upgrade(row.branchId).name).ToUpperInvariant()) + "  " + equipped + "/3";
             }
         }
         public static void SetSegments(UnityEngine.UI.Image[] segments, int equipped, int owned)
         {
-            for (int i = 0; i < segments.Length; i++) segments[i].color = i < equipped ? FormulaUI.Accent : i < owned ? Color.white : FormulaUI.Red;
+            for (int i = 0; i < segments.Length; i++) FormulaUIMotion.Tint(segments[i], i < equipped ? FormulaUI.Accent : i < owned ? Color.white : FormulaUI.Red, .18f, i * .025f);
         }
     }
 }

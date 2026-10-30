@@ -20,6 +20,8 @@ namespace FormulaGame
         [SerializeField] private TMP_Text tabHints, contextLabel;
         private int currentSection;
         private string inspectedLivery;
+        private int motionSection = -1;
+        private string shownSetup;
         public FormulaUpgradeView Upgrade => upgrade;
         public void Bind(Action<int> changeTab, Action<string> levels, Action<string> buyUpgrade, Action<string> equipSetup, Action<string> selectLivery, Action applyLivery)
         {
@@ -31,8 +33,14 @@ namespace FormulaGame
         }
         public void ShowSection(int index)
         {
+            Vector3 from = motionSection >= 0 ? tabMarkers[motionSection].transform.position : Vector3.zero;
             currentSection = index;
             for (int i = 0; i < sections.Length; i++) { sections[i].SetActive(i == index); tabMarkers[i].SetActive(i == index); }
+            if (gameObject.activeInHierarchy)
+            {
+                if (motionSection >= 0 && motionSection != index) FormulaUIMotion.Glide(tabMarkers[index], from);
+                motionSection = index;
+            }
             if (upgrade != null) upgrade.SetPresentationActive(gameObject.activeInHierarchy && index == 0);
             WireNavigation();
         }
@@ -49,7 +57,10 @@ namespace FormulaGame
                 if (card.description != null) card.description.text = description;
                 if (card.status != null) card.status.text = p.setup == card.id ? FormulaLocalization.T("APPLIED") : FormulaLocalization.T("FREE · APPLY");
                 card.equippedMarker.SetActive(p.setup == card.id);
+                if (shownSetup != null && shownSetup != p.setup && p.setup == card.id)
+                { FormulaUIMotion.Enter(card.equippedMarker, true); if (card.status != null) FormulaUIMotion.Pulse(card.status.gameObject); }
             }
+            shownSetup = p.setup;
             foreach (var card in liveries) card.Refresh();
         }
         public void RefreshStatistics(RCCP_CarController car, WheelCollider wheel)

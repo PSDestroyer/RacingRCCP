@@ -1419,7 +1419,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &254608607156517958
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1709,7 +1709,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4454132322068363376
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2178,7 +2178,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4816331745873778809
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2327,6 +2327,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9150214462337418297}
+  - component: {fileID: 191476671163244007}
+  - component: {fileID: 5106703720000402557}
   m_Layer: 0
   m_Name: Formula Logo
   m_TagString: Untagged
@@ -2356,9 +2358,44 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 23, y: 6}
-  m_SizeDelta: {x: 322, y: 110}
+  m_AnchoredPosition: {x: 40, y: 10}
+  m_SizeDelta: {x: 360, y: 120}
   m_Pivot: {x: 0, y: 1}
+--- !u!222 &191476671163244007
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2652035282656596784}
+  m_CullTransparentMesh: 1
+--- !u!114 &5106703720000402557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2652035282656596784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 2800000, guid: e66edd0b9a350417bb3f85522aa1a63b, type: 3}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
 --- !u!1 &2668519722055322170
 GameObject:
   m_ObjectHideFlags: 0
@@ -8026,7 +8063,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2060081559868219719
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8917,7 +8954,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1592639482836115534
 RectTransform:
   m_ObjectHideFlags: 0

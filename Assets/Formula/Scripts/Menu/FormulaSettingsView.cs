@@ -21,6 +21,7 @@ namespace FormulaGame
         [SerializeField] private GameObject[] preferencePages, preferenceMarkers;
         [SerializeField] private TMP_Text[] preferenceLabels;
         private bool audioDirty;
+        private GameObject motionPage, motionMarker;
         [SerializeField] private UnityEngine.UI.Button language;
         [SerializeField] private TMP_Text languageLabel;
         public bool DetailsOpen => details.activeSelf;
@@ -96,6 +97,7 @@ namespace FormulaGame
             else if (index == 1) { SoundManager.Instance?.SetVehicleVolume(value); d.VehicleLevel = value; }
             else { SoundManager.Instance?.SetMusicVolume(value); d.musicLevel = value; }
             audioDirty = true; volumeValues[index].text = Mathf.RoundToInt(value * 100) + "%";
+            FormulaUIMotion.Pulse(volumeValues[index].gameObject, .045f, .16f);
         }
         private void ChangeLanguage()
         {
@@ -108,6 +110,7 @@ namespace FormulaGame
             FormulaProgression.Data.vibrationIntensity = value;
             audioDirty = true;
             vibrationIntensityValue.text = Mathf.RoundToInt(value * 100) + "%";
+            FormulaUIMotion.Pulse(vibrationIntensityValue.gameObject, .045f, .16f);
         }
         private void OpenDetails() { overview.SetActive(false); details.SetActive(true); ShowDetails(false); }
         private void OpenPreferences(int index)
@@ -116,6 +119,7 @@ namespace FormulaGame
             controls.CancelRebind(); overview.SetActive(false); details.SetActive(true);
             audioPage.SetActive(false); controls.gameObject.SetActive(false); audioMarker.SetActive(false); controlsMarker.SetActive(false);
             for (int i = 0; i < preferencePages.Length; i++) { preferencePages[i].SetActive(i == index); preferenceMarkers[i].SetActive(i == index); }
+            AnimatePage(preferencePages[index], preferenceMarkers[index]);
             FormulaUI.Focus(preferencePages[index].transform);
         }
         private void TogglePreference(int index)
@@ -151,7 +155,14 @@ namespace FormulaGame
             audioPage.SetActive(!showControls); controls.gameObject.SetActive(showControls);
             if (audioMarker != null) audioMarker.SetActive(!showControls); if (controlsMarker != null) controlsMarker.SetActive(showControls);
             if (showControls) controls.Refresh();
+            AnimatePage(showControls ? controls.gameObject : audioPage, showControls ? controlsMarker : audioMarker);
             FormulaUI.Focus(showControls ? controls.transform : audioPage.transform);
+        }
+        private void AnimatePage(GameObject page, GameObject marker)
+        {
+            if (motionPage != page) FormulaUIMotion.Enter(page);
+            if (motionMarker != null && motionMarker != marker && marker != null) FormulaUIMotion.Glide(marker, motionMarker.transform.position);
+            motionPage = page; motionMarker = marker;
         }
         public bool BackWithinPage()
         {

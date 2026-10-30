@@ -49,6 +49,10 @@ namespace FormulaGame
         private bool wrongWayPresented;
         private string toastTitle, toastBody;
         private Color toastColor;
+        private RectTransform notificationRect;
+        private Vector2 notificationPosition;
+        private float lastNotificationAlpha = -1;
+        private bool lastReducedMotion;
         public GameObject Hud => hud;
         public void Bind(GamePlayManager game)
         {
@@ -62,12 +66,12 @@ namespace FormulaGame
             pauseController.OptionsOverride = HandleOptions;
             pauseController.SetPauseAvailability(game.FormulaRaceStarted);
             pauseButton.onClick.AddListener(pauseController.PauseGame);
-            resume.onClick.AddListener(() => { FormulaAudio.Play(FormulaAudio.Cue.Back); pauseController.ResumeGameplay(); });
+            resume.onClick.AddListener(ResumeAnimated);
             restart.onClick.AddListener(() => Confirm(FormulaLocalization.T("RESTART SESSION?"),FormulaLocalization.T("Your current run will end. Earned career progress is retained."),() => { pauseController.ResumeGameplay(); FormulaSession.Launch(FormulaProgression.State.activeEventId, FormulaProgression.State.activeMode); }, isRestart: true));
             leave.onClick.AddListener(() => Confirm(FormulaLocalization.T("LEAVE SESSION?"),FormulaLocalization.T("This unfinished run will not award credits or XP. Your saved progress is retained."),FormulaSession.ReturnToMenu));
             cancel.onClick.AddListener(CancelConfirmation); confirm.onClick.AddListener(() => pending?.Invoke());
-            settings.onClick.AddListener(() => { pauseController.OpenSettingsPanel(); RefreshVolumes(); FormulaUI.Focus(options.transform); });
-            optionsBack.onClick.AddListener(() => { FormulaAudio.Play(FormulaAudio.Cue.Back); SaveAudio(); pauseController.CloseSettingsPanel(); EventSystem.current?.SetSelectedGameObject(settings.gameObject); });
+            settings.onClick.AddListener(() => { pauseController.OpenSettingsPanel(); RefreshVolumes(); FormulaUIMotion.Enter(options, true); FormulaUI.Focus(options.transform); });
+            optionsBack.onClick.AddListener(CloseAudioOptions);
             retrySave.onClick.AddListener(() => { error.SetActive(false); FormulaSession.RetryResult(); });
             leaveError.onClick.AddListener(() => { error.SetActive(false); pause.SetActive(true); Confirm(FormulaLocalization.T("LEAVE WITHOUT SAVING?"),FormulaLocalization.T("This result has not been saved. Its credits and XP will be lost."),FormulaSession.ReturnToMenu,true); });
             for (int i = 0; i < volumes.Length; i++) { int index = i; volumes[i].onValueChanged.AddListener(value => ChangeVolume(index, value)); }
@@ -79,6 +83,7 @@ namespace FormulaGame
             FormulaSession.CheckpointPassed += OnCheckpoint;
             FormulaSession.LapCompleted += OnLapCompleted;
             notification.alpha = 0; notification.interactable = false; notification.blocksRaycasts = false;
+            notificationRect = notification.GetComponent<RectTransform>(); notificationPosition = notificationRect.anchoredPosition;
             standingsRoot.SetActive(FormulaSession.CurrentEvent.opponentCount > 0);
             minimap.Bind(game);
             Wire(pauseOverview.transform); Wire(pauseConfirmation.transform); Wire(options.transform); Wire(error.transform);
@@ -101,10 +106,7 @@ namespace FormulaGame
         {
             FormulaInputHints.Poll();
             bool paused = pause.activeSelf || options.activeSelf;
-            if (paused && !wasPaused) { pauseOverview.SetActive(true); pauseConfirmation.SetActive(false); FormulaUI.Focus(pauseOverview.transform); }
-            if (!paused && wasPaused) SaveAudio();
-            wasPaused = paused;
-            hud.SetActive(!paused && !finished && !error.activeSelf);
+            RefreshPausePresentation();
             if (game.CarController == null || finished) return;
             var e = FormulaSession.CurrentEvent;
             startMessage.text = game.FormulaRaceStarted ? "" : game.raceStateText != null ? FormulaLocalization.T(game.raceStateText.text) : "";
@@ -164,9 +166,18 @@ namespace FormulaGame
                 }
             }
         }
+        private void RefreshPausePresentation()
+        {
+            bool paused = pause.activeSelf || options.activeSelf;
+            if (paused && !wasPaused) { pauseOverview.SetActive(true); pauseConfirmation.SetActive(false); FormulaUIMotion.Enter(pause.activeSelf ? pause : options, true); FormulaUI.Focus(pauseOverview.transform); }
+            if (!paused && wasPaused) SaveAudio();
+            wasPaused = paused;
+            hud.SetActive(!paused && !finished && !error.activeSelf);
+        }
         // Vehicle instruments and clocks follow rendered frames; race summaries can refresh less often.
         public void UpdateTelemetry(GamePlayManager game)
         {
+            RefreshPausePresentation();
             if (finished || game.CarController == null || !hud.activeSelf) return;
             var car = game.CarController;
             if (feedbackCar != car)
@@ -199,6 +210,11 @@ namespace FormulaGame
             }
             float targetAlpha = wrongWay || Time.time < messageUntil ? 1 : 0;
             notification.alpha = FormulaProgression.State.reducedMotion ? targetAlpha : Mathf.MoveTowards(notification.alpha, targetAlpha, Time.unscaledDeltaTime * 5);
+            if (notification.alpha != lastNotificationAlpha || lastReducedMotion != FormulaProgression.State.reducedMotion)
+            {
+                lastNotificationAlpha = notification.alpha; lastReducedMotion = FormulaProgression.State.reducedMotion;
+                notificationRect.anchoredPosition = notificationPosition + Vector2.down * (lastReducedMotion ? 0 : 12 * (1 - notification.alpha));
+            }
             speed.SetText("{0:0}", car.absoluteSpeed);
             int currentGear = sample.displayGear;
             if (displayedGear != currentGear)
@@ -269,6 +285,7 @@ namespace FormulaGame
             toastTitle = title; toastBody = body; toastColor = warning ? FormulaUI.Red : FormulaUI.Accent;
             messageUntil = Time.time + seconds;
             if (!wrongWayPresented) PresentToast();
+            FormulaUIMotion.Pulse(validity.gameObject, .035f, .22f);
         }
         private void PresentToast() { validity.text = toastTitle; validity.color = toastColor; objective.text = toastBody; }
         private void OnCheckpoint(int index, double elapsed)
@@ -304,18 +321,35 @@ namespace FormulaGame
             confirm.GetComponentInChildren<TMP_Text>().text = fromError ? FormulaLocalization.T("LEAVE WITHOUT SAVING") : isRestart ? FormulaLocalization.T("RESTART SESSION") : FormulaLocalization.T("LEAVE SESSION");
             cancel.GetComponentInChildren<TMP_Text>().text = fromError ? FormulaLocalization.T("BACK TO RESULT") : FormulaLocalization.T("KEEP RACING");
             pauseOverview.SetActive(false); pauseConfirmation.SetActive(true); EventSystem.current?.SetSelectedGameObject(cancel.gameObject);
+            FormulaUIMotion.Enter(pauseConfirmation, true);
         }
         private void CancelConfirmation()
         {
+            if (FormulaUIMotion.IsClosing(pauseConfirmation)) return;
             FormulaAudio.Play(FormulaAudio.Cue.Back);
-            pending = null; pauseConfirmation.SetActive(false);
-            if (confirmFromError) { confirmFromError = false; pause.SetActive(false); error.SetActive(true); FormulaUI.Focus(error.transform); }
-            else { pauseOverview.SetActive(true); FormulaUI.Focus(pauseOverview.transform); }
+            pending = null;
+            FormulaUIMotion.Hide(pauseConfirmation, () =>
+            {
+                if (confirmFromError) { confirmFromError = false; pause.SetActive(false); error.SetActive(true); FormulaUIMotion.Enter(error, true); FormulaUI.Focus(error.transform); }
+                else { pauseOverview.SetActive(true); FormulaUIMotion.Enter(pauseOverview, true); FormulaUI.Focus(pauseOverview.transform); }
+            });
+        }
+        private void ResumeAnimated()
+        {
+            if (FormulaUIMotion.IsClosing(pause)) return;
+            FormulaAudio.Play(FormulaAudio.Cue.Back); FormulaUIMotion.Hide(pause, pauseController.ResumeGameplay);
+        }
+        private void CloseAudioOptions()
+        {
+            if (FormulaUIMotion.IsClosing(options)) return;
+            FormulaAudio.Play(FormulaAudio.Cue.Back); SaveAudio();
+            FormulaUIMotion.Hide(options, () => { pauseController.CloseSettingsPanel(); FormulaUIMotion.Enter(pause, true); EventSystem.current?.SetSelectedGameObject(settings.gameObject); });
         }
         private bool HandleOptions()
         {
             if (pauseConfirmation.activeSelf) { CancelConfirmation(); return true; }
-            if (options.activeSelf) { FormulaAudio.Play(FormulaAudio.Cue.Back); SaveAudio(); pauseController.CloseSettingsPanel(); EventSystem.current?.SetSelectedGameObject(settings.gameObject); return true; }
+            if (options.activeSelf) { CloseAudioOptions(); return true; }
+            if (pause.activeSelf) { ResumeAnimated(); return true; }
             return false;
         }
         public void SaveError(string message)
@@ -324,6 +358,7 @@ namespace FormulaGame
             FormulaAudio.Play(FormulaAudio.Cue.Error);
             errorDetails.text = FormulaLocalization.T("Your result could not be saved. Retry saving to keep your credits and XP.\n") + message;
             hud.SetActive(false); pause.SetActive(false); options.SetActive(false); error.SetActive(true); FormulaUI.Focus(error.transform);
+            FormulaUIMotion.Enter(error, true);
         }
         public void Finish()
         {
@@ -345,6 +380,7 @@ namespace FormulaGame
             else if (index == 1) { d.VehicleLevel = value; SoundManager.Instance?.SetVehicleVolume(value); }
             else { d.musicLevel = value; SoundManager.Instance?.SetMusicVolume(value); }
             volumeValues[index].text = Mathf.RoundToInt(value * 100) + "%";
+            FormulaUIMotion.Pulse(volumeValues[index].gameObject, .045f, .16f);
         }
         private void SaveAudio() { if (audioDirty && HalvaStudio.Save.SaveManager.Instance != null) { if (HalvaStudio.Save.SaveManager.Instance.TrySave(true)) audioDirty = false; } }
         private void OnDisable() { FormulaLocalization.Changed -= RefreshLocale; if (Application.isPlaying) SaveAudio(); }

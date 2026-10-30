@@ -1,0 +1,18 @@
+{
+  "status": "failed",
+  "phase": 12,
+  "checks": [
+    "Focus/press uses real UI events; page reveal completes without blocking focus.",
+    "Dialog exit releases navigation immediately; 20 interrupted close/reopen cycles do not queue actions.",
+    "Slider saves its real value immediately and pulses the percentage; tab indicators glide.",
+    "Real upgrade/livery transactions trigger presentation feedback; animation does not repeat the charge.",
+    "Results sequence/count-up can finish immediately and never changes profile/receipt data."
+  ],
+  "errors": [
+    "System.InvalidOperationException: Motion added UI renderers\n  at FormulaUIMotionValidation.Tick () [0x00c55] in /Users/gheorghe/GitHub/RacingRCCP/Assets/Formula/Editor/FormulaUIMotionValidation.cs:196 "
+  ],
+  "capturedFrames": 35,
+  "frameFolder": "/var/folders/hz/hdljpzkx3k1d8cp3x9x27cn00000gn/T/formula-ui-motion-frames",
+  "isolatedSave": true,
+  "switchHardwareTested": false
+}

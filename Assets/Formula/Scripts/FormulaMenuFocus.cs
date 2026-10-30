@@ -83,7 +83,7 @@ namespace FormulaGame
             {
                 bool active = selected && slider.IsInteractable();
                 if (sliderSurface != null) sliderSurface.Configure(active);
-                if (sliderFill != null) sliderFill.color = active ? FormulaUI.Accent : sliderFillColor;
+                if (sliderFill != null) FormulaUIMotion.Tint(sliderFill, active ? FormulaUI.Accent : sliderFillColor, .10f);
                 if (sliderHandle != null) sliderHandle.color = active ? Color.white : sliderHandleColor;
                 if (slider.handleRect != null) slider.handleRect.sizeDelta = active ? new Vector2(Mathf.Max(20, sliderHandleSize.x), sliderHandleSize.y) : sliderHandleSize;
                 return;
@@ -109,14 +109,14 @@ namespace FormulaGame
             homeRail.color = FormulaUI.Red;
             homeArrow.color = new Color(ink.r, ink.g, ink.b, alpha);
         }
-        public void OnSelect(BaseEventData data) { selected = true; if (slider != null) SetColor(1); FormulaAudio.Play(FormulaAudio.Cue.Focus); }
-        public void OnDeselect(BaseEventData data) { selected = false; if (slider != null) SetColor(0); }
-        public void OnPointerEnter(PointerEventData data) { hovered = true; SetColor(strength); }
-        public void OnPointerExit(PointerEventData data) { hovered = false; pressed = false; SetColor(strength); }
+        public void OnSelect(BaseEventData data) { selected = true; strength = 1; SetColor(1); if (slider == null) FormulaUIMotion.Focus(gameObject, 1); FormulaAudio.Play(FormulaAudio.Cue.Focus); }
+        public void OnDeselect(BaseEventData data) { selected = false; if (slider != null) SetColor(0); else FormulaUIMotion.Focus(gameObject, hovered ? .35f : 0); }
+        public void OnPointerEnter(PointerEventData data) { hovered = true; SetColor(strength); if (slider == null) FormulaUIMotion.Focus(gameObject, selected ? 1 : .35f); }
+        public void OnPointerExit(PointerEventData data) { hovered = false; pressed = false; SetColor(strength); if (slider == null) FormulaUIMotion.Focus(gameObject, selected ? 1 : 0); }
         private void OnDisable() { selected = hovered = pressed = false; strength = 0; SetColor(0); }
-        public void OnPointerDown(PointerEventData data) { pressed = data.button == PointerEventData.InputButton.Left; SetColor(strength); }
+        public void OnPointerDown(PointerEventData data) { pressed = data.button == PointerEventData.InputButton.Left; SetColor(strength); if (pressed && slider == null) FormulaUIMotion.Pulse(gameObject, -.035f, .14f); }
         public void OnPointerUp(PointerEventData data) { pressed = false; SetColor(strength); }
-        public void OnSubmit(BaseEventData data) => FormulaAudio.Play(FormulaAudio.Cue.Confirm);
+        public void OnSubmit(BaseEventData data) { if (slider == null) FormulaUIMotion.Pulse(gameObject, -.035f, .14f); FormulaAudio.Play(FormulaAudio.Cue.Confirm); }
         public void OnPointerClick(PointerEventData data) { if (data.button == PointerEventData.InputButton.Left) FormulaAudio.Play(FormulaAudio.Cue.Confirm); }
         private void Update()
         {

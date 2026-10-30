@@ -24,7 +24,8 @@ namespace FormulaGame
         [SerializeField] private TMP_Text liveryAcquisition, liveryRequirements, liveryFunds, liveryCost;
         private Action confirm, close;
         private Action<int> selectLevel;
-        public bool IsOpen => gameObject.activeSelf;
+        private bool presented;
+        public bool IsOpen => presented && gameObject.activeSelf && !FormulaUIMotion.IsClosing(gameObject);
         public void Bind(Action onClose, Action onGarage = null)
         {
             close = onClose; cancel.onClick.AddListener(() => close()); levelCancel.onClick.AddListener(() => close());
@@ -36,11 +37,13 @@ namespace FormulaGame
         }
         public void Confirm(string heading, string description, string actionName, Action action, bool canConfirm)
         {
+            presented = true;
             gameObject.SetActive(true); confirmation.SetActive(true); levelSelection.SetActive(false); if (eventBriefing != null) eventBriefing.SetActive(false);
             title.text = heading; details.text = description; acceptText.text = actionName;
             details.gameObject.SetActive(true); if (upgradeContent != null) upgradeContent.SetActive(false);
             if (liveryContent != null) liveryContent.SetActive(false);
             accept.interactable = canConfirm; confirm = action; Wire(confirmation.transform); FormulaUI.Focus(confirmation.transform);
+            FormulaUIMotion.Enter(gameObject, true);
         }
         public void Upgrade(string heading, string effect, string tradeoff, string benefit, string requirement, string cost, string actionName, Action action, bool canConfirm, bool focusAction, string funds = null, bool creditsMissing = false)
         {
@@ -70,6 +73,7 @@ namespace FormulaGame
         }
         public void SelectLevel(string branchId, Action<int> action)
         {
+            presented = true;
             gameObject.SetActive(true); confirmation.SetActive(false); levelSelection.SetActive(true); if (eventBriefing != null) eventBriefing.SetActive(false); selectLevel = action;
             levelTitle.text = FormulaLocalization.T(FormulaCatalog.Current.Upgrade(branchId).name).ToUpperInvariant() + FormulaLocalization.T(" / EQUIP");
             for (int i = 0; i < levels.Length; i++)
@@ -80,10 +84,12 @@ namespace FormulaGame
                 levels[i].interactable = owned; levelLabels[i].text = (i == 0 ? FormulaLocalization.T("STOCK CONFIGURATION") : FormulaLocalization.T("LEVEL ") + i) + " / " + state;
             }
             Wire(levelSelection.transform); FormulaUI.Focus(levelSelection.transform);
+            FormulaUIMotion.Enter(gameObject, true);
         }
-        public void Close() { confirm = null; selectLevel = null; gameObject.SetActive(false); }
+        public void Close() { bool animate = presented; presented = false; confirm = null; selectLevel = null; if (animate) FormulaUIMotion.Hide(gameObject); else gameObject.SetActive(false); }
         public void EventBriefing(FormulaCatalog.CareerEvent e, string mode, Action action, bool unlocked)
         {
+            presented = true;
             // Older authored prefabs remain playable until the explicit editor migration runs.
             if (eventBriefing == null)
             {
@@ -130,6 +136,7 @@ namespace FormulaGame
             eventNote.text = !unlocked ? FormulaLocalization.T("LOCKED · ") + FormulaProgression.LockReason(e.unlock, FormulaProgression.State) : !career ? FormulaLocalization.T("No career credits or XP. Your career progress is unchanged.") : FormulaLocalization.T("Rewards include your finish reward and unclaimed medal bonuses.\nValid laps require staying within track limits and passing every checkpoint.");
             eventAccept.interactable = unlocked; eventActionText.text = unlocked ? FormulaLocalization.T("START EVENT") : FormulaLocalization.T("EVENT LOCKED");
             Wire(eventBriefing.transform); UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(unlocked ? eventAccept.gameObject : eventCancel.gameObject);
+            FormulaUIMotion.Enter(gameObject, true);
         }
         private static void Wire(Transform panel)
         {

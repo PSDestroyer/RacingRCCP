@@ -15,9 +15,10 @@ using Object = UnityEngine.Object;
 public static class FormulaMarketingCapture
 {
     const string Key = "Formula.MarketingCapture";
+    const string OriginalProfile = "Assets/Formula/Racing/Surfaces/Circuit Surface Grade.asset";
     static bool PreviewOnly => SessionState.GetBool(Key + ".Preview", false);
     static bool Lookback => SessionState.GetBool(Key + ".Lookback", false);
-    static string Folder => "Marketing/Screenshots/2026-10-30/Visual-Upgrade" + (PreviewOnly ? "/Preview" : Lookback ? "/Lookback" : "");
+    static string Folder => "Marketing/Screenshots/2026-10-30/Original-Volume" + (PreviewOnly ? "/Preview" : Lookback ? "/Lookback" : "");
     static readonly string[] LookbackTracks = { "track_01", "rtg_01", "track_05", "track_08" };
     static readonly string[] LookbackLiveries = { "generic_orange", "generic_blue", "generic_blue", "generic_blue" };
     static readonly float[] LookbackMoments = { 2.8f, 4.3f, 5.8f, 7.3f, 8.8f, 10.3f, 12.3f, 14.3f, 16.3f, 18.3f };
@@ -27,9 +28,9 @@ public static class FormulaMarketingCapture
     static string[] ActiveTracks => PreviewOnly ? PreviewTracks : Lookback ? LookbackTracks : Tracks;
     static string[] ActiveLiveries => PreviewOnly ? PreviewLiveries : Lookback ? LookbackLiveries : Liveries;
     static float[] ActiveMoments => PreviewOnly ? PreviewMoments : Lookback ? LookbackMoments : Moments;
-    static readonly string[] Tracks = { "track_01", "rtg_01", "track_06", "track_05", "track_08", "track_07", "track_03", "rtg_04" };
-    static readonly string[] Liveries = { "generic_orange", "generic_blue", "generic_orange", "generic_red", "generic_blue", "generic_yellow", "generic_orange", "generic_blue" };
-    static readonly float[] Moments = { 2.8f, 4.3f, 5.8f, 7.3f, 8.8f, 10.3f, 12.3f, 14.3f, 16.3f, 18.3f, 20.3f, 23.3f, 26.3f, 30.3f };
+    static readonly string[] Tracks = { "track_01", "rtg_01", "track_06", "track_05", "track_08", "track_07" };
+    static readonly string[] Liveries = { "generic_orange", "generic_blue", "generic_orange", "generic_red", "generic_blue", "generic_yellow" };
+    static readonly float[] Moments = { 2.8f, 4.3f, 5.8f, 7.3f, 8.8f, 10.3f, 12.3f, 14.3f, 16.3f, 18.3f };
     static readonly List<object> captures = new List<object>();
     static readonly List<object> rejected = new List<object>();
     static readonly List<string> errors = new List<string>();
@@ -135,6 +136,8 @@ public static class FormulaMarketingCapture
             {
                 game = Object.FindFirstObjectByType<GamePlayManager>();
                 if (game == null || game.GetComponent<FormulaCircuit>()?.trackId != ActiveTracks[shot] || game.CarController == null || !game.FormulaRaceStarted || !game.CarController.GetComponent<FormulaVehicle>().IsReady) return;
+                var volumes = Object.FindObjectsByType<UnityEngine.Rendering.Volume>(FindObjectsSortMode.None).Where(v => v.isGlobal).ToArray();
+                Require(volumes.Length > 0 && volumes.All(v => AssetDatabase.GetAssetPath(v.sharedProfile) == OriginalProfile), "The restored original Global Volume must be used for these captures.");
                 FormulaSession.PrepareAgent(game.CarController.gameObject);
                 driver = game.CarController.GetComponent<RCCP_AI>() ?? game.CarController.gameObject.AddComponent<RCCP_AI>();
                 driver.behaviour = RCCP_AI.BehaviourType.RaceWaypoints; driver.waypointsContainer = game.raceWaypoints;
@@ -227,6 +230,7 @@ public static class FormulaMarketingCapture
             status, phase, shot, sample, attempt, trackCaptures, unity = Application.unityVersion,
             source = "Unity Editor on macOS, existing graphics profile, Nintendo UI preview",
             switchHardwareCaptured = false, isolatedSave = true, usesPersistentVisualUpgrade = true, captureSessionAssetChanges = false,
+            globalVolumeProfile = OriginalProfile,
             retouching = "none", captures, rejected, errors
         }, Formatting.Indented));
     }

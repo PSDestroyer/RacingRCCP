@@ -40,8 +40,10 @@ namespace FormulaGame
         }
         public void SetPage(int index)
         {
+            int previous = page;
             page = (index % PageCount + PageCount) % PageCount;
             Refresh();
+            if (page != previous) FormulaUIMotion.Enter(gameObject);
             var selected = EventSystem.current?.currentSelectedGameObject;
             if (isActiveAndEnabled && selected != null && selected.transform.IsChildOf(transform) && !selected.activeInHierarchy)
                 EventSystem.current.SetSelectedGameObject(events[0].gameObject);

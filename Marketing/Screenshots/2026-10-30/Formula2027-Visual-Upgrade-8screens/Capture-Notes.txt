@@ -1,0 +1,16 @@
+FORMULA 2027 — V3 / ÎMBUNĂTĂȚIRI SALVATE ÎN JOC
+30 OCTOMBRIE 2026
+
+8 capturi originale PNG 1920 × 1080 din curse, toate cu HUD, în ordinea recomandată din Contact-Sheet.png. Selection.json include sursa, telemetria, camera și SHA-256 pentru fiecare imagine. V2 este păstrat în Previous-HUD-V2/.
+
+Materialele, luminile, ceața, post-procesarea, decorul, camera și HUD-ul au fost actualizate în scenele/prefaburile jocului. Captura nu aplică efecte suplimentare. Detalii și verificări: Docs/AI/FormulaVisualUpgrade/Implementation.md.
+
+Sursa: Unity Editor 6000.3.19f1 pe macOS, profilul grafic existent și modul de previzualizare al interfeței Nintendo. Nu sunt capturi de pe hardware Switch. Pentru eShop sunt necesare validarea și recapturarea din build-ul Nintendo.
+
+Imaginile Selected/ sunt identice cu PNG-urile originale produse de Unity. Fără AI, retușare, compoziție, înlocuirea textului sau ascunderea HUD-ului. Contact-Sheet.png este doar o planșă de prezentare cu miniaturi.
+
+Camere existente: urmărire, onboard și comanda look back. Sesiune cu salvare separată, AI și fizica normală a jocului. Poziția, viteza și UI-ul nu sunt manipulate. Filtrul exclude turul invalid, sensul greșit, vitezele sub 42 km/h și jucătorul neancorat la sol. Selecția vizuală exclude accidentele evidente și rivalii în aer.
+
+Verificări: toate cele 18 scene, materiale/shadere, referințele HUD; pauză și reluare Nintendo A la 720p; text mărit, safe area și contrast ridicat; zero erori în sesiunile finale de captură. Nu a fost măsurată performanța pe consolă sau rata de conversie comercială.
+
+Refacere în Unity: Tools > Capture Marketing Screenshots; pentru pluton/unghi frontal: Tools > Refine Marketing HUD Action. Surse și rapoarte în Visual-Upgrade/ și Visual-Upgrade/Lookback/.

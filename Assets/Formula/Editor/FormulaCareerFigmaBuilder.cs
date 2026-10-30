@@ -62,6 +62,7 @@ public static class FormulaCareerFigmaBuilder
         var year = Label(logo, "Season", "2027", 251.856f, 57, 69.795f, 25, 25, FormulaMenuAssets.Current.bodyFont);
         year.color = new Color32(255, 30, 0, 255); year.fontStyle = FontStyles.Bold;
         mark.color = year.color;
+        FormulaHomeReferenceBuilder.StyleLogo(logo);
 
         var account = Group(root, "Figma Driver and Wallet", 955, 27, 301, 46);
         var oldFrame = account.Find("Frame"); if (oldFrame != null) { oldFrame.gameObject.SetActive(false); oldFrame.GetComponent<UnityEngine.UI.RawImage>().texture = null; }

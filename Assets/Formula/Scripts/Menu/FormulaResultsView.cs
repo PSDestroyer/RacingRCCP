@@ -17,7 +17,10 @@ namespace FormulaGame
         [SerializeField] private CanvasGroup rewardPresentation;
         [SerializeField] private CanvasGroup resultPresentation;
         private float revealStarted;
-        public void OnCancel(UnityEngine.EventSystems.BaseEventData data) => FormulaSession.ReturnToMenu();
+        private int creditsGoal, xpGoal, bonusGoal;
+        private float xpBefore, xpAfter;
+        private bool counting;
+        public void OnCancel(UnityEngine.EventSystems.BaseEventData data) { FinishReveal(); FormulaSession.ReturnToMenu(); }
         public void Present(FormulaReceipt receipt)
         {
             eventName.text = FormulaLocalization.T(FormulaCatalog.Current.Event(receipt.eventId).name).ToUpperInvariant();
@@ -54,18 +57,18 @@ namespace FormulaGame
             }
             LayoutOutcome(receipt, failed, career);
             revealStarted = Time.unscaledTime;
-            if (resultPresentation != null) resultPresentation.alpha = FormulaProgression.State.reducedMotion ? 1 : 0;
-            if (rewardPresentation != null) rewardPresentation.alpha = FormulaProgression.State.reducedMotion ? 1 : 0;
+            if (resultPresentation != null) resultPresentation.alpha = 1;
+            if (rewardPresentation != null) rewardPresentation.alpha = 1;
             FormulaAudio.Play(receipt.newLiveries.Count > 0 ? FormulaAudio.Cue.Unlock : failed ? FormulaAudio.Cue.End : FormulaAudio.Cue.Result);
             retry.onClick.RemoveAllListeners(); next.onClick.RemoveAllListeners(); menu.onClick.RemoveAllListeners();
             retry.GetComponentInChildren<TMP_Text>().text = FormulaLocalization.T("RETRY");
             menu.GetComponentInChildren<TMP_Text>().text = FormulaLocalization.T("MENU");
-            retry.onClick.AddListener(() => FormulaSession.Launch(receipt.eventId, FormulaProgression.State.activeMode));
+            retry.onClick.AddListener(() => { FinishReveal(); FormulaSession.Launch(receipt.eventId, FormulaProgression.State.activeMode); });
             var nextEvent = career && !failed ? FormulaCatalog.Current.careerEvents.Find(e => FormulaProgression.State.Best(e.id) < Medal.Bronze) : null;
-            next.gameObject.SetActive(nextEvent != null); if (nextEvent != null) next.onClick.AddListener(() => FormulaSession.ReviewEvent(nextEvent.id));
+            next.gameObject.SetActive(nextEvent != null); if (nextEvent != null) next.onClick.AddListener(() => { FinishReveal(); FormulaSession.ReviewEvent(nextEvent.id); });
             if (nextContext != null) nextContext.text = nextEvent == null ? "" : FormulaLocalization.T("UP NEXT  /  ") + FormulaLocalization.T(nextEvent.name).ToUpperInvariant() + " · " + FormulaLocalization.T(FormulaAssets.Current.FindTrack(nextEvent.trackId).displayName);
             if (nextEvent != null) next.GetComponentInChildren<TMP_Text>().text = nextEvent.id == receipt.eventId ? FormulaLocalization.T("REVIEW EVENT") : FormulaLocalization.T("NEXT EVENT");
-            menu.onClick.AddListener(FormulaSession.ReturnToMenu);
+            menu.onClick.AddListener(() => { FinishReveal(); FormulaSession.ReturnToMenu(); });
             var buttons = new[] { retry, next, menu }.Where(b => b.gameObject.activeSelf).ToArray();
             for (int i = 0; i < buttons.Length; i++) buttons[i].navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.Explicit, selectOnLeft = buttons[(i + buttons.Length - 1) % buttons.Length], selectOnRight = buttons[(i + 1) % buttons.Length] };
             if (nextEvent == null)
@@ -77,6 +80,18 @@ namespace FormulaGame
                 ResizeAction(retry, 30, 390); ResizeAction(next, 440, 390); ResizeAction(menu, 850, 400);
             }
             UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(failed ? retry.gameObject : nextEvent != null ? next.gameObject : menu.gameObject);
+            creditsGoal = receipt.credits; xpGoal = receipt.xp; bonusGoal = receipt.levelCredits;
+            xpAfter = fraction;
+            FormulaMenuFormatting.Experience(System.Math.Max(0, data.exp - receipt.xp), data.currentLevel, out xpBefore);
+            counting = FormulaUIMotion.Allowed;
+            FormulaUIMotion.Enter(gameObject);
+            FormulaUIMotion.Enter(medal.gameObject, true, .04f);
+            TMP_Text[] metrics = { elapsed, bestLap, credits, xp };
+            for (int i = 0; i < metrics.Length; i++) if (metrics[i].transform.parent.gameObject.activeSelf) FormulaUIMotion.Enter(metrics[i].transform.parent.gameObject, false, .08f + i * .045f);
+            if (progressionRoot.gameObject.activeSelf) FormulaUIMotion.Enter(progressionRoot.gameObject, false, .18f);
+            if (rewardLivery != null && rewardLivery.gameObject.activeSelf) FormulaUIMotion.Enter(rewardPresentation != null ? rewardPresentation.gameObject : rewardLivery.gameObject, true, .28f);
+            if (bonus.gameObject.activeSelf) FormulaUIMotion.Enter(bonus.gameObject, true, .24f);
+            RenderCounters(counting ? 0 : 1);
         }
         private void LayoutOutcome(FormulaReceipt receipt, bool failed, bool career)
         {
@@ -120,12 +135,21 @@ namespace FormulaGame
         }
         private void Update()
         {
-            // A short reveal never delays focus, navigation or the next session.
-            if (resultPresentation != null && resultPresentation.alpha < 1)
-                resultPresentation.alpha = FormulaProgression.State.reducedMotion ? 1 : Mathf.Clamp01((Time.unscaledTime - revealStarted) / .18f);
-            if (rewardPresentation == null || !rewardLivery.gameObject.activeSelf || rewardPresentation.alpha >= 1) return;
-            float t = Mathf.Clamp01((Time.unscaledTime - revealStarted) / .28f);
-            rewardPresentation.alpha = FormulaProgression.State.reducedMotion ? 1 : t * t * (3 - 2 * t);
+            if (!counting) return;
+            float t = FormulaUIMotion.Allowed ? Mathf.Clamp01((Time.unscaledTime - revealStarted - .12f) / .55f) : 1;
+            RenderCounters(1 - (1 - t) * (1 - t) * (1 - t));
+            if (t >= 1) counting = false;
+        }
+        private void RenderCounters(float t)
+        {
+            credits.text = "+" + Mathf.RoundToInt(creditsGoal * t).ToString("N0") + FormulaLocalization.T(" CR");
+            xp.text = "+" + Mathf.RoundToInt(xpGoal * t).ToString("N0") + FormulaLocalization.T(" XP");
+            bonus.text = FormulaLocalization.T("LEVEL UP BONUS  +") + Mathf.RoundToInt(bonusGoal * t).ToString("N0") + FormulaLocalization.T(" CR");
+            if (xpFill != null) xpFill.fillAmount = Mathf.Lerp(xpBefore, xpAfter, t);
+        }
+        public void FinishReveal()
+        {
+            counting = false; RenderCounters(1); FormulaUIMotion.Complete(transform);
         }
         private void Metric(int index, TMP_Text value, float x, float y, float height)
         {

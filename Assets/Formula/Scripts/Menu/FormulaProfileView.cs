@@ -21,7 +21,7 @@ namespace FormulaGame
             if (previousPage != null) previousPage.onClick.AddListener(() => SetPage(page - 1));
             if (nextPage != null) nextPage.onClick.AddListener(() => SetPage(page + 1));
         }
-        public void SetPage(int index) { page = (index % PageCount + PageCount) % PageCount; Refresh(); }
+        public void SetPage(int index) { int previous = page; page = (index % PageCount + PageCount) % PageCount; Refresh(); if (page != previous) FormulaUIMotion.Enter(gameObject); }
         public void Refresh()
         {
             var p = FormulaProgression.State; var d = FormulaProgression.Data;

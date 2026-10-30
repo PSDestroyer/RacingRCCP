@@ -28,6 +28,8 @@ namespace FormulaGame
         private RCCP_CarController car;
         private WheelCollider wheel;
         private UnityEngine.UI.Selectable tabNavigation;
+        private string renderedBranch;
+        private int renderedOwned, renderedEquipped;
         public string BranchId => Branches[category];
         public bool IsPresented { get; private set; }
         public void Bind(Action<string, int> onApply, Action onBack)
@@ -46,8 +48,14 @@ namespace FormulaGame
         }
         public void SelectCategory(int index)
         {
+            int previous = category; Vector3 markerFrom = categoryMarkers[previous].transform.position;
             if (category != index) { category = Mathf.Clamp(index, 0, Branches.Length - 1); previewLevel = Mathf.Min(3, FormulaProgression.State.Owned(BranchId) + 1); }
             Render(); WireNavigation();
+            if (previous != category)
+            {
+                FormulaUIMotion.Glide(categoryMarkers[category], markerFrom);
+                for (int i = 0; i < levels.Length; i++) FormulaUIMotion.Enter(levels[i].button.gameObject, false, i * .025f);
+            }
         }
         public void ChangeCategory(int delta)
         {
@@ -72,6 +80,7 @@ namespace FormulaGame
             if (levels == null || levels.Length == 0) return;
             var p = FormulaProgression.State; var branch = FormulaCatalog.Current.Upgrade(BranchId);
             int owned = p.Owned(BranchId), equipped = p.Equipped(BranchId);
+            bool changed = renderedBranch == BranchId && (renderedOwned != owned || renderedEquipped != equipped);
             for (int i = 0; i < categories.Length; i++) categoryMarkers[i].SetActive(i == category);
             for (int i = 0; i < levels.Length; i++)
             {
@@ -81,7 +90,9 @@ namespace FormulaGame
                 row.status.color = !purchased && FormulaProgression.Data.money < branch.levels.Find(l => l.level == i).incrementalPriceCredits ? FormulaUI.Red : Color.white;
                 row.coin.gameObject.SetActive(!purchased);
                 row.value.text = car != null ? ValueAtLevel(BranchId, i, car, wheel).ToString(BranchId == "aero" ? "0.##" : "0.#", CultureInfo.InvariantCulture) + " " + Unit(BranchId) : "—";
+                if (changed && (i == equipped || i == owned)) FormulaUIMotion.Pulse(row.status.gameObject, .055f, .24f);
             }
+            renderedBranch = BranchId; renderedOwned = owned; renderedEquipped = equipped;
             var selected = previewLevel == 0 ? null : branch.levels.Find(l => l.level == previewLevel);
             string state = previewLevel == equipped ? FormulaLocalization.T("Installed") : previewLevel <= owned ? FormulaLocalization.T("Owned · Select to equip") : previewLevel != owned + 1 ? FormulaLocalization.F("Purchase Level {0} first.", owned + 1) : !FormulaProgression.Unlocked(selected.unlock, p) ? FormulaLocalization.T("Requires ") + FormulaProgression.LockReason(selected.unlock, p) : FormulaLocalization.T("Select to review purchase");
             string effect = BranchId == "engine" ? FormulaLocalization.T("Torque +3% per level") : BranchId == "brakes" ? FormulaLocalization.T("Brake torque +4% per level") : BranchId == "suspension" ? FormulaLocalization.T("Firmer springs, damping and anti-roll") : FormulaLocalization.T("Downforce +4% / Drag +1% per level");

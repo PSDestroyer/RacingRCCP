@@ -14,6 +14,55 @@ using UnityEngine.SceneManagement;
 public static class FormulaHomeReferenceBuilder
 {
     private const string StagePath = "Assets/Formula/Garage/Formula_Paddock_Garage.prefab";
+    private const string GameLogoPath = "Assets/Formula/UI/Branding/Formula2027-GrandPrixLegends.png";
+
+    [MenuItem("Tools/Replace Formula Game Logo")]
+    public static void ApplyGameLogo()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
+        AssetDatabase.ImportAsset(GameLogoPath, ImportAssetOptions.ForceUpdate);
+        var importer = (TextureImporter)AssetImporter.GetAtPath(GameLogoPath);
+        if (importer == null) throw new FileNotFoundException("Game title artwork is missing.", GameLogoPath);
+        importer.textureType = TextureImporterType.Default;
+        importer.sRGBTexture = true; importer.alphaSource = TextureImporterAlphaSource.FromInput;
+        importer.alphaIsTransparency = true; importer.mipmapEnabled = false;
+        importer.npotScale = TextureImporterNPOTScale.None; importer.maxTextureSize = 1024;
+        importer.textureCompression = TextureImporterCompression.Uncompressed;
+        importer.wrapMode = TextureWrapMode.Clamp; importer.filterMode = FilterMode.Bilinear;
+        importer.SaveAndReimport();
+        int count = 0;
+        foreach (string path in new[] { FormulaMenuHierarchyBuilder.PrefabPath, "Assets/Formula/Resources/Formula/UI/FormulaResults.prefab" })
+        {
+            var root = PrefabUtility.LoadPrefabContents(path);
+            try { count += StyleLogos(root); PrefabUtility.SaveAsPrefabAsset(root, path); }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
+        }
+        Debug.Log("FORMULA_GAME_LOGO_REPLACED: " + count + " authored title instances; original transparent artwork.");
+    }
+
+    public static int StyleLogos(GameObject root)
+    {
+        var logos = root.GetComponentsInChildren<RectTransform>(true)
+            .Where(r => r.name == "Formula Logo" || r.name == "Upgrade Logo" || r.name == "Figma Logo 2027").ToArray();
+        foreach (var logo in logos) StyleLogo(logo);
+        return logos.Length;
+    }
+
+    public static void StyleLogo(Transform logo)
+    {
+        if (logo == null) throw new InvalidOperationException("The authored title container is missing.");
+        var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(GameLogoPath);
+        if (texture == null) throw new FileNotFoundException("Game title artwork is missing.", GameLogoPath);
+        // Preserve the existing hierarchy and IDs; the previous composite artwork
+        // stays available but is hidden beneath the replacement title texture.
+        foreach (Transform child in logo) child.gameObject.SetActive(false);
+        var image = logo.GetComponent<UnityEngine.UI.RawImage>() ?? logo.gameObject.AddComponent<UnityEngine.UI.RawImage>();
+        image.texture = texture; image.color = Color.white; image.material = null;
+        image.uvRect = new Rect(0, 0, 1, 1); image.raycastTarget = false; image.enabled = true;
+        logo.localScale = Vector3.one;
+        Place(logo, 40, -10, 360, 120);
+    }
+
     [MenuItem("Tools/Formula Career/Refine Home Reference")]
     public static void Apply()
     {
@@ -71,7 +120,8 @@ public static class FormulaHomeReferenceBuilder
     }
     public static void StyleChrome(FormulaMenuView view)
     {
-        var header = view.transform.Find("Header"); Place(header.Find("Formula Logo"), 40, 1, 280, 96);
+        StyleLogos(view.gameObject);
+        var header = view.transform.Find("Header");
         var account = header.Find("Formula Driver and Wallet"); Place(account, 940, 28, 300, 44);
         foreach (var image in account.GetComponentsInChildren<UnityEngine.UI.RawImage>(true)) image.enabled = false;
         Format(account.Find("Player Name").GetComponent<TMP_Text>(), 0, 0, 132, 44, 21);

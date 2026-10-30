@@ -100,7 +100,7 @@ public static class FormulaVisualUpgradePlayValidation
                 var rig=RCCP_SceneManager.Instance.activePlayerCamera;
                 Require(Mathf.Abs(rig.TPSDistance-6.3f)<.01f&&!rig.TPSAutoFocus,"Runtime camera did not load the persistent scene settings.");
                 var volume=Object.FindObjectsByType<UnityEngine.Rendering.Volume>(FindObjectsSortMode.None).First(v=>v.isGlobal);
-                Require(AssetDatabase.GetAssetPath(volume.sharedProfile).StartsWith("Assets/Formula/Presentation/Grades/",StringComparison.Ordinal),"Runtime loaded the old scene grade.");
+                Require(AssetDatabase.GetAssetPath(volume.sharedProfile) == "Assets/Formula/Racing/Surfaces/Circuit Surface Grade.asset","Runtime did not load the restored original Global Volume profile.");
                 CheckLabels("default");checks.Add("Real race loads the saved camera, grade, compact HUD and live telemetry.");
                 ScreenCapture.CaptureScreenshot(Folder+"/HUD-720.png");Next(2);
             }

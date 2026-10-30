@@ -1,0 +1,12 @@
+{
+  "status": "failed",
+  "phase": 1,
+  "checks": [],
+  "errors": [
+    "UnityEngine.MissingComponentException: There is no 'CanvasGroup' attached to the \"Settings\" game object, but a script is trying to access it.\nYou probably need to add a CanvasGroup to the game object \"Settings\". Or your script needs to check if the component is attached before using it.\n  at UnityEngine.Object+MarshalledUnityObject.TryThrowEditorNullExceptionObject (UnityEngine.Object unityObj, System.String parameterName) [0x000d1] in /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/UnityEngineObject.bindings.cs:1077 \n  at UnityEngine.Bindings.ThrowHelper.ThrowNullReferenceException (System.Object obj) [0x00010] in /Users/bokken/build/output/unity/unity/Runtime/Export/Scripting/BindingsHelpers.cs:61 \n  at UnityEngine.CanvasGroup.get_interactable () [0x00006] in <749662e551284b9f849d0d741e655f91>:0 \n  at FormulaGame.FormulaUIMotion.EnsureGroup () [0x0002a] in /Users/gheorghe/GitHub/RacingRCCP/Assets/Formula/Scripts/Menu/FormulaUIMotion.cs:54 \n  at FormulaGame.FormulaUIMotion.Enter (UnityEngine.GameObject target, System.Boolean modal, System.Single delay) [0x00019] in /Users/gheorghe/GitHub/RacingRCCP/Assets/Formula/Scripts/Menu/FormulaUIMotion.cs:76 \n  at FormulaGame.FormulaMainMenu.Show (System.String target) [0x001dd] in /Users/gheorghe/GitHub/RacingRCCP/Assets/Formula/Scripts/FormulaMainMenu.cs:179 \n  at FormulaUIMotionValidation.Tick () [0x00228] in /Users/gheorghe/GitHub/RacingRCCP/Assets/Formula/Editor/FormulaUIMotionValidation.cs:109 "
+  ],
+  "capturedFrames": 3,
+  "frameFolder": "/var/folders/hz/hdljpzkx3k1d8cp3x9x27cn00000gn/T/formula-ui-motion-frames",
+  "isolatedSave": true,
+  "switchHardwareTested": false
+}

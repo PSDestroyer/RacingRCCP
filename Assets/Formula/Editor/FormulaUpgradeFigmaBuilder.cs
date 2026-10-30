@@ -42,6 +42,7 @@ public static class FormulaUpgradeFigmaBuilder
         Art(root,"Lower Shade","LowerShade",0,500,1280,220).material=shade;
         Art(root,"Footer Shade","FooterShade",0,612,1280,108).material=shade;
         var logo=Copy(menu.Career.transform.Find("Figma Logo 2027"),root,"Upgrade Logo"); Place(logo,23,0,429,147);
+        FormulaHomeReferenceBuilder.StyleLogo(logo);
         var account=Copy(menu.Career.transform.Find("Figma Driver and Wallet"),root,"Upgrade Driver and Wallet"); Place(account,953,21,301,46);
         Set(view,"driver",account.Find("Player Name").GetComponent<TMP_Text>()); Set(view,"wallet",account.Find("Credits").GetComponent<TMP_Text>());
         FormulaPlayerAvatarBuilder.Configure(account.Find("Player Name").GetComponent<TMP_Text>());

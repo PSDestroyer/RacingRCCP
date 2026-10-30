@@ -33,7 +33,6 @@ namespace FormulaGame
         private GameObject garageReturnFocus;
         private bool garageBriefing;
         private string previousBriefingEvent, previousBriefingMode;
-        private Coroutine fadeRoutine;
         private InputAction cancelAction;
         private bool initialized, transactionBusy, statsDirty;
         private int inputRevision = -1;
@@ -156,15 +155,6 @@ namespace FormulaGame
             if (selectable != null) EventSystem.current.SetSelectedGameObject(selectable.gameObject);
             else FormulaUI.Focus(activeScreen);
         }
-        private IEnumerator RevealContent()
-        {
-            view.Transition.alpha = 0;
-            for (float time = 0; time < .18f; time += Time.unscaledDeltaTime)
-            {
-                view.Transition.alpha = Mathf.SmoothStep(0, 1, time / .18f); yield return null;
-            }
-            view.Transition.alpha = 1; fadeRoutine = null;
-        }
         private void Refresh()
         {
             if (!initialized) return;
@@ -185,10 +175,8 @@ namespace FormulaGame
             selectedLivery = FormulaProgression.State.equippedLivery;
             vehiclePreview.ShowLivery(selectedLivery); view.Garage.InspectLivery(selectedLivery); statsDirty = true;
             view.Garage.WireNavigation(); RestoreFocus();
-            if (previousKey != null && previousKey != renderedKey && !FormulaProgression.State.reducedMotion)
-            {
-                if (fadeRoutine != null) StopCoroutine(fadeRoutine); fadeRoutine = StartCoroutine(RevealContent());
-            }
+            view.Transition.alpha = 1;
+            if (previousKey != null && previousKey != renderedKey) FormulaUIMotion.Enter(activeScreen.gameObject);
         }
         private void RefreshPrompts()
         {

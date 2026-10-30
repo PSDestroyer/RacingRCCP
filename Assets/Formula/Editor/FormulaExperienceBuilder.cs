@@ -248,6 +248,7 @@ public static class FormulaExperienceBuilder
         var resultReveal = root.GetComponent<CanvasGroup>(); if (resultReveal == null) resultReveal = root.AddComponent<CanvasGroup>(); resultReveal.alpha = 1; resultReveal.interactable = true; resultReveal.blocksRaycasts = true; Set(view, "resultPresentation", resultReveal);
         Set(view, "resultCaption", root.transform.Find("Result Caption").GetComponent<TMP_Text>());
         Place(root.transform.Find("Header/Formula Logo"), 23, -6, 322, 110);
+        FormulaHomeReferenceBuilder.StyleLogo(root.transform.Find("Header/Formula Logo"));
         Format(Ref<TMP_Text>(view, "eventName"), 30, 144, 1220, 60, 44, true);
         Format(Ref<TMP_Text>(view, "medal"), 30, 208, 580, 78, 64, true);
         var metricCaptions = new UnityEngine.Object[4];
