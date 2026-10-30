@@ -55,6 +55,11 @@ public static class FormulaUIMotionValidation
         Directory.CreateDirectory(Folder); SessionState.SetBool(Key, true); SessionState.SetBool(Key + ".Entered", false);
         EditorSceneManager.playModeStartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>("Assets/Scenes/Menu.unity"); EditorApplication.EnterPlaymode();
     }
+    public static void RunBatch()
+    {
+        SessionState.SetBool(Key + ".Batch", true);
+        Run();
+    }
     private static void Mode(PlayModeStateChange value)
     {
         if (!SessionState.GetBool(Key, false)) return;
@@ -64,7 +69,8 @@ public static class FormulaUIMotionValidation
             status = "running"; phaseAt = captureAt = EditorApplication.timeSinceStartup;
             clipFolder = Path.Combine(Path.GetTempPath(), "formula-ui-motion-frames"); Directory.CreateDirectory(clipFolder);
             Application.runInBackground = true; Time.timeScale = 1;
-            EditorWindow.GetWindow(typeof(Editor).Assembly.GetType("UnityEditor.GameView")).Focus(); Write();
+            if (!Application.isBatchMode) EditorWindow.GetWindow(typeof(Editor).Assembly.GetType("UnityEditor.GameView")).Focus();
+            Write();
         }
         if (value == PlayModeStateChange.EnteredEditMode)
         {
@@ -73,6 +79,11 @@ public static class FormulaUIMotionValidation
             string save = SessionState.GetString(Key + ".Save", ""); Environment.SetEnvironmentVariable("FORMULA_VALIDATION_SAVE_PATH", string.IsNullOrEmpty(save) ? null : save);
             string scene = SessionState.GetString(Key + ".Scene", ""); EditorSceneManager.playModeStartScene = string.IsNullOrEmpty(scene) ? null : AssetDatabase.LoadAssetAtPath<SceneAsset>(scene);
             SessionState.SetBool(Key, false); SessionState.SetBool(Key + ".Entered", false);
+            if (SessionState.GetBool(Key + ".Batch", false))
+            {
+                SessionState.SetBool(Key + ".Batch", false);
+                EditorApplication.Exit(status == "passed" ? 0 : 1);
+            }
         }
     }
     private static T Field<T>(object target, string name) => (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(target);
@@ -92,7 +103,7 @@ public static class FormulaUIMotionValidation
         {
             Require(errors.Count == 0, "Runtime errors during motion review"); double age = EditorApplication.timeSinceStartup - phaseAt;
             Require(age < 100, "Motion review timed out in phase " + phase);
-            if (phase > 0 && phase < 13 && frames < 180 && EditorApplication.timeSinceStartup >= captureAt)
+            if (!Application.isBatchMode && phase > 0 && phase < 13 && frames < 180 && EditorApplication.timeSinceStartup >= captureAt)
             { ScreenCapture.CaptureScreenshot(Path.Combine(clipFolder, (frames++).ToString("D4") + ".png")); captureAt = EditorApplication.timeSinceStartup + 1.0 / 15; }
             if (phase == 0)
             {
@@ -153,6 +164,7 @@ public static class FormulaUIMotionValidation
             }
             else if (phase == 8 && age > .4)
             {
+                ValidateUpgradeRedirect();
                 cash = FormulaProgression.Data.money; price = FormulaCatalog.Current.Upgrade("engine").levels.Find(l => l.level == 1).incrementalPriceCredits;
                 Require(FormulaProgression.Commit(d => FormulaProgression.BuyUpgrade(d, "engine", 1), out string error), error);
                 Require(FormulaProgression.Data.money == cash - price && FormulaProgression.State.Equipped("engine") == 1, "Upgrade charge/equip was not authoritative"); Next(9);
@@ -182,7 +194,7 @@ public static class FormulaUIMotionValidation
                 results.FinishReveal(); Require(Field<TMP_Text>(results, "credits").text.Contains(3210.ToString("N0")), "Skipping did not finish rewards");
                 Require(JsonConvert.SerializeObject(FormulaProgression.Data) == savedData, "Result animation mutated the save");
                 checks.Add("Results sequence/count-up can finish immediately and never changes profile/receipt data.");
-                ScreenCapture.CaptureScreenshot(Folder + "/Results.png"); Next(12);
+                if (!Application.isBatchMode) ScreenCapture.CaptureScreenshot(Folder + "/Results.png"); Next(12);
             }
             else if (phase == 12 && age > .3)
             {
@@ -234,6 +246,35 @@ public static class FormulaUIMotionValidation
             { status = "passed"; Write(); EditorApplication.ExitPlaymode(); }
         }
         catch (Exception ex) { errors.Add(ex.ToString()); status = "failed"; Write(); EditorApplication.ExitPlaymode(); }
+    }
+    private static void ValidateUpgradeRedirect()
+    {
+        var dialogs = menu.View.Dialogs;
+        var accept = Field<Button>(dialogs, "accept"); var cancel = Field<Button>(dialogs, "cancel");
+        var level3 = Field<FormulaUpgradeView.LevelRow[]>(menu.View.Garage.Upgrade, "levels")[3].button;
+        int before = FormulaProgression.Data.money;
+        foreach (bool reduced in new[] { false, true })
+        {
+            FormulaProgression.State.reducedMotion = reduced;
+            for (int attempt = 0; attempt < 4; attempt++)
+            {
+                EventSystem.current.SetSelectedGameObject(level3.gameObject); Submit(level3);
+                Require(EventSystem.current.currentSelectedGameObject == accept.gameObject && accept.IsInteractable(), "Level 3 prerequisite action lost focus");
+                Submit(accept);
+                var selected = EventSystem.current.currentSelectedGameObject;
+                Require(selected != null && selected.transform.IsChildOf(dialogs.transform) && selected.GetComponent<Selectable>().IsInteractable(),
+                    "Level 3 to Level 1 redirect lost controller focus (Reduced Motion=" + reduced + ")");
+                Require(cancel.navigation.selectOnRight == accept && accept.navigation.selectOnLeft == cancel, "Reopened Level 1 dialog has no controller navigation");
+                EventSystem.current.SetSelectedGameObject(cancel.gameObject);
+                ExecuteEvents.Execute(cancel.gameObject, new AxisEventData(EventSystem.current) { moveDir = MoveDirection.Right, moveVector = Vector2.right }, ExecuteEvents.moveHandler);
+                Require(EventSystem.current.currentSelectedGameObject == accept.gameObject, "Controller cannot move from Back to Buy on Level 1");
+                EventSystem.current.SetSelectedGameObject(cancel.gameObject); Submit(cancel);
+                Require(!dialogs.IsOpen, "Controller cannot dismiss redirected upgrade dialog");
+            }
+        }
+        FormulaProgression.State.reducedMotion = false;
+        Require(FormulaProgression.Data.money == before && FormulaProgression.State.Owned("engine") == 0, "Viewing prerequisites changed upgrade ownership or credits");
+        checks.Add("Level 3 to unowned Level 1 retains controller focus, Move/Submit/Back and both dialog navigation targets across 8 rapid redirects, with and without Reduced Motion.");
     }
     private static int PresentationRenderers() => menu.View.GetComponentsInChildren<CanvasRenderer>(true).Count(r => r.GetComponent<TMP_SubMeshUI>() == null);
     private static void Write() => File.WriteAllText(Folder + "/Validation.json", JsonConvert.SerializeObject(new { status, phase, checks, errors,

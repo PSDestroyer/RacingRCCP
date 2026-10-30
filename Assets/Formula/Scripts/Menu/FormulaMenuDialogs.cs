@@ -42,8 +42,11 @@ namespace FormulaGame
             title.text = heading; details.text = description; acceptText.text = actionName;
             details.gameObject.SetActive(true); if (upgradeContent != null) upgradeContent.SetActive(false);
             if (liveryContent != null) liveryContent.SetActive(false);
-            accept.interactable = canConfirm; confirm = action; Wire(confirmation.transform); FormulaUI.Focus(confirmation.transform);
+            accept.interactable = canConfirm; confirm = action;
+            // Reopening a closing dialog must restore its CanvasGroup before
+            // IsInteractable is used to build navigation and select a control.
             FormulaUIMotion.Enter(gameObject, true);
+            Wire(confirmation.transform); FormulaUI.Focus(confirmation.transform);
         }
         public void Upgrade(string heading, string effect, string tradeoff, string benefit, string requirement, string cost, string actionName, Action action, bool canConfirm, bool focusAction, string funds = null, bool creditsMissing = false)
         {
@@ -83,8 +86,8 @@ namespace FormulaGame
                 levels[i].name = "level-" + branchId + "-" + i;
                 levels[i].interactable = owned; levelLabels[i].text = (i == 0 ? FormulaLocalization.T("STOCK CONFIGURATION") : FormulaLocalization.T("LEVEL ") + i) + " / " + state;
             }
-            Wire(levelSelection.transform); FormulaUI.Focus(levelSelection.transform);
             FormulaUIMotion.Enter(gameObject, true);
+            Wire(levelSelection.transform); FormulaUI.Focus(levelSelection.transform);
         }
         public void Close() { bool animate = presented; presented = false; confirm = null; selectLevel = null; if (animate) FormulaUIMotion.Hide(gameObject); else gameObject.SetActive(false); }
         public void EventBriefing(FormulaCatalog.CareerEvent e, string mode, Action action, bool unlocked)
@@ -135,8 +138,8 @@ namespace FormulaGame
             }
             eventNote.text = !unlocked ? FormulaLocalization.T("LOCKED · ") + FormulaProgression.LockReason(e.unlock, FormulaProgression.State) : !career ? FormulaLocalization.T("No career credits or XP. Your career progress is unchanged.") : FormulaLocalization.T("Rewards include your finish reward and unclaimed medal bonuses.\nValid laps require staying within track limits and passing every checkpoint.");
             eventAccept.interactable = unlocked; eventActionText.text = unlocked ? FormulaLocalization.T("START EVENT") : FormulaLocalization.T("EVENT LOCKED");
-            Wire(eventBriefing.transform); UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(unlocked ? eventAccept.gameObject : eventCancel.gameObject);
             FormulaUIMotion.Enter(gameObject, true);
+            Wire(eventBriefing.transform); UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(unlocked ? eventAccept.gameObject : eventCancel.gameObject);
         }
         private static void Wire(Transform panel)
         {

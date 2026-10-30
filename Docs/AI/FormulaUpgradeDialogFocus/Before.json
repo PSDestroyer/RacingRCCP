@@ -1,0 +1,16 @@
+{
+  "status": "failed",
+  "phase": 8,
+  "checks": [
+    "Focus/press uses real UI events; page reveal completes without blocking focus.",
+    "Dialog exit releases navigation immediately; 20 interrupted close/reopen cycles do not queue actions.",
+    "Slider saves its real value immediately and pulses the percentage; tab indicators glide."
+  ],
+  "errors": [
+    "System.InvalidOperationException: Level 3 to Level 1 redirect lost controller focus (Reduced Motion=False)\n  at FormulaUIMotionValidation.ValidateUpgradeRedirect () [0x00247] in /Users/gheorghe/GitHub/RacingRCCP/Assets/Formula/Editor/FormulaUIMotionValidation.cs:278 \n  at FormulaUIMotionValidation.Tick () [0x00723] in /Users/gheorghe/GitHub/RacingRCCP/Assets/Formula/Editor/FormulaUIMotionValidation.cs:167 "
+  ],
+  "capturedFrames": 0,
+  "frameFolder": "/var/folders/hz/hdljpzkx3k1d8cp3x9x27cn00000gn/T/formula-ui-motion-frames",
+  "isolatedSave": true,
+  "switchHardwareTested": false
+}
