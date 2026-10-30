@@ -182,6 +182,14 @@ public static class FormulaLocalizationValidation
             ((UnityEngine.UI.Button)garage.FindProperty("tabs").GetArrayElementAtIndex(tab).objectReferenceValue).onClick.Invoke();
         }
     }
+    public static int LayoutPageCount => Pages.Length;
+    public static string LayoutPageName(int index) => Pages[index];
+    public static void ShowLayoutPage(FormulaMainMenu owner, int index)
+    {
+        var previousMenu = menu; int previousPage = pageIndex;
+        try { menu = owner; pageIndex = index; ShowMenuPage(); }
+        finally { menu = previousMenu; pageIndex = previousPage; }
+    }
     private static void AdvancePage()
     {
         pageIndex++;
@@ -215,7 +223,7 @@ public static class FormulaLocalizationValidation
             if (phase == 0 || phase == 100)
             {
                 menu = UnityEngine.Object.FindFirstObjectByType<FormulaMainMenu>();
-                if (menu == null || !FormulaLocalization.Ready || !FontsReady(menu.gameObject) || Time.timeSinceLevelLoad < 1) return;
+                if (menu == null || !FormulaLocalization.Ready || !FontsReady(menu.View.gameObject) || Time.timeSinceLevelLoad < 1) return;
                 Require(FormulaProgression.Data.PlayerName == "My Nickname" && FormulaProgression.Data.money == 1234 && FormulaProgression.Data.additionalData.ContainsKey("futureSetting"), "Identity or progress changed.");
                 if (phase == 100)
                 {
@@ -227,7 +235,7 @@ public static class FormulaLocalizationValidation
                 previousPad = Gamepad.current; pad = InputSystem.AddDevice<Gamepad>(); pad.MakeCurrent();
                 ShowMenuPage(); phase = 1; entered = Time.unscaledTime;
             }
-            else if (phase == 1 && Time.unscaledTime - entered > .7f && FormulaLocalization.Ready && FontsReady(menu.gameObject))
+            else if (phase == 1 && Time.unscaledTime - entered > .7f && FormulaLocalization.Ready && FontsReady(menu.View.gameObject))
             {
                 string code = FormulaLocalization.SupportedCodes[localeIndex];
                 Require(LocalizationSettings.SelectedLocale.Identifier.Code == code, "Wrong locale after gamepad: " + code);
@@ -235,7 +243,7 @@ public static class FormulaLocalizationValidation
                 {
                     FormulaProgression.State.textScale = 115; FormulaPresentation.ApplyVideoPreferences(); menu.GetComponentInChildren<FormulaPresentation>()?.Refresh(); menu.View.Settings.Refresh();
                     if (Pages[pageIndex] == "Audio") InspectVibrationStates();
-                    Inspect(menu.gameObject, code + " / " + Pages[pageIndex]);
+                    Inspect(menu.View.gameObject, code + " / " + Pages[pageIndex]);
                     ScreenCapture.CaptureScreenshot(Folder + "/" + code + "-" + (pageIndex < 6 ? pageIndex.ToString() : Pages[pageIndex]) + ".png"); capturedFrame = Time.frameCount;
                 }
                 else if (Time.frameCount > capturedFrame + 1)
@@ -249,17 +257,17 @@ public static class FormulaLocalizationValidation
                     else AdvancePage();
                 }
             }
-            else if (phase == 6 && Time.unscaledTime - entered > .7f && FontsReady(menu.gameObject))
+            else if (phase == 6 && Time.unscaledTime - entered > .7f && FontsReady(menu.View.gameObject))
             {
                 var fields = new SerializedObject(menu.View.Dialogs);
                 var requirement = (TMP_Text)fields.FindProperty("upgradeRequirement").objectReferenceValue;
                 string expected = FormulaLocalization.T("LOCKED") + "\n" + FormulaLocalization.F("Earn {0} in {1} to unlock this upgrade.", FormulaCatalog.MedalName(Medal.Bronze), FormulaLocalization.T(FormulaCatalog.Current.careerEvents[0].name));
                 Require(requirement.text == expected, "Upgrade unlock dialog is not localized: " + requirement.text);
-                Inspect(menu.gameObject, FormulaLocalization.SupportedCodes[localeIndex] + " / upgrade dialog");
+                Inspect(menu.View.gameObject, FormulaLocalization.SupportedCodes[localeIndex] + " / upgrade dialog");
                 ScreenCapture.CaptureScreenshot(Folder + "/" + FormulaLocalization.SupportedCodes[localeIndex] + "-UpgradeDialog.png"); phase = 7; frame = Time.frameCount;
             }
             else if (phase == 7 && Time.frameCount > frame + 1) { menu.Back(); AdvancePage(); phase = 1; }
-            else if (phase == 4 && Time.unscaledTime - entered > .7f && FontsReady(menu.gameObject))
+            else if (phase == 4 && Time.unscaledTime - entered > .7f && FontsReady(menu.View.gameObject))
             {
                 var button = menu.View.Settings.GetComponentsInChildren<UnityEngine.UI.Button>().Single(b => b.name == "settings-language");
                 EventSystem.current.SetSelectedGameObject(button.gameObject); InputSystem.QueueStateEvent(pad, new GamepadState().WithButton(GamepadButton.South));
@@ -269,7 +277,7 @@ public static class FormulaLocalizationValidation
             {
                 InputSystem.QueueStateEvent(pad, new GamepadState()); localeIndex++; phase = 3; frame = Time.frameCount;
             }
-            else if (phase == 3 && Time.frameCount > frame + 4 && FormulaLocalization.Ready && FontsReady(menu.gameObject))
+            else if (phase == 3 && Time.frameCount > frame + 4 && FormulaLocalization.Ready && FontsReady(menu.View.gameObject))
             {
                 string expected = FormulaLocalization.SupportedCodes[localeIndex % 12];
                 Require(LocalizationSettings.SelectedLocale.Identifier.Code == expected, "Selector failed to cycle: " + expected);

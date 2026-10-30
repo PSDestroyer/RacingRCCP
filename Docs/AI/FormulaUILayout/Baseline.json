@@ -1,0 +1,58 @@
+{
+  "status": "baseline_recorded",
+  "phase": 3,
+  "locale": 0,
+  "page": 0,
+  "raceMode": 0,
+  "state": 0,
+  "textCount": 17,
+  "views": [
+    {
+      "view": "ru/solo/0",
+      "visibleTexts": 17
+    }
+  ],
+  "findings": [
+    {
+      "view": "ru/solo/0",
+      "path": "FormulaRace(Clone)/HUD/Session/Position",
+      "kind": "glyphs outside assigned rectangle",
+      "text": "БЕЗ СОПЕРНИКОВ",
+      "font": 31.68,
+      "minimum": 31.68,
+      "rect": "(x:0.00, y:-50.00, width:80.00, height:50.00)",
+      "glyph": "(x:1.73, y:-37.19, width:237.23, height:24.38)"
+    },
+    {
+      "view": "ru/solo/0",
+      "path": "FormulaRace(Clone)/HUD/Vehicle/Gear Caption",
+      "kind": "glyphs outside assigned rectangle",
+      "text": "ПЕРЕДАЧА",
+      "font": 14.0,
+      "minimum": 14.0,
+      "rect": "(x:0.00, y:-23.00, width:44.00, height:23.00)",
+      "glyph": "(x:0.86, y:-17.97, width:63.29, height:12.95)"
+    },
+    {
+      "view": "ru/solo/0",
+      "kind": "overlapping sibling glyphs",
+      "first": "FormulaRace(Clone)/HUD/Session/Position",
+      "second": "FormulaRace(Clone)/HUD/Session/Lap",
+      "width": 42.28386,
+      "height": 14.4669342
+    },
+    {
+      "view": "ru/solo/0",
+      "kind": "overlapping sibling glyphs",
+      "first": "FormulaRace(Clone)/HUD/Session/Position",
+      "second": "FormulaRace(Clone)/HUD/Session/Lap Caption",
+      "width": 38.11171,
+      "height": 3.1836586
+    }
+  ],
+  "errors": [],
+  "isolatedSave": true,
+  "referenceResolution": "1280x720",
+  "textScale": 115,
+  "safeArea": 95
+}

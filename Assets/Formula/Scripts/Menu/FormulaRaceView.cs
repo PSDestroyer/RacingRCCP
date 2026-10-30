@@ -100,7 +100,14 @@ namespace FormulaGame
             goalCaption.text = passTime > 0 ? FormulaLocalization.T("TIME TO BEAT") : career ? FormulaLocalization.T("PASS TARGET") : FormulaLocalization.T("SESSION GOAL");
             goalValue.text = activeEvent.opponentCount > 0 ? career ? FormulaLocalization.T("TOP 3 + VALID LAP") : FormulaLocalization.T("RACE FOR POSITION")
                 : passTime > 0 ? FormulaRaceUI.TimeText(passTime) : career ? FormulaLocalization.T("ONE VALID LAP") : FormulaLocalization.T("FASTEST VALID LAP");
-            ((RectTransform)standingsRoot.transform).anchoredPosition = new Vector2(28, career ? -202 : -124);
+            ((RectTransform)standingsRoot.transform).anchoredPosition = new Vector2(28, career ? -244 : -148);
+            bool racing = activeEvent.opponentCount > 0;
+            position.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, racing ? 80 : 148);
+            position.textWrappingMode = racing ? TextWrappingModes.NoWrap : TextWrappingModes.Normal;
+            float positionSize = racing ? 44 : 24 * FormulaProgression.State.textScale / 100f;
+            var positionFont = position.GetComponent<FormulaLocalizedFont>();
+            if (positionFont != null) positionFont.SetSize(positionSize);
+            else position.fontSize = positionSize;
         }
         public void Tick(GamePlayManager game)
         {
@@ -112,7 +119,6 @@ namespace FormulaGame
             startMessage.text = game.FormulaRaceStarted ? "" : game.raceStateText != null ? FormulaLocalization.T(game.raceStateText.text) : "";
             bool racing = e.opponentCount > 0;
             position.text = racing ? FormulaLocalization.T("P") + game.FormulaPosition : FormulaLocalization.T("SOLO");
-            position.fontSize = racing ? 44 : 28;
             participantCount.text = racing ? "/ " + game.FormulaParticipants : "";
             lap.text = Mathf.Min(game.FormulaCompletedLaps + 1, game.totalRaceLaps) + " / " + game.totalRaceLaps;
             bool invalid = FormulaSession.LapInvalid;
@@ -126,6 +132,7 @@ namespace FormulaGame
             deltaCaption.color = Color.white;
             delta.text = invalid ? "—" : splitText;
             delta.gameObject.SetActive(!racing && !invalid && splitText != "—");
+            deltaCaption.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, delta.gameObject.activeSelf ? 176 : 256);
             delta.color = splitDifference > 0 ? FormulaUI.Red : splitDifference < 0 ? FormulaUI.Accent : Color.white;
             float timingHeight = racing || FormulaSession.BestLap > 0 || invalid ? 110 : 86;
             if (timingRoot.sizeDelta.y != timingHeight) timingRoot.sizeDelta = new Vector2(timingRoot.sizeDelta.x, timingHeight);

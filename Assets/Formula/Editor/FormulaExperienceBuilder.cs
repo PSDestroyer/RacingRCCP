@@ -8,6 +8,26 @@ using UnityEngine;
 // Explicit authoring pass: the shipped prefab is the UI, including in Edit Mode.
 public static class FormulaExperienceBuilder
 {
+    [MenuItem("Tools/Fix Localized Menu Layout")]
+    public static void FixLocalizedMenuLayout()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
+        var root = PrefabUtility.LoadPrefabContents(FormulaMenuHierarchyBuilder.PrefabPath);
+        try { ReserveTranslatedUpgradeLayout(root.GetComponent<FormulaMenuView>().Garage); PrefabUtility.SaveAsPrefabAsset(root, FormulaMenuHierarchyBuilder.PrefabPath); }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+        Debug.Log("FORMULA_LOCALIZED_MENU_LAYOUT_FIXED");
+    }
+    private static void ReserveTranslatedUpgradeLayout(FormulaGarageView garage)
+    {
+        foreach (Transform row in garage.Upgrade.transform.Find("Component Levels"))
+        {
+            // Separate the physical value from the complete translated level name.
+            Place(row.Find("Physical Value"), 18, 6, 118, 40);
+            Place(row.Find("Level"), 142, 7.8f, 83, 32.4f);
+        }
+        Place(garage.Upgrade.transform.Find("Upgrade Footer/Page Title"), 79, 22, 260, 62);
+        Place(garage.Upgrade.transform.Find("Upgrade Footer/Title Rule"), 360, 52, 233, 1);
+    }
     [MenuItem("Tools/Formula Career/Correct Review Issues")]
     public static void CorrectReviewIssues()
     {
@@ -89,6 +109,7 @@ public static class FormulaExperienceBuilder
             Place(row.Find("Event"),20,-2,570,40); Place(row.Find("Personal Best"),20,36,570,33);
         }
         ReserveSingleLineText(view.gameObject);
+        ReserveTranslatedUpgradeLayout(view.Garage);
     }
     private static void ReserveSingleLineText(GameObject root)
     {

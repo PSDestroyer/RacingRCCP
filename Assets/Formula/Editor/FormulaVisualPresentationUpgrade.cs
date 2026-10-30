@@ -96,35 +96,36 @@ public static class FormulaVisualPresentationUpgrade
         Ready(); var root = PrefabUtility.LoadPrefabContents(RacePath);
         try { StyleHud(root.GetComponent<FormulaRaceView>()); PrefabUtility.SaveAsPrefabAsset(root, RacePath); }
         finally { PrefabUtility.UnloadPrefabContents(root); }
-        File.WriteAllText(Report + "/HUD.json", JsonConvert.SerializeObject(new { status = "applied", designSize = "1280x720", session = "220x88", timing = "240x110", minimap = "180x120", instruments = "224x104", originalReferencesPreserved = true, controllerAndLocalizationPreserved = true, opaqueAreaBefore = 154688, panelAreaAfter = 110816, note = "Authored rectangle areas, not GPU timings; actual panels are translucent and High Contrast restores opacity." }, Formatting.Indented));
+        File.WriteAllText(Report + "/HUD.json", JsonConvert.SerializeObject(new { status = "applied", designSize = "1280x720", session = "256x108", timing = "280x110", sessionGoal = "256x80", minimap = "180x120", instruments = "224x104", originalReferencesPreserved = true, controllerAndLocalizationPreserved = true, note = "Separate columns reserve space for localized position, lap, split and gear labels." }, Formatting.Indented));
         Debug.Log("FORMULA_VISUAL_HUD_APPLIED");
     }
     public static void StyleHud(FormulaRaceView view)
     {
         var hud = view.Hud.transform;
-        Box(hud.Find("Session"), 28, 24, 220, 88);
-        Text(hud, "Session/Event", 12, 1, 196, 22, 16);
-        Text(hud, "Session/Position", 12, 21, 80, 50, 44);
+        Box(hud.Find("Session"), 28, 24, 256, 108);
+        Text(hud, "Session/Event", 12, 1, 232, 22, 16);
+        Text(hud, "Session/Position", 12, 22, 80, 56, 44);
         Text(hud, "Session/Participants", 88, 39, 44, 26, 18);
-        Text(hud, "Session/Lap Caption", 148, 19, 60, 22, 16);
-        Text(hud, "Session/Lap", 148, 39, 60, 31, 26);
-        Text(hud, "Session/Lap Status", 12, 67, 196, 21, 16);
-        Box(hud.Find("Timing"), 1012, 65, 240, 110);
-        Text(hud, "Timing/Session Caption", 12, 2, 216, 23, 16);
-        Text(hud, "Timing/Lap Time", 12, 22, 216, 41, 36);
-        Text(hud, "Timing/Best Lap", 12, 62, 216, 22, 16);
-        Text(hud, "Timing/Session Time", 12, 84, 216, 23, 16);
-        Text(hud, "Timing/Delta Caption", 12, 84, 156, 23, 16);
-        Text(hud, "Timing/Delta", 169, 81, 59, 26, 20);
-        Box(hud.Find("Standings"), 28, 124, 210, 100);
+        Text(hud, "Session/Lap Caption", 176, 24, 68, 22, 16);
+        Text(hud, "Session/Lap", 176, 46, 68, 32, 26);
+        Text(hud, "Session/Lap Status", 12, 83, 232, 23, 16);
+        Box(hud.Find("Timing"), 972, 65, 280, 110);
+        Text(hud, "Timing/Session Caption", 12, 2, 256, 23, 16);
+        Text(hud, "Timing/Lap Time", 12, 22, 256, 41, 36);
+        Text(hud, "Timing/Best Lap", 12, 62, 256, 22, 16);
+        Text(hud, "Timing/Session Time", 12, 84, 256, 23, 16);
+        Text(hud, "Timing/Delta Caption", 12, 84, 176, 23, 16);
+        Text(hud, "Timing/Delta", 196, 81, 72, 26, 20);
+        Box(hud.Find("Standings"), 28, 148, 210, 100);
         for (int i = 0; i < 4; i++)
         {
             Box(hud.Find("Standings/Driver " + i), 0, i * 25, 210, 24);
             Text(hud, "Standings/Driver " + i + "/Name", 12, -4, 186, 32, 16);
         }
-        Box(hud.Find("Session Goal"), 28, 124, 220, 64);
-        Text(hud, "Session Goal/Caption", 12, 1, 196, 23, 16);
-        Text(hud, "Session Goal/Target", 12, 25, 196, 34, 21);
+        Box(hud.Find("Session Goal"), 28, 148, 256, 80);
+        Text(hud, "Session Goal/Caption", 12, 1, 232, 23, 16);
+        Text(hud, "Session Goal/Target", 12, 25, 232, 48, 21);
+        hud.Find("Session Goal/Target").GetComponent<TMP_Text>().textWrappingMode = TextWrappingModes.Normal;
         Box(hud.Find("Minimap"), 28, 572, 180, 120);
         Box(hud.Find("Minimap/Circuit"), 10, 10, 160, 100);
         Box(hud.Find("Minimap/Circuit/Cars"), 0, 0, 160, 100);
@@ -134,10 +135,11 @@ public static class FormulaVisualPresentationUpgrade
         Text(hud, "Vehicle/Speed", 10, 12, 110, 72, 56);
         Text(hud, "Vehicle/Unit", 126, 54, 40, 24, 15);
         Text(hud, "Vehicle/Gear", 170, 12, 44, 72, 48);
-        Text(hud, "Vehicle/Gear Caption", 170, 79, 44, 23, 15);
-        Text(hud, "Vehicle/RPM", 12, 79, 144, 23, 15);
-        Box(hud.Find("Vehicle/Gear Divider"), 164, 24, 1, 67);
-        Box(hud.Find("Vehicle/Rev Strip"), 12, 100, 144, 2);
+        Text(hud, "Vehicle/Gear Caption", 120, 79, 94, 23, 15);
+        hud.Find("Vehicle/Gear Caption").GetComponent<TMP_Text>().alignment = TextAlignmentOptions.MidlineRight;
+        Text(hud, "Vehicle/RPM", 12, 79, 102, 23, 15);
+        Box(hud.Find("Vehicle/Gear Divider"), 164, 24, 1, 48);
+        Box(hud.Find("Vehicle/Rev Strip"), 12, 100, 102, 2);
         Box(hud.Find("Target"), 28, 406, 298, 78);
         Text(hud, "Target/Lap Validity", 12, 2, 274, 24, 16);
         Text(hud, "Target/Objective", 12, 27, 274, 48, 18);
