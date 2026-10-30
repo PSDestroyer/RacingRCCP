@@ -50,7 +50,7 @@ public static class FormulaVehicleMaterialBuilder
             finally { UnityEngine.Object.DestroyImmediate(texture); }
         }
         Validate();
-        Debug.Log("FORMULA_VEHICLE_PBR_APPLIED: clear-coated paint, woven carbon, metal rims, matte rubber, per-slot cosmetic wetness.");
+        Debug.Log("FORMULA_VEHICLE_PBR_APPLIED: satin dielectric paint, woven carbon, brushed rims, matte rubber, per-slot cosmetic wetness.");
     }
 
     // Shared with livery authoring so rebuilding artwork preserves its surface finish.
@@ -63,35 +63,33 @@ public static class FormulaVehicleMaterialBuilder
         AssetDatabase.Refresh();
         Texture2D carbonColor = Detail("CarbonWeave.png", false), carbonNormal = Detail("CarbonWeaveNormal.png", true), grain = Detail("MicroSurfaceNormal.png", true);
         var lit = Shader.Find("Universal Render Pipeline/Lit");
-        var coat = Shader.Find("Universal Render Pipeline/Complex Lit");
-        if (lit == null || coat == null) throw new InvalidOperationException("URP Lit shaders are missing.");
+        if (lit == null) throw new InvalidOperationException("URP Lit shaders are missing.");
         for (int i = 0; i < FormulaAssets.Current.liveryMaterials.Length; i++)
         {
             var material = FormulaAssets.Current.liveryMaterials[i];
             Undo.RecordObject(material, "Configure Formula paint finish");
-            material.shader = coat; material.shaderKeywords = Array.Empty<string>();
+            material.shader = lit; material.shaderKeywords = Array.Empty<string>();
             bool satin = FormulaCatalog.Current.liveries[i].id == "generic_black";
-            SetPbr(material, i == 6 ? .3f : .16f, satin ? .46f : .68f);
-            material.SetFloat("_ClearCoat", 1); material.SetFloat("_ClearCoatMask", satin ? .45f : .85f);
-            material.SetFloat("_ClearCoatSmoothness", satin ? .84f : .94f); material.EnableKeyword("_CLEARCOAT");
-            MicroDetail(material, grain, .045f, 180);
+            SetPbr(material, .025f, satin ? .30f : .44f);
+            material.SetTexture("_BumpMap", null); material.SetTexture("_DetailNormalMap", null);
+            material.SetTexture("_MetallicGlossMap", null); material.SetColor("_EmissionColor", Color.black);
             EditorUtility.SetDirty(material);
         }
         var carbon = AssetDatabase.LoadAssetAtPath<Material>(Materials + "Material_2_7936c856.mat");
         Undo.RecordObject(carbon, "Configure Formula carbon finish");
-        carbon.shader = lit; carbon.shaderKeywords = Array.Empty<string>(); SetPbr(carbon, 0, .42f);
+        carbon.shader = lit; carbon.shaderKeywords = Array.Empty<string>(); SetPbr(carbon, 0, .25f);
         carbon.SetTexture("_BaseMap", carbonColor); carbon.SetTexture("_MainTex", carbonColor);
-        carbon.SetColor("_BaseColor", new Color(.16f, .17f, .18f)); carbon.SetColor("_Color", new Color(.16f, .17f, .18f));
+        carbon.SetColor("_BaseColor", new Color(.12f, .135f, .15f)); carbon.SetColor("_Color", new Color(.12f, .135f, .15f));
         carbon.SetTextureScale("_BaseMap", new Vector2(18, 18)); carbon.SetTexture("_BumpMap", carbonNormal); carbon.SetFloat("_BumpScale", .035f); carbon.EnableKeyword("_NORMALMAP");
         EditorUtility.SetDirty(carbon);
         var rim = AssetDatabase.LoadAssetAtPath<Material>(Materials + "Material_3_f48e9479.mat");
         Undo.RecordObject(rim, "Configure Formula rim finish");
-        rim.shader = lit; rim.shaderKeywords = Array.Empty<string>(); SetPbr(rim, .92f, .72f);
-        rim.SetColor("_BaseColor", new Color(.3f, .33f, .36f)); rim.SetColor("_Color", new Color(.3f, .33f, .36f)); EditorUtility.SetDirty(rim);
+        rim.shader = lit; rim.shaderKeywords = Array.Empty<string>(); SetPbr(rim, .65f, .36f);
+        rim.SetColor("_BaseColor", new Color(.25f, .28f, .31f)); rim.SetColor("_Color", new Color(.25f, .28f, .31f)); EditorUtility.SetDirty(rim);
         var tyre = AssetDatabase.LoadAssetAtPath<Material>(Materials + "Material_4_34283242.mat");
         Undo.RecordObject(tyre, "Configure Formula rubber finish");
-        tyre.shader = lit; tyre.shaderKeywords = Array.Empty<string>(); SetPbr(tyre, 0, .2f);
-        tyre.SetColor("_BaseColor", new Color(.85f, .85f, .85f)); tyre.SetColor("_Color", new Color(.85f, .85f, .85f)); MicroDetail(tyre, grain, .12f, 140); EditorUtility.SetDirty(tyre);
+        tyre.shader = lit; tyre.shaderKeywords = Array.Empty<string>(); SetPbr(tyre, 0, .14f);
+        tyre.SetColor("_BaseColor", new Color(.8f, .8f, .8f)); tyre.SetColor("_Color", new Color(.8f, .8f, .8f)); tyre.SetTexture("_DetailNormalMap", null); EditorUtility.SetDirty(tyre);
         foreach (string path in Directory.GetFiles("Assets/Formula/Garage/Materials/Vehicle", "*_Display.mat"))
         {
             var display = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -161,7 +159,7 @@ public static class FormulaVehicleMaterialBuilder
     {
         foreach (var material in FormulaAssets.Current.liveryMaterials)
         {
-            if (material.shader.name != "Universal Render Pipeline/Complex Lit" || !material.IsKeywordEnabled("_CLEARCOAT") || material.GetFloat("_Smoothness") < .4f) throw new InvalidOperationException("Paint finish is not configured: " + material.name);
+            if (material.shader.name != "Universal Render Pipeline/Lit" || material.IsKeywordEnabled("_CLEARCOAT") || material.GetFloat("_Metallic") > .05f || material.GetFloat("_Smoothness") < .25f || material.GetFloat("_Smoothness") > .5f) throw new InvalidOperationException("Paint finish is not configured: " + material.name);
             var errors = ShaderUtil.GetShaderMessages(material.shader).Where(m => m.severity == UnityEditor.Rendering.ShaderCompilerMessageSeverity.Error).ToArray();
             if (errors.Length > 0) throw new InvalidOperationException(string.Join("\n", errors.Select(e => e.message)));
         }
@@ -171,9 +169,9 @@ public static class FormulaVehicleMaterialBuilder
         File.WriteAllText("Docs/AI/FormulaMaterials/AssetValidation.json", Newtonsoft.Json.JsonConvert.SerializeObject(new
         {
             generatedUtc = DateTime.UtcNow.ToString("O"),
-            finishes = new[] { new { surface = "Paint", roughness = .32f, metallic = .16f }, new { surface = "Carbon", roughness = .58f, metallic = 0f }, new { surface = "Rim", roughness = .28f, metallic = .92f }, new { surface = "Rubber", roughness = .8f, metallic = 0f } },
+            finishes = new[] { new { surface = "Paint", roughness = .56f, metallic = .025f }, new { surface = "Carbon", roughness = .75f, metallic = 0f }, new { surface = "Rim", roughness = .64f, metallic = .65f }, new { surface = "Rubber", roughness = .86f, metallic = 0f } },
             dryByDefault = true, wetnessRange = new[] { 0, 1 }, surfaceSlots = 11,
-            paintShader = "Universal Render Pipeline/Complex Lit", shaderErrors = 0,
+            paintShader = "Universal Render Pipeline/Lit", shaderErrors = 0,
             detailTextures = new[] { Details + "CarbonWeave.png", Details + "CarbonWeaveNormal.png", Details + "MicroSurfaceNormal.png" },
             source = "Existing unbranded project textures copied unchanged; native URP shaders. No rain or tyre-grip simulation."
         }, Newtonsoft.Json.Formatting.Indented));

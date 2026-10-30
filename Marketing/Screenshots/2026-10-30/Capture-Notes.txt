@@ -1,0 +1,14 @@
+FORMULA 2027 — MARKETING V2 / HUD ȘI ACȚIUNE
+30 OCTOMBRIE 2026
+
+Setul curent: 8 capturi din curse, toate cu HUD-ul original complet, fără cadre de meniu. PNG-urile din Selected/ au fiecare 1920 × 1080 pixeli. Ordinea este prezentată în Contact-Sheet.png; Selection.json documentează fiecare sursă. Selecția precedentă a fost păstrată în Previous-Without-HUD/.
+
+Sursa: Unity Editor 6000.3.19f1 pe macOS, profilul grafic existent și interfața Nintendo în modul de previzualizare. Nu sunt capturi de pe hardware Switch. Pentru publicare trebuie validate și recapturate din build-ul Nintendo.
+
+Am folosit camerele existente de urmărire, onboard și comanda look back. HUD-ul nu a fost ascuns, redesenat sau completat în post-producție. Viteza, treapta, poziția și timpii sunt cei afișați de joc. Nicio modificare a poziției sau vitezei mașinilor și nicio completare AI a imaginilor. Selecția folosește momente reale de cursă, conduse prin AI și fizica jocului.
+
+Filtrul automat a exclus turul invalid/sensul greșit, jucătorul nealiniat/neancorat la sol, lipsa HUD-ului și vitezele sub 42 km/h. Selecția vizuală exclude accidentele evidente și rivalii în aer. Profilul pentru alegerea livreei este separat de salvarea jucătorului. Scenele, prefaburile, materialele și setările proiectului au rămas nemodificate.
+
+Refacere: Unity > Tools > Capture Marketing Screenshots. Pentru unghiurile cu plutonul: Tools > Refine Marketing HUD Action. Ambele comenzi rulează numai explicit, folosesc salvare separată și restaurează scena de pornire, Game View și opțiunile Editor la ieșirea din Play Mode. Sursele și rapoartele sunt în HUD-Dynamic/ și HUD-Dynamic/Lookback/.
+
+Nu a fost făcut un build Nintendo, nu au fost măsurate performanțe pe consolă sau conversii comerciale.

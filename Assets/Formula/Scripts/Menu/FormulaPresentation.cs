@@ -11,6 +11,7 @@ namespace FormulaGame
         private struct Placement { public RectTransform rect; public Vector2 position; public Vector3 scale; }
         private readonly List<Placement> placements = new List<Placement>();
         private readonly Dictionary<TMP_Text, float> fonts = new Dictionary<TMP_Text, float>();
+        private FormulaRacePanelGraphic[] racePanels;
         private RectTransform root;
         private Rect lastSafe;
         private Vector2 lastSize;
@@ -20,6 +21,7 @@ namespace FormulaGame
             root = (RectTransform)transform;
             foreach (Transform child in transform) if (child is RectTransform rect) placements.Add(new Placement { rect = rect, position = rect.anchoredPosition, scale = rect.localScale });
             foreach (var text in GetComponentsInChildren<TMP_Text>(true)) fonts[text] = text.fontSize;
+            racePanels = GetComponentsInChildren<FormulaRacePanelGraphic>(true);
         }
         public void Register(RectTransform content)
         {
@@ -54,6 +56,7 @@ namespace FormulaGame
                 }
             }
             inset = p.safeAreaPercent; Fit();
+            if (racePanels != null) foreach (var panel in racePanels) if (panel != null) panel.SetHighContrast(p.highContrast);
             GetComponent<FormulaMenuView>()?.RefreshContrast();
         }
         private void Fit()

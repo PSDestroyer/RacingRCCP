@@ -7,6 +7,13 @@ namespace FormulaGame
     public sealed class FormulaRacePanelGraphic : UnityEngine.UI.MaskableGraphic
     {
         [SerializeField] private int proximitySide;
+        [SerializeField, Range(.35f, 1f)] private float panelOpacity = .86f;
+        private bool highContrast;
+        public void SetHighContrast(bool value)
+        {
+            if (highContrast == value) return;
+            highContrast = value; SetVerticesDirty();
+        }
         public void ConfigureProximity(bool right)
         {
             proximitySide = right ? 1 : -1; raycastTarget = false; SetVerticesDirty();
@@ -30,18 +37,19 @@ namespace FormulaGame
                 }
                 return;
             }
-            float cut = Mathf.Min(14, r.height * .3f);
-            Color left = new Color(0.025f, 0.018f, 0.022f, 1) * color;
-            Color right = new Color(0.018f, 0.012f, 0.016f, 1) * color;
+            float cut = Mathf.Min(9, r.height * .2f);
+            float opacity = highContrast ? .98f : panelOpacity;
+            Color left = new Color(.026f, .036f, .052f, opacity) * color;
+            Color right = new Color(.012f, .018f, .03f, opacity * (highContrast ? 1 : .9f)) * color;
             vh.AddVert(new Vector3(r.xMin, r.yMin), left, Vector2.zero);
             vh.AddVert(new Vector3(r.xMin, r.yMax), left, Vector2.up);
             vh.AddVert(new Vector3(r.xMax, r.yMax), right, Vector2.one);
             vh.AddVert(new Vector3(r.xMax, r.yMin + cut), right, Vector2.right);
             vh.AddVert(new Vector3(r.xMax - cut, r.yMin), right, Vector2.right);
             vh.AddTriangle(0, 1, 2); vh.AddTriangle(0, 2, 3); vh.AddTriangle(0, 3, 4);
-            Quad(vh, r.xMin, r.yMax - 1, r.xMax, r.yMax, new Color(1, 1, 1, .24f) * color);
-            Quad(vh, r.xMin, r.yMax - 2, r.xMin + Mathf.Min(64, r.width), r.yMax, FormulaUI.Red * color);
-            Quad(vh, r.xMin, r.yMin, r.xMin + 2, r.yMax - 2, new Color(1, 1, 1, .18f) * color);
+            Quad(vh, r.xMin, r.yMax - 1, r.xMax, r.yMax, new Color(.76f, .84f, .94f, .22f) * color);
+            Quad(vh, r.xMin, r.yMax - 2, r.xMin + Mathf.Min(34, r.width), r.yMax, FormulaUI.Red * color);
+            Quad(vh, r.xMin, r.yMin, r.xMax - cut, r.yMin + 1, new Color(.1f, .14f, .2f, .3f) * color);
         }
         private static void Quad(UnityEngine.UI.VertexHelper vh, float x0, float y0, float x1, float y1, Color tint)
         {

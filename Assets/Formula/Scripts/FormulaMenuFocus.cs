@@ -14,6 +14,45 @@ namespace FormulaGame
         [SerializeField] private UnityEngine.UI.Graphic figmaSelection, figmaAction;
         [SerializeField] private UnityEngine.UI.Graphic figmaNormal;
         [SerializeField] private bool homeNavigation;
+        private UnityEngine.UI.Slider slider;
+        private FormulaPanelGraphic sliderSurface;
+        private UnityEngine.UI.Graphic sliderFill, sliderHandle;
+        private Color sliderFillColor, sliderHandleColor;
+        private Vector2 sliderHandleSize;
+        public static void StyleSlider(UnityEngine.UI.Slider control)
+        {
+            if (control == null) return;
+            var focus = control.GetComponent<FormulaMenuFocus>() ?? control.gameObject.AddComponent<FormulaMenuFocus>();
+            if (focus.slider == control) return;
+            focus.slider = control;
+            var row = control.transform.parent;
+            var surface = row.Find("Upgrade Surface") ?? row.Find("Surface");
+            focus.sliderSurface = surface != null ? surface.GetComponent<FormulaPanelGraphic>() : row.GetComponent<FormulaPanelGraphic>();
+            if (focus.sliderSurface != null && focus.sliderSurface.transform.parent == row)
+            {
+                // The shorter vibration row inherits a volume panel. Keep its
+                // selection inside the actual row, including at larger UI scales.
+                var rect = focus.sliderSurface.rectTransform;
+                rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
+                rect.offsetMin = rect.offsetMax = Vector2.zero;
+            }
+            focus.sliderFill = control.fillRect != null ? control.fillRect.GetComponent<UnityEngine.UI.Graphic>() : null;
+            focus.sliderHandle = control.handleRect != null ? control.handleRect.GetComponent<UnityEngine.UI.Graphic>() : null;
+            // Slider owns these anchors. Authored sizeDelta on a stretched fill
+            // doubles its width; a horizontal handle's height must stretch only once.
+            if (control.fillRect != null) { control.fillRect.sizeDelta = Vector2.zero; control.fillRect.anchoredPosition = Vector2.zero; }
+            if (control.handleRect != null && (control.direction == UnityEngine.UI.Slider.Direction.LeftToRight || control.direction == UnityEngine.UI.Slider.Direction.RightToLeft))
+                control.handleRect.sizeDelta = new Vector2(control.handleRect.sizeDelta.x, 0);
+            if (focus.sliderFill != null) focus.sliderFillColor = focus.sliderFill.color;
+            if (focus.sliderHandle != null) focus.sliderHandleColor = focus.sliderHandle.color;
+            if (control.handleRect != null) focus.sliderHandleSize = control.handleRect.sizeDelta;
+            // The whole row owns focus feedback; avoid Selectable's subtle handle
+            // tint competing with the explicit selected/unselected colours.
+            control.transition = UnityEngine.UI.Selectable.Transition.None;
+            if (control.targetGraphic != null) control.targetGraphic.canvasRenderer.SetColor(Color.white);
+            focus.selected = EventSystem.current != null && EventSystem.current.currentSelectedGameObject == control.gameObject;
+            focus.SetColor(0);
+        }
         public void UseHomeNavigation() { homeNavigation = true; }
         public void StyleFigma(UnityEngine.UI.Graphic selection, UnityEngine.UI.Graphic action, UnityEngine.UI.Graphic normal = null)
         {
@@ -40,6 +79,15 @@ namespace FormulaGame
         public void Initialize(params UnityEngine.UI.Graphic[] target) { frame = target; SetColor(0); }
         private void SetColor(float alpha)
         {
+            if (slider != null)
+            {
+                bool active = selected && slider.IsInteractable();
+                if (sliderSurface != null) sliderSurface.Configure(active);
+                if (sliderFill != null) sliderFill.color = active ? FormulaUI.Accent : sliderFillColor;
+                if (sliderHandle != null) sliderHandle.color = active ? Color.white : sliderHandleColor;
+                if (slider.handleRect != null) slider.handleRect.sizeDelta = active ? new Vector2(Mathf.Max(20, sliderHandleSize.x), sliderHandleSize.y) : sliderHandleSize;
+                return;
+            }
             if (figmaSelection != null)
             {
                 float tint = homeNavigation && pressed ? .82f : 1;
@@ -61,8 +109,8 @@ namespace FormulaGame
             homeRail.color = FormulaUI.Red;
             homeArrow.color = new Color(ink.r, ink.g, ink.b, alpha);
         }
-        public void OnSelect(BaseEventData data) { selected = true; FormulaAudio.Play(FormulaAudio.Cue.Focus); }
-        public void OnDeselect(BaseEventData data) => selected = false;
+        public void OnSelect(BaseEventData data) { selected = true; if (slider != null) SetColor(1); FormulaAudio.Play(FormulaAudio.Cue.Focus); }
+        public void OnDeselect(BaseEventData data) { selected = false; if (slider != null) SetColor(0); }
         public void OnPointerEnter(PointerEventData data) { hovered = true; SetColor(strength); }
         public void OnPointerExit(PointerEventData data) { hovered = false; pressed = false; SetColor(strength); }
         private void OnDisable() { selected = hovered = pressed = false; strength = 0; SetColor(0); }
@@ -72,6 +120,7 @@ namespace FormulaGame
         public void OnPointerClick(PointerEventData data) { if (data.button == PointerEventData.InputButton.Left) FormulaAudio.Play(FormulaAudio.Cue.Confirm); }
         private void Update()
         {
+            if (slider != null) return; // Slider feedback is immediate and event-driven, including while paused.
             if (frame == null) return;
             float target = selected ? 1 : homePlate == null && hovered ? .18f : 0;
             if (Mathf.Approximately(strength, target)) return;

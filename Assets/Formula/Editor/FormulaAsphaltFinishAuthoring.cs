@@ -107,7 +107,7 @@ public static class FormulaAsphaltFinishAuthoring
     public static void ConfigureAsphalt(Material material, bool wet, bool aggregate)
     {
         material.SetFloat("_Metallic", 0);
-        material.SetFloat("_Smoothness", wet ? .90f : .76f);
+        material.SetFloat("_Smoothness", wet ? .82f : .32f);
         material.SetFloat("_SmoothnessTextureChannel", 0);
         material.SetFloat("_SpecularHighlights", 1); material.SetFloat("_EnvironmentReflections", 1);
         material.SetTexture("_MetallicGlossMap", AssetDatabase.LoadAssetAtPath<Texture2D>(Surfaces + "/Textures/Asphalt Smoothness.png"));

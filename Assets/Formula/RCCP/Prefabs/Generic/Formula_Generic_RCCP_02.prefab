@@ -1234,7 +1234,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2582808305035643334}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 12
   m_Type: 2
   m_Color: {r: 1, g: 0, b: 0, a: 1}
@@ -1309,16 +1309,16 @@ MonoBehaviour:
   lightType: 3
   lightRendererMode: 0
   overrideRenderMode: 0
-  intensity: 0.5
+  intensity: 0.35
   smoothness: 0.5
   emissiveRenderer: {fileID: 2178157767363408564}
   emissiveMaterialIndex: 0
-  emissiveColor: {r: 6, g: 0.025, b: 0.005, a: 1}
+  emissiveColor: {r: 3, g: 0.025, b: 0.005, a: 1}
   shaderKeywordEmissionEnable: _EMISSION
   shaderKeywordEmissionColor: _EmissionColor
   additionalEmissiveRenderers: []
   useLensFlares: 0
-  flareBrightness: 1.5
+  flareBrightness: 0
   isBreakable: 1
   strength: 100
   breakPoint: 35
@@ -1616,7 +1616,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4301409598651206792}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 12
   m_Type: 2
   m_Color: {r: 1, g: 0, b: 0, a: 1}
@@ -1691,16 +1691,16 @@ MonoBehaviour:
   lightType: 2
   lightRendererMode: 0
   overrideRenderMode: 0
-  intensity: 1.2
+  intensity: 0.7
   smoothness: 0.5
   emissiveRenderer: {fileID: 6023959161927140468}
   emissiveMaterialIndex: 0
-  emissiveColor: {r: 6, g: 0.025, b: 0.005, a: 1}
+  emissiveColor: {r: 3, g: 0.025, b: 0.005, a: 1}
   shaderKeywordEmissionEnable: _EMISSION
   shaderKeywordEmissionColor: _EmissionColor
   additionalEmissiveRenderers: []
   useLensFlares: 0
-  flareBrightness: 1.5
+  flareBrightness: 0
   isBreakable: 1
   strength: 100
   breakPoint: 35
@@ -2472,7 +2472,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6044403725543960436}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 12
   m_Type: 2
   m_Color: {r: 1, g: 0, b: 0, a: 1}
@@ -2547,16 +2547,16 @@ MonoBehaviour:
   lightType: 3
   lightRendererMode: 0
   overrideRenderMode: 0
-  intensity: 0.5
+  intensity: 0.35
   smoothness: 0.5
   emissiveRenderer: {fileID: 3695125117137295470}
   emissiveMaterialIndex: 0
-  emissiveColor: {r: 6, g: 0.025, b: 0.005, a: 1}
+  emissiveColor: {r: 3, g: 0.025, b: 0.005, a: 1}
   shaderKeywordEmissionEnable: _EMISSION
   shaderKeywordEmissionColor: _EmissionColor
   additionalEmissiveRenderers: []
   useLensFlares: 0
-  flareBrightness: 1.5
+  flareBrightness: 0
   isBreakable: 1
   strength: 100
   breakPoint: 35
@@ -2987,7 +2987,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: abfe30f85100b48ccbe5300d32bf57f7, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaSteering
 --- !u!114 &2048137340582885071
 MonoBehaviour:
@@ -2999,7 +2999,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c15a0b1c9db024f54816b9471ebef81a, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaTractionControl
 --- !u!114 &3812962711497493939
 MonoBehaviour:
@@ -3011,7 +3011,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: efa5ae5c7c7534330933bcac83db0fdf, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaEngineAudio
   layers: []
   engineGain: 0.48
@@ -3027,7 +3027,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7585db432b02f48e2a178943772ff3d0, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaContactAudio
 --- !u!114 &6292871124200806736
 MonoBehaviour:
@@ -3039,7 +3039,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 89073527f39fb4b6fab858e447df06f0, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FormulaGame.FormulaTransmission
   shiftCooldown: 0.18
   clutchEngagementSeconds: 0.06

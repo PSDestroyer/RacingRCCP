@@ -53,6 +53,7 @@ namespace FormulaGame
         public void Bind(GamePlayManager game)
         {
             race = game;
+            foreach (var slider in volumes) FormulaMenuFocus.StyleSlider(slider);
             pauseController = PauseGameplay.Instance;
             if (pauseController == null) pauseController = new GameObject("Formula Pause").AddComponent<PauseGameplay>();
             if (pauseController.pausePanel != null) pauseController.pausePanel.SetActive(false);
@@ -94,7 +95,7 @@ namespace FormulaGame
             goalCaption.text = passTime > 0 ? FormulaLocalization.T("TIME TO BEAT") : career ? FormulaLocalization.T("PASS TARGET") : FormulaLocalization.T("SESSION GOAL");
             goalValue.text = activeEvent.opponentCount > 0 ? career ? FormulaLocalization.T("TOP 3 + VALID LAP") : FormulaLocalization.T("RACE FOR POSITION")
                 : passTime > 0 ? FormulaRaceUI.TimeText(passTime) : career ? FormulaLocalization.T("ONE VALID LAP") : FormulaLocalization.T("FASTEST VALID LAP");
-            ((RectTransform)standingsRoot.transform).anchoredPosition = new Vector2(32, career ? -224 : -144);
+            ((RectTransform)standingsRoot.transform).anchoredPosition = new Vector2(28, career ? -202 : -124);
         }
         public void Tick(GamePlayManager game)
         {
@@ -109,7 +110,7 @@ namespace FormulaGame
             startMessage.text = game.FormulaRaceStarted ? "" : game.raceStateText != null ? FormulaLocalization.T(game.raceStateText.text) : "";
             bool racing = e.opponentCount > 0;
             position.text = racing ? FormulaLocalization.T("P") + game.FormulaPosition : FormulaLocalization.T("SOLO");
-            position.fontSize = racing ? 52 : 32;
+            position.fontSize = racing ? 44 : 28;
             participantCount.text = racing ? "/ " + game.FormulaParticipants : "";
             lap.text = Mathf.Min(game.FormulaCompletedLaps + 1, game.totalRaceLaps) + " / " + game.totalRaceLaps;
             bool invalid = FormulaSession.LapInvalid;
@@ -124,7 +125,7 @@ namespace FormulaGame
             delta.text = invalid ? "—" : splitText;
             delta.gameObject.SetActive(!racing && !invalid && splitText != "—");
             delta.color = splitDifference > 0 ? FormulaUI.Red : splitDifference < 0 ? FormulaUI.Accent : Color.white;
-            float timingHeight = racing || FormulaSession.BestLap > 0 || invalid ? 128 : 102;
+            float timingHeight = racing || FormulaSession.BestLap > 0 || invalid ? 110 : 86;
             if (timingRoot.sizeDelta.y != timingHeight) timingRoot.sizeDelta = new Vector2(timingRoot.sizeDelta.x, timingHeight);
             UpdateGoal(game, invalid);
             UpdateProximity(game, racing && game.FormulaRaceStarted && !paused);
@@ -158,7 +159,8 @@ namespace FormulaGame
                     string name = player ? FormulaLocalization.T("YOU") : (racer.displayName ?? "DRIVER").Replace("<", "").Replace(">", "").ToUpperInvariant();
                     standings[i].text = (index + 1).ToString("00") + "   " + name;
                     standings[i].color = player ? FormulaUI.Accent : Color.white;
-                    standingHighlights[i].color = player ? new Color(.24f, .025f, 0, 1) : new Color(0, 0, 0, 1);
+                    bool contrast = FormulaProgression.State.highContrast;
+                    standingHighlights[i].color = player ? new Color(.24f, .035f, .025f, contrast ? .98f : .88f) : new Color(.018f, .026f, .04f, contrast ? .98f : .68f);
                 }
             }
         }

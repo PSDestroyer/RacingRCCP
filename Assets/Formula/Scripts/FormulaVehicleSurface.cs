@@ -90,7 +90,7 @@ namespace FormulaGame
             {
                 var binding = surfaces[i]; var source = dry[i];
                 if (binding.renderer == null || !source.valid) continue;
-                float wetSmoothness = binding.kind == SurfaceKind.Rubber ? .72f : binding.kind == SurfaceKind.Carbon ? .78f : .9f;
+                float wetSmoothness = binding.kind == SurfaceKind.Rubber ? .3f : binding.kind == SurfaceKind.Carbon ? .48f : binding.kind == SurfaceKind.Rim ? .58f : .64f;
                 float darkening = binding.kind == SurfaceKind.Rubber ? .72f : binding.kind == SurfaceKind.Carbon ? .86f : .97f;
                 Color color = source.color * Mathf.Lerp(1, darkening, amount); color.a = source.color.a;
                 // Per-slot blocks keep the carbon floor independent from the painted shell.

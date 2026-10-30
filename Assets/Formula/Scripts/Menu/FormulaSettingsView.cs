@@ -29,6 +29,8 @@ namespace FormulaGame
         public void Bind(Action<string> toggleAssist)
         {
             ConfigurePlatformPresentation();
+            foreach (var slider in volumes) FormulaMenuFocus.StyleSlider(slider);
+            FormulaMenuFocus.StyleSlider(vibrationIntensity);
             if (language != null) language.onClick.AddListener(ChangeLanguage);
             string[] ids = { "abs", "tcs", "esp" };
             for (int i = 0; i < assists.Length; i++) { string id = ids[i]; assists[i].onClick.AddListener(() => toggleAssist(id)); }

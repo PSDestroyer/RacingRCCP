@@ -212,6 +212,7 @@ public static class FormulaRaceAuthoring
         string[] actions = { "resume", "restart", "audio", "leave" };
         string[] labels = { "RESUME", "RESTART SESSION", "AUDIO", "LEAVE SESSION" };
         for (int i = 0; i < actions.Length; i++) Button(overview, actions[i], labels[i], 30, 252 + i * 68, 580, 60);
+        FormulaVisualPresentationUpgrade.StyleHud(view);
     }
     private static RectTransform HudPanel(Transform parent, string name, float x, float y, float width, float height)
     {
