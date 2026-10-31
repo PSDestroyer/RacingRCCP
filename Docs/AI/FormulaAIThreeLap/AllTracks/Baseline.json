@@ -1,0 +1,24 @@
+{
+  "commit": "221f230dee27851a3752fd1683561ed089145ae7",
+  "workingTree": " M Assets/Formula/Editor/FormulaHomeReferenceBuilder.cs\n M Assets/Formula/Editor/FormulaMenuPremiumBuilder.cs\n M Assets/Formula/Editor/FormulaPolishValidation.cs\n M Assets/Formula/Editor/FormulaVisualPresentationUpgrade.cs\n M Assets/Formula/Presentation/Signage/F27.png\n M Assets/Formula/Presentation/Signage/Flag.png\n M Assets/Formula/Scripts/FormulaCircuit.cs\n M \"Assets/Realistic Car Controller Pro/Scripts/Vehicle/RCCP_AI.cs\"\n M Assets/_GarageV2/Scripts/GamePlayManager.cs\n M Docs/AI/FormulaPolish/LogicValidation.json\n?? Assets/Formula/Editor/FormulaAIThreeLapValidation.cs\n?? Assets/Formula/Editor/FormulaAIThreeLapValidation.cs.meta\n?? Docs/AI/FormulaAIThreeLap/\n?? Docs/AI/FormulaGameBranding/\n",
+  "unity": "6000.3.19f1",
+  "platform": "macOS Editor",
+  "runtimeSourceSha256": {
+    "Assets/Formula/Scripts/FormulaCircuit.cs": "080609e095fb5603fef4f0cc3c456a0d0700f424f28c50d069f26574ee363dbe",
+    "Assets/Formula/Scripts/FormulaAIPace.cs": "966f1db1dca1b020ddf25b7027e11d6e142d7dd01ef8b557fe5bb7b6b95cd7e6",
+    "Assets/Formula/Scripts/FormulaRacePacing.cs": "daca3c787821aa0cd967d078bcb2eb231f162862c88e4e5fc79f80c7f241df90",
+    "Assets/Formula/Scripts/FormulaAIRecovery.cs": "a5d7cf06fa69d65ebcc0e7d973fd0fc10d03f2615775e5da23ef92ad47ecbe09",
+    "Assets/Realistic Car Controller Pro/Scripts/Vehicle/RCCP_AI.cs": "8cbe824e7eb5aabdabc1415826406b612d4a6d977701e8cc33ac4ec1f605538f",
+    "Assets/_GarageV2/Scripts/GamePlayManager.cs": "ac0ab9d0f55878fe2509bf3fccddfdcf2b4e948d1a1a5691b2171927947c078e",
+    "Assets/Formula/Editor/FormulaAIThreeLapValidation.cs": "e5c7d3c2d742860e70e29a17c432eb163d253f4c3d35ceba24ca45d75d5dd16c"
+  },
+  "baseline": "track_01 previously passed normal and faster-reference three-lap runs; remaining 17 circuits untested at runtime",
+  "scope": "17 physical three-lap races, reference pace 1.25, three production AI opponents, isolated saves, no scripted checkpoint or finish",
+  "criteria": {
+    "laps": 3,
+    "maxGapLapFraction": 0.25,
+    "opponentRecoveries": 0,
+    "wobbleWindows": 0,
+    "runtimeErrors": 0
+  }
+}

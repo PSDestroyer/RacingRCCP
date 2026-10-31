@@ -517,8 +517,6 @@ public class RCCP_AI : RCCP_Component {
     /// </summary>
     private void ComputeControls() {
 
-        // Predict future state for smoother control
-        PredictFutureState(0.5f, out Vector3 predPos, out Quaternion predRot, out _, out _);
 
         // Early exit conditions
         if (!Agent.hasPath || stopNow) {
@@ -552,6 +550,10 @@ public class RCCP_AI : RCCP_Component {
             Mathf.Max(minLookAhead, targetSteeringLookAhead),
             lookAheadBlend);
         float steeringLookAhead = Mathf.Max(minLookAhead, smoothedSteeringLookAhead);
+
+        // Keep prediction well inside the steering horizon, including tight corners.
+        float predictionTime = Mathf.Min(.1f, steeringLookAhead * .25f / Mathf.Max(1f, CarController.Rigid.linearVelocity.magnitude));
+        PredictFutureState(predictionTime, out Vector3 predPos, out Quaternion predRot, out _, out _);
 
         // Get steering target
         Vector3 lookPt = GetSteeringLookAheadPoint(steeringLookAhead);
@@ -867,22 +869,23 @@ public class RCCP_AI : RCCP_Component {
             if (travelled > scanDist)
                 break;
 
-            float a = Vector3.Distance(p0, p1);
-            float b = Vector3.Distance(p1, p2);
-            float c = Vector3.Distance(p0, p2);
-
-            if (a > 0.1f && b > 0.1f && c > 0.1f) {
-                float angle = Mathf.Acos(Mathf.Clamp((a * a + b * b - c * c) / (2f * a * b), -1f, 1f));
-                if (angle > 0.01f) {
-                    float radius = a / (2f * Mathf.Sin(angle * 0.5f));
-                    minRadius = Mathf.Min(minRadius, radius);
-                }
-            }
+            float radius = PathTurnRadius(p0, p1, p2);
+            minRadius = Mathf.Min(minRadius, radius);
 
         }
 
         return minRadius == float.MaxValue ? 1000f : Mathf.Max(minRadius, 5f);
 
+    }
+
+    // Circumradius of the path triangle. Collinear samples are a straight,
+    // not a hairpin; the previous internal-angle formula returned half an edge.
+    public static float PathTurnRadius(Vector3 p0, Vector3 p1, Vector3 p2) {
+        float a = Vector3.Distance(p0, p1), b = Vector3.Distance(p1, p2), c = Vector3.Distance(p0, p2);
+        float cross = Vector3.Cross(p1 - p0, p2 - p0).magnitude;
+        if (a < .1f || b < .1f || c < .1f || cross <= a * c * .001f)
+            return float.MaxValue;
+        return a * b * c / (2f * cross);
     }
 
     /// <summary>

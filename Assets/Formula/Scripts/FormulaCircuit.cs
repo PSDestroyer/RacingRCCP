@@ -73,20 +73,23 @@ namespace FormulaGame
             driver.waypointReachThreshold = Mathf.Clamp(halfWidth * 1.5f, 5, 12);
             driver.raceLookAhead = Mathf.Clamp(halfWidth * 2.5f, 10, 20);
             driver.agressiveness = 1;
-            if (aiCornerSpeedScale >= .99f) return;
-            // Earlier, firmer braking for compact converted/RTG layouts. Integral
-            // wind-up on a straight otherwise defeats the next corner's speed cap.
+            // Every authored circuit has a braking plan. Previously normal
+            // circuits returned before attaching it, so AI entered bends at
+            // straight-line speed and catch-up had no speed-profile target.
             driver.ki = 0; driver.kp = .8f;
+            var pace = driver.GetComponent<FormulaAIPace>();
+            if (pace == null) pace = driver.gameObject.AddComponent<FormulaAIPace>();
+            pace.Initialize(this, driver);
+            driver.useBrakeZoneSpeedProfile = true;
+            if (aiCornerSpeedScale >= .99f) return;
+            // Compact converted/RTG layouts also retain their shorter corner
+            // look-ahead and earlier corner detection.
             driver.cornerDetectionDistance = 70;
             driver.mediumCornerAngleThreshold = 12; driver.sharpCornerAngleThreshold = 28;
             driver.mediumCornerTargetSpeed = 85 * aiCornerSpeedScale;
             driver.sharpCornerTargetSpeed = 55 * aiCornerSpeedScale;
             driver.lookAheadPerKph = .25f;
             driver.mediumCornerLookAhead = 10; driver.sharpCornerLookAhead = 6;
-            var pace = driver.GetComponent<FormulaAIPace>();
-            if (pace == null) pace = driver.gameObject.AddComponent<FormulaAIPace>();
-            pace.Initialize(this, driver);
-            driver.useBrakeZoneSpeedProfile = trackId == "rtg_09" || trackId == "rtg_10";
         }
     }
 }

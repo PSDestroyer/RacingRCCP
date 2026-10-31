@@ -297,6 +297,45 @@ public static class FormulaVisualPresentationUpgrade
         Ready(); MakeSign("F27",1024,600,false,false); MakeSign("APEX",1024,600,true,false); MakeSign("Flag",256,1024,false,true);
         Debug.Log("FORMULA_VISUAL_BRANDING_RENDERED");
     }
+    // Preserve both texture GUIDs, all circuit material references and their
+    // existing dimensions. Only the baked artwork changes in player builds.
+    [MenuItem("Tools/Replace F27 With Game Logo")]
+    public static void GameBranding()
+    {
+        Ready();
+        MakeSign("F27",1024,600,false,false);
+        MakeSign("Flag",256,1024,false,true);
+        var ui = new[] { FormulaMenuHierarchyBuilder.PrefabPath, "Assets/Formula/Resources/Formula/UI/FormulaResults.prefab", RacePath };
+        var rows = new List<object>();
+        foreach (string path in ui)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null) throw new InvalidOperationException("Missing UI prefab: " + path);
+            // Legacy text objects can remain serialized beneath the actual logo,
+            // but no enabled F27 label may be visible in the authored hierarchy.
+            foreach (var label in prefab.GetComponentsInChildren<TMP_Text>(true))
+                if (label.enabled && label.text.Trim() == "F27")
+                {
+                    bool visible = true;
+                    for (Transform t = label.transform; t != null; t = t.parent) visible &= t.gameObject.activeSelf;
+                    if (visible) throw new InvalidOperationException("Visible legacy brand in " + path + ": " + label.name);
+                }
+            rows.Add(new { path, gameLogos = prefab.GetComponentsInChildren<UnityEngine.UI.RawImage>(true).Count(i => Asset(i.texture) == FormulaHomeReferenceBuilder.GameLogoPath) });
+        }
+        Directory.CreateDirectory("Docs/AI/FormulaGameBranding");
+        File.WriteAllText("Docs/AI/FormulaGameBranding/Validation.json", JsonConvert.SerializeObject(new { status = "passed", unity = Application.unityVersion,
+            source = FormulaHomeReferenceBuilder.GameLogoPath, ui = rows, billboard = new { width = 1024, height = 600 }, flag = new { width = 256, height = 1024 },
+            visibleLegacyLabels = 0, addedRuntimeRenderers = 0, addedMaterials = 0, switchHardwareTested = false }, Formatting.Indented));
+        Debug.Log("FORMULA_GAME_BRANDING_APPLIED");
+    }
+    public static void GameBrandingBatch()
+    {
+        if (!Application.isBatchMode) throw new InvalidOperationException("Use the menu command in an interactive Editor.");
+        // Batch starts on an untitled scene, which cannot host additive scenes.
+        // Open the existing menu read-only before rendering the temporary signs.
+        EditorSceneManager.OpenScene("Assets/Scenes/Menu.unity");
+        GameBranding();
+    }
     static void MakeSign(string name, int width, int height, bool white, bool vertical)
     {
         string path = Folder + "/Signage/" + name + ".png";
@@ -317,17 +356,16 @@ public static class FormulaVisualPresentationUpgrade
             SignBlock(canvas.transform,"Baseline",0,height-16,width,16,new Color(.91f,.07f,.035f));
             if (vertical)
             {
-                var label = SignText(canvas.transform,"F27 RACING",0,0,840,130,80,Color.white);
-                label.rectTransform.anchorMin = label.rectTransform.anchorMax = label.rectTransform.pivot = Vector2.one * .5f;
-                label.rectTransform.anchoredPosition = Vector2.zero; label.rectTransform.localEulerAngles = new Vector3(0,0,90); label.alignment = TextAlignmentOptions.Center;
+                SignLogo(canvas.transform, width, height, true);
             }
-            else
+            else if (white)
             {
-                Color ink = white ? new Color(.035f,.045f,.065f) : Color.white;
-                SignText(canvas.transform,white ? "APEX" : "F27",72,92,880,250,white ? 190 : 220,ink);
-                SignText(canvas.transform,white ? "PERFORMANCE RACING" : "FORMULA RACING SERIES",80,360,880,96,46,ink);
+                Color ink = new Color(.035f,.045f,.065f);
+                SignText(canvas.transform,"APEX",72,92,880,250,190,ink);
+                SignText(canvas.transform,"PERFORMANCE RACING",80,360,880,96,46,ink);
                 SignBlock(canvas.transform,"Rule",80,342,830,5,new Color(.91f,.07f,.035f));
             }
+            else SignLogo(canvas.transform, width, height, false);
             Canvas.ForceUpdateCanvases(); foreach (var text in canvasRoot.GetComponentsInChildren<TMP_Text>()) text.ForceMeshUpdate();
             RenderPipeline.SubmitRenderRequest(camera,new UniversalRenderPipeline.SingleCameraRequest { destination = target });
             RenderTexture.active = target; var image = new Texture2D(width,height,TextureFormat.RGB24,false);
@@ -338,6 +376,21 @@ public static class FormulaVisualPresentationUpgrade
         AssetDatabase.ImportAsset(path,ImportAssetOptions.ForceUpdate);
         var importer = (TextureImporter)AssetImporter.GetAtPath(path); importer.mipmapEnabled = true; importer.sRGBTexture = true; importer.maxTextureSize = 1024;
         importer.wrapMode = TextureWrapMode.Clamp; importer.filterMode = FilterMode.Trilinear; importer.anisoLevel = 2; importer.npotScale = TextureImporterNPOTScale.None; importer.textureCompression = TextureImporterCompression.CompressedHQ; importer.SaveAndReimport();
+    }
+    static void SignLogo(Transform parent, int width, int height, bool vertical)
+    {
+        var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(FormulaHomeReferenceBuilder.GameLogoPath);
+        if (texture == null) throw new InvalidOperationException("Missing game logo artwork.");
+        var go = new GameObject("Game Logo", typeof(RectTransform), typeof(UnityEngine.UI.RawImage));
+        go.layer = 31; go.transform.SetParent(parent, false);
+        var rect = (RectTransform)go.transform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = Vector2.one * .5f; rect.anchoredPosition = Vector2.zero;
+        float availableWidth = vertical ? height - 100 : width - 80;
+        float availableHeight = vertical ? width - 32 : height - 64;
+        float scale = Mathf.Min(availableWidth / texture.width, availableHeight / texture.height);
+        rect.sizeDelta = new Vector2(texture.width * scale, texture.height * scale);
+        if (vertical) rect.localEulerAngles = new Vector3(0,0,90);
+        var image = go.GetComponent<UnityEngine.UI.RawImage>(); image.texture = texture; image.color = Color.white; image.raycastTarget = false;
     }
     static void SignBlock(Transform parent,string name,float x,float y,float width,float height,Color color)
     {

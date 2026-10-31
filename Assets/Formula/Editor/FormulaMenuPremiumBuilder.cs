@@ -163,10 +163,14 @@ public static class FormulaMenuPremiumBuilder
     {
         var top = root.Find("Header"); Rect(top, 0, 0, 1280, 84); top.GetComponent<UnityEngine.UI.Image>().color = new Color32(12, 1, 5, 234);
         Rect(top.Find("Brand Stripe"), 24, 19, 3, 40);
-        var brand = top.Find("Brand").GetComponent<TMP_Text>(); Rect(brand.transform, 38, -4, 126, 80); brand.text = "F27"; Font(brand, 82, true, FormulaUI.Red); brand.fontStyle = FontStyles.Italic;
+        top.Find("Brand").gameObject.SetActive(false);
+        var logo = top.Find("Formula Logo");
+        if (logo == null) logo = FormulaUI.Rect(top, "Formula Logo", 40, -10, 360, 120);
+        FormulaHomeReferenceBuilder.StyleLogo(logo);
         var season = top.Find("Season"); Rect(season, 167, 14, 230, 32); season.GetComponent<UnityEngine.UI.Image>().color = Color.clear;
         var year = season.Find("Year").GetComponent<TMP_Text>(); Rect(year.transform, 0, 0, 225, 33); year.text = "FORMULA 2027"; Font(year, 29, true);
         var subtitle = top.Find("Subtitle").GetComponent<TMP_Text>(); Rect(subtitle.transform, 170, 46, 230, 23); Font(subtitle, 16, false, FormulaUI.Accent);
+        season.gameObject.SetActive(false); subtitle.gameObject.SetActive(false);
         var account = top.Find("Driver and Wallet"); Rect(account, 816, 12, 416, 58); account.GetComponent<UnityEngine.UI.Image>().color = new Color32(26, 2, 9, 180);
         Rect(account.Find("Helmet Icon"), 6, 6, 44, 42);
         var wallet = account.Find("Wallet").GetComponent<TMP_Text>(); Rect(wallet.transform, 254, 7, 144, 44); Font(wallet, 28, false); wallet.text = "0 <size=16>CR</size>"; wallet.alignment = TextAlignmentOptions.MidlineRight;

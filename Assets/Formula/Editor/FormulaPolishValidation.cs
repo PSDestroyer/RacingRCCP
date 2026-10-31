@@ -14,6 +14,10 @@ public static class FormulaPolishValidation
     {
         int checks = 0;
         void Require(bool condition, string message) { checks++; if (!condition) throw new InvalidOperationException(message); }
+        Require(RCCP_AI.PathTurnRadius(Vector3.zero, Vector3.forward * 10, Vector3.forward * 20) == float.MaxValue, "Straight path incorrectly imposes corner braking");
+        foreach (float radius in new[] { 5f, 25f, 100f })
+            Require(Mathf.Abs(RCCP_AI.PathTurnRadius(new Vector3(radius, 0, 0), new Vector3(0, 0, radius), new Vector3(-radius, 0, 0)) - radius) < .001f, "Path circumradius is incorrect");
+        Require(RCCP_AI.PathTurnRadius(Vector3.zero, Vector3.zero, Vector3.forward) == float.MaxValue, "Duplicate path sample must not impose a speed limit");
         foreach (float speed in new[] { 0f, 15, 35, 65, 100, 200, 300 })
         {
             Require(FormulaSteering.ShapeStick(0, .05f, speed) == 0, "Neutral stick drift");

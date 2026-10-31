@@ -2010,6 +2010,16 @@ public class GamePlayManager : MonoBehaviour
        engine.maxTurboChargePsi = racer.baseTurboChargePsi * Mathf.Lerp(1f, pace, .4f);
        if (racer.formulaPaceProfile != null) racer.formulaPaceProfile.PacingMultiplier = pace;
        racer.aiDriver.maxThrottle = Mathf.Clamp01(racer.baseThrottleLimit * Mathf.Min(1.08f, Mathf.Lerp(1f, pace, .75f)));
+       // Catch-up must not shorten the steering horizon or amplify corrections.
+       if (FormulaGame.FormulaSession.InRace)
+       {
+           racer.aiDriver.agressiveness = racer.baseAggressiveness;
+           racer.aiDriver.raceLookAhead = racer.baseRaceLookAhead;
+           racer.aiDriver.lookAheadPerKph = racer.baseLookAheadPerKph;
+           racer.aiDriver.roadGrip = racer.baseRoadGrip;
+           racer.aiDriver.steerSensitivity = racer.baseSteerSensitivity;
+           return;
+       }
        racer.aiDriver.agressiveness = Mathf.Clamp(racer.baseAggressiveness * behaviorPace, 0f, 3f);
        racer.aiDriver.raceLookAhead = Mathf.Max(1f, racer.baseRaceLookAhead * Mathf.Lerp(1f, behaviorPace, -.18f));
        racer.aiDriver.lookAheadPerKph = Mathf.Max(0.01f, racer.baseLookAheadPerKph * Mathf.Lerp(1f, behaviorPace, -.22f));

@@ -14,7 +14,7 @@ using UnityEngine.SceneManagement;
 public static class FormulaHomeReferenceBuilder
 {
     private const string StagePath = "Assets/Formula/Garage/Formula_Paddock_Garage.prefab";
-    private const string GameLogoPath = "Assets/Formula/UI/Branding/Formula2027-GrandPrixLegends.png";
+    public const string GameLogoPath = "Assets/Formula/UI/Branding/Formula2027-GrandPrixLegends.png";
 
     [MenuItem("Tools/Replace Formula Game Logo")]
     public static void ApplyGameLogo()
@@ -56,7 +56,8 @@ public static class FormulaHomeReferenceBuilder
         // Preserve the existing hierarchy and IDs; the previous composite artwork
         // stays available but is hidden beneath the replacement title texture.
         foreach (Transform child in logo) child.gameObject.SetActive(false);
-        var image = logo.GetComponent<UnityEngine.UI.RawImage>() ?? logo.gameObject.AddComponent<UnityEngine.UI.RawImage>();
+        var image = logo.GetComponent<UnityEngine.UI.RawImage>();
+        if (image == null) image = logo.gameObject.AddComponent<UnityEngine.UI.RawImage>();
         image.texture = texture; image.color = Color.white; image.material = null;
         image.uvRect = new Rect(0, 0, 1, 1); image.raycastTarget = false; image.enabled = true;
         logo.localScale = Vector3.one;
