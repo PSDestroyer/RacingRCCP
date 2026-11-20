@@ -176,7 +176,8 @@ namespace FormulaGame
             vehiclePreview.ShowLivery(selectedLivery); view.Garage.InspectLivery(selectedLivery); statsDirty = true;
             view.Garage.WireNavigation(); RestoreFocus();
             view.Transition.alpha = 1;
-            if (previousKey != null && previousKey != renderedKey) FormulaUIMotion.Enter(activeScreen.gameObject);
+            if (previousKey != null && previousKey != renderedKey)
+                FormulaUIMotion.Enter(activeScreen.gameObject, preserveLayout: page == "Acasă" || page == "Carieră" || page == "Garaj");
         }
         private void RefreshPrompts()
         {

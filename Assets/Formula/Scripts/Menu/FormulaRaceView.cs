@@ -70,13 +70,14 @@ namespace FormulaGame
             restart.onClick.AddListener(() => Confirm(FormulaLocalization.T("RESTART SESSION?"),FormulaLocalization.T("Your current run will end. Earned career progress is retained."),() => { pauseController.ResumeGameplay(); FormulaSession.Launch(FormulaProgression.State.activeEventId, FormulaProgression.State.activeMode); }, isRestart: true));
             leave.onClick.AddListener(() => Confirm(FormulaLocalization.T("LEAVE SESSION?"),FormulaLocalization.T("This unfinished run will not award credits or XP. Your saved progress is retained."),FormulaSession.ReturnToMenu));
             cancel.onClick.AddListener(CancelConfirmation); confirm.onClick.AddListener(() => pending?.Invoke());
-            settings.onClick.AddListener(() => { pauseController.OpenSettingsPanel(); RefreshVolumes(); FormulaUIMotion.Enter(options, true); FormulaUI.Focus(options.transform); });
+            settings.onClick.AddListener(() => { pauseController.OpenSettingsPanel(); RefreshVolumes(); FormulaUIMotion.Enter(options, true, preserveLayout: true); FormulaUI.Focus(options.transform); });
             optionsBack.onClick.AddListener(CloseAudioOptions);
             retrySave.onClick.AddListener(() => { error.SetActive(false); FormulaSession.RetryResult(); });
             leaveError.onClick.AddListener(() => { error.SetActive(false); pause.SetActive(true); Confirm(FormulaLocalization.T("LEAVE WITHOUT SAVING?"),FormulaLocalization.T("This result has not been saved. Its credits and XP will be lost."),FormulaSession.ReturnToMenu,true); });
             for (int i = 0; i < volumes.Length; i++) { int index = i; volumes[i].onValueChanged.AddListener(value => ChangeVolume(index, value)); }
             pause.SetActive(false); options.SetActive(false); error.SetActive(false);
             RefreshLocale();
+            ((RectTransform)standingsRoot.transform).anchoredPosition = new Vector2(28, career ? -244 : -148);
             int count = Mathf.Max(1, game.raceWaypoints != null ? game.raceWaypoints.waypoints.Count : 1);
             currentSplits = new double[count]; bestSplits = new double[count];
             recordedSplits = new bool[count]; referenceSplits = new bool[count];
@@ -100,7 +101,6 @@ namespace FormulaGame
             goalCaption.text = passTime > 0 ? FormulaLocalization.T("TIME TO BEAT") : career ? FormulaLocalization.T("PASS TARGET") : FormulaLocalization.T("SESSION GOAL");
             goalValue.text = activeEvent.opponentCount > 0 ? career ? FormulaLocalization.T("TOP 3 + VALID LAP") : FormulaLocalization.T("RACE FOR POSITION")
                 : passTime > 0 ? FormulaRaceUI.TimeText(passTime) : career ? FormulaLocalization.T("ONE VALID LAP") : FormulaLocalization.T("FASTEST VALID LAP");
-            ((RectTransform)standingsRoot.transform).anchoredPosition = new Vector2(28, career ? -244 : -148);
             bool racing = activeEvent.opponentCount > 0;
             position.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, racing ? 80 : 148);
             position.textWrappingMode = racing ? TextWrappingModes.NoWrap : TextWrappingModes.Normal;
@@ -176,7 +176,7 @@ namespace FormulaGame
         private void RefreshPausePresentation()
         {
             bool paused = pause.activeSelf || options.activeSelf;
-            if (paused && !wasPaused) { pauseOverview.SetActive(true); pauseConfirmation.SetActive(false); FormulaUIMotion.Enter(pause.activeSelf ? pause : options, true); FormulaUI.Focus(pauseOverview.transform); }
+            if (paused && !wasPaused) { pauseOverview.SetActive(true); pauseConfirmation.SetActive(false); FormulaUIMotion.Enter(pause.activeSelf ? pause : options, true, preserveLayout: true); FormulaUI.Focus(pauseOverview.transform); }
             if (!paused && wasPaused) SaveAudio();
             wasPaused = paused;
             hud.SetActive(!paused && !finished && !error.activeSelf);
@@ -337,7 +337,7 @@ namespace FormulaGame
             pending = null;
             FormulaUIMotion.Hide(pauseConfirmation, () =>
             {
-                if (confirmFromError) { confirmFromError = false; pause.SetActive(false); error.SetActive(true); FormulaUIMotion.Enter(error, true); FormulaUI.Focus(error.transform); }
+                if (confirmFromError) { confirmFromError = false; pause.SetActive(false); error.SetActive(true); FormulaUIMotion.Enter(error, true, preserveLayout: true); FormulaUI.Focus(error.transform); }
                 else { pauseOverview.SetActive(true); FormulaUIMotion.Enter(pauseOverview, true); FormulaUI.Focus(pauseOverview.transform); }
             });
         }
@@ -350,7 +350,7 @@ namespace FormulaGame
         {
             if (FormulaUIMotion.IsClosing(options)) return;
             FormulaAudio.Play(FormulaAudio.Cue.Back); SaveAudio();
-            FormulaUIMotion.Hide(options, () => { pauseController.CloseSettingsPanel(); FormulaUIMotion.Enter(pause, true); EventSystem.current?.SetSelectedGameObject(settings.gameObject); });
+            FormulaUIMotion.Hide(options, () => { pauseController.CloseSettingsPanel(); FormulaUIMotion.Enter(pause, true, preserveLayout: true); EventSystem.current?.SetSelectedGameObject(settings.gameObject); });
         }
         private bool HandleOptions()
         {
@@ -365,7 +365,7 @@ namespace FormulaGame
             FormulaAudio.Play(FormulaAudio.Cue.Error);
             errorDetails.text = FormulaLocalization.T("Your result could not be saved. Retry saving to keep your credits and XP.\n") + message;
             hud.SetActive(false); pause.SetActive(false); options.SetActive(false); error.SetActive(true); FormulaUI.Focus(error.transform);
-            FormulaUIMotion.Enter(error, true);
+            FormulaUIMotion.Enter(error, true, preserveLayout: true);
         }
         public void Finish()
         {

@@ -84,7 +84,7 @@ namespace FormulaGame
             xpAfter = fraction;
             FormulaMenuFormatting.Experience(System.Math.Max(0, data.exp - receipt.xp), data.currentLevel, out xpBefore);
             counting = FormulaUIMotion.Allowed;
-            FormulaUIMotion.Enter(gameObject);
+            FormulaUIMotion.Enter(gameObject, preserveLayout: true);
             FormulaUIMotion.Enter(medal.gameObject, true, .04f);
             TMP_Text[] metrics = { elapsed, bestLap, credits, xp };
             for (int i = 0; i < metrics.Length; i++) if (metrics[i].transform.parent.gameObject.activeSelf) FormulaUIMotion.Enter(metrics[i].transform.parent.gameObject, false, .08f + i * .045f);

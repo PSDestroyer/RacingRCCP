@@ -43,7 +43,7 @@ namespace FormulaGame
             int previous = page;
             page = (index % PageCount + PageCount) % PageCount;
             Refresh();
-            if (page != previous) FormulaUIMotion.Enter(gameObject);
+            if (page != previous) FormulaUIMotion.Enter(gameObject, preserveLayout: true);
             var selected = EventSystem.current?.currentSelectedGameObject;
             if (isActiveAndEnabled && selected != null && selected.transform.IsChildOf(transform) && !selected.activeInHierarchy)
                 EventSystem.current.SetSelectedGameObject(events[0].gameObject);

@@ -17,7 +17,7 @@ namespace FormulaGame
         private Coroutine runner;
         private float focus, focusFrom, focusTo, focusAt;
         private float pulseAt = -100, pulseAmount, pulseDuration;
-        private bool visibility, closing;
+        private bool visibility, closing, preserveLayout;
         private float revealAt, revealDuration, revealDelay, revealScale = 1, alphaFrom = 1;
         private Vector3 revealOffset;
         private CanvasGroup group;
@@ -74,10 +74,11 @@ namespace FormulaGame
             if (!Allowed) { var existing = target.GetComponent<FormulaUIMotion>(); if (existing != null) existing.Snap(); return; }
             var m = Get(target); m.pulseAt = Time.unscaledTime; m.pulseAmount = amount; m.pulseDuration = Mathf.Max(.01f, seconds); m.Run();
         }
-        public static void Enter(GameObject target, bool modal = false, float delay = 0)
+        public static void Enter(GameObject target, bool modal = false, float delay = 0, bool preserveLayout = false)
         {
             if (target == null || !target.activeInHierarchy) return;
             var m = Get(target); m.EnsureGroup();
+            m.preserveLayout = preserveLayout;
             m.hidden = null; m.closing = false; m.group.interactable = m.originalInteractable; m.group.blocksRaycasts = m.originalRaycasts;
             m.visibility = true; m.revealAt = Time.unscaledTime; m.revealDelay = delay; m.revealDuration = modal ? .16f : .20f;
             m.revealOffset = modal ? Vector3.zero : new Vector3(0, -12, 0); m.revealScale = modal ? .96f : 1; m.alphaFrom = 0;
@@ -162,7 +163,7 @@ namespace FormulaGame
         }
         private void ApplyPose(float reveal, float pulse)
         {
-            if (!pose) return;
+            if (!pose || preserveLayout) return;
             float revealSize = visibility ? closing ? Mathf.Lerp(1, .975f, reveal) : Mathf.Lerp(revealScale, 1, reveal) : 1;
             float size = (1 + focus * .012f + pulse) * revealSize;
             Vector3 offset = visibility ? revealOffset * (1 - reveal) : Vector3.zero;
@@ -200,7 +201,7 @@ namespace FormulaGame
             if (tinted != null && tinting) tinted.color = tintTo;
             if (filled != null && filling) filled.fillAmount = fillTo;
             tinting = filling = false;
-            if (pose) { transform.localPosition = writtenPosition = restPosition; transform.localScale = writtenScale = restScale; }
+            if (pose && !preserveLayout) { transform.localPosition = writtenPosition = restPosition; transform.localScale = writtenScale = restScale; }
             if (group != null) { group.alpha = 1; group.interactable = originalInteractable; group.blocksRaycasts = originalRaycasts; }
         }
     }

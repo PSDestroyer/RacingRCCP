@@ -68,8 +68,9 @@ namespace FormulaGame
             if (FormulaMenuAssets.Current != null && FormulaMenuAssets.Current.resultsPrefab != null)
             {
                 var result = Instantiate(FormulaMenuAssets.Current.resultsPrefab, canvas.transform, false);
+                canvas.GetComponent<FormulaPresentation>().Register((RectTransform)result.transform);
                 result.GetComponent<FormulaResultsView>().Present(receipt);
-                canvas.GetComponent<FormulaPresentation>().Register((RectTransform)result.transform); yield break;
+                yield break;
             }
             Debug.LogError("Formula results prefab is not authored.");
         }
