@@ -6,7 +6,7 @@ namespace FormulaGame
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class FormulaMissionIcon : UnityEngine.UI.MaskableGraphic
     {
-        public enum Symbol { Helmet, Stopwatch, Race, Sprint, Precision, Trophy, Garage, Settings, Chevron }
+        public enum Symbol { Helmet, Stopwatch, Race, Sprint, Precision, Trophy, Garage, Settings, Chevron, Exit }
         [SerializeField] private Symbol symbol;
         [SerializeField] private float stroke = 1.8f;
         public Symbol DisplaySymbol => symbol;
@@ -72,6 +72,10 @@ namespace FormulaGame
                     Path(mesh,points); Ring(mesh,new Vector2(.5f,.5f),.13f); break;
                 case Symbol.Chevron:
                     Path(mesh,new[] { new Vector2(.32f,.77f),new Vector2(.63f,.5f),new Vector2(.32f,.23f) }); break;
+                case Symbol.Exit:
+                    Path(mesh,new[] { new Vector2(.58f,.82f), new Vector2(.18f,.82f), new Vector2(.18f,.18f), new Vector2(.58f,.18f) });
+                    Line(mesh,new Vector2(.39f,.5f),new Vector2(.86f,.5f));
+                    Path(mesh,new[] { new Vector2(.69f,.67f), new Vector2(.86f,.5f), new Vector2(.69f,.33f) }); break;
             }
         }
         private Vector2 Point(Vector2 p) => new Vector2(rectTransform.rect.xMin+p.x*rectTransform.rect.width,rectTransform.rect.yMin+p.y*rectTransform.rect.height);

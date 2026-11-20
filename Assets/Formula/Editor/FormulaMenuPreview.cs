@@ -131,7 +131,7 @@ public static class FormulaMenuPreview
                 Require(Time.frameCount > report.startFrame + 5, "Runtime frames did not advance.");
                 Require(FormulaMenuAssets.Current.liveries.Length == 8 && FormulaMenuAssets.Current.liveries.All(t => t != null), "Livery artwork missing.");
                 Require(canvas.GetComponentsInChildren<TMP_Text>().Any(t => t.font == FormulaMenuAssets.Current.titleFont), "Teko title font not rendered.");
-                Require(menu.View.Home.GetComponentsInChildren<FormulaMissionIcon>().Count(i => i.name == "Navigation Icon") == 5, "Home must have five crisp navigation icons.");
+                Require(menu.View.Home.GetComponentsInChildren<FormulaMissionIcon>().Count(i => i.name == "Navigation Icon") == 6, "Home must have six navigation icons.");
                 Require(UnityEngine.Object.FindObjectsByType<RCCP_CarController>(FindObjectsSortMode.None).Length == 1, "Duplicate preview car.");
                 var displayWheels = car.GetComponentsInChildren<RCCP_WheelCollider>();
                 Require(displayWheels.Length == 4 && displayWheels.All(w => w.wheelModel != null && w.wheelModel.gameObject.activeInHierarchy && w.wheelModel.GetComponentsInChildren<Renderer>().Any(r => r.enabled)), "Parked Generic must keep all four wheel models visible.");
@@ -185,20 +185,22 @@ public static class FormulaMenuPreview
             }
             else if(stage==996)
             {
-                Require(menu.View.Home.GetComponentsInChildren<UnityEngine.UI.Button>().Length==5,"Home gained extra actions.");
+                Require(menu.View.Home.GetComponentsInChildren<UnityEngine.UI.Button>().Length==6,"Home must expose six actions.");
+                Require(Button("home-settings").navigation.selectOnDown == Button("home-quit") &&
+                    Button("home-quit").navigation.selectOnUp == Button("home-settings"), "Quit must be reachable from Settings.");
                 foreach(var text in menu.View.Home.GetComponentsInChildren<TMP_Text>())
                 {
                     text.ForceMeshUpdate(); Require(!text.enableAutoSizing && text.preferredWidth<=text.rectTransform.rect.width+1,"Home label does not retain readable 115 percent text.");
                 }
                 var block=new MaterialPropertyBlock(); car.body.GetPropertyBlock(block,0);
                 Require(block.isEmpty && car.body.sharedMaterial.GetFloat("_Smoothness")>.5f && car.body.sharedMaterial.shader.name=="Universal Render Pipeline/Complex Lit","Dry presentation does not use its native PBR finish.");
-                Pass("Home retains five readable actions at 115 percent text and 95 percent safe area; dry presentation uses the authored PBR paint finish");
+                Pass("Home retains six readable actions at 115 percent text and 95 percent safe area; dry presentation uses the authored PBR paint finish");
                 Capture("HomeLargeText"); Next(997,"home-final-capture");
             }
             else if(stage==997) { Next(998,"complete"); EditorApplication.ExitPlaymode(); }
             else if (stage == 100)
             {
-                Require(menu.View.Home.GetComponentsInChildren<UnityEngine.UI.Button>().Length == 5, "Home must expose Career, Garage and Quick Race plus Profile and Settings.");
+                Require(menu.View.Home.GetComponentsInChildren<UnityEngine.UI.Button>().Length == 6, "Home must expose Career, Garage, Quick Race, Profile, Settings and Quit.");
                 Click("home-career"); Require(menu.CurrentPage == "Carieră" && !menu.View.Dialogs.IsOpen, "Career must open the overview, not a briefing.");
                 Click("g01"); Next(101, "briefing-render");
             }
@@ -794,6 +796,6 @@ public static class FormulaMenuPreview
         }
         File.WriteAllText("Docs/AI/FormulaUI/HomeFraming.json",Newtonsoft.Json.JsonConvert.SerializeObject(new { min=new[] { min.x,min.y },max=new[] { max.x,max.y },Camera.main.fieldOfView },Newtonsoft.Json.Formatting.Indented));
         Require(min.x>.35f && max.x<.99f && min.y>.15f && max.y<.85f,"Home car framing overlaps navigation, leaves the camera or meets the footer: "+min+" to "+max);
-        Pass("Home keeps the whole Generic inside the hero area with five actions and a visible controller selection");
+        Pass("Home keeps the whole Generic inside the hero area with six actions and a visible controller selection");
     }
 }

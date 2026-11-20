@@ -4,7 +4,19 @@ namespace FormulaGame
 {
     public static class FormulaMenuFormatting
     {
-        public static string DriverName => string.IsNullOrWhiteSpace(FormulaProgression.Data.PlayerName) ? FormulaLocalization.T("Driver") : FormulaProgression.Data.PlayerName;
+        public static string DriverName
+        {
+            get
+            {
+                // The display name is inserted into TextMeshPro rich text.
+                string steamName = FormulaSteamClient.PersonaName?.Replace("<", "").Replace(">", "")
+                    .Replace("\\", "\uFF3C").Replace("\r", " ").Replace("\n", " ").Trim();
+                if (!string.IsNullOrWhiteSpace(steamName)) return steamName;
+
+                string savedName = FormulaProgression.Data.PlayerName;
+                return string.IsNullOrWhiteSpace(savedName) ? FormulaLocalization.T("Driver") : savedName;
+            }
+        }
         // Internal navigation keys stay stable; only the visible labels are English.
         public static string PageName(string key)
         {

@@ -10,7 +10,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
-// A targeted, repeatable authoring pass. Home retains its five existing actions.
+// A targeted, repeatable authoring pass for Home.
 public static class FormulaHomeReferenceBuilder
 {
     private const string StagePath = "Assets/Formula/Garage/Formula_Paddock_Garage.prefab";
@@ -95,16 +95,16 @@ public static class FormulaHomeReferenceBuilder
         var fade = Group(view.transform, "Navigation Backdrop", 0, 100, 900, 524);
         var graphic = fade.GetComponent<FormulaHomeBackdrop>() ?? fade.gameObject.AddComponent<FormulaHomeBackdrop>();
         graphic.color = Color.white; graphic.raycastTarget = false; fade.SetAsFirstSibling();
-        var nav = view.transform.Find("Navigation"); Place(nav, 48, 174, 380, 390);
+        var nav = view.transform.Find("Navigation"); Place(nav, 48, 174, 380, 420);
         var obsolete = nav.Find("home-development"); if (obsolete != null) UnityEngine.Object.DestroyImmediate(obsolete.gameObject);
-        string[] ids = { "home-career", "home-garage", "home-quick", "home-profile", "home-settings" };
-        string[] labels = { "CAREER", "GARAGE", "QUICK RACE", "PROFILE", "SETTINGS" };
-        FormulaMissionIcon.Symbol[] symbols = { FormulaMissionIcon.Symbol.Race, FormulaMissionIcon.Symbol.Garage, FormulaMissionIcon.Symbol.Stopwatch, FormulaMissionIcon.Symbol.Helmet, FormulaMissionIcon.Symbol.Settings };
+        string[] ids = { "home-career", "home-garage", "home-quick", "home-profile", "home-settings", "home-quit" };
+        string[] labels = { "CAREER", "GARAGE", "QUICK RACE", "PROFILE", "SETTINGS", "QUIT" };
+        FormulaMissionIcon.Symbol[] symbols = { FormulaMissionIcon.Symbol.Race, FormulaMissionIcon.Symbol.Garage, FormulaMissionIcon.Symbol.Stopwatch, FormulaMissionIcon.Symbol.Helmet, FormulaMissionIcon.Symbol.Settings, FormulaMissionIcon.Symbol.Exit };
         for (int i=0;i<ids.Length;i++)
         {
             bool primary = i < 3; float width = primary ? 370 : 177, height = primary ? 76 : 50;
             var button = nav.Find(ids[i]).GetComponent<UnityEngine.UI.Button>();
-            Place(button.transform, i==4 ? 193 : 0, primary ? i*92 : 310, width, height);
+            Place(button.transform, i>=4 ? 193 : 0, primary ? i*92 : i==5 ? 368 : 310, width, height);
             var label = button.GetComponentInChildren<TMP_Text>(true); label.text = labels[i];
             Format(label, primary ? 68 : 43, 0, primary ? 254 : 126, height, primary ? 32 : 21);
             label.font = FormulaMenuAssets.Current.strongFont; label.characterSpacing = primary ? 1.8f : .6f;

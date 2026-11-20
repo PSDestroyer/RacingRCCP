@@ -160,6 +160,7 @@ public static class FormulaMenuHierarchyBuilder
         Set(view, "quick", FormulaMenuStyle.MenuButton(nav, "home-quick", "CURSE RAPIDE", art.career, 12, 311, 380, 66, NoAction));
         Set(view, "profile", FormulaMenuStyle.MenuButton(nav, "home-profile", "PROFIL", art.helmet, 12, 378, 182, 60, NoAction));
         Set(view, "settings", FormulaMenuStyle.MenuButton(nav, "home-settings", "SETĂRI", art.settings, 200, 378, 192, 60, NoAction));
+        Set(view, "quit", FormulaMenuStyle.MenuButton(nav, "home-quit", "QUIT", null, 200, 448, 192, 50, NoAction));
         return view;
     }
     private static Component BuildEvents(Transform screens, bool quick)

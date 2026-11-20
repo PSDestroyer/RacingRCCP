@@ -13,6 +13,9 @@ namespace FormulaGame
     {
         private static FormulaSteamClient instance;
         private readonly HashSet<string> pendingAchievements = new HashSet<string>();
+        private string personaName;
+
+        public static string PersonaName => instance != null ? instance.personaName : null;
 
 #if STEAMWORKS_NET && !UNITY_SWITCH
         private bool initialized;
@@ -65,6 +68,7 @@ namespace FormulaGame
                 }
 
                 initialized = true;
+                ReadPersonaName();
                 uint appId = SteamUtils.GetAppID().m_AppId;
                 if (appId == 480)
                 {
@@ -83,6 +87,18 @@ namespace FormulaGame
             catch (Exception exception)
             {
                 Debug.LogWarning($"[Formula Steam] Steam is unavailable; the game will continue without achievements. {exception.Message}");
+            }
+        }
+
+        private void ReadPersonaName()
+        {
+            try
+            {
+                personaName = SteamFriends.GetPersonaName();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"[Formula Steam] Steam profile name is unavailable. {exception.Message}");
             }
         }
 #endif

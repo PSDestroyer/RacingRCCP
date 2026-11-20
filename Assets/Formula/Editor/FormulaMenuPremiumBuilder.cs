@@ -230,6 +230,7 @@ public static class FormulaMenuPremiumBuilder
         MoveButton(nav.Find("home-quick").GetComponent<UnityEngine.UI.Button>(), 12, 280, 360, 60);
         MoveButton(nav.Find("home-profile").GetComponent<UnityEngine.UI.Button>(), 12, 364, 174, 48);
         MoveButton(nav.Find("home-settings").GetComponent<UnityEngine.UI.Button>(), 198, 364, 174, 48);
+        MoveButton(nav.Find("home-quit").GetComponent<UnityEngine.UI.Button>(), 198, 420, 174, 48);
         foreach (var button in nav.GetComponentsInChildren<UnityEngine.UI.Button>(true)) StyleHomeButton(button);
     }
     private static void StyleHomeButton(UnityEngine.UI.Button button)

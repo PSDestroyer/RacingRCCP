@@ -1,6 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using _Assets._PlatformSpeciffics.Switch;
 using HalvaStudio.Save;
 
@@ -16,12 +15,11 @@ public class Init : MonoBehaviour
 
     private void Start()
     {
-        //LoadingScreen.LoadScene("Menu");
-        if(SaveManager.Instance.saveData.PlayerName== null)
-        UnityEngine.SceneManagement.SceneManager.LoadScene(1);
-        else
-            UnityEngine.SceneManagement.SceneManager.LoadScene(2);
-
+#if UNITY_STANDALONE && !UNITY_SWITCH
+        SceneManager.LoadScene("Menu");
+#else
+        SceneManager.LoadScene(SaveManager.Instance.saveData.PlayerName == null ? "Username" : "Menu");
+#endif
     }
 
 }
